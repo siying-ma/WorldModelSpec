@@ -5,7 +5,8 @@ category is read through; an agency reading so carried passes (the subject's cla
 whose controlled motion the ontology reads "the driver" through) and is listed; a reading carried by
 conduct, a feature or a concept passes; a reading carried by identity classes and other
 ids passes and is listed for the operator, as is a record that names a duty, a role or a status
-with identity classes only and declares no reading. The list is a run record like `TO_USER.md`.
+with identity classes only and declares no reading, and every reading on a trigger, subject,
+condition or exception span is listed under its role. The list is a run record like `TO_USER.md`.
 Every check is static; no model is called."""
 import copy
 import json
@@ -243,6 +244,99 @@ class ReportIsARunRecord(unittest.TestCase):
             with mock.patch.multiple(paths, REPO=repo, RESULTS=repo / "results", RULES_DIR=none, CONCEPTS_DIR=none, WITNESS_DIR=none,
                                      GAPS_DIR=none, INDEX_FILE=none / "i", WITNESS_ROOT_FILE=none / "w"):
                 self.assertIn(f"results/h/{observable_view.VIEW_NAME}", handoff.artifact_files("h"))
+
+
+class ScopeRolePart(unittest.TestCase):
+    """Part (d) lists every observable reading on a span that decides when the rule applies, by its
+    role, and judges none: a mixed-carrier reading is listed like any other, and writing the report
+    changes no record and no validator outcome."""
+
+    ROLES = {"s1": "trigger", "s2": "subject", "s3": "condition", "s4": "exception", "s5": "obligation"}
+    WORDS = {"s1": "when about to turn", "s2": "The driver of a vehicle", "s3": "in a caravan or motorcade",
+             "s4": "except  when on\nduty", "s5": "shall allow sufficient space"}
+
+    def record(self) -> dict:
+        carriers = {"s1": ["kin.speed"], "s2": ["ru.aggregate=DEF-X::vehicle"], "s3": ["drv.interaction.column_following", "ru.motor_vehicle"],
+                    "s4": ["dev.human_direction"], "s5": ["kin.speed"]}
+        cats = {"s1": "intention", "s2": "agency", "s3": "purpose", "s4": "status", "s5": "purpose"}
+        return {"node_id": "L_9_o1", "law_refs": ["L-9"],
+                "segmentation": [{"id": s, "role": r, "text": self.WORDS[s]} for s, r in self.ROLES.items()],
+                "elements": [{"span": s, "atoms": [i for i in ids if not i.startswith("drv.")],
+                              "derived": [i for i in ids if i.startswith("drv.")]} for s, ids in carriers.items()],
+                "narrowings": [{"span": s, "kind": "observable_reading", "category": c, "why": f"read  through {s}"} for s, c in cats.items()]
+                              + [{"span": "s5", "kind": "reading", "why": "a plain reading"}]}
+
+    def test_every_scope_role_is_a_group_and_each_reading_sits_under_its_role(self):
+        d = observable_view.entries({"L_9_o1": ("iter-001/plan/blueprint.jsonl", self.record())})["d"]
+        self.assertEqual(set(d), validate_a.SCOPE_ROLES)
+        self.assertEqual({r: [e["span"] for e in es] for r, es in d.items()},
+                         {"trigger": ["s1"], "subject": ["s2"], "condition": ["s3"], "exception": ["s4"]})
+
+    def test_every_field_is_present(self):
+        rec = self.record()
+        d = observable_view.entries({"L_9_o1": ("iter-002/repair/L_9_o1/record.jsonl", rec)})["d"]
+        e = d["exception"][0]
+        self.assertEqual({k: e[k] for k in ("node", "span", "role", "words", "category", "carriers", "why", "source", "source_kind")},
+                         {"node": "L_9_o1", "span": "s4", "role": "exception", "words": "except  when on\nduty", "category": "status",
+                          "carriers": ["dev.human_direction"], "why": "read through s4", "source": "iter-002/repair/L_9_o1/record.jsonl",
+                          "source_kind": "repair"})
+        self.assertEqual(observable_view.source_kind("accepted_nodes.jsonl"), "accepted")
+        self.assertEqual(observable_view.source_kind("iter-001/plan/blueprint.jsonl"), "plan")
+        line = observable_view._scope_line(e)
+        for part in ("`L_9_o1`", "span s4", "(exception)", "\"except when on duty\"", "`status`", "`dev.human_direction`",
+                     "why: \"read through s4\"", "from `iter-002/repair/L_9_o1/record.jsonl` (repair)"):
+            self.assertIn(part, line)
+
+    def test_a_reading_on_the_duty_is_not_in_the_part(self):
+        d = observable_view.entries({"L_9_o1": ("x", self.record())})["d"]
+        self.assertNotIn("s5", [e["span"] for es in d.values() for e in es])
+        self.assertIn("s5", [e["span"] for e in observable_view.entries({"L_9_o1": ("x", self.record())})["a"]])
+
+    def test_a_mixed_carrier_reading_is_listed_and_not_refused(self):
+        rec = self.record()
+        self.assertEqual(validate_a.check_narrowings(Node(rec), None, ""), [])
+        cond = observable_view.entries({"L_9_o1": ("x", rec)})["d"]["condition"]
+        self.assertEqual([(e["span"], e["carriers"]) for e in cond], [("s3", ["ru.motor_vehicle", "drv.interaction.column_following"])])
+        line = observable_view._scope_line(cond[0])
+        self.assertNotIn("validator returns", line)
+        self.assertNotIn("identity classes only", line)
+
+    def test_the_rendered_part_has_one_heading_per_role(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            rd = Path(tmp) / "r"
+            (rd / "iter-001" / "plan").mkdir(parents=True)
+            (rd / "iter-001" / "plan" / "blueprint.jsonl").write_text(json.dumps(self.record()) + "\n", encoding="utf-8")
+            observable_view.write_current_view(SimpleNamespace(dir=rd, iteration=1, accepted_nodes={}))
+            text = (rd / observable_view.VIEW_NAME).read_text(encoding="utf-8")
+        part = text.split("## (d)", 1)[1]
+        for role in validate_a.SCOPE_ROLES:
+            self.assertIn(f"\n### {role}\n", part)
+        self.assertIn("`L_9_o1` span s3 (condition) \"in a caravan or motorcade\" · `purpose`", part.split("### condition", 1)[1])
+
+    def test_an_empty_role_says_none(self):
+        text = observable_view.render(observable_view.entries({}), 1)
+        self.assertEqual(text.split("## (d)", 1)[1].count("(none)"), len(validate_a.SCOPE_ROLES))
+
+    def test_writing_the_report_changes_no_record_and_no_validator_outcome(self):
+        recs = [self.record(), fixture()]
+        def outcome() -> list[list[str]]:
+            return [validate_a.check_narrowings(Node(r), None, "") + validate_a.check_residue_scope(Node(r)) for r in recs]
+        before, snapshot = outcome(), copy.deepcopy(recs)
+        with tempfile.TemporaryDirectory() as tmp:
+            rd = Path(tmp) / "r"
+            f = rd / "iter-001" / "plan" / "blueprint.jsonl"
+            f.parent.mkdir(parents=True)
+            f.write_text("".join(json.dumps(r) + "\n" for r in recs), encoding="utf-8")
+            raw = f.read_bytes()
+            accepted = {"L_8_o1": self.record() | {"node_id": "L_8_o1"}}
+            acc_snapshot = copy.deepcopy(accepted)
+            observable_view.entries({r["node_id"]: ("x", r) for r in recs})
+            observable_view.write_current_view(SimpleNamespace(dir=rd, iteration=1, accepted_nodes=accepted))
+            self.assertEqual(f.read_bytes(), raw)
+            self.assertEqual(sorted(p.name for p in rd.iterdir()), sorted(["iter-001", observable_view.VIEW_NAME]))
+        self.assertEqual(recs, snapshot)
+        self.assertEqual(accepted, acc_snapshot)
+        self.assertEqual(outcome(), before)
 
 
 if __name__ == "__main__":

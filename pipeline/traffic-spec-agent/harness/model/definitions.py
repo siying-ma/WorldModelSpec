@@ -27,12 +27,19 @@ For a term a law uses, the first step that finds a candidate decides:
   law's own section;
 - `own_chapter`: a definition of the law's own chapter of its code;
 - `general_chapter`: a definition of its code's general chapter;
-- `fallback_code`: a definition of the general chapter of the code its code falls back to.
+- `fallback_code`: a definition of the code its code falls back to, in the chapters the
+  falling-back code declares (`fallback_chapters`), taken in order: the next chapter is searched
+  only when the one before holds no candidate, so several candidates in one chapter make the term
+  ambiguous and no later chapter is searched for a unique one. A code without the field falls back
+  to the general chapter of the fallback code; a declared `fallback_chapters` is a non-empty list
+  of distinct non-empty chapter names on a code that names a `fallback`, and anything else makes
+  the configuration unreadable.
 A section-only definition is never used outside its section; a definition in another chapter of
 the same code is never reached. One candidate at the deciding step resolves the term; several
 make it ambiguous: each is shown, none may key an aggregate. A term no step finds has no
 applicable definition. The configuration names the codes, how many id segments make a chapter,
-each code's general chapter and its fallback, and the order of the steps.
+each code's general chapter, its fallback and the fallback's chapters it reaches, and the order of
+the steps.
 """
 from __future__ import annotations
 
@@ -87,8 +94,33 @@ class Candidate:
     cites: list[str] = field(default_factory=list)
 
 
+class PrecedenceError(ValueError):
+    """The declared precedence holds a value the resolver cannot take as written."""
+
+
 def load_precedence(path: Path | None = None) -> dict:
-    return json.loads(Path(path or DEFAULT_PRECEDENCE).read_text(encoding="utf-8"))
+    """The declared precedence (from `path`, by default the operator's file); `PrecedenceError` names
+    the first code that declares `fallback_chapters` without a `fallback`, or whose `fallback_chapters`
+    is not a non-empty list of distinct non-empty strings."""
+    path = Path(path or DEFAULT_PRECEDENCE)
+    config = json.loads(path.read_text(encoding="utf-8"))
+    for name, code in config.get("codes", {}).items():
+        if "fallback_chapters" not in code:
+            continue
+        chapters = code["fallback_chapters"]
+        if not code.get("fallback"):
+            raise PrecedenceError(f"{path}: code `{name}` declares `fallback_chapters` {chapters!r} but no `fallback` "
+                                  "code they would be searched in")
+        if not isinstance(chapters, list) or not chapters:
+            raise PrecedenceError(f"{path}: code `{name}` declares `fallback_chapters` {chapters!r}, not a non-empty list "
+                                  "(leave the field out to reach the fallback code's general chapter)")
+        bad = [c for c in chapters if not isinstance(c, str) or not c.strip()]
+        if bad:
+            raise PrecedenceError(f"{path}: code `{name}` declares `fallback_chapters` {chapters!r}: {bad[0]!r} is not a "
+                                  "non-empty chapter name")
+        if len(set(chapters)) != len(chapters):
+            raise PrecedenceError(f"{path}: code `{name}` declares `fallback_chapters` {chapters!r}, which names a chapter twice")
+    return config
 
 
 def precedence_digest(path: Path | None = None) -> str:
@@ -249,10 +281,14 @@ def _resolve_term(term: str, where: Place | None, inline: set[str], by_term: dic
             found = [c for c in cs if not c.section_only and where and
                      (c.place.code, c.place.chapter) == (where.code, g)]
         elif s == "fallback_code":
-            fb = config["codes"].get(where.code, {}).get("fallback") if where else None
-            g = config["codes"].get(fb, {}).get("general") if fb else None
-            found = [c for c in cs if not c.section_only and fb and
-                     (c.place.code, c.place.chapter) == (fb, g)]
+            own = config["codes"].get(where.code, {}) if where else {}
+            fb = own.get("fallback")
+            chapters = (own["fallback_chapters"] if "fallback_chapters" in own else [config["codes"].get(fb, {}).get("general")]) if fb else []
+            found = []
+            for chapter in chapters:
+                found = [c for c in cs if not c.section_only and (c.place.code, c.place.chapter) == (fb, chapter)]
+                if found:
+                    break
         found = sorted({c.definition: c for c in found}.values(), key=lambda c: c.definition)
         if found:
             step = s

@@ -2,7 +2,7 @@
  "_note": "The operator's declared definition precedence: it stands in for the chapter-level scope provisions the corpus does not hold. Declared before any test law is seen; the harness implements the generic steps and names no code or chapter.",
  "codes": {
   "NRS": {"chapter_segments": 1, "general": "484A"},
-  "LVMC": {"chapter_segments": 2, "general": "11.02", "fallback": "NRS"}
+  "LVMC": {"chapter_segments": 2, "general": "11.02", "fallback": "NRS", "fallback_chapters": ["484A", "484B"]}
  },
  "steps": ["inline_or_section", "own_chapter", "general_chapter", "fallback_code"]
 }

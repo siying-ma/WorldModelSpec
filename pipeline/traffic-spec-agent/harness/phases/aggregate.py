@@ -1,14 +1,23 @@
 """Legal aggregates of a run: the planner's representation selection and class mappings, and their
 admission by one independent semantic gate, before any node may claim one.
 
-1. Select and derive (one planner session, `prompts/plan_aggregates.md`): for every (posted
+1. Select and derive (planner sessions, `prompts/plan_aggregates.md`): for every (posted
    definition, term) the resolution table resolves, a representation — `aggregate` (the definition
    denotes an extensional set of tracked road-user classes), `not_aggregate`, or `gap` — and, for each aggregate,
-   a mapping that classifies every road-user class of the ontology with quotes. The answer is
+   a mapping that classifies every road-user class of the ontology with quotes. The pairs are asked
+   in batches (`batches`), one session each, in a fixed order: a batch is a run of whole
+   definitions, in definition order, of at most `BATCH_PAIRS` pairs, and a definition with more
+   pairs is a batch of its own. Membership is fixed by the resolution table alone, so it does not
+   move as pairs are selected; a batch with a pair still to select is asked whole, and shown read-only
+   only the rows outside it, so its prompt is the same however far an interrupted batch had come.
+   Only its pairs still to select are taken from its answer: a batch never rewrites another's rows.
+   Each batch's answer, with its defects, is kept on the digest of its full prompt, model and
+   effort, and taken back on the same inputs. The answer is
    checked structurally (`checks/aggregates.py`) and asked for once more with its defects. A pair
    still defective holds the laws that use it for the iteration, uncharged, and is asked again in
    the next; a second such failure of the same pair stops the run (`protocol_failure`). The counts
-   are the run's state (`Run.aggregate_failures`), so they survive a resume.
+   are the run's state (`Run.aggregate_failures`), so they survive a resume; they are counted once
+   every batch is through, so an interrupted preparation counts nothing and its resume counts once.
 2. Verify (one second-vendor session per aggregate, `prompts/verify_aggregate.md`, the reviewer's
    model and effort): `supported`, `contradicted` or `underdetermined` per class, never a
    replacement. Supported classes are admitted as proposed; underdetermined ones become
@@ -60,6 +69,7 @@ from ..store.state import Run
 from . import validate as validate_phase
 
 PLACEHOLDERS_PLAN_AGGREGATES = ("definitions", "uses", "classes", "selection", "aggregate_gate_feedback")
+BATCH_PAIRS = 20                 # the (definition, term) pairs one selection session is asked at most, but for one larger definition
 PLACEHOLDERS_VERIFY_AGGREGATE = ("definition", "classes", "record")
 GATE_VERDICTS = ("supported", "contradicted", "underdetermined")
 
@@ -433,15 +443,63 @@ def _answer_defects(a: dict, pairs, table, defs_by_id, onto, want_pairs: set) ->
     return errs
 
 
+def batches(pairs) -> list[list[tuple[str, str]]]:
+    """The selection batches over (definition, term) pairs, in a fixed order: whole definitions in
+    definition order, filled up to `BATCH_PAIRS` pairs; a definition's pairs are never split, and one
+    with more is a batch of its own."""
+    groups: dict[str, list[tuple[str, str]]] = {}
+    for p in sorted(set(pairs)):
+        groups.setdefault(p[0], []).append(p)
+    out, cur = [], []
+    for d in sorted(groups):
+        if cur and len(cur) + len(groups[d]) > BATCH_PAIRS:
+            out.append(cur)
+            cur = []
+        cur = cur + groups[d]
+    return out + ([cur] if cur else [])
+
+
+def batch_label(batch: list[tuple[str, str]]) -> str:
+    """A batch's files are named by its membership, never by its place in the order."""
+    return "plan_aggregates_" + checks.digest(sorted(batch))[:12]
+
+
+def batch_context(run: Run, out_dir: Path, batch, earlier: set) -> dict:
+    """The batch's read-only rows, fixed before its first call. Rows newly selected by later batches
+    cannot change an interrupted batch's input. A changed row already shown, or a newly selected
+    earlier pair, does change it; a new iteration has its own copy. Missing context for a cached
+    answer is damaged state, never a reason to silently ask for that answer again."""
+    members = set(batch)
+    current = {k: r for k, r in load_selection(run).items() if k not in members}
+    label = batch_label(batch)
+    f = out_dir / f"{label}_context.jsonl"
+    if f.exists():
+        rows = jsonl.read_strict(f)
+        if any(not isinstance(r.get("definition"), str) or not isinstance(r.get("term"), str) for r in rows):
+            raise jsonl.DataIntegrityError(f, None, "a context row names its definition and term")
+        saved = {(r["definition"], r["term"]): r for r in rows}
+        if len(saved) != len(rows) or set(saved) & members:
+            raise jsonl.DataIntegrityError(f, None, "the context repeats a pair or contains this batch's own pair")
+        if all(current.get(k) == r for k, r in saved.items()) and (set(current) & earlier) <= set(saved):
+            return saved
+    elif (out_dir / f"{label}_answer.json").exists():
+        raise jsonl.DataIntegrityError(f, None, "the cached batch answer has no saved read-only context")
+    current = {k: current[k] for k in sorted(current)}
+    jsonl.write_rows(f, list(current.values()))
+    return current
+
+
 def select_and_derive(run: Run, table: dict, defs: list[dict], onto: Ontology, want: set[tuple[str, str]], out_dir: Path,
-                      feedback: str = "", label: str = "plan_aggregates") -> tuple[dict, list[dict], list[str]]:
+                      feedback: str = "", label: str = "plan_aggregates", shown: dict | None = None,
+                      keep_defective: bool = False) -> tuple[dict, list[dict], list[str]]:
     """One planner session over the (definition, term) pairs `want`: (valid selection rows, valid
-    mapping records, the defects that remained after the one re-ask)."""
+    mapping records, the defects that remained after the one re-ask). `shown` is the rows it is shown
+    read-only (the run's selection unless given); `keep_defective` as in `validate._session`."""
     defs_by_id = {str(d.get("id")): d for d in defs}
     pairs = {p: ls for p, ls in checks.pairs_of(table).items() if p in want}
     if not pairs:
         return {}, [], []
-    existing = load_selection(run)
+    existing = load_selection(run) if shown is None else shown
     prompt = render.render("plan_aggregates.md", {
         "definitions": _defs_block(pairs, table, defs_by_id),
         "uses": _uses_block(pairs),
@@ -451,7 +509,7 @@ def select_and_derive(run: Run, table: dict, defs: list[dict], onto: Ontology, w
         "aggregate_gate_feedback": feedback or "(none)"})
     check = lambda a: _answer_defects(a, pairs, table, defs_by_id, onto, set(pairs))
     answer, errs = validate_phase._session(run, out_dir, label, prompt, check=check, model=run.opts.model, effort=run.opts.plan_effort,
-                                           role="work")
+                                           role="work", keep_defective=keep_defective)
     if answer is None:
         return {}, [], errs or ["dry run: no selection"]
     sub = {"laws": {law: [r for r in rs if (r.get("definition"), r.get("term")) in set(pairs)] for law, rs in table.get("laws", {}).items()}}
@@ -616,11 +674,13 @@ def admit(run: Run, recs: list[dict], table: dict, defs: list[dict], onto: Ontol
 
 
 def prepare(run: Run, laws: list[corpus.Law], defs: list[dict], onto: Ontology, out_dir: Path) -> tuple[list[str], list[str], dict[str, str], str]:
-    """Before any plan batch: select and derive for every resolved pair not yet selected, gate the
-    aggregates, merge the admitted ones. A selected aggregate with no effective certificate is an
-    interrupted admission and is selected and derived again. Returns (notes, lines for the operator,
-    laws held this iteration with why: a pair whose selection stayed defective, the reason the run
-    stops, or ""): a pair that stays defective a second time stops the run."""
+    """Before any plan batch: select and derive, batch by batch (`batches`), every resolved pair not
+    yet selected, gate each batch's aggregates and merge the admitted ones before the next batch. A
+    selected aggregate with no effective certificate is an interrupted admission and is selected and
+    derived again. Returns (notes, lines for the operator, laws held this iteration with why: a pair
+    whose selection stayed defective, the reason the run stops, or ""): a pair that stays defective a
+    second time stops the run. A failure is a pair's own, never its batch's: it is counted once every
+    batch is through, for that pair alone."""
     table = definitions_mod.load_table(run)
     selected = load_selection(run)
     _drop_orphan_selections(run, selected)
@@ -628,17 +688,41 @@ def prepare(run: Run, laws: list[corpus.Law], defs: list[dict], onto: Ontology, 
     if not want:
         return [], [], {}, ""
     out_dir.mkdir(parents=True, exist_ok=True)
-    sel, recs, errs = select_and_derive(run, table, defs, onto, want, out_dir)
-    if run.opts.dry_run:
-        return [f"dry run: the selection prompt for {len(want)} defined term(s) is in {out_dir}"], [], {}, ""
-    selected.update(sel)
-    save_selection(run, selected)
-    hold, stop = {}, []
     pairs = checks.pairs_of(table)
-    derived = {r.get("aggregate_id") for r in recs}
-    underived = {key for key, row in sel.items() if row.get("representation") == "aggregate" and row.get("target") not in derived}
-    for p in sorted((want - set(sel)) | underived):
-        what = "the mapping of" if p in underived else "the representation of"
+    all_batches = batches(pairs)
+    todo = [b for b in all_batches if want & set(b)]
+    notes = [f"selection asked in {len(todo)} batch(es) of at most {BATCH_PAIRS} (definition, term) pairs, a definition never split"]
+    to_user, failed, chosen = [], {}, {}
+    for i, batch in enumerate(todo, 1):
+        members, pending = set(batch), want & set(batch)
+        if len({d for d, _t in batch}) == 1 and len(batch) > BATCH_PAIRS:
+            notes.append(f"selection batch {i}: definition `{batch[0][0]}` has {len(batch)} pairs, over the {BATCH_PAIRS}-pair target; "
+                         "asked whole in one session")
+        earlier = {p for b in all_batches[:all_batches.index(batch)] for p in b}
+        shown = batch_context(run, out_dir, batch, earlier)
+        sel, recs, errs = select_and_derive(run, table, defs, onto, members, out_dir, label=batch_label(batch), shown=shown,
+                                            keep_defective=True)
+        if run.opts.dry_run:
+            continue
+        sel = {k: r for k, r in sel.items() if k in pending}
+        targets = {r["target"] for r in sel.values() if r["representation"] == "aggregate"}
+        recs = [r for r in recs if r.get("aggregate_id") in targets]
+        selected = load_selection(run)
+        selected.update(sel)
+        save_selection(run, selected)
+        chosen.update(sel)
+        derived = {r.get("aggregate_id") for r in recs}
+        for p in sorted(pending - set(sel)):
+            failed[p] = "the representation of", errs
+        for p in sorted(k for k, row in sel.items() if row.get("representation") == "aggregate" and row.get("target") not in derived):
+            failed[p] = "the mapping of", errs
+        _entries, n2, user = admit(run, recs, table, defs, onto, out_dir)
+        notes += n2
+        to_user += user
+    if run.opts.dry_run:
+        return notes + [f"dry run: the selection prompts for {len(want)} defined term(s) are in {out_dir}"], [], {}, ""
+    hold, stop = {}, []
+    for p, (what, errs) in sorted(failed.items()):
         key = f"select:{p[0]}::{p[1]}"
         run.aggregate_failures[key] = run.aggregate_failures.get(key, 0) + 1
         why = f"{what} `{p[0]}` / \"{p[1]}\" stayed defective: " + "; ".join(errs)[:300]
@@ -646,13 +730,12 @@ def prepare(run: Run, laws: list[corpus.Law], defs: list[dict], onto: Ontology, 
             stop.append(why + f" (iteration after iteration, {run.aggregate_failures[key]} times)")
         for law in pairs.get(p, []):
             hold[law] = why + "; held, uncharged, and asked again next iteration"
-    for p in set(sel) - underived:
+    for p in set(load_selection(run)) - set(failed):
         run.aggregate_failures.pop(f"select:{p[0]}::{p[1]}", None)
-    notes = [f"selection: {sum(1 for r in sel.values() if r['representation'] == 'aggregate')} aggregate, "
-             f"{sum(1 for r in sel.values() if r['representation'] == 'not_aggregate')} not an aggregate, "
-             f"{sum(1 for r in sel.values() if r['representation'] == 'gap')} gap, of {len(want)} defined term(s)"]
-    entries, n2, to_user = admit(run, recs, table, defs, onto, out_dir)
-    return notes + n2, to_user, hold, "; ".join(stop)
+    notes.insert(1, f"selection: {sum(1 for r in chosen.values() if r['representation'] == 'aggregate')} aggregate, "
+                    f"{sum(1 for r in chosen.values() if r['representation'] == 'not_aggregate')} not an aggregate, "
+                    f"{sum(1 for r in chosen.values() if r['representation'] == 'gap')} gap, of {len(want)} defined term(s)")
+    return notes, to_user, hold, "; ".join(stop)
 
 
 def claimed_ids(nodes) -> dict[str, set[str]]:

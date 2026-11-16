@@ -571,9 +571,11 @@ class Availability:
     `code(nid, for_law)` decides, in this order, with no caller exempt:
     1. the owner law (from the record, else from the id) is in the ledger and blocked or failed:
        `OPERATOR`; open or returned: `REPLANNING`;
-    2. owner planned or accepted: `FENCED` when the node is fenced; `SUPERSEDED` when it is published
-       but not in the owner's current plan (`nodes`); not published: `UNPUBLISHED` when the plan
-       lists it, else `MISSING`;
+    2. owner planned or accepted: `OPERATOR` when the node is not published and waits on a pending
+       gap (`gap_held`: the nodes of this iteration's plans whose record carries a gap, or that compose
+       one of their own law, each with the gap ids it waits on); `FENCED` when the node is fenced;
+       `SUPERSEDED` when it is published but not in the owner's current plan (`nodes`); not published:
+       `UNPUBLISHED` when the plan lists it, else `MISSING`;
     3. owner outside the ledger (an inherited node, a law the run does not list): `MISSING` when not
        published, `FENCED` when fenced;
     4. its closure: every node it composes and every concept it calls, directly or through others,
@@ -586,8 +588,10 @@ class Availability:
     are not yet published, count as published for a node of their own law (after steps 1–2), never
     for another law's (`UNPUBLISHED`)."""
 
-    def __init__(self, run, *, siblings: dict[str, dict] | None = None, gated=(), entries: dict | None = None):
+    def __init__(self, run, *, siblings: dict[str, dict] | None = None, gated=(), entries: dict | None = None,
+                 gap_held: dict[str, list[str]] | None = None):
         self.run = run
+        self.gap_held = {i for i, ids in (gap_held or {}).items() if ids}
         self.siblings = dict(siblings or {})
         self.gated = set(gated) | set(getattr(run, "gated_ids", None) or ())   # a transaction's records its own gates passed
         if entries is None:
@@ -687,6 +691,8 @@ class Availability:
                 code = OPERATOR
             elif e.state in ("open", "returned"):
                 code = REPLANNING
+            elif rec is None and nid in self.gap_held:
+                code = OPERATOR
             elif nid in self.fenced:
                 code = self._fenced(nid, for_law, seen)
             elif rec is not None and nid not in e.nodes:

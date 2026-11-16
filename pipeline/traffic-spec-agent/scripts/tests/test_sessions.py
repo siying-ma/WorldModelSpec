@@ -152,6 +152,33 @@ class Launches(unittest.TestCase):
         rec = self.go(model="gpt-x", tools=[])
         self.assertEqual(rec["attempt"], 2)
 
+    def test_a_routed_model_name_is_priced_under_its_name_without_the_prefix(self):
+        table = json.loads((Path(__file__).resolve().parents[2] / "config" / "model_prices.json").read_text())
+        self.assertEqual(table["openai/openai/gpt-6.1-sol"], table["gpt-6.1-sol"])
+        self.assertEqual(session.vendor_of("openai:openai/openai/gpt-6.1-sol"), "openai")
+        self.assertEqual(session.vendor_of("openai/openai/gpt-6.1-sol"), "anthropic")      # without the prefix it is not the second vendor
+        self.opts = dataclasses.replace(self.opts, model_prices=Path(__file__).resolve().parents[2] / "config" / "model_prices.json")
+        asked = []
+
+        def fake(prompt, *, model, stream_path, **kw):
+            asked.append(model)
+            stream_path.write_text("")
+            return 0, {"type": "result", "result": "{}", "num_turns": 1, "usage": {"input_tokens": 1000000, "output_tokens": 1000000}}, False
+        openai_runner.run_openai = fake
+        self.go(model="openai:openai/openai/gpt-6.1-sol", tools=[])
+        rows = [json.loads(x) for x in (self.d / "t" / "usage.jsonl").read_text().splitlines()]
+        self.assertEqual(asked, ["openai:openai/openai/gpt-6.1-sol"])
+        self.assertEqual([(r["vendor"], r["model"], r["cost_usd"]) for r in rows if r.get("cost_usd") is not None],
+                         [("openai", "openai/openai/gpt-6.1-sol", 12.0)])
+
+    def test_a_routed_name_without_a_price_launches_nothing(self):
+        self.opts = dataclasses.replace(self.opts, model_prices=Path(__file__).resolve().parents[2] / "config" / "model_prices.json")
+        asked = []
+        openai_runner.run_openai = lambda *a, **k: asked.append(1)
+        with self.assertRaises(budget.BudgetPaused):
+            self.go(model="openai:openai/openai/gpt-unpriced", tools=[])
+        self.assertEqual(asked, [])
+
 
 class Classification(unittest.TestCase):
     def test_a_rejected_rate_limit_event_is_a_refusal(self):

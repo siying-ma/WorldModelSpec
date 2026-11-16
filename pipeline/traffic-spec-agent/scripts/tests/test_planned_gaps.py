@@ -7,7 +7,15 @@ is coded as usual; a node repair's record with a gap goes the same way; a gap ma
 operator already decided is not filed again, and the law goes back to its planner with the decision;
 the coder's two declarations of an unstatable span still file their gap. A candidate change whose
 record carries a gap is refused. A record that withdraws a gap of the ledger (carries its words
-without it) names the operator's decision in `gap_resolutions`, else it is returned."""
+without it) names the operator's decision in `gap_resolutions`, else it is returned.
+
+A law composing a record that carries a pending gap waits on that gap's id from the iteration it is
+filed in, rooted at the provider law, never on a `decision:` token and never as a missing provider;
+a chain of such laws waits on the root's gap; a node composing its own law's gap-carrying record is
+not coded, whatever the order; a law composing only the provider's clean node waits while the
+provider is blocked; a partial decision still waits; after the decision the pin and missing rules
+apply; a stop at any point, and a snapshot without the per-node record, end as the uninterrupted run."""
+import collections
 import copy
 import json
 import tempfile
@@ -15,6 +23,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from harness import loop
 from harness.checks import gate, validate_a
 from harness.model import corpus
 from harness.model.blueprint import Node
@@ -149,6 +158,318 @@ class Registration(rec.Interruptions, unittest.TestCase):
                          ("atom", "no atom carries the words", occurrence("L-23", "shall stop.", 0, 11)))
         self.assertEqual((w.calls[("code", "L_23", 1)], w.calls[("code", "L_23", 2)]), (1, 1))
         self.assertTrue(any("two coding sessions declared the span cannot be stated" in l for l in st["to_user"]))
+
+
+
+# ---------------------------------------------------------------------------------------------
+# Laws that compose a node carrying a gap wait on that gap
+# ---------------------------------------------------------------------------------------------
+A_GAP, A_CLEAN, A_DEP = "L_40_o1", "L_40_o2", "L_40_o3"
+THREE = "shall stop. shall yield. shall wait."
+
+
+def provider() -> list[dict]:
+    """The provider law L-40's two nodes: o1 carries a gap, o2 carries none."""
+    return list(pair("L-40"))
+
+
+def composing(nid: str, law: str, text: str, *targets: str) -> dict:
+    return rec.node(nid, text, law, compositions=list(targets))
+
+
+def dependent(*, clean_only: bool = False) -> rec.World:
+    """L-40's o1 carries a gap and its o2 none; L-41's node composes o1 (or, `clean_only`, o2)."""
+    w = rec.World({"L-40": TEXT, "L-41": "shall wait."})
+    w.plans = {"L-40": provider(), "L-41": [composing("L_41", "L-41", "shall wait.", A_CLEAN if clean_only else A_GAP)]}
+    return w
+
+
+def chain(order: str = "root_first") -> rec.World:
+    """L-41's node composes L-40's gap-carrying o1, and L-42's node composes L-41's; `order` lists the
+    plan's records root first or the last dependent first."""
+    w = rec.World({"L-40": TEXT, "L-41": "shall wait.", "L-42": "shall merge."})
+    plans = {"L-40": provider(), "L-41": [composing("L_41", "L-41", "shall wait.", A_GAP)],
+             "L-42": [composing("L_42", "L-42", "shall merge.", "L_41")]}
+    w.plans = plans if order == "root_first" else dict(reversed(list(plans.items())))
+    return w
+
+
+chain.opts = {"max_iterations": 1}
+
+
+def in_law(order: str) -> rec.World:
+    """L-43's o1 carries a gap, o2 carries none, o3 composes o1; the plan lists them in `order`."""
+    o1, o2 = rec.node("L_43_o1", THREE, "L-43"), rec.node("L_43_o2", THREE, "L-43", span="s2")
+    o3 = rec.node("L_43_o3", THREE, "L-43", compositions=["L_43_o1"], span="s3")
+    o1["gaps"] = [copy.deepcopy(GAP)]
+    seg = [("s1", "shall stop."), ("s2", "shall yield."), ("s3", "shall wait.")]
+    for n, mine in ((o1, "s1"), (o2, "s2"), (o3, "s3")):
+        n["segmentation"] = [{"id": i, "role": "obligation" if i == mine else "sibling", "text": t} for i, t in seg]
+    by = {"o1": o1, "o2": o2, "o3": o3}
+    w = rec.World({"L-43": THREE})
+    w.plans = {"L-43": [by[k] for k in order.split(",")]}
+    return w
+
+
+def two_gaps() -> rec.World:
+    """L-46's only node carries two gaps (G1, G2); L-47's node composes it."""
+    n = rec.node("L_46", TEXT, "L-46")
+    n["segmentation"] = [{"id": "s1", "role": "obligation", "text": "shall stop."}, {"id": "s2", "role": "obligation", "text": "shall yield."}]
+    n["gaps"] = [copy.deepcopy(GAP), {**copy.deepcopy(GAP), "span": "s2"}]
+    w = rec.World({"L-46": TEXT, "L-47": "shall wait."})
+    w.plans = {("L-46", 1): [n], ("L-47", 1): [composing("L_47", "L-47", "shall wait.", "L_46")]}
+    return w
+
+
+def laws(st: dict) -> dict:
+    return {e["law"]: e for e in st["ledger"]}
+
+
+def snapshot(f) -> dict:
+    return json.loads((paths.RESULTS / "r" / "state.json").read_text())
+
+
+def planned_in(w: rec.World, law: str) -> list[int]:
+    return sorted(it for (k, ident, it) in w.calls if k == "plan" and law in ident.split(","))
+
+
+def coded(w: rec.World) -> collections.Counter:
+    return collections.Counter({(i, it): c for (k, i, it), c in w.calls.items() if k == "code"})
+
+
+class GapWaits(unittest.TestCase):
+    """A law composing a node whose record carries a pending gap waits on that gap's id, from the
+    iteration the gap is filed in, rooted at the provider law; the provider law's clean nodes are
+    coded."""
+
+    def assertWaitsOnGap(self, e: dict, gaps: list[str], root: str):
+        self.assertEqual((e["state"], e["gaps"], e["own_gaps"], e["waits_on"], e["attempts"]), ("blocked", gaps, [], [root], 0), e)
+        self.assertFalse([r for r in e["reasons"] if "re-plan" in r or "(missing)" in r], e["reasons"])
+        self.assertFalse([g for g in e["gaps"] if g.startswith("decision:")], e["gaps"])
+
+    def test_a_dependent_waits_on_the_real_gap_in_the_first_iteration(self):
+        w = dependent()
+        with rec.Fixture(w) as f:
+            f.drive(max_iterations=1)
+            first = laws(f.state())
+            f.drive(max_iterations=3)
+            st = f.state()
+        self.assertWaitsOnGap(first["L-41"], ["G1"], "L-40")
+        self.assertEqual((first["L-40"]["state"], first["L-40"]["gaps"], first["L-40"]["own_gaps"]), ("blocked", ["G1"], ["G1"]))
+        self.assertWaitsOnGap(laws(st)["L-41"], ["G1"], "L-40")
+        self.assertEqual(planned_in(w, "L-41"), [1])                        # never sent back to the planner
+        self.assertEqual(coded(w), collections.Counter({(A_CLEAN, 1): 1}))
+        self.assertEqual(sorted(st["accepted_nodes"]), [A_CLEAN])           # the clean sibling is coded and accepted
+
+    def test_a_chain_waits_on_the_roots_gap_whatever_the_plan_order(self):
+        for order in ("root_first", "dependent_first"):
+            with self.subTest(order=order):
+                w = chain(order)
+                with rec.Fixture(w) as f:
+                    f.drive(max_iterations=1)
+                    st = f.state()
+                led = laws(st)
+                self.assertWaitsOnGap(led["L-41"], ["G1"], "L-40")
+                self.assertWaitsOnGap(led["L-42"], ["G1"], "L-40")
+                self.assertEqual(led["L-40"]["own_gaps"], ["G1"])
+                self.assertEqual(coded(w), collections.Counter({(A_CLEAN, 1): 1}))
+
+    def test_a_dependent_of_only_the_clean_sibling_keeps_the_law_level_wait(self):
+        """The clean sibling is coded and published; the law composing it waits while its law is blocked."""
+        w = dependent(clean_only=True)
+        with rec.Fixture(w) as f:
+            f.drive(max_iterations=1)
+            first = laws(f.state())
+            f.drive(max_iterations=3)
+            st = f.state()
+        self.assertWaitsOnGap(first["L-41"], ["G1"], "L-40")
+        self.assertWaitsOnGap(laws(st)["L-41"], ["G1"], "L-40")
+        self.assertEqual(sorted(st["accepted_nodes"]), [A_CLEAN])
+        self.assertEqual(coded(w), collections.Counter({(A_CLEAN, 1): 1}))
+
+    def test_a_node_composing_its_gap_carrying_sibling_is_not_coded_whatever_the_order(self):
+        for order in ("o1,o2,o3", "o3,o2,o1", "o2,o3,o1"):
+            with self.subTest(order=order):
+                w = in_law(order)
+                with rec.Fixture(w) as f:
+                    f.drive(max_iterations=1)
+                    st = f.state()
+                    prog = snapshot(f)["prog"]
+                e = laws(st)["L-43"]
+                self.assertEqual((e["state"], e["gaps"], e["own_gaps"]), ("blocked", ["G1"], ["G1"]))
+                self.assertEqual(coded(w), collections.Counter({("L_43_o2", 1): 1}))
+                self.assertEqual(sorted(st["accepted_nodes"]), ["L_43_o2"])
+                self.assertEqual(prog["gap_routes"]["L-43"]["waits"], {"L_43_o1": ["G1"]})
+                self.assertTrue(any("`L_43_o3`" in r and "L_43_o1" in r for r in e["reasons"]), e["reasons"])
+
+    def test_the_association_is_recorded_per_node_with_its_law_and_pending_gaps(self):
+        w = two_gaps()
+        with rec.Fixture(w) as f:
+            f.drive(max_iterations=1)
+            prog = snapshot(f)["prog"]
+            st = f.state()
+        self.assertEqual(prog["gap_routes"], {"L-46": {"nodes": ["L_46"], "gaps": ["G1", "G2"], "routed": [], "waits": {"L_46": ["G1", "G2"]}}})
+        self.assertWaitsOnGap(laws(st)["L-47"], ["G1", "G2"], "L-46")
+
+    def test_a_partial_decision_still_waits_and_the_last_one_releases(self):
+        w = two_gaps()
+        w.plans[("L-46", 2)] = [rec.node("L_46", TEXT, "L-46")]
+        w.plans[("L-47", 2)] = [composing("L_47", "L-47", "shall wait.", "L_46")]
+        with rec.Fixture(w) as f:
+            f.drive(max_iterations=1)
+            GapLedger(paths.GAPS_DIR).decide("G1", "rejected", "read the words through the halt", resolved_by="particular")
+            f.drive(max_iterations=1)
+            part = laws(f.state())
+            GapLedger(paths.GAPS_DIR).decide("G2", "rejected", "read the words through the yield", resolved_by="particular")
+            f.drive(max_iterations=4)
+            st = f.state()
+        self.assertEqual((part["L-46"]["state"], part["L-46"]["gaps"]), ("blocked", ["G2"]))
+        self.assertWaitsOnGap(part["L-47"], ["G2"], "L-46")
+        led = laws(st)
+        self.assertEqual((led["L-46"]["state"], led["L-47"]["state"]), ("accepted", "accepted"))
+        self.assertEqual(sorted(st["accepted_nodes"]), ["L_46", "L_47"])
+        self.assertEqual(led["L-47"]["attempts"], 0)
+
+    def test_after_the_decision_the_dependent_follows_the_pin_and_missing_rules(self):
+        """The provider's new plan keeps its node, changes it, or withdraws it: the dependent's new plan
+        is pinned on what it was validated beside, or goes back to the planner for a missing target;
+        no pin is refreshed."""
+        kept = rec.node(A_GAP, "shall stop.", "L-40")
+        changed = dict(kept, obligation="o, rewritten")
+        withdrawn = rec.node("L_40_o4", "shall stop.", "L-40")
+        for name, second in (("kept", kept), ("changed", changed), ("withdrawn", withdrawn)):
+            with self.subTest(provider=name):
+                w = dependent()
+                w.plans = {("L-40", 1): provider(), ("L-41", 1): w.plans["L-41"],
+                           ("L-40", 2): [second], ("L-41", 2): w.plans["L-41"], ("L-41", 3): [composing("L_41", "L-41", "shall wait.", "L_40_o4")]}
+                with rec.Fixture(w) as f:
+                    f.drive(max_iterations=1)
+                    GapLedger(paths.GAPS_DIR).decide("G1", "rejected", "read the words through the halt", resolved_by="particular")
+                    f.drive(max_iterations=2)
+                    mid = laws(f.state())
+                    f.drive(max_iterations=4)
+                    st = f.state()
+                b = laws(st)["L-41"]
+                if name == "withdrawn":
+                    self.assertEqual((mid["L-41"]["state"], mid["L-41"]["attempts"]), ("returned", 0))
+                    self.assertTrue(any(f"`{A_GAP}` (pin_mismatch)" in r for r in mid["L-41"]["reasons"]), mid["L-41"]["reasons"])
+                    self.assertEqual(planned_in(w, "L-41"), [1, 2, 3])
+                    self.assertEqual(st["accepted_nodes"]["L_41"]["planned_on"], {"L_40_o4": loop.pin_digest(st["accepted_nodes"]["L_40_o4"])})
+                else:
+                    self.assertEqual(planned_in(w, "L-41"), [1, 2])
+                    self.assertEqual(st["accepted_nodes"]["L_41"]["planned_on"], {A_GAP: loop.pin_digest(st["accepted_nodes"][A_GAP])})
+                self.assertEqual((b["state"], b["attempts"]), ("accepted", 0))
+
+    def test_a_decision_between_validate_and_integrate_clears_the_association(self):
+        """The operator decides the gap while the run is stopped after its filing: the resume strikes it
+        from the association, the provider law goes back to its planner with the decision, and the
+        dependent follows the missing rule; the record that carried the gap is never coded."""
+        stop = validated_commit(dependent)
+        w = dependent()
+        with rec.Fixture(w) as f:
+            w.crash_at = stop
+            f.drive(launches=1, max_iterations=1)
+            GapLedger(paths.GAPS_DIR).decide("G1", "rejected", "read the words through the halt", resolved_by="particular")
+            f.drive(max_iterations=1)
+            prog = snapshot(f)["prog"]
+            led = laws(f.state())
+        self.assertEqual((led["L-40"]["state"], led["L-40"]["gaps"]), ("returned", []))
+        self.assertTrue(any("G1" in r and "rejected" in r for r in led["L-40"]["reasons"]), led["L-40"]["reasons"])
+        self.assertEqual((led["L-41"]["state"], led["L-41"]["gaps"], led["L-41"]["attempts"]), ("returned", [], 0))
+        self.assertTrue(any(f"`{A_GAP}` (missing)" in r for r in led["L-41"]["reasons"]), led["L-41"]["reasons"])
+        self.assertEqual(prog["gap_routes"]["L-40"]["waits"], {A_GAP: []})
+        self.assertEqual(coded(w)[(A_GAP, 1)], 0)
+
+    def test_a_provider_that_does_not_exist_keeps_its_route(self):
+        w = rec.World({"L-41": "shall wait."})
+        w.plans = {("L-41", 1): [composing("L_41", "L-41", "shall wait.", "L_99")]}
+        with rec.Fixture(w) as f:
+            f.drive(max_iterations=1)
+            e = laws(f.state())["L-41"]
+        self.assertEqual((e["state"], e["attempts"]), ("returned", 0))
+        self.assertTrue(any("`L_99` (pin_mismatch)" in r and "re-plan" in r for r in e["reasons"]), e["reasons"])
+
+
+def commits(build) -> list[tuple[int, dict]]:
+    """Each snapshot commit of an uninterrupted run of `build`, with the snapshot it wrote."""
+    w = build()
+    out = []
+    real = w.tick
+
+    def tick(*label):
+        real(*label)
+        if label == ("commit",):
+            out.append((w.ticks, json.loads((paths.RESULTS / "r" / "state.json").read_text())))
+    w.tick = tick
+    with rec.Fixture(w, **getattr(build, "opts", {})) as f:
+        rec.prepare(build, w, f)
+        f.drive()
+    return out
+
+
+def validated_commit(build) -> int:
+    """The tick of the first commit whose iteration is past its validated stage with its gaps filed."""
+    return next(k for k, s in commits(build) if (s.get("prog") or {}).get("gap_routes"))
+
+
+class GapWaitInterruptions(rec.Interruptions, unittest.TestCase):
+    """Stopped after the gaps are filed, before the provider law is blocked, or after it, and resumed:
+    the ledgers, the association, the pins and the coding calls are those of the uninterrupted run."""
+
+    def outcome(self, build, crash_at=None, edit=None) -> tuple[dict, dict, dict, collections.Counter]:
+        w = build()
+        with rec.Fixture(w, **getattr(build, "opts", {})) as f:
+            if crash_at is not None:
+                w.crash_at = crash_at
+                f.drive(launches=1)
+                if edit is not None:
+                    snap = snapshot(f)
+                    edit(snap)
+                    (paths.RESULTS / "r" / "state.json").write_text(json.dumps(snap))
+            f.drive(launches=6)
+            st, prog = f.state(), snapshot(f)["prog"]
+        return st, prog.get("gap_routes"), prog.get("pins"), coded(w)
+
+    def test_three_stops_end_as_the_uninterrupted_run(self):
+        ref = self.outcome(chain)
+        self.assertEqual(ref[1]["L-40"]["waits"], {A_GAP: ["G1"]})
+        self.assertWaitsOnGapLedger(ref[0])
+        seen = commits(chain)
+        filed = next(k for k, s in seen if (s.get("prog") or {}).get("gap_routes"))
+        before = max(k for k, s in seen if (s.get("prog") or {}).get("gap_routes") and laws(s)["L-40"]["state"] == "planned"
+                     and laws(s)["L-41"]["state"] == "blocked")
+        after = next(k for k, s in seen if (s.get("prog") or {}).get("gap_routes") and laws(s)["L-40"]["state"] == "blocked")
+        self.assertLess(filed, after)
+        for name, k in (("after filing", filed), ("before the provider is blocked", before), ("after it is blocked", after)):
+            with self.subTest(stop=name):
+                got = self.outcome(chain, crash_at=k)
+                for key in ref[0]:
+                    if key != "to_user":
+                        self.assertEqual(got[0][key], ref[0][key], f"{key} differs after a stop {name}")
+                self.assertEqual(got[1:], ref[1:], f"the association, pins or coding calls differ after a stop {name}")
+
+    def test_every_stop_ends_as_the_uninterrupted_run(self):
+        self.interrupt_everywhere(chain, never=[("code", "L_41", 1), ("code", "L_42", 1), ("code", A_GAP, 1)])
+
+    def test_an_old_snapshot_without_the_per_node_record_keeps_every_wait(self):
+        """A snapshot written before the per-node record (`waits`) exists: each node the route names
+        waits on every gap the route filed for its law, so no wait is dropped."""
+        ref = self.outcome(chain)
+
+        def strip(snap):
+            for r in snap["prog"]["gap_routes"].values():
+                r.pop("waits")
+        got = self.outcome(chain, crash_at=validated_commit(chain), edit=strip)
+        for key in ref[0]:
+            if key != "to_user":
+                self.assertEqual(got[0][key], ref[0][key], key)
+        self.assertEqual(got[2:], ref[2:])
+        self.assertWaitsOnGapLedger(got[0])
+
+    def assertWaitsOnGapLedger(self, st: dict):
+        led = laws(st)
+        for law in ("L-41", "L-42"):
+            self.assertEqual((led[law]["state"], led[law]["gaps"], led[law]["own_gaps"], led[law]["waits_on"]), ("blocked", ["G1"], [], ["L-40"]))
 
 
 class CandidateRefusal(Base):

@@ -114,6 +114,162 @@ class Precedence(unittest.TestCase):
         self.assertEqual((r["status"], r["candidates"]), ("ambiguous", ["DEF-STA-900A-030", "DEF-STA-900A-031"]))
 
 
+
+def with_chapters(chapters):
+    """CONFIG with the municipal code declaring the fallback code's chapters it reaches."""
+    return {**CONFIG, "codes": {**CONFIG["codes"], "MUNI": {**CONFIG["codes"]["MUNI"], "fallback_chapters": chapters}}}
+
+
+FALLBACK_DEFS = DEFS + [d("DEF-STA-900B-090", "“Stand” means a place reserved for waiting wagons."),
+                        d("DEF-STA-900B-095", "“Halt” means any pause of a wagon.")]
+
+
+def fallback_rows(text, chapters, defs=FALLBACK_DEFS):
+    the_law = law("MUNI-77-40-010", text)
+    config = CONFIG if chapters is None else with_chapters(chapters)
+    return {r["term"]: r for r in D.resolve_table([the_law], defs, config)["laws"][the_law.id]}
+
+
+class FallbackChapters(unittest.TestCase):
+    def test_scope_is_the_declared_chapters(self):
+        r = fallback_rows("Wait at the stand.", ["900A", "900B"])["stand"]
+        self.assertEqual((r["status"], r["definition"], r["step"]), ("resolved", "DEF-STA-900B-090", "fallback_code"))
+        self.assertEqual(fallback_rows("No sled shall pass.", ["900A", "900B"])["sled"]["status"], "unresolved")
+        self.assertEqual(fallback_rows("A courier shall yield.", ["900A", "900B"])["courier"]["status"], "unresolved")
+
+    def test_chapters_are_searched_in_the_declared_order(self):
+        self.assertEqual(fallback_rows("Keep in the lane.", ["900A", "900B"])["lane"]["definition"], "DEF-STA-900A-060")
+        self.assertEqual(fallback_rows("Keep in the lane.", ["900B", "900A"])["lane"]["definition"], "DEF-STA-900B-060")
+
+    def test_ambiguity_stops_the_search_without_skipping_ahead(self):
+        r = fallback_rows("The wagon shall halt.", ["900A", "900B"])["halt"]
+        self.assertEqual((r["status"], r["step"], r["candidates"]), ("ambiguous", "fallback_code", ["DEF-STA-900A-030", "DEF-STA-900A-031"]))
+        r = fallback_rows("The wagon shall halt.", ["900B", "900A"])["halt"]
+        self.assertEqual((r["status"], r["definition"]), ("resolved", "DEF-STA-900B-095"))
+
+    def test_without_the_field_only_the_general_chapter_is_reached(self):
+        self.assertEqual(fallback_rows("Wait at the stand.", None)["stand"]["status"], "unresolved")
+        self.assertEqual(fallback_rows("Keep in the lane.", None)["lane"]["definition"], "DEF-STA-900A-060")
+        self.assertEqual(fallback_rows("A tricar shall yield.", None)["tricar"]["definition"], "DEF-STA-900A-040")
+        self.assertEqual(fallback_rows("A tricar shall yield.", None), fallback_rows("A tricar shall yield.", ["900A"]))
+
+    def test_the_falling_back_codes_own_steps_still_decide_first(self):
+        self.assertEqual(fallback_rows("A wagon shall yield.", ["900A", "900B"])["wagon"]["definition"], "DEF-MUNI-77-02-010")
+
+
+class DeclaredFallbackChaptersAreChecked(unittest.TestCase):
+    """A declared `fallback_chapters` is a non-empty list of distinct non-empty chapter names; the
+    precedence is refused where it is loaded, never read past at resolution."""
+
+    def load(self, config):
+        import json, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "precedence.json"
+            path.write_text(json.dumps(config), encoding="utf-8")
+            return D.load_precedence(path)
+
+    def test_an_absent_field_and_a_declared_list_load(self):
+        self.assertEqual(self.load(CONFIG), CONFIG)
+        self.assertEqual(self.load(with_chapters(["900A", "900B"])), with_chapters(["900A", "900B"]))
+
+    def test_an_empty_list_is_refused_not_read_as_the_general_chapter(self):
+        with self.assertRaisesRegex(D.PrecedenceError, "MUNI.*not a non-empty list"):
+            self.load(with_chapters([]))
+
+    def test_a_value_other_than_a_list_of_distinct_names_is_refused(self):
+        for chapters, why in (("900B", "not a non-empty list"), (None, "not a non-empty list"), ({"900B": 1}, "not a non-empty list"),
+                              (["900A", ""], "not a non-empty chapter name"), (["  "], "not a non-empty chapter name"),
+                              (["900A", 900], "not a non-empty chapter name"), (["900A", None], "not a non-empty chapter name"),
+                              (["900B", "900A", "900B"], "names a chapter twice")):
+            with self.subTest(chapters=chapters), self.assertRaisesRegex(D.PrecedenceError, why):
+                self.load(with_chapters(chapters))
+
+    def test_chapters_on_a_code_without_a_fallback_are_refused(self):
+        config = {**CONFIG, "codes": {**CONFIG["codes"], "STA": {**CONFIG["codes"]["STA"], "fallback_chapters": ["900B"]}}}
+        with self.assertRaisesRegex(D.PrecedenceError, "code `STA` declares `fallback_chapters` .* but no `fallback`"):
+            self.load(config)
+
+    def test_resolution_reads_an_empty_list_as_no_chapter(self):
+        self.assertEqual(fallback_rows("Keep in the lane.", [])["lane"]["status"], "unresolved")
+
+    def test_the_doctor_fails_on_a_refused_precedence(self):
+        import json, tempfile
+        from unittest import mock
+        from scripts.diagnostics import doctor
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "laws" / "example" / "train").mkdir(parents=True)
+            (repo / "laws" / "example" / "train" / "laws.jsonl").write_text("", encoding="utf-8")
+            path = repo / "precedence.json"
+            path.write_text(json.dumps(with_chapters([])), encoding="utf-8")
+            real = D.load_precedence
+            with mock.patch.object(D, "load_precedence", lambda p=None: real(p or path)):
+                r = doctor.Doctor(repo, repo).definition_resolution_report()
+        self.assertEqual(r.status, doctor.FAIL)
+        self.assertIn("not a non-empty list", r.detail)
+
+    def test_the_loop_refuses_a_launch_on_a_refused_precedence(self):
+        import json, tempfile
+        from unittest import mock
+        from harness import loop
+        from harness.store import paths
+        from harness.store.state import Options
+        from scripts.tests.test_review_routing import ONTO
+        from scripts.tests.test_recovery import legacy_run
+        outcomes = []
+        for chapters in ([], ["900A", "900B"]):
+            with tempfile.TemporaryDirectory() as t:
+                t = Path(t)
+                (t / "reading.json").write_text(json.dumps({"params": [], "aggregates": []}))
+                (t / "laws.jsonl").write_text("")
+                (t / "definitions.jsonl").write_text("")
+                (t / "precedence.json").write_text(json.dumps(with_chapters(chapters)))
+                opts = Options(run_id="precedence_start", laws=t / "laws.jsonl", ontology=ONTO.path, reading=t / "reading.json",
+                               model="m", definition_precedence=str(t / "precedence.json"), dry_run=True)
+                layout = {**paths.library_layout(paths.LIBRARY), "RESULTS": t / "results"}
+                with mock.patch.multiple(paths, **layout), mock.patch("harness.store.owner.acquire", lambda *a, **k: None), \
+                        mock.patch("harness.tools.handoff.check_on_launch", lambda run: None), \
+                        mock.patch("harness.phases.candidate.recover", lambda run: None), \
+                        mock.patch.object(loop, "gap_gate", lambda run, opts: None), \
+                        mock.patch.object(loop, "doctor_ok", lambda: (_ for _ in ()).throw(AssertionError("started"))):
+                    try:
+                        legacy_run(opts)
+                        loop._run_loop(opts)
+                        outcomes.append("returned")
+                    except (SystemExit, AssertionError) as e:
+                        outcomes.append(str(e))
+        self.assertRegex(outcomes[0], r"^\[loop\] .*precedence\.json: code `MUNI` declares `fallback_chapters` \[\], not a non-empty list")
+        self.assertEqual(outcomes[1], "started")
+
+
+class DeclaredPrecedenceOnTheTrainingCorpus(unittest.TestCase):
+    """On the posted training corpus, the declared fallback chapters change exactly the uses that had
+    no applicable definition and whose candidates lie in a declared chapter of the fallback code:
+    each now resolves there at `fallback_code`, and every other row is unchanged."""
+
+    def test_declared_fallback_chapters_change_only_the_uses_they_reach(self):
+        laws_file = Path(D.__file__).resolve().parents[2] / "laws" / "example" / "train" / "laws.jsonl"
+        laws, defs, config = corpus.load_laws(laws_file), corpus.load_definitions(laws_file), D.load_precedence()
+        declared = {code: (c["fallback"], c["fallback_chapters"]) for code, c in config["codes"].items() if c.get("fallback_chapters")}
+        self.assertTrue(declared)
+        without = {**config, "codes": {code: {k: v for k, v in c.items() if k != "fallback_chapters"}
+                                       for code, c in config["codes"].items()}}
+        before, after = (D.resolve_table(laws, defs, cfg)["laws"] for cfg in (without, config))
+        reached = 0
+        for law_id, rows_after in after.items():
+            where = D.place_of(law_id, config)
+            for old, new in zip(before[law_id], rows_after, strict=True):
+                if old == new:
+                    continue
+                fb, chapters = declared[where.code]
+                places = [D.place_of(c, config) for c in old["candidates"]]
+                self.assertEqual(old["status"], "unresolved", (law_id, old["term"]))
+                self.assertTrue(places and all((p.code, p.chapter) in {(fb, ch) for ch in chapters} for p in places))
+                self.assertEqual((new["status"], new["step"]), ("resolved", "fallback_code"), (law_id, new["term"]))
+                self.assertIn(new["definition"], old["candidates"])
+                reached += 1
+        self.assertGreater(reached, 0)
+
 class DefinitionDependencies(unittest.TestCase):
     def test_a_defined_term_inside_a_definition_resolves_from_that_definitions_place(self):
         table = D.resolve_table([law("STA-900B-100", "The operator shall halt.")], DEFS, CONFIG)

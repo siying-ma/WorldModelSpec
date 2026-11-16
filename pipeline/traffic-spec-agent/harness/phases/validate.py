@@ -131,7 +131,7 @@ def answer_digest(run: Run, prompt: str, model: str | None = None, effort: str |
 
 def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model: str | None = None,
              effort: str | None = None, usage_label: str | None = None, role: str = "judge",
-             shared: bool = False) -> tuple[dict | None, list[str]]:
+             shared: bool = False, keep_defective: bool = False) -> tuple[dict | None, list[str]]:
     """One tool-less session: its JSON and the schema defects that remain. `check(parsed)` names the
     defects of an answer; an answer with defects is asked for once more with the defects appended,
     and the second answer stands whole, with whatever defects it keeps (the caller decides what
@@ -142,9 +142,13 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
     in the same directory on the same inputs takes it back without a call: a review resumed after a
     pause pays for no judgment it already has. With `shared`, an answer kept in the same directory
     under another label on the same digest is taken back too (and kept under this label), so one
-    complete input is answered once however many items ask it. `usage_label` names the session's rows in
+    complete input is answered once however many items ask it. With `keep_defective`, the answer
+    that stands after the re-ask is kept too, with its defects (a silence as no answer), and taken
+    back with them on the same inputs, so a resumed caller neither pays for nor counts that answer
+    again. `usage_label` names the session's rows in
     `usage.jsonl` (its subject included), `label` its files; `role` sets a Claude session's cap
-    (`session.ROLES`: a judge's unless the caller plans). In a dry run `(None, [])`."""
+    (`session.ROLES`: a judge's unless the caller plans) and its deadline: a working session has the
+    run's `session_timeout`, a judge 900 s. In a dry run `(None, [])`."""
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{label}_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
@@ -157,16 +161,20 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
             kept = json.loads(f.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
-        if kept.get("digest") == digest and isinstance(kept.get("answer"), dict) and not (check and list(check(kept["answer"]))):
+        if f == kept_file and keep_defective and kept.get("digest") == digest and "defects" in kept:
+            return kept["answer"], list(kept["defects"])
+        if kept.get("digest") == digest and isinstance(kept.get("answer"), dict) and not kept.get("defects") \
+                and not (check and list(check(kept["answer"]))):
             if f != kept_file:
                 jsonl.write_atomic(kept_file, json.dumps({"digest": digest, "answer": kept["answer"], "taken_from": f.name},
                                                          ensure_ascii=False, indent=1))
             return kept["answer"], []
     ask = prompt
     parsed, errs = None, []
+    timeout = run.opts.session_timeout if role == "work" else 900
     for attempt in ("", "_again"):
         record = session.run(ask, cwd=out_dir, out_dir=out_dir, opts=run.opts, max_turns=6,
-                             effort=effort or run.opts.judge_effort, role=role, label=label + attempt, timeout=900,
+                             effort=effort or run.opts.judge_effort, role=role, label=label + attempt, timeout=timeout,
                              allow=[], tools=[], model=model or run.opts.model,
                              usage_label=(usage_label + attempt) if usage_label else None)
         text = ((record.get("result") or {}).get("result", "") or "")
@@ -181,7 +189,9 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
                 return parsed, []
         ask = prompt + "\n\n## Defects of your previous answer\n\nAnswer again, in the same schema, without these defects:\n" + "".join(f"- {e}\n" for e in errs)
     if parsed is None:
-        return None, [f"{label}: no JSON object in the answer, twice"]
+        errs = [f"{label}: no JSON object in the answer, twice"]
+    if keep_defective:
+        jsonl.write_atomic(kept_file, json.dumps({"digest": digest, "answer": parsed, "defects": errs}, ensure_ascii=False, indent=1))
     return parsed, errs
 
 
