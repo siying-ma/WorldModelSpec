@@ -2,7 +2,10 @@
 # Start the 221-law run: the generation stage only, over every law of the training split, from a fresh clone of
 # remote/full-train-generation at its tip. It first runs launch/full221/preflight.sh (nothing is spent unless every
 # check passes), then starts the launcher in the background and returns. The run's settings are written below and
-# kept by every resume; none is taken from the shell.
+# kept by every resume; none is taken from the shell except REVIEWER_MODEL and VERIFIER_MODEL, which an environment
+# value overrides at this launch only. An override naming a model through a gateway carries the `openai:` prefix
+# (e.g. REVIEWER_MODEL=openai:openai/openai/gpt-6.1-sol), which routes it to the OpenAI runner; its price is the row
+# of config/model_prices.json for the name without the prefix.
 # Run from pipeline/traffic-spec-agent:  bash launch/full221/launch.sh      (RUN_ID may be set; default full221-<MMDD-HHMM>)
 set -euo pipefail
 export RUN_ID=${RUN_ID:-full221-$(date +%m%d-%H%M)}
@@ -13,8 +16,10 @@ export ONTOLOGY=ontology/ATOMS_train.md READING=library/TrafficSpec/Readings/las
 export ACQUISITION_PROFILE=carla_scene_graph STAGE=generation
 export WORKERS=16 PLAN_BATCH=8 GATE_BUDGET=6       # 16 Claude sessions at once
 export MODEL='claude-opus-5-5[1m]' PLAN_EFFORT=high CODE_EFFORT=high JUDGE_EFFORT=medium         # planning, coding, judging
-export REVIEWER_MODEL=gpt-6.1-sol REVIEW_EFFORT=high                                               # concept reviewer
-export VERIFIER_MODEL=gpt-6.1-sol VERIFIER_EFFORT=high                                             # aggregate verifier
+export REVIEWER_MODEL="${REVIEWER_MODEL:-gpt-6.1-sol}"                                            # concept reviewer
+export REVIEW_EFFORT=high
+export VERIFIER_MODEL="${VERIFIER_MODEL:-gpt-6.1-sol}"                                            # aggregate verifier
+export VERIFIER_EFFORT=high
 export CLAUDE_BUDGET=1500 OPENAI_BUDGET=30 TOTAL_BUDGET=1530 VERIFIER_CAP=20                       # run-wide limits, USD
 export SESSION_CAP=20 REPAIR_CAP=8 JUDGE_CAP=2      # per-session Claude limits, USD
 export LAUNCHES=40                                   # iterations, one launch each, until the run ends by itself (a safety bound only)

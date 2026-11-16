@@ -40,6 +40,17 @@ checkpoint to verify the run branch and to resume after a failed push. Do not cl
 
 The limits stop the run before a session that would not fit; they are not raised by the operator.
 
+The reviewer and verifier models are the only settings taken from the shell, at launch. To name them through a
+gateway, for example:
+
+```bash
+REVIEWER_MODEL=openai:openai/openai/gpt-6.1-sol VERIFIER_MODEL=openai:openai/openai/gpt-6.1-sol bash launch/full221/launch.sh
+```
+
+Each may be set independently (an unset one stays `gpt-6.1-sol`); a gateway name needs the `openai:` prefix, its
+price row in `config/model_prices.json` is keyed by the name without the prefix, and a resume keeps the run's saved
+models (`resume.sh` refuses either variable set in the shell).
+
 ## Progress and resuming
 
 The job runs by itself until generation has nothing left to do; no step needs you in between. The launcher runs

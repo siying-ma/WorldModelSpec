@@ -33,7 +33,7 @@ from unittest import mock
 from harness import loop
 from harness.phases import label_check
 from harness.phases import label_repair as lr
-from harness.store import jsonl, paths
+from harness.store import deferred_gaps, jsonl, paths
 from harness.store.state import Options, Run
 from harness.tools import handoff
 from scripts.tests.test_recovery import PATH_NAMES, Fixture, World, concept, node
@@ -1666,6 +1666,8 @@ class PendingRepairAcrossARealFileList(unittest.TestCase):
                 (run.dir / "options.json").write_text(json.dumps({**{k: (str(v) if isinstance(v, Path) else v) for k, v in asdict(run.opts).items()},
                                                                   "base_reading": str(run.opts.reading), "reading": str(run.reading_file),
                                                                   "semantic": loop.semantic_inputs(run.opts), "repo_roots": [str(world)]}))
+                deferred_gaps.fix(run.dir, deferred_gaps.bind(deferred_gaps.load(), {l.id: l.text for l in corpus.load_laws(run.opts.laws)}),
+                                  deferred_gaps.digest())                   # as the run's start fixes them under that contract
                 label_check.freeze(run.dir)
                 handoff.export("r", source_baseline="c0ffee")
                 listed = (run.dir / "handoff" / "files.txt").read_text().split()

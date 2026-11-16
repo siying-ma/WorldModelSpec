@@ -685,7 +685,9 @@ from the OpenAI platform is needed. Store it once with `bash scripts/setup_revie
 `~/.config/traffic-spec/openai.env`, mode 600, and makes one test call); the launcher sources that
 file (or `OPENAI_KEY_FILE`). The model is a name the API accepts, chosen with `REVIEWER_MODEL` (and
 `VERIFIER_MODEL` for the aggregate verifier, by default the same); it must have a row in
-`config/model_prices.json`, keyed by exactly that name, or no call is made. The key is removed from
+`config/model_prices.json`, keyed by exactly that name, or no call is made. A name that does not
+begin `gpt-` or an o-series prefix (a routed name such as `openai/openai/gpt-6.1-sol`) is given with
+the `openai:` prefix (`openai:openai/openai/gpt-6.1-sol`), which its price key omits. The key is removed from
 every Claude session's environment.
 
 ### Start the remote generation
@@ -957,12 +959,19 @@ left as it is); `summary.json` records it, and the command exits non-zero unless
 mechanically (`harness/model/definitions.py`) from the run's `laws.jsonl` and the `definitions.jsonl`
 beside it, by the operator's declared precedence (`config/definition_precedence.json`, option
 `--definition_precedence`): a definition the law cites inline or a section-only one of its section,
-then its own chapter, then its code's general chapter, then the general chapter of the code it falls
-back to; the table is `results/<run>/definition_resolution.json`, and the doctor reports the
-training laws' unresolved and ambiguous terms. The same precedence resolves defined terms used
+then its own chapter, then its code's general chapter, then the code it falls back to, in the
+chapters it declares for that code (`fallback_chapters`, in order, a later chapter searched only when
+the one before holds no candidate) or, when the field is absent, that code's general chapter (a
+declared `fallback_chapters` is a non-empty list of distinct chapter names on a code that names a
+`fallback`; an empty list, any other value, or chapters declared on a code without a fallback are
+refused by the loop before a run starts and failed by the doctor); the table is
+`results/<run>/definition_resolution.json`, and the doctor reports the training laws' unresolved
+and ambiguous terms. The same precedence resolves defined terms used
 inside each reached definition from that definition's own place; this finite dependency closure is
-shown to planning and judgment and is part of every aggregate's invalidation digest. Before any law is planned, one planner session
-(`prompts/plan_aggregates.md`) marks each (definition, term) `aggregate`, `not_aggregate` or `gap`
+shown to planning and judgment and is part of every aggregate's invalidation digest. Before any law is planned, planner sessions
+(`prompts/plan_aggregates.md`), one per batch of whole definitions of at most 20 pairs (a larger
+definition alone; membership fixed by the table, each batch's answer kept on its full prompt so a
+resume asks no answered batch again, its failures counted once all batches are through), mark each (definition, term) `aggregate`, `not_aggregate` or `gap`
 (`aggregate_selection.jsonl`) and classifies every road-user class under each aggregate as included,
 excluded, covered (admitted only as members of named included classes, so its label adds no
 membership evidence) or unresolved, with quotes; one second-vendor session per aggregate

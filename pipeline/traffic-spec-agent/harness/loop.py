@@ -21,7 +21,7 @@ from .phases import plan as plan_phase, review as review_phase, validate as vali
 from .phases import aggregate as aggregate_phase
 from .model import definitions as definitions_mod
 from .store.ledger import TERMINAL, JUDGE_STAGES
-from .store import jsonl, stages
+from .store import deferred_gaps, jsonl, stages
 from .store.paths import run_is_new
 from .store.budget import BudgetPaused
 from .model.reading import Reading
@@ -568,14 +568,18 @@ def aggregate_claimants(run: Run, node_ledger: NodeLedger, prog: dict) -> dict[s
     return {aid: sorted(ids) for aid, ids in out.items()}
 
 
-def unavailable_roots(ledger: Ledger, waits: dict) -> dict[str, set[str]]:
+def unavailable_roots(ledger: Ledger, waits: dict, gap_laws=frozenset()) -> dict[str, set[str]]:
     """The laws that cannot progress without the operator, each with the root laws it waits on: a law
-    closed as failed, or blocked on a token of its own, is its own root; a law blocked only on what it
-    inherited from the laws it waits on takes their roots (`Ledger.roots`), so a token always names a
-    root, never a law between; a law whose current waits (`waits`: law ↦ the laws it waits on — a
-    waiting law's named laws, a planned law's held nodes' composed laws) are all such laws is one too,
-    with their roots. The least such set, so a cycle of waits reaching no root is none."""
-    roots = {l: (ledger.roots(l) or {l}) for l, e in ledger.entries.items() if e.state in ("blocked", "failed")}
+    closed as failed, or blocked on a token of its own, is its own root, and so is a planned law of
+    `gap_laws` (its gap-carrying records wait on gaps filed in this iteration, before the law is
+    blocked on them); a law blocked only on what it inherited from the laws it waits on takes their
+    roots (`Ledger.roots`), so a token always names a root, never a law between; a law whose current
+    waits (`waits`: law ↦ the laws it waits on — a waiting law's named laws, a planned law's held
+    nodes' composed laws) are all such laws is one too, with their roots. The least such set, so a
+    cycle of waits reaching no root is none."""
+    held = {l for l in gap_laws if l in ledger.entries and ledger.entries[l].state == "planned"}
+    roots = {l: (ledger.roots(l, held) or {l}) for l, e in ledger.entries.items() if e.state in ("blocked", "failed")}
+    roots.update({l: {l} for l in held})
     changed = True
     while changed:
         changed = False
@@ -624,18 +628,68 @@ def unavailable_rules(nodes, ledger: Ledger, law_of_id, roots: dict[str, set[str
     return out
 
 
+def gap_waits(routes: dict, nodes: list[Node]) -> dict[str, list[str]]:
+    """The nodes of an iteration's plans that wait on gaps, each with the pending gap ids it waits on,
+    from the iteration's gap routes (law ↦ the nodes whose record carries a gap, the law's pending gaps,
+    and `waits`, each such node's own pending gaps): every node whose record carries a gap, and every
+    unpublished node of `nodes` that composes one of its own law, directly or through another, with the
+    gaps of those it reaches. A route without `waits` (a snapshot written before it) gives each node it
+    names every pending gap of its law, so no wait is lost. A node whose gaps were all decided is kept
+    with none: it is still not coded, and no dependent waits on it."""
+    out: dict[str, list[str]] = {}
+    for r in routes.values():
+        waits = r.get("waits")
+        for i in r["nodes"]:
+            out[i] = list(waits.get(i, [])) if isinstance(waits, dict) else list(r["gaps"])
+    carriers = set(out)
+    law_of = {**{i: nodeid.law_of(i)[0] for i in carriers}, **{n.id: n.law for n in nodes}}
+    changed = True
+    while changed:
+        changed = False
+        for n in nodes:
+            hit = [str(c["rule"]) for c in n.dependencies() if c.get("rule") in out and law_of.get(c["rule"]) == n.law]
+            if n.id in carriers or not hit:
+                continue
+            ids = sorted({g for h in hit for g in out[h]} | set(out.get(n.id, [])))
+            if out.get(n.id) != ids:
+                out[n.id] = ids
+                changed = True
+    return out
+
+
+def release_decided_gaps(routes: dict, decided: dict[str, tuple[str, str]]) -> None:
+    """Gaps the operator decided while an iteration was stopped between their filing and its law's
+    block leave its routes: struck from the law's pending gaps and from each node's, the decision added
+    to the law's routed lines, as for a gap found decided when it is filed. A law left with no pending
+    gap then goes back to its planner with the decisions, and its dependents are no longer held on it."""
+    for law, r in routes.items():
+        hit = [g for g in r["gaps"] if g in decided]
+        if not hit:
+            continue
+        r["gaps"] = [g for g in r["gaps"] if g not in decided]
+        if isinstance(r.get("waits"), dict):
+            r["waits"] = {i: [g for g in ids if g not in decided] for i, ids in r["waits"].items()}
+        r["routed"] = r["routed"] + [f"gap {g}, filed for `{law}`, which the operator {decided[g][0]}: {decided[g][1]}" for g in hit]
+
+
 def hold_on_unavailable(ledger: Ledger, law: str, rules: dict[str, set[str]], reasons: list[str], who: str,
-                        notes: list[str], to_user: list[str], run_id: str) -> None:
+                        notes: list[str], to_user: list[str], run_id: str, gap_tokens: dict[str, list[str]] | None = None) -> None:
     """A node of `law` composes `rules`, whose laws wait for the operator (rule ↦ root laws): the
     law is not coded and no attempt is counted; its record, the composition and its map stand as
-    planned. It is blocked on what its roots wait on — a blocked root's gaps or decision tokens, and
-    `decision:<root>` for a root closed as failed, which reopening that law decides — and reopens with
-    them."""
+    planned. It is blocked on what its roots wait on — a blocked root's gaps or decision tokens, a
+    planned root's gaps filed in this iteration (`gap_tokens`: law ↦ the pending gap ids its law is
+    blocked on once its other nodes of the iteration are integrated), and `decision:<root>` for a root
+    closed as failed, which reopening that law decides — and reopens with them."""
     roots = set().union(*rules.values())
     tokens: set[str] = set()
     for r in sorted(roots):
         e = ledger.entries[r]
-        tokens |= set(e.gaps) if e.state == "blocked" and e.gaps else {f"decision:{r}"}
+        if e.state == "blocked" and e.gaps:
+            tokens |= set(e.gaps)
+        elif e.state == "planned" and (gap_tokens or {}).get(r):
+            tokens |= set(gap_tokens[r])
+        else:
+            tokens.add(f"decision:{r}")
     why = (f"composes {sorted(rules)}, whose law(s) wait for the operator ({', '.join(f'`{r}` {ledger.entries[r].state}' for r in sorted(roots))}): "
            f"the composition stands, and this law waits on {sorted(tokens)}; no attempt counted")
     ledger.block(law, sorted(tokens), [why] + [r for r in reasons if r], inherited=True)
@@ -680,11 +734,13 @@ def describe_codes(codes: dict[str, str]) -> str:
     return "composes or calls " + ", ".join(f"`{d}` ({c})" for d, c in sorted(codes.items())) + ", not usable for building"
 
 
-def operator_roots(run: Run, ledger: Ledger, ident: str, code: str, who: str, to_user: list[str]) -> set[str]:
+def operator_roots(run: Run, ledger: Ledger, ident: str, code: str, who: str, to_user: list[str],
+                   gap_laws=frozenset()) -> set[str]:
     """The root laws a dependency whose route is `operator` waits on: the laws whose own blocks hold
-    the record its code ends at (`unavailable_roots`). A fenced node whose law is not yet held puts
-    that law on `decision:<law>` first, with the fence's evidence. A record of no law of the ledger
-    (an inherited node) gives no root: the law of `who` is then its own root."""
+    the record its code ends at (`unavailable_roots`, with the planned laws of `gap_laws` as roots). A
+    fenced node whose law is not yet held puts that law on `decision:<law>` first, with the fence's
+    evidence. A record of no law of the ledger (an inherited node) gives no root: the law of `who` is
+    then its own root."""
     ids, last = code_chain(ident, code)
     t = ids[-1]
     rec = run.all_nodes().get(t)
@@ -699,21 +755,22 @@ def operator_roots(run: Run, ledger: Ledger, ident: str, code: str, who: str, to
         ledger.revoke(owner, [why])
         ledger.block(owner, [f"decision:{owner}"], [why])
         to_user.append(f"`{owner}` held for you: {why} (python -m harness reopen {run.opts.run_id} --laws {owner})")
-    return set(unavailable_roots(ledger, {}).get(owner, {owner}))
+    return set(unavailable_roots(ledger, {}, gap_laws).get(owner, {owner}))
 
 
 def route_unusable(run: Run, ledger: Ledger, law: str, codes: dict[str, str], who: str, notes: list[str], to_user: list[str],
-                   run_id: str) -> str:
+                   run_id: str, gap_tokens: dict[str, list[str]] | None = None) -> str:
     """Route a record of `law` whose dependencies `codes` (id ↦ code) are not all usable, uncharged:
-    one waiting for the operator holds the law on its roots' tokens (`hold_on_unavailable`); one the
-    planner ends returns the law to the planner; otherwise the record waits. Returns the route taken."""
+    one waiting for the operator holds the law on its roots' tokens (`hold_on_unavailable`, a planned
+    root's gaps filed in this iteration given by `gap_tokens`); one the planner ends returns the law to
+    the planner; otherwise the record waits. Returns the route taken."""
     routes = {d: code_route(d, c) for d, c in codes.items()}
     operator = {d: c for d, c in codes.items() if routes[d] == "operator"}
     if operator:
         rules = {}
         for d, c in sorted(operator.items()):
-            rules[d] = operator_roots(run, ledger, d, c, who, to_user) or {law}
-        hold_on_unavailable(ledger, law, rules, [describe_codes(operator)], who, notes, to_user, run_id)
+            rules[d] = operator_roots(run, ledger, d, c, who, to_user, set(gap_tokens or {})) or {law}
+        hold_on_unavailable(ledger, law, rules, [describe_codes(operator)], who, notes, to_user, run_id, gap_tokens)
         return "operator"
     planner = {d: c for d, c in codes.items() if routes[d] == "planner"}
     if planner:
@@ -768,18 +825,21 @@ def active_plan_records(run: Run, node_ledger: NodeLedger | None = None, extra: 
     return out
 
 
-def provider_record(run: Run, entries: dict, d: str, plan: dict[str, dict]) -> tuple[str, dict | None]:
+def provider_record(run: Run, entries: dict, d: str, plan: dict[str, dict],
+                    gap_held: dict[str, list[str]] | None = None) -> tuple[str, dict | None]:
     """The current authoritative record of a node another law's record composes, for its pin: the
     published record, else (its law planned or accepted) the active plan record; `replanning` while its
     law is open or returned (a pin is checked once the new plan is set); `operator` while its law is
-    blocked or failed (no pin is read: the availability rule holds the dependent for the operator);
-    `missing` otherwise."""
+    blocked or failed, or while it waits on a pending gap (`gap_held`, node ↦ gap ids; no pin is read:
+    the availability rule holds the dependent for the operator); `missing` otherwise."""
     rec = run.all_nodes().get(d)
     if rec is not None:
         return "published", rec
     e = entries.get(nodeid.law_of(d)[0])
     if e is not None and e.state in ("blocked", "failed"):
         return "operator", None                         # its law waits for the operator: the availability rule routes it
+    if e is not None and e.state == "planned" and (gap_held or {}).get(d):
+        return "operator", None
     if e is not None and e.state in ("open", "returned"):
         return "replanning", None
     if d in plan and e is not None and e.state in ("planned", "accepted"):
@@ -820,15 +880,16 @@ def write_pins(run: Run, entries: dict, nodes: list[Node], plan: dict[str, dict]
     return out
 
 
-def pin_codes(run: Run, entries: dict, n: Node, plan: dict[str, dict]) -> dict[str, str]:
+def pin_codes(run: Run, entries: dict, n: Node, plan: dict[str, dict], gap_held: dict[str, list[str]] | None = None) -> dict[str, str]:
     """The other laws' nodes a record composes whose pin does not hold now, with their codes: no pin
     for it (`pin_mismatch`, a defect, never read as unchanged), its law planned again (`replanning`:
     the pin is checked once the new plan is set), not found (`missing`), or a current record other than
-    the one pinned (`pin_mismatch`). Empty when every pin holds."""
+    the one pinned (`pin_mismatch`). A node waiting for the operator (`provider_record`, `gap_held`
+    included) is left to the availability rule. Empty when every pin holds."""
     from .store.state import MISSING, PIN_MISMATCH, REPLANNING
     pins, out = n.raw.get("planned_on"), {}
     for d in cross_law_targets(n):
-        status, rec = provider_record(run, entries, d, plan)
+        status, rec = provider_record(run, entries, d, plan, gap_held)
         if status == "operator":
             continue
         if status == "replanning":
@@ -947,8 +1008,8 @@ def plan_batches(plannable: list, ledger: Ledger, by_id: dict[str, corpus.Law], 
 def gap_gate(run: Run, opts: Options) -> list[tuple[str, str]]:
     """Before a launch touches anything: a new run (no state yet) starts a round, which refuses while
     a gap of the last one is open and archives the resolved ones with the runs that proposed them;
-    a training run, new or resumed, refuses a ledger row that names a held-out law. Returns the
-    gaps archived."""
+    a training run, new or resumed, refuses a ledger row, or a declared carried-over gap
+    (`deferred_gaps`), that names a held-out law. Returns the gaps archived."""
     gaps = GapLedger(paths.GAPS_DIR)
     moved = gaps.start_round(paths.RESULTS) if not run.state_file.exists() else []
     if moved:
@@ -957,6 +1018,7 @@ def gap_gate(run: Run, opts: Options) -> list[tuple[str, str]]:
     if opts.mode == "train":
         held = held_out_law_ids()
         named = [f"{r['id']}: {sorted(set(r.get('law_refs', [])) & held)}" for r in gaps.rows if set(r.get("law_refs", [])) & held]
+        named += [f"{deferred_gaps.identity(d)} (declared): ['{d['law']}']" for d in deferred_gaps.load() if d["law"] in held]
         if named:
             raise SystemExit("[loop] the gap ledger names held-out laws, which a training run must not see: " + "; ".join(named[:6]))
     return moved
@@ -1306,7 +1368,8 @@ def semantic_inputs(opts: Options) -> dict:
     prompts, the generated prompt text that does not depend on the run's state (the formula and
     concept language, the tables and builders, the trace format, the fixed evidence block), as
     rendered, the base reading's reviewed values (a proposal awaiting the operator's review is a run's
-    own state, never a semantic input), the acquisition profile a run names with the parameter it
+    own state, never a semantic input), the pending gaps the operator carries over from earlier runs
+    (`deferred_gaps`, read whole: a missing or unreadable list stops), the acquisition profile a run names with the parameter it
     resolves to, and a base run's accepted records. A resume against another value of any of them, or
     without one the run was started with, would mix two runs, and stops before any record is rewritten.
     The digests do not cover the whole harness: the run version is what refuses a run another version
@@ -1327,7 +1390,7 @@ def semantic_inputs(opts: Options) -> dict:
            "ontology": digest([Path(opts.ontology)]),
            "core": digest(list(paths.CORE.rglob("*.lean"))),
            "prompts": digest(list((paths.REPO / "prompts").glob("*.md"))),
-           "base_reading": reviewed_reading(Path(opts.reading)), "run_version": RUN_VERSION}
+           "base_reading": reviewed_reading(Path(opts.reading)), "deferred_gaps": deferred_gaps.digest(), "run_version": RUN_VERSION}
     out["generated_prompts"] = generated_prompts_digest(out["core"])
     if getattr(opts, "acquisition_profile", None):        # a run that names no profile reads no `heading_since`
         out["acquisition"] = acquisition.standard_digest(opts.acquisition_profile)
@@ -1500,8 +1563,8 @@ def stage_launch_refusal(stage: dict, opts: Options) -> str | None:
 def input_refusal(run: Run, opts: Options) -> None:
     """Refuse a launch on the inputs it names, read only, before anything of the run is written: the
     ontology must carry the active Core's atoms, the base reading must be read whole and, before the
-    run has its own copy, declare no aggregate, and a named acquisition profile must resolve to a
-    reviewed parameter of the base reading."""
+    run has its own copy, declare no aggregate, the definition precedence must be read whole, and a
+    named acquisition profile must resolve to a reviewed parameter of the base reading."""
     from .lean import surface                              # the ontology the run names is the one the active Core carries
     core_ids, onto_ids = set(surface.core_atom_ids()), set(ontology.load(opts.ontology).atom_ids)
     if core_ids != onto_ids:
@@ -1515,6 +1578,10 @@ def input_refusal(run: Run, opts: Options) -> None:
     bad = reading_defects(base)                             # a reading is read whole, or nothing is evaluated on it
     if bad:
         raise SystemExit(f"[loop] the reading {opts.reading} cannot be read whole: " + "; ".join(bad[:6]))
+    try:
+        definitions_mod.load_precedence(Path(opts.definition_precedence or definitions_mod.DEFAULT_PRECEDENCE))
+    except definitions_mod.PrecedenceError as e:
+        raise SystemExit(f"[loop] {e}") from None
     if opts.acquisition_profile:                            # a named standard resolves to a reviewed value before any session
         try:
             step = acquisition.step_parameter(opts.acquisition_profile)
@@ -1589,6 +1656,18 @@ def _run_loop(opts: Options) -> dict:
             raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: its reading {run.reading_file.name} holds reviewed values "
                              "other than those its saved semantic inputs fixed; restore its checkpoint, or start a new run id "
                              "— nothing of this run was rewritten")
+    # a new run binds the carried-over gaps of its corpus' laws to the corpus as it is, before anything is written, and
+    # fixes them after its contract. Its initialisation is complete once its first snapshot state.json is written (before
+    # any session; `metadata_refusal` refuses a run without it that wrote anything past its initialisation): until then a
+    # launch fixes them again, from the list its saved inputs record (the comparison above), whatever copy a start cut
+    # short left; from then on a resume reads only the copy it fixed, checked whole against its saved inputs and corpus
+    declared = None
+    if new or not run.state_file.exists():
+        declared = deferred_gaps.bind(deferred_gaps.load(), {l.id: l.text for l in corpus.load_laws(opts.laws)})
+    else:
+        refusal = deferred_gaps.fixed_refusal(run.dir, deferred_gaps.recorded_digest(run.dir), [l.id for l in corpus.load_laws(opts.laws)])
+        if refusal:
+            raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: {refusal} — nothing of this run was rewritten")
     # the library is taken before anything of the run is written: no stage transition of any run is
     # unfinished then, checked with the lock held, before any journal is completed (`owner.acquire`)
     owner.acquire(opts.run_id, force=opts.force_takeover)
@@ -1597,6 +1676,8 @@ def _run_loop(opts: Options) -> dict:
         stage = first_stage(run, opts, semantic)
         jsonl.write_atomic(run.dir / stages.STAGES_FILE, json.dumps(stage, ensure_ascii=False) + "\n")
         write_options(run, opts, semantic, saved_roots, marker)
+    if declared is not None:
+        deferred_gaps.fix(run.dir, declared, semantic["deferred_gaps"])
     handoff.check_on_launch(run)                        # a run that crossed machines resumes only on its own baseline and artifacts
     from .phases import candidate as candidate_phase           # a candidate's commit a stop cut short is completed first
     recovered = candidate_phase.recover(run)
@@ -1682,6 +1763,9 @@ def _run_loop(opts: Options) -> dict:
     if stop:
         raise SystemExit(f"[loop] {stop}")
     reopened = ledger.reopen_for_gaps(gap_ledger.decided())
+    # a gap decided while an iteration was stopped after its filing and before its law's block leaves that iteration's routes
+    if resume_n is not None and not snap["prog"].get("gap_routes_applied"):
+        release_decided_gaps(snap["prog"].get("gap_routes", {}), gap_ledger.decided())
     released, _ = concept_ledger.release([law for law, _ in reopened], ledger.paused())   # as an operator's reopen
     for cid in released:
         print(f"[loop] concept `{cid}` released from its gate-cost hold with the laws reopened by a gap decision")
@@ -2193,18 +2277,22 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         # a validated record that carries a gap is not coded: each of its gaps is filed now, on the occurrence
         # of its words in the law, and the law is blocked on them once its other nodes of this iteration are
         # decided; a gap matching one the operator rejected or retired sends the law back to its planner
-        # with that decision instead
+        # with that decision instead. The routes (law ↦ the records carrying a gap, each with its pending
+        # gap ids in `waits`) live in this iteration's progress until the law's block: until then a node of
+        # its law composing such a record is not coded, and another law composing it waits on those gap ids;
+        # from the block on the ledger carries them
         prog["gap_routes"] = {}
         for law, vs in sorted(by_law_verdicts.items()):
             carrying = [v.node for v in vs if v.kind == "accept" and v.node.gaps()]
             if not carrying or law not in ledger.entries or ledger.entries[law].state != "planned":
                 continue
-            ids, routed = [], []
+            ids, routed, waits = [], [], {}
             for n in carrying:
                 got, back = file_planned_gaps(gap_ledger, n, by_id[law].text, opts.run_id, run.iteration, gaps_filed)
                 ids += [g for g in got if g not in ids]
                 routed += back
-            prog["gap_routes"][law] = {"nodes": [n.id for n in carrying], "gaps": ids, "routed": routed}
+                waits[n.id] = got
+            prog["gap_routes"][law] = {"nodes": [n.id for n in carrying], "gaps": ids, "routed": routed, "waits": waits}
         # the pins: each validated record names the version of every other law's node it was planned on
         plan_now = active_plan_records(run, node_ledger, [v.node for v in verdicts])   # every record the validator knew
         # a held record keeps the pin it was planned with, or has none: only the plan's records and the repairs' new ones are pinned
@@ -2219,7 +2307,9 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         if v.node.id in prog.get("pins", {}) and "planned_on" not in v.node.raw:
             v.node.raw["planned_on"] = prog["pins"][v.node.id]
     decided_ok = {nid for nid, o in prog["nodes"].items() if o == "OK"}
-    gap_held = {i for r in prog.get("gap_routes", {}).values() for i in r["nodes"]}
+    gap_waits_now = gap_waits(prog.get("gap_routes", {}), [v.node for v in verdicts if v.node.id not in run.all_nodes()])
+    gap_tokens = {law: list(r["gaps"]) for law, r in prog.get("gap_routes", {}).items() if r["gaps"]}
+    gap_held = set(gap_waits_now)
     for law, vs in by_law_verdicts.items():
         planned = law in ledger.entries and ledger.entries[law].state == "planned" and not any(v.kind != "accept" for v in vs)
         for v in vs:
@@ -2485,7 +2575,8 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                     ledger.defer(n.law, [why])
                 persist(); return []
             # the iteration view: the published records, and the gated siblings of this iteration for a node of their own law
-            av = Availability(run, siblings={m.id: m.raw for m in accepted_now}, gated=set(concepts_now), entries=ledger.entries)
+            av = Availability(run, siblings={m.id: m.raw for m in accepted_now}, gated=set(concepts_now), entries=ledger.entries,
+                              gap_held=gap_waits_now)
             ready: list[Node] = []
             pending_ids = set(running) | {m.id for m in remaining_nodes}
             for n in remaining_nodes:
@@ -2512,9 +2603,9 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                         notes.append(f"`{n.id}`: held — uses {unmet_concepts}, pending (under repair or waiting); no attempt counted")
                         hold(n, f"uses {unmet_concepts}, pending"); ledger.hold(n.law, run.iteration)
                     failed_ids.add(n.id); prog["nodes"][n.id] = "HELD"; continue
-                pins = pin_codes(run, ledger.entries, n, active_plan_records(run, node_ledger, to_code))
+                pins = pin_codes(run, ledger.entries, n, active_plan_records(run, node_ledger, to_code), gap_waits_now)
                 if pins:                                     # its plan rests on another version of a record it composes
-                    kind = route_unusable(run, ledger, n.law, pins, n.id, notes, to_user, opts.run_id)
+                    kind = route_unusable(run, ledger, n.law, pins, n.id, notes, to_user, opts.run_id, gap_tokens)
                     failed_ids.add(n.id)
                     if kind == "planner":
                         prog["nodes"][n.id] = "PIN"; continue
@@ -2527,7 +2618,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                 if pending_here:
                     continue                                # submitted once its composed node is decided
                 if bad:
-                    kind = route_unusable(run, ledger, n.law, bad, n.id, notes, to_user, opts.run_id)
+                    kind = route_unusable(run, ledger, n.law, bad, n.id, notes, to_user, opts.run_id, gap_tokens)
                     if kind in ("operator", "planner"):
                         ndir = code_phase.node_dir(run, n.id)
                         if (ndir / "baseline.json").exists():
@@ -2538,7 +2629,9 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                     if kind == "wait":
                         notes.append(f"`{n.id}`: not coded, {why}; kept for the next iteration, no attempt counted")
                         ledger.hold(n.law, run.iteration)
-                    hold(n, why)
+                        hold(n, why)
+                    else:                                   # its law is blocked with it: the record is planned again when the law reopens
+                        held_why[n.id] = why
                     failed_ids.add(n.id); prog["nodes"][n.id] = "HELD"; continue
                 ready.append(n)
             remaining_nodes[:] = [n for n in remaining_nodes if n.id not in prog["nodes"]]
@@ -2843,9 +2936,13 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
     if not prog.get("gap_routes_applied"):
         # the laws whose records carry a gap, once their other nodes of this iteration are integrated: blocked on the gaps filed,
         # or, when every gap matched one the operator decided, returned to the planner with those decisions
+        verdict_nodes = {v.node.id: v.node for v in verdicts}
         for law, r in prog.get("gap_routes", {}).items():
             why = [f"`{i}` carries a gap and is not coded: its gaps are filed and block the law until the operator decides them"
                    for i in r["nodes"]]
+            why += [f"`{i}` composes {sorted(str(c.get('rule')) for c in verdict_nodes[i].dependencies() if c.get('rule') in gap_held)} "
+                    "of its law, which wait on its gaps, and is not coded"
+                    for i in sorted(gap_held) if i not in r["nodes"] and i in verdict_nodes and verdict_nodes[i].law == law]
             if r["gaps"]:
                 ledger.block(law, r["gaps"], why + r["routed"])
                 to_user.append(f"gap(s) {', '.join(r['gaps'])} filed for `{law}`: its plan carries them; "

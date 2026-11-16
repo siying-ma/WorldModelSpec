@@ -534,7 +534,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
         "parameters": parameter_catalogue(Reading(run.reading_file)) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None))
                       + pending_proposals_table(pending)
                       + declaration_catalogue(Reading(run.reading_file), pending),
-        "gaps": GapLedger(paths.GAPS_DIR).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
+        "gaps": GapLedger.for_run(paths.GAPS_DIR, run).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
         "evidence": evidence_block(run, laws, label_repair),
         "previous_records": previous_records(run, laws),

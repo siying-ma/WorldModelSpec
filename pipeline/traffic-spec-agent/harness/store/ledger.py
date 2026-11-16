@@ -275,11 +275,12 @@ class Ledger:
         if e.state == PLANNED:
             e.state, e.nodes, e.reasons = ACCEPTED, node_ids, []
 
-    def roots(self, law: str) -> set[str]:
+    def roots(self, law: str, also=frozenset()) -> set[str]:
         """The laws whose own blocks hold `law`, through the laws it waits on: a failed law is its own
-        root, and so is a blocked law with a token of its own (`own_gaps`); a law's roots are itself
-        where that holds, and the roots of every law in its `waits_on` (each law visited once, so two
-        laws that wait on each other are both roots)."""
+        root, and so is a blocked law with a token of its own (`own_gaps`) and a law in `also` (a
+        planned law whose gap-carrying records wait on gaps filed in this iteration, not yet blocked
+        on them); a law's roots are itself where that holds, and the roots of every law in its
+        `waits_on` (each law visited once, so two laws that wait on each other are both roots)."""
         out, seen, stack = set(), set(), [law]
         while stack:
             l = stack.pop()
@@ -287,7 +288,7 @@ class Ledger:
                 continue
             seen.add(l)
             e = self.entries[l]
-            if e.state == FAILED or (e.state == BLOCKED and e.own_gaps):
+            if e.state == FAILED or (e.state == BLOCKED and e.own_gaps) or l in also:
                 out.add(l)
             if e.state == BLOCKED:
                 stack += list(e.waits_on)

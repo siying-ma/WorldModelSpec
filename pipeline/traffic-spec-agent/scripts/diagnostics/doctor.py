@@ -652,7 +652,11 @@ class Doctor:
         laws_file = self.repo / "laws" / "example" / "train" / "laws.jsonl"
         if not laws_file.exists():
             return Result("definition resolution", SKIP, "no training corpus", src)
-        table = definitions_mod.resolve_table(corpus.load_laws(laws_file), corpus.load_definitions(laws_file), definitions_mod.load_precedence())
+        try:
+            config = definitions_mod.load_precedence()
+        except definitions_mod.PrecedenceError as e:
+            return Result("definition resolution", FAIL, str(e), src)
+        table = definitions_mod.resolve_table(corpus.load_laws(laws_file), corpus.load_definitions(laws_file), config)
         rows = [(law, r) for law, rs in table["laws"].items() for r in rs]
         open_ = [f"{law}: \"{r['term']}\" {r['status']}" + (f" ({', '.join(r['candidates'])})" if r.get("candidates") else "") + (f" — {r['why']}" if r.get("why") else "")
                  for law, r in rows if r["status"] != "resolved"]
@@ -669,6 +673,36 @@ class Doctor:
             return Result("definition resolution", REVIEW, f"{summary}; {len(open_)} unresolved or ambiguous", tuple(open_) + src)
         return Result("definition resolution", OK, summary, src)
 
+    def deferred_gap_declarations(self) -> Result:
+        """The pending gaps the operator carries over from earlier runs (`config/deferred_gaps.jsonl`),
+        each listed with its source, law, occurrence and words: the list must read whole; a row whose
+        law's training text no longer holds its words (it needs re-binding) and a live gap filed for a
+        row that the operator rejected or retired while the row still stands (a new round refuses it)
+        are listed for the operator."""
+        sys.path.insert(0, str(self.repo))
+        from harness.model import corpus
+        from harness.store import deferred_gaps
+        from harness.store.gaps import GapLedger
+        f = self.repo / "config" / "deferred_gaps.jsonl"
+        src = ("config/deferred_gaps.jsonl", "library/TrafficSpec/Gaps/{proposals,decisions}.jsonl → deferred_from",
+               "laws/example/train/laws.jsonl")
+        try:
+            rows = deferred_gaps.load(f)
+        except deferred_gaps.DeclarationError as e:
+            return Result("deferred gap declarations", FAIL, str(e), src)
+        listed = tuple(f"{deferred_gaps.identity(d)} at {d['source_commit'][:12]}: `{d['law']}` {d['occurrence']} \u201c{d['span']}\u201d "
+                       f"({d['kind']}, {d['source_state']})" for d in rows)
+        laws_file = self.repo / "laws" / "example" / "train" / "laws.jsonl"
+        texts = {l.id: l.text for l in corpus.load_laws(laws_file)} if laws_file.exists() else {}
+        rebind = [f"{deferred_gaps.identity(d)}: " + "; ".join(why) for d in rows if d["law"] in texts
+                  and (why := deferred_gaps.binding_defects(d, texts[d["law"]]))]
+        stale = deferred_gaps.conflicts(GapLedger(self.lib / "TrafficSpec" / "Gaps").live_rows(), rows)
+        if rebind or stale:
+            return Result("deferred gap declarations", REVIEW, f"{len(stale)} decided live gap(s) still declared pending (a new round "
+                          f"refuses them); {len(rebind)} declaration(s) need re-binding", tuple(stale) + tuple(rebind) + listed + src)
+        return Result("deferred gap declarations", OK, f"{len(rows)} declaration(s), each matching its training law; no decided live "
+                      "gap is still declared", listed + src)
+
     def checks(self) -> list[Callable[[], Result]]:
         return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.catalogue_covers,
                                    self.held_out_absent_from_training_tables, self.held_out_laws_out_of_gap_ledger,
@@ -678,7 +712,7 @@ class Doctor:
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
                                    self.rule_files_carry_only_posted_law_ids, self.code_cites_no_document,
                                    self.captures_stay_out_of_the_rule_tree, self.repo_paths_resolve,
-                                   self.reading_figures_reviewed, self.reading_proposals_reviewed]
+                                   self.reading_figures_reviewed, self.reading_proposals_reviewed, self.deferred_gap_declarations]
 
     def run(self, verbose: bool = False) -> int:
         results: list[Result] = []
