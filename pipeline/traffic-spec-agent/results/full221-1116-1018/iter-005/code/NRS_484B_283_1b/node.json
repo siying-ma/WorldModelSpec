@@ -1,0 +1,280 @@
+{
+ "node_id": "NRS_484B_283_1b",
+ "law_refs": [
+  "NRS-484B-283-1b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "r",
+   "text": "Except as otherwise provided in NRS 484B.287 [NRS-484B-287-1c, NRS-484B-287-1d, NRS-484B-287-1e, LVMC-11-30-060-A, LVMC-11-30-060-B], 484B.290 [LVMC-11-30-140-B] and 484B.350 [LVMC-11-46-030]:",
+   "role": "reference"
+  },
+  {
+   "id": "s",
+   "text": "A pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "ob",
+   "text": "shall not suddenly leave a curb or other place of safety and walk or run into the path of a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "st",
+   "text": "which is so close that it is impossible for the driver to yield.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'A pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair ...')."
+  },
+  {
+   "span": "ob",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk",
+    "st.safety_zone",
+    "st.median_or_divider",
+    "st.roadway",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Leaving 'a curb or other place of safety' is the pedestrian's footprint (rel.occupies) coming onto the roadway (st.roadway, 'the part of a highway improved for vehicular traffic') from a place pedestrians are safe from vehicles: the sidewalk the curb bounds (st.sidewalk, 'area for pedestrians between roadway and property line'), a safety zone (st.safety_zone, 'an area within the highway marked off for pedestrians only') or a median or dividing section (st.median_or_divider). st.sidewalk is not used for a crosswalk, as its exclusion requires; st.roadway is not used for the sidewalk. 'into the path of a vehicle': the vehicle is the admitted aggregate DEF-NRS-484A-320::vehicle; the pedestrian is in its path where, under constant velocities, the two centres approach within the conflict horizon (prim.closest_approach_within) to a centre distance below the conflict clearance (prim.closest_approach_distance). These primitives are 'Not a stand-in for' contact or danger alone; here they bound the path the vehicle will sweep, the clearance and horizon set by the reading, and the impossibility is decided by the standard."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "st",
+   "standard": "so close that it is impossible for the driver to yield",
+   "concepts": [
+    "prim.closest_approach_time",
+    "kin.speed",
+    "env.wet_road",
+    "env.ice_or_snow"
+   ],
+   "params": [
+    "p.driver_reaction_time",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice"
+   ],
+   "convention": "stopping-distance model: the vehicle cannot yield where the time to the predicted closest approach (prim.closest_approach_time) is less than the driver's perception-reaction time plus the vehicle's speed (kin.speed) divided by twice the braking deceleration, written as a product (2·a·t_ca < 2·a·t_r + v); the deceleration is selected by the surface: icy or snow-covered (env.ice_or_snow), else wet (env.wet_road), else dry",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1c",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1d",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1e",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_A",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_B",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o1",
+   "map": {
+    "subject": "v"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o2",
+   "map": {
+    "subject": "v"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian) that leaves a place of safety at this observation: its footprint overlaps a roadway (st.roadway) here, and at the previous observation it overlapped no roadway and overlapped a sidewalk, a safety zone or a median or divider. The duty does not apply where NRS_484B_287_1c, NRS_484B_287_1d, NRS_484B_287_1e, LVMC_11_30_060_A, LVMC_11_30_060_B, LVMC_11_30_140_B_o1 or LVMC_11_30_140_B_o2 is engaged for the subject, nor where LVMC_11_46_030_o1 or LVMC_11_46_030_o2 is engaged for a vehicle v of the scene.",
+ "obligation": "There is no vehicle v (ru.aggregate DEF-NRS-484A-320::vehicle) such that the closest approach of the subject and v falls within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance) and 2·a·t < 2·a·p.driver_reaction_time + speed(v), where t is prim.closest_approach_time with horizon p.conflict_horizon, speed(v) is v's kin.speed, and a is p.following_decel_ice where env.ice_or_snow holds, else p.following_decel_wet where env.wet_road holds, else p.following_decel_dry. With no vehicle in the scene, compliant.",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.driver_reaction_time",
+  "p.following_decel_dry",
+  "p.following_decel_wet",
+  "p.following_decel_ice"
+ ],
+ "narrowings": [
+  {
+   "span": "ob",
+   "why": "'suddenly' is read through the vehicle's closeness at the moment the pedestrian leaves the place of safety: a departure is sudden in the law's sense where the vehicle is already too close to yield; the pedestrian's own abruptness is not measured.",
+   "kind": "reading"
+  },
+  {
+   "span": "ob",
+   "why": "'other place of safety' is read only through the sidewalk the curb bounds, a safety zone and a median or dividing section.",
+   "kind": "reading"
+  },
+  {
+   "span": "st",
+   "why": "'the driver' is read through the vehicle's motion: whether the vehicle can stop, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Dry road. The pedestrian steps from the sidewalk onto the roadway while a car 12 m away moves toward it at 12 m/s; predicted closest approach 0.5 m in 1.0 s, below 1.5 s + 12/(2·6) s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The pedestrian steps off while the car is 70 m away at 12 m/s: no closest approach within the horizon."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The pedestrian stays on the sidewalk throughout."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car is 12 m away at 12 m/s on a collision course, but whether the pedestrian's footprint overlaps the roadway or the sidewalk is not observed.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The pedestrian steps off the sidewalk with no vehicle in the scene: the duty binds the pedestrian alone and is met."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (Hayward 1972; Swedish traffic conflict technique)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.driver_reaction_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "perception-reaction time of an alert driver to an expected hazard in the stopping-distance model",
+   "source": "AASHTO Green Book stopping sight distance; perception-reaction studies"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "unit": "m/s^2",
+   "value": 6.0,
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "tire-pavement friction tables of accident reconstruction handbooks"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "tire-pavement friction tables of accident reconstruction handbooks"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.0,
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "tire-pavement friction tables of accident reconstruction handbooks"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_060_A": "b25abeb2b072cc20adb2f7a822ab21509f741e809097b85891f031d5268ae88e",
+  "LVMC_11_30_060_B": "71bec52093f93801bd1f41edfbe97f4ac0c9bb11ccc613e801f4a9b7c4c86ac1",
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1",
+  "LVMC_11_46_030_o1": "6b22faa56ad9d67e840373b0eb1578cc2c1d82d0374edd04dbfe9b9bcabf52a2",
+  "LVMC_11_46_030_o2": "c24852cc030e8482ca411e31fc3f93fd82b053e08138b9598e345cba39b1b7e0",
+  "NRS_484B_287_1c": "4184e64459a2f1c6e4e0009b7f0ad70732d4c089694a31254ade8d1df8faff95",
+  "NRS_484B_287_1d": "35f17d5c1df998d5c2e9db99e1a0fa75ab5bd1c28fba4fb93fb84d4516a068e5",
+  "NRS_484B_287_1e": "1a60ada8f73279c767abb9c1b8b4a2ce78a9d2cc6b30a3931701edbfea1d3ca4"
+ }
+}

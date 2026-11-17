@@ -40,6 +40,22 @@
   "node": "NRS_484B_587_2b",
   "role": "exception"
  },
+ "(a) when fixed or moving objects, parked or moving vehicles, bicycles, pedestrians, animals or surface hazards impede access to the right side of the roadway.": {
+  "atoms": [
+   "prim.region_lateral_offset",
+   "prim.region_offset_along",
+   "rel.bearing",
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.lane_direction",
+   "st.obstruction",
+   "st.region_geometry"
+  ],
+  "node": "NRS_484B_777_1_o1",
+  "role": "condition"
+ },
  "(a) when there are no children present;": {
   "atoms": [
    "dev.governs",
@@ -203,7 +219,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_603_1_o1",
+  "node": "NRS_484B_217_2",
   "role": "subject"
  },
  "a driver facing the signal": {
@@ -214,6 +230,30 @@
   ],
   "node": "NRS_484B_307_12a",
   "role": "condition"
+ },
+ "a driver may drive across a pavement striping marking such a zone": {
+  "atoms": [
+   "kin.extent",
+   "prim.region_lateral_offset",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.centre_line",
+   "st.driveway_or_alley_entrance",
+   "st.highway",
+   "st.intersection",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_217_2",
+  "role": "exception"
+ },
+ "a driver may drive across a pavement striping marking such zone": {
+  "atoms": [
+   "kin.extent",
+   "prim.region_lateral_offset",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.centre_line"
+  ],
+  "node": "NRS_484B_217_2",
+  "role": "exception"
  },
  "a driver may not continue to operate a motor vehicle in the extreme left lane": {
   "atoms": [
@@ -236,7 +276,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
   ],
-  "node": "NRS_484B_287_1d",
+  "node": "NRS_484B_283_1b",
   "role": "subject"
  },
  "a pedestrian:": {
@@ -628,6 +668,14 @@
   "node": "NRS_484B_267_2e",
   "role": "trigger"
  },
+ "and must be given": {
+  "atoms": [
+   "kin.speed",
+   "rel.contact"
+  ],
+  "node": "NRS_484B_283_1d1",
+  "role": "obligation"
+ },
  "and must not be driven over, across or within any dividing space, barrier or section": {
   "atoms": [
    "rel.occupies",
@@ -809,6 +857,14 @@
   "node": "NRS_484B_507_1",
   "role": "exception"
  },
+ "any nearby traffic;": {
+  "atoms": [
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ],
+  "node": "NRS_484B_777_1_o1",
+  "role": "exception"
+ },
  "any pedestrian": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
@@ -913,6 +969,15 @@
    "st.region_geometry"
   ],
   "node": "NRS_484B_560_7a",
+  "role": "definitional"
+ },
+ "as used in this section, “half of the highway” means all traffic lanes of a highway which are designated for traffic traveling in one direction, and includes the entire highway in the case of a one-way highway.": {
+  "atoms": [
+   "st.lane",
+   "st.lane_direction",
+   "st.one_way_roadway"
+  ],
+  "node": "NRS_484B_283_1a",
   "role": "definitional"
  },
  "as used in this section, “preparing to move” means any indication that is visible to an approaching driver that an authorized emergency vehicle or an official vehicle of a regulatory agency is about to move, including, without limitation: (a) a movement of the vehicle; or (b) the use of hand signals by the driver of the vehicle.": {
@@ -1223,12 +1288,49 @@
   "node": "NRS_484B_400_1_o1",
   "role": "obligation"
  },
+ "but a pedestrian": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ],
+  "node": "NRS_484B_283_1d4_o1",
+  "role": "exception"
+ },
  "but is inoperative at the time the vehicle enters the intersection,": {
   "atoms": [
    "dev.inoperative"
   ],
   "node": "NRS_484B_250_4_o2",
   "role": "condition"
+ },
+ "but must complete the crossing before the countdown timer gets to zero.": {
+  "atoms": [
+   "dev.pedestrian_signal",
+   "rel.occupies",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_283_1d2",
+  "role": "obligation"
+ },
+ "but must proceed to a curb, sidewalk, safety zone if one is provided or other place of safety": {
+  "atoms": [
+   "kin.speed",
+   "rel.occupies",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_283_1d4_o2",
+  "role": "obligation"
+ },
+ "but must proceed to a curb, sidewalk, safety zone if one is provided or other place of safety before the “don’t walk” or “wait” indication or an upraised hand symbol is illuminated and steady.": {
+  "atoms": [
+   "dev.pedestrian_signal",
+   "rel.occupies",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_283_1d3_o2",
+  "role": "obligation"
  },
  "but must yield": {
   "atoms": [
@@ -1253,6 +1355,13 @@
   ],
   "node": "NRS_484B_127_2",
   "role": "exception"
+ },
+ "by the drivers of all vehicles.": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_283_1d1",
+  "role": "subject"
  },
  "come to a full stop": {
   "atoms": [
@@ -1572,7 +1681,7 @@
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_777_1_o2",
+  "node": "NRS_484B_777_1_o1",
   "role": "subject"
  },
  "every vehicle": {
@@ -1931,6 +2040,14 @@
    "ru.aggregate=DEF-NRS-484A-460-2::high_occupancy_vehicle"
   ],
   "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
+ "if the driver has first given the appropriate turn signal": {
+  "atoms": [
+   "sig.hand_signal",
+   "sig.turn_indicator"
+  ],
+  "node": "NRS_484B_217_2",
   "role": "exception"
  },
  "if the driver knows, or reasonably should know, that he or she is traveling at a rate of speed which is less than the posted speed limit for that portion of the controlled-access highway": {
@@ -2393,6 +2510,14 @@
   "node": "NRS_484B_223_3a",
   "role": "obligation"
  },
+ "may continue to cross the highway": {
+  "atoms": [
+   "rel.occupies",
+   "st.sidewalk"
+  ],
+  "node": "NRS_484B_283_1d4_o1",
+  "role": "exception"
+ },
  "may drive in any lane over which the green signal is shown.": {
   "atoms": [
    "dev.governs",
@@ -2435,6 +2560,15 @@
   "node": "NRS_484B_307_8e",
   "role": "obligation"
  },
+ "may not proceed to cross the highway,": {
+  "atoms": [
+   "rel.occupies",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_283_1d4_o1",
+  "role": "obligation"
+ },
  "may overtake and pass another vehicle upon the right only": {
   "atoms": [
    "drv.interaction.overtake_pass_on_right",
@@ -2452,6 +2586,27 @@
   ],
   "node": "NRS_484B_307_3a",
   "role": "trigger"
+ },
+ "may proceed across the highway in the direction of the signal": {
+  "atoms": [
+   "rel.occupies",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_283_1d1",
+  "role": "condition"
+ },
+ "may proceed across the highway in the direction of the signal,": {
+  "atoms": [
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "rel.occupies",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_283_1d2",
+  "role": "condition"
  },
  "may proceed into the intersection": {
   "atoms": [
@@ -2835,6 +2990,16 @@
   ],
   "node": "LVMC_11_12_070_B",
   "role": "condition"
+ },
+ "oncoming or following traffic.": {
+  "atoms": [
+   "rel.bearing",
+   "rel.oncoming",
+   "rel.same_direction",
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ],
+  "node": "NRS_484B_217_2",
+  "role": "exception"
  },
  "only when the intersecting highway is one-way to the left,": {
   "atoms": [
@@ -3305,6 +3470,16 @@
   "node": "NRS_484B_287_1c",
   "role": "subject"
  },
+ "pedestrians facing the signal": {
+  "atoms": [
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ],
+  "node": "NRS_484B_283_1d1",
+  "role": "condition"
+ },
  "persons riding bicycles, electric bicycles or electric scooters": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-025::bicycle",
@@ -3363,6 +3538,20 @@
    "st.travel_region"
   ],
   "node": "LVMC_11_52_060",
+  "role": "obligation"
+ },
+ "ride as near to the right side of the roadway": {
+  "atoms": [
+   "kin.extent",
+   "prim.region_lateral_offset",
+   "rel.occupies",
+   "st.highway",
+   "st.on_way",
+   "st.region_geometry",
+   "st.road_edge",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_777_1_o1",
   "role": "obligation"
  },
  "riders of bicycles, electric bicycles, and electric scooters": {
@@ -3568,6 +3757,23 @@
   "node": "NRS_486_351_1",
   "role": "subject"
  },
+ "shall not drive on the left side of the highway within such zone or drive across or on the left side of any pavement striping designed to mark such zone throughout its length.": {
+  "atoms": [
+   "dev.governs",
+   "dev.zone_sign",
+   "kin.extent",
+   "prim.region_lateral_offset",
+   "rel.occupies",
+   "st.centre_line",
+   "st.highway",
+   "st.lane",
+   "st.lane_marking",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_217_2",
+  "role": "obligation"
+ },
  "shall not follow another vehicle": {
   "atoms": [
    "rel.ahead_behind_in_lane",
@@ -3685,6 +3891,20 @@
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
   "node": "NRS_484B_450_1l",
+  "role": "obligation"
+ },
+ "shall not suddenly leave a curb or other place of safety and walk or run into the path of a vehicle": {
+  "atoms": [
+   "prim.closest_approach_distance",
+   "prim.closest_approach_within",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.median_or_divider",
+   "st.roadway",
+   "st.safety_zone",
+   "st.sidewalk"
+  ],
+  "node": "NRS_484B_283_1b",
   "role": "obligation"
  },
  "shall not: overtake and pass a motor vehicle": {
@@ -3901,6 +4121,14 @@
   "node": "NRS_484B_263_o1",
   "role": "obligation"
  },
+ "shall yield the right-of-way,": {
+  "atoms": [
+   "kin.speed",
+   "rel.contact"
+  ],
+  "node": "NRS_484B_283_1a",
+  "role": "obligation"
+ },
  "shall: exercise": {
   "atoms": [
    "kin.speed",
@@ -4049,7 +4277,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_363_4",
+  "node": "NRS_484B_283_1a",
   "role": "subject"
  },
  "the driver of a vehicle:": {
@@ -4233,6 +4461,15 @@
   "node": "NRS_484B_110",
   "role": "obligation"
  },
+ "to a pedestrian crossing the highway within a crosswalk": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "st.crosswalk"
+  ],
+  "node": "NRS_484B_283_1a",
+  "role": "condition"
+ },
  "to a vehicle which has entered the intersection": {
   "atoms": [
    "rel.occupies",
@@ -4284,6 +4521,16 @@
   ],
   "node": "LVMC_11_30_060_A",
   "role": "condition"
+ },
+ "to an adjoining highway if the driver has first given the appropriate turn signal": {
+  "atoms": [
+   "rel.occupies",
+   "sig.hand_signal",
+   "sig.turn_indicator",
+   "st.highway"
+  ],
+  "node": "NRS_484B_217_2",
+  "role": "exception"
  },
  "to any pedestrian": {
   "atoms": [
@@ -4675,9 +4922,13 @@
  "upon a roadway shall, except:": {
   "atoms": [
    "rel.occupies",
+   "st.driveway_or_alley_entrance",
+   "st.highway",
+   "st.intersection",
+   "st.on_way",
    "st.roadway"
   ],
-  "node": "NRS_484B_777_1_o2",
+  "node": "NRS_484B_777_1_o1",
   "role": "condition"
  },
  "upon any bridge or other elevated structure": {
@@ -5040,6 +5291,18 @@
   "node": "NRS_484B_490",
   "role": "trigger"
  },
+ "when official traffic-control devices are not in place or not in operation,": {
+  "atoms": [
+   "dev.governs",
+   "dev.inoperative",
+   "dev.pedestrian_signal",
+   "dev.traffic_signal",
+   "rel.occupies",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_283_1a",
+  "role": "condition"
+ },
  "when operating a vehicle": {
   "atoms": [
    "kin.speed",
@@ -5135,6 +5398,17 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_633_2",
+  "role": "condition"
+ },
+ "when the pedestrian is upon the half of the highway upon which the vehicle is traveling or onto which the vehicle is turning,": {
+  "atoms": [
+   "kin.heading",
+   "rel.occupies",
+   "st.lane",
+   "st.lane_direction",
+   "st.one_way_roadway"
+  ],
+  "node": "NRS_484B_283_1a",
   "role": "condition"
  },
  "when the red signal is exhibited.": {
@@ -5238,6 +5512,19 @@
   ],
   "node": "NRS_484B_307_12a",
   "role": "trigger"
+ },
+ "whenever signals exhibiting the words “walk,” “don’t walk,” “wait” or similar symbols are in place, such signals indicate as follows:": {
+  "atoms": [
+   "dev.governs",
+   "dev.pedestrian_signal",
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_283_1d4_o1",
+  "role": "condition"
  },
  "where an appropriate opening or crossing place exists.": {
   "atoms": [
@@ -5426,6 +5713,34 @@
   "node": "NRS_484B_223_4b",
   "role": "condition"
  },
+ "while the “don’t walk” or “wait” indication or an upraised hand symbol is illuminated and flashing but is not accompanied by a countdown timer,": {
+  "atoms": [
+   "dev.pedestrian_signal"
+  ],
+  "node": "NRS_484B_283_1d3_o1",
+  "role": "trigger"
+ },
+ "while the “don’t walk” or “wait” indication or an upraised hand symbol is illuminated and steady": {
+  "atoms": [
+   "dev.pedestrian_signal"
+  ],
+  "node": "NRS_484B_283_1d4_o1",
+  "role": "trigger"
+ },
+ "while the “don’t walk” or “wait” indication or an upraised hand symbol is illuminated, is flashing and is accompanied by a countdown timer,": {
+  "atoms": [
+   "dev.pedestrian_signal"
+  ],
+  "node": "NRS_484B_283_1d2",
+  "role": "trigger"
+ },
+ "while the “walk” indication or walking person symbol is illuminated,": {
+  "atoms": [
+   "dev.pedestrian_signal"
+  ],
+  "node": "NRS_484B_283_1d1",
+  "role": "trigger"
+ },
  "who approaches or comes in contact with": {
   "atoms": [
    "drv.motion.complete_halt",
@@ -5434,6 +5749,36 @@
   ],
   "node": "LVMC_11_30_140_B_o2",
   "role": "trigger"
+ },
+ "who entered the highway lawfully pursuant to subparagraph (1)": {
+  "atoms": [
+   "dev.governs",
+   "dev.pedestrian_signal",
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "rel.occupies",
+   "st.lane",
+   "st.roadway",
+   "st.sidewalk"
+  ],
+  "node": "NRS_484B_283_1d3_o1",
+  "role": "exception"
+ },
+ "who entered the highway lawfully pursuant to subparagraph (1) or (2)": {
+  "atoms": [
+   "dev.governs",
+   "dev.pedestrian_signal",
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "rel.occupies",
+   "st.lane",
+   "st.roadway",
+   "st.sidewalk"
+  ],
+  "node": "NRS_484B_283_1d4_o1",
+  "role": "exception"
  },
  "who intends to exit a roundabout": {
   "atoms": [

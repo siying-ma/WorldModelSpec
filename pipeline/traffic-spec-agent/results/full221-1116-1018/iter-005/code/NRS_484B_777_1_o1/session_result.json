@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "81d0515fe9c44e06b51071d10a51ab24",
+ "result": {
+  "duration_api_ms": 237393,
+  "stop_reason": "end_turn",
+  "session_id": "56fc53fa-04b2-442f-8aa5-15be4b123b35",
+  "total_cost_usd": 1.8005141000000002,
+  "usage": {
+   "input_tokens": 22,
+   "cache_creation_input_tokens": 115714,
+   "cache_read_input_tokens": 938731,
+   "output_tokens": 25914,
+   "output_tokens_details": {
+    "thinking_tokens": 12924
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 115714,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 836,
+     "cache_read_input_tokens": 118325,
+     "cache_creation_input_tokens": 1857,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1857
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 49888,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005505280000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 22,
+    "outputTokens": 25914,
+    "cacheReadInputTokens": 938731,
+    "cacheCreationInputTokens": 115714,
+    "webSearchRequests": 0,
+    "costUSD": 1.7950088200000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 12924,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 115714,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 14,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `NRS_484B_777_1_o1`: 14 witnesses passed, and the rule composes `NRS_484B_785_1a`.\n\nOne procedural slip: before editing anything, I ran the gate command with extra shell text tacked on (`| head -0; echo skip`), which broke the one-command rule. I threw that output away, so I can't tell whether the gate actually ran. If it did, it judged the unedited skeleton and used one run of the budget. I've noted this in `task_result.md`.\n\n**What the rule says** (`NRS_484B_777_1_o1.lean`):\n- **Who and where:** the rider is in the bicycle, electric bicycle or electric scooter group, and is on a roadway.\n- **Exception (a), keeping up with traffic:** the rider is moving, complies with `NRS_484B_785_1a`, and no nearby road user is faster than the rider by more than the allowed margin. If no one is nearby, this holds automatically.\n- **Exception (b), turning left:** a left turn is declared for the rider at an intersection or driveway entrance on the same highway as the roadway they're on.\n- **Exception (c), not safe:** any one of three conditions on the rider's right:\n  - an obstruction ahead within reach;\n  - a vehicle, bicycle or pedestrian ahead within reach;\n  - the rider's lane is narrower than the shared-lane width.\n- **The duty:** the gap between the rider's body and a right-hand road edge on the same highway must be at most the keep-right gap. I wrote this comparison doubled on both sides (2·|offset| − width ≤ 2·gap), which means the same thing. Halving would have needed a literal 2, and the node declares no literals. Where no right-hand edge exists, or its position isn't observed, the verdict is unknown rather than violated.\n\n**Witnesses:** besides the nine planned scenes, I added five tests:\n- **Four \"not applicable\" cases,** one for each exception condition the planned scenes never trigger: debris on the right, a pedestrian on the right, another bicycle on the right, and a left turn declared at a driveway entrance.\n- **One \"violated\" case** with an electric-bicycle rider.\n\nNo witness can make the electric-scooter group true, because that group's definition includes no road-user class, but the gate accepted the rule anyway. I declared no narrower readings and found nothing wrong with the node.\n\nThe run log, the choices I made, and the reason for finishing are in `task_result.md` in the working directory.",
+  "ttft_ms": 72099,
+  "type": "result",
+  "duration_ms": 322363,
+  "uuid": "838947bc-b521-4dc1-a92c-3a345d8db50d",
+  "ttft_stream_ms": 1411,
+  "time_to_request_ms": 370,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 61,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 13,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 26,
+   "tool_pool_refresh": 3,
+   "init_message": 3,
+   "init_frame_send": 8,
+   "engine_pickup": 10,
+   "loop_entry": 5,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 204,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 8,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 45,
+  "time_to_request_cpu_ms": 357,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 4,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 6,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 1,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1411,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 49888,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005505280000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 22,
+    "outputTokens": 25914,
+    "cacheReadInputTokens": 938731,
+    "cacheCreationInputTokens": 115714,
+    "webSearchRequests": 0,
+    "costUSD": 1.7950088200000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 12924,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 115714,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

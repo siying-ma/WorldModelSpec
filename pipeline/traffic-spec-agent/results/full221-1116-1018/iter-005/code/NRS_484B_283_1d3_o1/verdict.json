@@ -1,0 +1,4201 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 12 names, composes NRS_484B_287_1c,NRS_484B_287_1d,NRS_484B_287_1e,LVMC_11_30_060_A,LVMC_11_30_060_B,LVMC_11_30_140_B_o1,LVMC_11_30_140_B_o2,LVMC_11_46_030_o1,LVMC_11_46_030_o2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "and": [
+       {
+        "not": {
+         "map": {
+          "subject": "subject"
+         },
+         "rule_applies": "NRS_484B_287_1c"
+        }
+       },
+       {
+        "and": [
+         {
+          "not": {
+           "map": {
+            "subject": "subject"
+           },
+           "rule_applies": "NRS_484B_287_1d"
+          }
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "map": {
+              "subject": "subject"
+             },
+             "rule_applies": "NRS_484B_287_1e"
+            }
+           },
+           {
+            "and": [
+             {
+              "not": {
+               "map": {
+                "subject": "subject"
+               },
+               "rule_applies": "LVMC_11_30_060_A"
+              }
+             },
+             {
+              "and": [
+               {
+                "not": {
+                 "map": {
+                  "subject": "subject"
+                 },
+                 "rule_applies": "LVMC_11_30_060_B"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "map": {
+                    "subject": "subject"
+                   },
+                   "rule_applies": "LVMC_11_30_140_B_o1"
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "not": {
+                     "map": {
+                      "subject": "subject"
+                     },
+                     "rule_applies": "LVMC_11_30_140_B_o2"
+                    }
+                   },
+                   {
+                    "not": {
+                     "body": {
+                      "or": [
+                       {
+                        "map": {
+                         "subject": "v"
+                        },
+                        "rule_applies": "LVMC_11_46_030_o1"
+                       },
+                       {
+                        "map": {
+                         "subject": "v"
+                        },
+                        "rule_applies": "LVMC_11_46_030_o2"
+                       }
+                      ]
+                     },
+                     "exists_user": "v"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "lit": "dont_walk_flashing"
+                   }
+                  ],
+                  "atom": "dev_pedestrian_signal_state",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "not": {
+                     "args": [
+                      {
+                       "var": "d"
+                      }
+                     ],
+                     "atom": "dev_pedestrian_signal_countdown",
+                     "params": []
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "gt",
+                      "lhs": {
+                       "add": [
+                        {
+                         "mul": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_heading"
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "mul": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_heading"
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "cmp": "ge",
+                        "lhs": {
+                         "mul": [
+                          {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "rhs": {
+                         "mul": [
+                          {
+                           "mul": [
+                            {
+                             "param": "p.ped_signal_facing_cos"
+                            },
+                            {
+                             "param": "p.ped_signal_facing_cos"
+                            }
+                           ]
+                          },
+                          {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "cmp": "le",
+                        "lhs": {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "rhs": {
+                         "mul": [
+                          {
+                           "param": "p.ped_signal_facing_reach"
+                          },
+                          {
+                           "param": "p.ped_signal_facing_reach"
+                          }
+                         ]
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "or": [
+               {
+                "rises": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 },
+                 {
+                  "not": {
+                   "rises": {
+                    "not": {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "r"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "roadway"
+           },
+           "var": "r"
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "lit": "dont_walk_flashing"
+                   }
+                  ],
+                  "atom": "dev_pedestrian_signal_state",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "not": {
+                     "args": [
+                      {
+                       "var": "d"
+                      }
+                     ],
+                     "atom": "dev_pedestrian_signal_countdown",
+                     "params": []
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "gt",
+                      "lhs": {
+                       "add": [
+                        {
+                         "mul": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_heading"
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "mul": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_heading"
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "cmp": "ge",
+                        "lhs": {
+                         "mul": [
+                          {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "rhs": {
+                         "mul": [
+                          {
+                           "mul": [
+                            {
+                             "param": "p.ped_signal_facing_cos"
+                            },
+                            {
+                             "param": "p.ped_signal_facing_cos"
+                            }
+                           ]
+                          },
+                          {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              },
+                              {
+                               "sub": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "dev_position"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "kin_position"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "cmp": "le",
+                        "lhs": {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "rhs": {
+                         "mul": [
+                          {
+                           "param": "p.ped_signal_facing_reach"
+                          },
+                          {
+                           "param": "p.ped_signal_facing_reach"
+                          }
+                         ]
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "or": [
+               {
+                "rises": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 },
+                 {
+                  "not": {
+                   "rises": {
+                    "not": {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "r"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "lane"
+           },
+           "var": "r"
+          }
+         ]
+        },
+        "exists_device": {
+         "lit": "pedestrian_signal"
+        },
+        "var": "d"
+       },
+       {
+        "not": {
+         "since": [
+          {
+           "not": {
+            "body": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "sw_since"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            "exists_region": {
+             "lit": "sidewalk"
+            },
+            "var": "sw_since"
+           }
+          },
+          {
+           "or": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "r2"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "or": [
+                   {
+                    "rises": {
+                     "not": {
+                      "body": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "sw_before"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      "exists_region": {
+                       "lit": "sidewalk"
+                      },
+                      "var": "sw_before"
+                     }
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "body": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "sw_before"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      "exists_region": {
+                       "lit": "sidewalk"
+                      },
+                      "var": "sw_before"
+                     },
+                     {
+                      "not": {
+                       "rises": {
+                        "body": {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "var": "sw_before"
+                          }
+                         ],
+                         "atom": "rel_occupies",
+                         "params": []
+                        },
+                        "exists_region": {
+                         "lit": "sidewalk"
+                        },
+                        "var": "sw_before"
+                       }
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "d2"
+                      },
+                      {
+                       "var": "r2"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "d2"
+                        },
+                        {
+                         "lit": "walk"
+                        }
+                       ],
+                       "atom": "dev_pedestrian_signal_state",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "cmp": "gt",
+                         "lhs": {
+                          "add": [
+                           {
+                            "mul": [
+                             {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "lit": "x"
+                               }
+                              ],
+                              "measure": "kin_heading"
+                             },
+                             {
+                              "sub": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "d2"
+                                 },
+                                 {
+                                  "lit": "x"
+                                 }
+                                ],
+                                "measure": "dev_position"
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "subject"
+                                 },
+                                 {
+                                  "lit": "x"
+                                 }
+                                ],
+                                "measure": "kin_position"
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           {
+                            "mul": [
+                             {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "lit": "y"
+                               }
+                              ],
+                              "measure": "kin_heading"
+                             },
+                             {
+                              "sub": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "d2"
+                                 },
+                                 {
+                                  "lit": "y"
+                                 }
+                                ],
+                                "measure": "dev_position"
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "subject"
+                                 },
+                                 {
+                                  "lit": "y"
+                                 }
+                                ],
+                                "measure": "kin_position"
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 1,
+                           "num": 0
+                          },
+                          "unit": "metre"
+                         }
+                        },
+                        {
+                         "and": [
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "mul": [
+                             {
+                              "add": [
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             {
+                              "add": [
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "rhs": {
+                            "mul": [
+                             {
+                              "mul": [
+                               {
+                                "param": "p.ped_signal_facing_cos"
+                               },
+                               {
+                                "param": "p.ped_signal_facing_cos"
+                               }
+                              ]
+                             },
+                             {
+                              "add": [
+                               {
+                                "mul": [
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "mul": [
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "cmp": "le",
+                           "lhs": {
+                            "add": [
+                             {
+                              "mul": [
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               },
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             {
+                              "mul": [
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               },
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "rhs": {
+                            "mul": [
+                             {
+                              "param": "p.ped_signal_facing_reach"
+                             },
+                             {
+                              "param": "p.ped_signal_facing_reach"
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_device": {
+                   "lit": "pedestrian_signal"
+                  },
+                  "var": "d2"
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "roadway"
+             },
+             "var": "r2"
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "r2"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "or": [
+                   {
+                    "rises": {
+                     "not": {
+                      "body": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "sw_before"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      "exists_region": {
+                       "lit": "sidewalk"
+                      },
+                      "var": "sw_before"
+                     }
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "body": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "sw_before"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      "exists_region": {
+                       "lit": "sidewalk"
+                      },
+                      "var": "sw_before"
+                     },
+                     {
+                      "not": {
+                       "rises": {
+                        "body": {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "var": "sw_before"
+                          }
+                         ],
+                         "atom": "rel_occupies",
+                         "params": []
+                        },
+                        "exists_region": {
+                         "lit": "sidewalk"
+                        },
+                        "var": "sw_before"
+                       }
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "d2"
+                      },
+                      {
+                       "var": "r2"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "d2"
+                        },
+                        {
+                         "lit": "walk"
+                        }
+                       ],
+                       "atom": "dev_pedestrian_signal_state",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "cmp": "gt",
+                         "lhs": {
+                          "add": [
+                           {
+                            "mul": [
+                             {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "lit": "x"
+                               }
+                              ],
+                              "measure": "kin_heading"
+                             },
+                             {
+                              "sub": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "d2"
+                                 },
+                                 {
+                                  "lit": "x"
+                                 }
+                                ],
+                                "measure": "dev_position"
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "subject"
+                                 },
+                                 {
+                                  "lit": "x"
+                                 }
+                                ],
+                                "measure": "kin_position"
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           {
+                            "mul": [
+                             {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "lit": "y"
+                               }
+                              ],
+                              "measure": "kin_heading"
+                             },
+                             {
+                              "sub": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "d2"
+                                 },
+                                 {
+                                  "lit": "y"
+                                 }
+                                ],
+                                "measure": "dev_position"
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "subject"
+                                 },
+                                 {
+                                  "lit": "y"
+                                 }
+                                ],
+                                "measure": "kin_position"
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 1,
+                           "num": 0
+                          },
+                          "unit": "metre"
+                         }
+                        },
+                        {
+                         "and": [
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "mul": [
+                             {
+                              "add": [
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             {
+                              "add": [
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "mul": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_heading"
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "rhs": {
+                            "mul": [
+                             {
+                              "mul": [
+                               {
+                                "param": "p.ped_signal_facing_cos"
+                               },
+                               {
+                                "param": "p.ped_signal_facing_cos"
+                               }
+                              ]
+                             },
+                             {
+                              "add": [
+                               {
+                                "mul": [
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               {
+                                "mul": [
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "sub": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "d2"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "dev_position"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "kin_position"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "cmp": "le",
+                           "lhs": {
+                            "add": [
+                             {
+                              "mul": [
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               },
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "x"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             {
+                              "mul": [
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               },
+                               {
+                                "sub": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "d2"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "dev_position"
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "kin_position"
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "rhs": {
+                            "mul": [
+                             {
+                              "param": "p.ped_signal_facing_reach"
+                             },
+                             {
+                              "param": "p.ped_signal_facing_reach"
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_device": {
+                   "lit": "pedestrian_signal"
+                  },
+                  "var": "d2"
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "lane"
+             },
+             "var": "r2"
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_283_1d3_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-283-1d3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "and": [
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "lit": "dont_walk_flashing"
+                 }
+                ],
+                "atom": "dev_pedestrian_signal_state",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "d"
+                    }
+                   ],
+                   "atom": "dev_pedestrian_signal_countdown",
+                   "params": []
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "cmp": "gt",
+                    "lhs": {
+                     "add": [
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "rhs": {
+                     "lit": {
+                      "den": 1,
+                      "num": 0
+                     },
+                     "unit": "metre"
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "ge",
+                      "lhs": {
+                       "mul": [
+                        {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "rhs": {
+                       "mul": [
+                        {
+                         "mul": [
+                          {
+                           "param": "p.ped_signal_facing_cos"
+                          },
+                          {
+                           "param": "p.ped_signal_facing_cos"
+                          }
+                         ]
+                        },
+                        {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "cmp": "le",
+                      "lhs": {
+                       "add": [
+                        {
+                         "mul": [
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "mul": [
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "rhs": {
+                       "mul": [
+                        {
+                         "param": "p.ped_signal_facing_reach"
+                        },
+                        {
+                         "param": "p.ped_signal_facing_reach"
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "or": [
+             {
+              "rises": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             },
+             {
+              "and": [
+               {
+                "not": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               },
+               {
+                "not": {
+                 "rises": {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "roadway"
+       },
+       "var": "r"
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "lit": "dont_walk_flashing"
+                 }
+                ],
+                "atom": "dev_pedestrian_signal_state",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "d"
+                    }
+                   ],
+                   "atom": "dev_pedestrian_signal_countdown",
+                   "params": []
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "cmp": "gt",
+                    "lhs": {
+                     "add": [
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "rhs": {
+                     "lit": {
+                      "den": 1,
+                      "num": 0
+                     },
+                     "unit": "metre"
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "ge",
+                      "lhs": {
+                       "mul": [
+                        {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_heading"
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "rhs": {
+                       "mul": [
+                        {
+                         "mul": [
+                          {
+                           "param": "p.ped_signal_facing_cos"
+                          },
+                          {
+                           "param": "p.ped_signal_facing_cos"
+                          }
+                         ]
+                        },
+                        {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            },
+                            {
+                             "sub": [
+                              {
+                               "args": [
+                                {
+                                 "var": "d"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "dev_position"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_position"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "cmp": "le",
+                      "lhs": {
+                       "add": [
+                        {
+                         "mul": [
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "mul": [
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          },
+                          {
+                           "sub": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "dev_position"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "kin_position"
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "rhs": {
+                       "mul": [
+                        {
+                         "param": "p.ped_signal_facing_reach"
+                        },
+                        {
+                         "param": "p.ped_signal_facing_reach"
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "or": [
+             {
+              "rises": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             },
+             {
+              "and": [
+               {
+                "not": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               },
+               {
+                "not": {
+                 "rises": {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "lane"
+       },
+       "var": "r"
+      }
+     ]
+    },
+    "forall_device": {
+     "lit": "pedestrian_signal"
+    },
+    "var": "d"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "f18ae1244ecfbb73cc593f8b",
+  "candidate_digest": "bb44b37ea7b6bdaf596837b1674acb0d4f30e40d31b77cf20a78cf5badceafba"
+ }
+}

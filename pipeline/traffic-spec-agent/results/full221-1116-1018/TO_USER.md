@@ -860,6 +860,8 @@ _Observed during iteration 3: these items record what the run reported then, not
 
 ## Iteration 4
 
+_Observed during iteration 4: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - planner's note for the operator (iteration 4, `iter-004/plan/batch-01`, note 1, section 85c1b919912e69ae; a report, it decides nothing): **Unresolved aggregates block four records** (`LVMC_11_52_030_A` s9, `LVMC_11_52_030_B` s4/s6, `LVMC_11_52_300` s1). In each case the run's reading leaves every candidate class unresolved, so the membership leaf can never be decided. Two ways to unblock them:
   - a reading review: classify `ru.taxicab` as included under `DEF-LVMC-11-02-140::taxicab` by its markings (status), as G82 also asks;
   - the new class atoms the gaps propose.
@@ -899,3 +901,81 @@ _Observed during iteration 3: these items record what the run reported then, not
 - `NRS-484B-287-1e`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-363-4`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `LVMC-11-40-180-C`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 5
+
+- parameter `p.pedestrian_clearing_speed_min` = 0.5 m/s proposed by `NRS_484B_283_1d4_o2` (the speed below which a pedestrian still on the roadway counts as lingering rath); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- `NRS-484B-283-1d3` span r composes accepted `NRS_484B_287_1c` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `NRS_484B_287_1d` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `NRS_484B_287_1e` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `LVMC_11_30_060_A` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `LVMC_11_30_060_B` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `LVMC_11_46_030_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span r composes accepted `LVMC_11_46_030_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d3` span ref2 borrows from `NRS-484B-283-1d1` the words “While the “Walk” indication or walking person symbol is illuminated, pedestrians facing the signal may proceed across the highway in the direction of the signal” — its elements carry them; the source's duties are not this rule's
+- `NRS-484B-283-1d1` (NRS_484B_283_1d1) reads "by the drivers of all vehicles." (agency) through conduct: 'the drivers' is read through the vehicles' controlled motion: the duty binds each vehicle's conduct whoever or whatever controls it.
+- `NRS-484B-283-1d1` span r composes accepted `NRS_484B_287_1c` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `NRS_484B_287_1d` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `NRS_484B_287_1e` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `LVMC_11_30_060_A` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `LVMC_11_30_060_B` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `LVMC_11_46_030_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d1` span r composes accepted `LVMC_11_46_030_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `NRS_484B_287_1c` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `NRS_484B_287_1d` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `NRS_484B_287_1e` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `LVMC_11_30_060_A` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `LVMC_11_30_060_B` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `LVMC_11_46_030_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d2` span r composes accepted `LVMC_11_46_030_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `NRS_484B_287_1c` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `NRS_484B_287_1d` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `NRS_484B_287_1e` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `LVMC_11_30_060_A` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `LVMC_11_30_060_B` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `LVMC_11_46_030_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span r composes accepted `LVMC_11_46_030_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1d4` span ref2 borrows from `NRS-484B-283-1d1` the words “While the “Walk” indication or walking person symbol is illuminated, pedestrians facing the signal may proceed across the highway in the direction of the signal” — its elements carry them; the source's duties are not this rule's
+- `NRS-484B-283-1d4` span ref2 borrows from `NRS-484B-283-1d2` the words “While the “Don’t Walk” or “Wait” indication or an upraised hand symbol is illuminated, is flashing and is accompanied by a countdown timer, a pedestrian may proceed across the highway in the direction of the signal” — its elements carry them; the source's duties are not this rule's
+- `NRS-484B-777-1` (NRS_484B_777_1_o1) reads "Every person operating a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: 'person operating' is read through the device's controlled motion on the roadway, whoever controls it.
+- `NRS-484B-777-1` span s3 composes accepted `NRS_484B_785_1a` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-283-1b` (NRS_484B_283_1b) reads "which is so close that it is impossible for the driver to yield." (agency) through conduct: 'the driver' is read through the vehicle's motion: whether the vehicle can stop, whoever or whatever controls it.
+- `NRS-484B-283-1b` span r composes accepted `NRS_484B_287_1c` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `NRS_484B_287_1d` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `NRS_484B_287_1e` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `LVMC_11_30_060_A` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `LVMC_11_30_060_B` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `LVMC_11_46_030_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1b` span r composes accepted `LVMC_11_46_030_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` (NRS_484B_283_1a) reads "the driver of a vehicle" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.
+- `NRS-484B-283-1a` (NRS_484B_283_1a) reads "When official traffic-control devices are not in place or not in operation," (status) through conduct: 'official' is read through the presence of the signal heads in the scene.
+- `NRS-484B-283-1a` span r composes accepted `NRS_484B_287_1c` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `NRS_484B_287_1d` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `NRS_484B_287_1e` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `LVMC_11_30_060_A` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `LVMC_11_30_060_B` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `LVMC_11_46_030_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-283-1a` span r composes accepted `LVMC_11_46_030_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-217-2` (NRS_484B_217_2) reads "a driver" (agency) through conduct: 'a driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it
+- `NRS-484B-217-2` (NRS_484B_217_2) reads "to an adjoining highway if the driver has first given the appropriate turn signal" (purpose) through conduct: 'to an adjoining highway' is read through the conduct it explains: the subject reaching another highway within the turn window after the crossing
+- `NRS-484B-217-2` span s13 composes accepted `NRS_484B_413_2` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-217-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-283-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-283-1b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-283-1d1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-283-1d2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-283-1d3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-283-1d4`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-777-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

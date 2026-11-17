@@ -1,0 +1,337 @@
+{
+ "node_id": "NRS_484B_283_1a",
+ "law_refs": [
+  "NRS-484B-283-1a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "r",
+   "text": "Except as otherwise provided in NRS 484B.287 [NRS-484B-287-1c, NRS-484B-287-1d, NRS-484B-287-1e, LVMC-11-30-060-A, LVMC-11-30-060-B], 484B.290 [LVMC-11-30-140-B] and 484B.350 [LVMC-11-46-030]:",
+   "role": "reference"
+  },
+  {
+   "id": "c1",
+   "text": "When official traffic-control devices are not in place or not in operation,",
+   "role": "condition"
+  },
+  {
+   "id": "s",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "ob",
+   "text": "shall yield the right-of-way,",
+   "role": "obligation"
+  },
+  {
+   "id": "st",
+   "text": "slowing down or stopping if need be so to yield,",
+   "role": "standard"
+  },
+  {
+   "id": "c2",
+   "text": "to a pedestrian crossing the highway within a crosswalk",
+   "role": "condition"
+  },
+  {
+   "id": "c3",
+   "text": "when the pedestrian is upon the half of the highway upon which the vehicle is traveling or onto which the vehicle is turning,",
+   "role": "condition"
+  },
+  {
+   "id": "st2",
+   "text": "or when the pedestrian is approaching so closely from the opposite half of the highway as to be in danger.",
+   "role": "standard"
+  },
+  {
+   "id": "d",
+   "text": "As used in this section, “half of the highway” means all traffic lanes of a highway which are designated for traffic traveling in one direction, and includes the entire highway in the case of a one-way highway.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.pedestrian_signal",
+    "dev.governs",
+    "dev.inoperative",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The official traffic-control devices (DEF-NRS-484A-145: every 'sign, signal, marking and device ... for the purpose of regulating, warning or guiding traffic') that regulate a crosswalk crossing are the vehicular signal heads (dev.traffic_signal, state including 'dark') and pedestrian heads (dev.pedestrian_signal, state including 'dark') that control the travel regions the vehicle and the pedestrian are in: dev.governs ('the travel regions whose traffic the device controls'), with rel.occupies anchoring each road user in a governed region (kind st.travel_region). 'not in operation' is a head showing 'dark' or dev.inoperative ('a signal head installed and uncovered but showing no valid indication'); 'not in place' is no such head governing those regions. dev.governs is used for control, not for a position, as its exclusion requires."
+  },
+  {
+   "span": "s",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver of a vehicle' maps, as in the run's index, to the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exceptions decided by the reading); 'driver' (DEF-NRS-484A-080) is a role, read through the vehicle's controlled motion."
+  },
+  {
+   "span": "ob",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "Yielding the right-of-way (DEF-NRS-484A-210: 'the right of one vehicle or pedestrian to proceed in a lawful manner in preference to another') is observed as the vehicle not reaching the pedestrian: no rel.contact ('the bodies of two road users ... touch or overlap') and the vehicle's speed (kin.speed) bounded as the standard below sets; as mapped in the run's index for 'shall yield the right-of-way'."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "'a pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian. 'crossing the highway within a crosswalk': the crosswalk (DEF-NRS-484A-065: 'That part of a highway at an intersection included within the connections of the lateral lines of the sidewalks ... or (2) Any portion of a highway ... distinctly indicated for pedestrian crossing') is st.crosswalk ('marked crossing, or the unmarked prolongation of sidewalks at an intersection'), marked or unmarked, so the definition's whole extent is kept; rel.occupies places the pedestrian's footprint in it."
+  },
+  {
+   "span": "c3",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.one_way_roadway",
+    "st.lane_direction",
+    "kin.heading"
+   ],
+   "derived": [],
+   "justification": "By the section's own definition, a half of the highway is 'all traffic lanes ... designated for traffic traveling in one direction': the pedestrian's footprint overlaps (rel.occupies) a lane (st.lane) or a one-way roadway (st.one_way_roadway, 'the entire highway in the case of a one-way highway') whose designated direction (st.lane_direction, 'direction of travel designated for a structure a vehicle travels in') points with the vehicle's heading (kin.heading, 'direction the body points'): the half on which the vehicle travels, or, while it turns, the half its heading has turned onto. kin.heading is read as the direction of travel of a vehicle driven forward; st.lane 'Not a stand-in for' a half of the roadway does not apply because the half is assembled from the lanes' designated directions, as the definition itself builds it."
+  },
+  {
+   "span": "d",
+   "atoms": [
+    "st.lane",
+    "st.lane_direction",
+    "st.one_way_roadway"
+   ],
+   "derived": [],
+   "justification": "The section's definition of 'half of the highway' ('all traffic lanes of a highway which are designated for traffic traveling in one direction', 'the entire highway in the case of a one-way highway') is carried by the lanes (st.lane) grouped by their designated direction (st.lane_direction) and by a one-way roadway (st.one_way_roadway, 'roadway on which traffic is restricted to one direction'), the atoms c3 and st2 read."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "st",
+   "standard": "slowing down or stopping if need be so to yield (the right-of-way's 'danger of a crash unless one grants precedence')",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: while the vehicle moves (speed above the halt tolerance), a predicted closest approach of the two centres within the conflict horizon at a centre distance below the conflict clearance is a danger of a crash the driver has not yielded to; a vehicle at rest has slowed or stopped as need be",
+   "surrogate": false
+  },
+  {
+   "span": "st2",
+   "standard": "approaching so closely from the opposite half as to be in danger",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.occupies",
+    "st.lane",
+    "st.lane_direction",
+    "kin.heading"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: a pedestrian in the crosswalk on a lane whose designated direction points against the vehicle's heading is in danger where the predicted closest approach of the two centres falls within the conflict horizon at a centre distance below the conflict clearance",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1c",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1d",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1e",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_A",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_B",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), not engaged by LVMC_11_30_140_B_o1, LVMC_11_30_140_B_o2, LVMC_11_46_030_o1 or LVMC_11_46_030_o2. Devices are not in place or not in operation: every traffic signal head (dev.traffic_signal) that governs (dev.governs) a travel region the subject occupies shows dark or is inoperative (dev.inoperative). There is a pedestrian p (ru.aggregate DEF-NRS-484A-165::pedestrian) whose footprint overlaps a crosswalk (st.crosswalk), such that every pedestrian signal head governing a travel region p occupies shows dark, p is not engaged by NRS_484B_287_1c, NRS_484B_287_1d, NRS_484B_287_1e, LVMC_11_30_060_A or LVMC_11_30_060_B, and either (a) p's footprint overlaps a lane or one-way roadway whose designated direction (st.lane_direction) has a positive dot product with the subject's heading (kin.heading) — the subject's half — or (b) otherwise (p on the opposite half) the predicted closest approach of the subject and p falls within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "obligation": "For every such pedestrian p: the subject is not in contact with p (rel.contact), and where the subject's speed (kin.speed) is above p.halt_speed_tolerance, it is not the case that the closest approach of the subject and p falls within p.conflict_horizon at a centre distance below p.conflict_centre_clearance.",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s",
+   "why": "'the driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c1",
+   "why": "'official' is read through the presence of the signal heads in the scene.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "No signal head governs the subject's lane; a pedestrian stands in an unmarked crosswalk on a lane whose direction matches the subject's heading, 15 m ahead; the subject moves at 10 m/s with a predicted closest approach of 0.5 m in 1.5 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene, but the subject is at rest (speed 0.0 m/s) before the crosswalk while the pedestrian crosses its half."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A traffic signal head governing the subject's lane shows circular_green: the devices are in operation."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "No signal head governs the subject's lane; a pedestrian near the crosswalk is on the predicted collision course, but whether its footprint overlaps the crosswalk is not observed.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "No signal heads and no pedestrian anywhere in the scene: the duty is decided for the subject alone as not engaged."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian in the crosswalk on the opposite half, on a lane whose direction points against the subject's heading, with no predicted closest approach within the horizon."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (Hayward 1972; Swedish traffic conflict technique)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_060_A": "b25abeb2b072cc20adb2f7a822ab21509f741e809097b85891f031d5268ae88e",
+  "LVMC_11_30_060_B": "71bec52093f93801bd1f41edfbe97f4ac0c9bb11ccc613e801f4a9b7c4c86ac1",
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1",
+  "LVMC_11_46_030_o1": "6b22faa56ad9d67e840373b0eb1578cc2c1d82d0374edd04dbfe9b9bcabf52a2",
+  "LVMC_11_46_030_o2": "c24852cc030e8482ca411e31fc3f93fd82b053e08138b9598e345cba39b1b7e0",
+  "NRS_484B_287_1c": "4184e64459a2f1c6e4e0009b7f0ad70732d4c089694a31254ade8d1df8faff95",
+  "NRS_484B_287_1d": "35f17d5c1df998d5c2e9db99e1a0fa75ab5bd1c28fba4fb93fb84d4516a068e5",
+  "NRS_484B_287_1e": "1a60ada8f73279c767abb9c1b8b4a2ce78a9d2cc6b30a3931701edbfea1d3ca4"
+ }
+}

@@ -1,0 +1,123 @@
+'TrafficSpec.Rules.NRS_484B_777_1_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_777_1_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_777_1_o1","intentions":["int.left_turn"],"laws":["NRS-484B-777-1"],"narrowings":[],"operationalizations":[{"concepts":["kin.speed"],"params":["p.commensurate_speed_margin","p.halt_speed_tolerance","p.nearby_traffic_reach"],"standard":"a rate of speed commensurate with the speed of nearby traffic","surrogate":false},{"concepts":["prim.region_lateral_offset","rel.bearing","rel.surface_gap","st.lane_width","st.obstruction"],"params":["p.right_side_impede_reach","p.shared_lane_min_width"],"standard":"when doing so would not be safe","surrogate":false},{"concepts":["kin.extent","prim.region_lateral_offset","st.road_edge"],"params":["p.bicycle_keep_right_gap"],"standard":"as near to the right side of the roadway as practicable","surrogate":false},{"concepts":["rel.bearing","rel.surface_gap","st.lane_width","st.obstruction"],"params":["p.right_side_impede_reach","p.shared_lane_min_width"],"standard":"the conditions under which it is not safe ... include, without limitation","surrogate":false},{"concepts":["rel.occupies","st.lane","st.lane_width"],"params":["p.shared_lane_min_width"],"standard":"a lane too narrow for a bicycle and a vehicle to travel safely side by side within the lane","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"and":[{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"map":{"subject":"subject"},"rule":"NRS_484B_785_1a"},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"args":[{"var":"o"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.nearby_traffic_reach"}}]}]},{"cmp":"le","lhs":{"args":[{"var":"o"}],"measure":"kin_speed"},"rhs":{"add":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.commensurate_speed_margin"}]}}]},"forall_user":"o"}]}]}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"t"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"int":"int.left_turn"}]},"exists_region":{"lit":"intersection"},"var":"t"},{"body":{"and":[{"args":[{"var":"t"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"int":"int.left_turn"}]},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"t"}]}]},"exists_region":{"lit":"highway"},"var":"h"}]},"exists_region":{"lit":"roadway"},"var":"r"}},{"not":{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"o"},{"var":"r"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"},{"var":"r"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"param":"p.right_side_impede_reach"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},"exists_region":{"lit":"obstruction"},"var":"o"}]},"exists_region":{"lit":"roadway"},"var":"r"},{"or":[{"body":{"and":[{"not":{"same":[{"var":"u"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.right_side_impede_reach"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"u"},{"lit":"x"}],"measure":"rel_bearing"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"u"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]},"exists_user":"u"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"l"}],"measure":"st_lane_width"},"rhs":{"param":"p.shared_lane_min_width"}}]},"exists_region":{"lit":"lane"},"var":"l"}]}]}}]}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"NRS_484B_777_1_o1","intentions":["int.left_turn"],"laws":["NRS-484B-777-1"],"narrowings":[],"obligation":{"body":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"sub":[{"add":[{"neg":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"}},{"neg":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"}}]},{"args":[{"var":"subject"},{"lit":"width"}],"measure":"kin_extent"}]},"rhs":{"add":[{"param":"p.bicycle_keep_right_gap"},{"param":"p.bicycle_keep_right_gap"}]}}]}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"exists_region":{"lit":"highway"},"var":"h"}]},"exists_region":{"lit":"roadway"},"var":"r"},"defined_when":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"exists_region":{"lit":"highway"},"var":"h"}]},"exists_region":{"lit":"roadway"},"var":"r"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"and":[{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"map":{"subject":"subject"},"rule":"NRS_484B_785_1a"},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"args":[{"var":"o"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.nearby_traffic_reach"}}]}]},{"cmp":"le","lhs":{"args":[{"var":"o"}],"measure":"kin_speed"},"rhs":{"add":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.commensurate_speed_margin"}]}}]},"forall_user":"o"}]}]}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"t"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"int":"int.left_turn"}]},"exists_region":{"lit":"intersection"},"var":"t"},{"body":{"and":[{"args":[{"var":"t"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"int":"int.left_turn"}]},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"t"}]}]},"exists_region":{"lit":"highway"},"var":"h"}]},"exists_region":{"lit":"roadway"},"var":"r"}},{"not":{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"o"},{"var":"r"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"},{"var":"r"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"param":"p.right_side_impede_reach"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},"exists_region":{"lit":"obstruction"},"var":"o"}]},"exists_region":{"lit":"roadway"},"var":"r"},{"or":[{"body":{"and":[{"not":{"same":[{"var":"u"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.right_side_impede_reach"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"u"},{"lit":"x"}],"measure":"rel_bearing"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"u"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]},"exists_user":"u"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"l"}],"measure":"st_lane_width"},"rhs":{"param":"p.shared_lane_min_width"}}]},"exists_region":{"lit":"lane"},"var":"l"}]}]}}]}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"NRS_484B_777_1_o1","intentions":["int.left_turn"],"laws":["NRS-484B-777-1"],"narrowings":[],"obligation":{"body":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"sub":[{"add":[{"neg":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"}},{"neg":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"}}]},{"args":[{"var":"subject"},{"lit":"width"}],"measure":"kin_extent"}]},"rhs":{"add":[{"param":"p.bicycle_keep_right_gap"},{"param":"p.bicycle_keep_right_gap"}]}}]}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"exists_region":{"lit":"highway"},"var":"h"}]},"exists_region":{"lit":"roadway"},"var":"r"},"defined_when":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"exists_region":{"lit":"highway"},"var":"h"}]},"exists_region":{"lit":"roadway"},"var":"r"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_roadway,rel_occupies,kin_speed,rel_surface_gap,st_highway,st_on_way,st_intersection,st_driveway_or_alley_entrance,st_obstruction,prim_region_offset_along,prim_region_lateral_offset,rel_bearing,st_lane,st_lane_width,st_road_edge,kin_extent
+COMPOSES	NRS_484B_785_1a
+AGGREGATES	DEF-NRS-484A-025::bicycle	DEF-NRS-484B-017::electric_bicycle	DEF-NRS-484B-018::electric_scooter	DEF-NRS-484A-285::traffic	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	subject
+OCC	$,subject
+OCC	?o
+OCC	o,subject
+OCC	o
+OCC	subject,o
+OCC	o
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?h
+OCC	r,h
+OCC	?t
+OCC	t,h
+OCC	?t
+OCC	t,h
+OCC	?r
+OCC	subject,r
+OCC	?o
+OCC	subject
+OCC	o
+OCC	r
+OCC	subject,o,r
+OCC	subject
+OCC	o
+OCC	?u
+OCC	u,subject
+OCC	u
+OCC	u
+OCC	u
+OCC	subject,u
+OCC	subject
+OCC	u
+OCC	subject
+OCC	u
+OCC	?l
+OCC	subject,l
+OCC	l
+OCC	?r
+OCC	subject,r
+OCC	?h
+OCC	r,h
+OCC	?e
+OCC	e,h
+OCC	subject
+OCC	e
+OCC	?r
+OCC	subject,r
+OCC	?h
+OCC	r,h
+OCC	?e
+OCC	e,h
+OCC	subject
+OCC	e
+OCC	subject,e
+OCC	subject,e
+OCC	subject
+TIME	occurrences	0
+TIME	checks	201
+TIME	lint	93
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	206
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	203
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	194
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	205
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	197
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	202
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	205
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	200
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	203
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	200
+SCEN	branch_7	not_applicable	not_applicable	ok
+TIME	scenario:branch_7	205
+SCEN	branch_8	not_applicable	not_applicable	ok
+TIME	scenario:branch_8	205
+SCEN	branch_9	not_applicable	not_applicable	ok
+TIME	scenario:branch_9	200
+SCEN	branch_10	violated	violated	ok
+TIME	scenario:branch_10	202
+TIME	witnesses	2827
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_777_1_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_777_1_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_777_1_o1	33	13
+TIME	adequacy_start	65
+TIME	adequacy	65799
+DONE

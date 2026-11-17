@@ -1,0 +1,262 @@
+{
+ "node_id": "NRS_484B_283_1d2",
+ "law_refs": [
+  "NRS-484B-283-1d2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "r",
+   "text": "Except as otherwise provided in NRS 484B.287 [NRS-484B-287-1c, NRS-484B-287-1d, NRS-484B-287-1e, LVMC-11-30-060-A, LVMC-11-30-060-B], 484B.290 [LVMC-11-30-140-B] and 484B.350 [LVMC-11-46-030]:",
+   "role": "reference"
+  },
+  {
+   "id": "c0",
+   "text": "Whenever signals exhibiting the words “Walk,” “Don’t Walk,” “Wait” or similar symbols are in place, such signals indicate as follows:",
+   "role": "condition"
+  },
+  {
+   "id": "t",
+   "text": "While the “Don’t Walk” or “Wait” indication or an upraised hand symbol is illuminated, is flashing and is accompanied by a countdown timer,",
+   "role": "trigger"
+  },
+  {
+   "id": "s",
+   "text": "a pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "c",
+   "text": "may proceed across the highway in the direction of the signal,",
+   "role": "condition"
+  },
+  {
+   "id": "ob",
+   "text": "but must complete the crossing before the countdown timer gets to zero.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c0",
+   "atoms": [
+    "dev.pedestrian_signal",
+    "dev.governs",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "Signals exhibiting 'Walk', 'Don't Walk', 'Wait' or similar symbols are pedestrian heads (dev.pedestrian_signal: 'a pedestrian head; state ∈ {walk, dont_walk_flashing, dont_walk_steady, dark}; countdown attribute when a timer is displayed'); 'such signals' regulate the crossing of the roadway they control, read through dev.governs ('the travel regions whose traffic the device controls — a lane, ... roadway'; traffic includes pedestrians, DEF-NRS-484A-285) on a roadway or lane (kinds st.roadway, st.lane)."
+  },
+  {
+   "span": "t",
+   "atoms": [
+    "dev.pedestrian_signal"
+   ],
+   "derived": [],
+   "justification": "'“Don’t Walk” or “Wait” indication or an upraised hand symbol is illuminated, is flashing and is accompanied by a countdown timer' is the head's state dont_walk_flashing with its countdown attribute displayed."
+  },
+  {
+   "span": "s",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'a pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian."
+  },
+  {
+   "span": "c",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane",
+    "kin.heading",
+    "kin.position",
+    "dev.position"
+   ],
+   "derived": [],
+   "justification": "The pedestrian who proceeds across the highway under this indication is one whose footprint came onto the governed roadway or lane (rel.occupies of st.roadway / st.lane) while the head showed it, facing the head: the head's location (dev.position, 'location of the device head') ahead of the pedestrian's position (kin.position) along its heading (kin.heading, 'direction the body points') within a cone and a reach — the direction of the signal. dev.position is not used as a crossing or a stop line."
+  },
+  {
+   "span": "ob",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane",
+    "dev.pedestrian_signal"
+   ],
+   "derived": [],
+   "justification": "Completing the crossing is having left the roadway or lane crossed: the pedestrian's footprint no longer overlaps it (rel.occupies). The countdown timer gets to zero at the end of the flashing interval it times, where the head stops showing the flashing indication with a countdown and shows dont_walk_steady (dev.pedestrian_signal states dont_walk_flashing with countdown, then dont_walk_steady)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1c",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1d",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1e",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_A",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_B",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o1",
+   "map": {
+    "subject": "v"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o2",
+   "map": {
+    "subject": "v"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian), not engaged by NRS_484B_287_1c, NRS_484B_287_1d, NRS_484B_287_1e, LVMC_11_30_060_A, LVMC_11_30_060_B, LVMC_11_30_140_B_o1 or LVMC_11_30_140_B_o2, with no vehicle v of the scene engaged by LVMC_11_46_030_o1 or LVMC_11_46_030_o2. The judged observation is the countdown's end for a pedestrian head d governing (dev.governs) a roadway or lane r: d shows dont_walk_steady here and showed dont_walk_flashing with its countdown at the previous observation. The subject's latest entry onto r (the latest earlier observation at which its footprint came to overlap r, not overlapping it at the observation before; history bound: that entry, searched back without other limit) was made while d showed dont_walk_flashing with its countdown and the subject faced d, and d showed dont_walk_flashing with countdown at every observation from that entry to the previous one. The subject faces d where, with Δ the vector from its kin.position to d's dev.position and h its kin.heading: h·Δ > 0, (h·Δ)² ≥ p.ped_signal_facing_cos² · (Δx² + Δy²), and Δx² + Δy² ≤ p.ped_signal_facing_reach². Where the entry lies before the recording, applicability is unknown.",
+ "obligation": "At the countdown's end the subject's footprint does not overlap r (rel.occupies): it has completed the crossing.",
+ "params": [
+  "p.ped_signal_facing_cos",
+  "p.ped_signal_facing_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "ob",
+   "why": "the countdown's reaching zero is read as the head's change from the flashing indication with countdown to the steady indication, which ends the interval the timer counts; the timer's displayed number is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "ob",
+   "why": "'complete the crossing' is read as the pedestrian's footprint having left the roadway or lane governed by the head; a pedestrian on a median or safety zone between roadways has left it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The head governing roadway r shows dont_walk_flashing with countdown; the pedestrian steps onto r facing it, walks slowly, and is still on r when the head turns dont_walk_steady."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The pedestrian steps onto r during the flashing countdown and is on the far sidewalk, off r, when the head turns dont_walk_steady."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The pedestrian entered r while the head showed walk; at the countdown's end it is still on r (the steady-indication duty governs it, not this one)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The pedestrian steps onto r and is on it later, but the head's state is not observed, so neither the countdown interval nor its end can be told.",
+   "masked": [
+    "dev.pedestrian_signal"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the pedestrian already on r while the head shows dont_walk_flashing with countdown; the head turns dont_walk_steady while it is still on r; its entry onto r is not recorded.",
+   "boundary": "the pedestrian's entry onto r, which lies before the recording"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.ped_signal_facing_cos",
+   "unit": "ratio",
+   "value": 0.87,
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a pedestrian signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "MUTCD section 4E.08 (pedestrian signal heads placed at the far end of the crossing, in the pedestrian's line of sight)"
+  },
+  {
+   "name": "p.ped_signal_facing_reach",
+   "unit": "m",
+   "value": 40.0,
+   "convention": "the largest distance from a pedestrian to a pedestrian signal head at which the head counts as the one across the crossing the pedestrian faces: a wide urban crossing (six lanes and a median, about 30 m) plus the head's set-back behind the far curb",
+   "source": "MUTCD section 4E.08; AASHTO Green Book urban cross-section widths"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_060_A": "b25abeb2b072cc20adb2f7a822ab21509f741e809097b85891f031d5268ae88e",
+  "LVMC_11_30_060_B": "71bec52093f93801bd1f41edfbe97f4ac0c9bb11ccc613e801f4a9b7c4c86ac1",
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1",
+  "LVMC_11_46_030_o1": "6b22faa56ad9d67e840373b0eb1578cc2c1d82d0374edd04dbfe9b9bcabf52a2",
+  "LVMC_11_46_030_o2": "c24852cc030e8482ca411e31fc3f93fd82b053e08138b9598e345cba39b1b7e0",
+  "NRS_484B_287_1c": "4184e64459a2f1c6e4e0009b7f0ad70732d4c089694a31254ade8d1df8faff95",
+  "NRS_484B_287_1d": "35f17d5c1df998d5c2e9db99e1a0fa75ab5bd1c28fba4fb93fb84d4516a068e5",
+  "NRS_484B_287_1e": "1a60ada8f73279c767abb9c1b8b4a2ce78a9d2cc6b30a3931701edbfea1d3ca4"
+ }
+}

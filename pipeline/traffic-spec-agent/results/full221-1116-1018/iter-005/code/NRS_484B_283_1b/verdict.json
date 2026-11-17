@@ -1,0 +1,417 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 12 names, composes NRS_484B_287_1c,NRS_484B_287_1d,NRS_484B_287_1e,LVMC_11_30_060_A,LVMC_11_30_060_B,LVMC_11_30_140_B_o1,LVMC_11_30_140_B_o2,LVMC_11_46_030_o1,LVMC_11_46_030_o2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "and": [
+       {
+        "not": {
+         "map": {
+          "subject": "subject"
+         },
+         "rule_applies": "NRS_484B_287_1c"
+        }
+       },
+       {
+        "and": [
+         {
+          "not": {
+           "map": {
+            "subject": "subject"
+           },
+           "rule_applies": "NRS_484B_287_1d"
+          }
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "map": {
+              "subject": "subject"
+             },
+             "rule_applies": "NRS_484B_287_1e"
+            }
+           },
+           {
+            "and": [
+             {
+              "not": {
+               "map": {
+                "subject": "subject"
+               },
+               "rule_applies": "LVMC_11_30_060_A"
+              }
+             },
+             {
+              "and": [
+               {
+                "not": {
+                 "map": {
+                  "subject": "subject"
+                 },
+                 "rule_applies": "LVMC_11_30_060_B"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "map": {
+                    "subject": "subject"
+                   },
+                   "rule_applies": "LVMC_11_30_140_B_o1"
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "not": {
+                     "map": {
+                      "subject": "subject"
+                     },
+                     "rule_applies": "LVMC_11_30_140_B_o2"
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "not": {
+                       "body": {
+                        "map": {
+                         "subject": "v"
+                        },
+                        "rule_applies": "LVMC_11_46_030_o1"
+                       },
+                       "exists_user": "v"
+                      }
+                     },
+                     {
+                      "not": {
+                       "body": {
+                        "map": {
+                         "subject": "v"
+                        },
+                        "rule_applies": "LVMC_11_46_030_o2"
+                       },
+                       "exists_user": "v"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "rises": {
+         "or": [
+          {
+           "body": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "rw"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           "exists_region": {
+            "lit": "roadway"
+           },
+           "var": "rw"
+          },
+          {
+           "not": {
+            "or": [
+             {
+              "body": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "sw"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              "exists_region": {
+               "lit": "sidewalk"
+              },
+              "var": "sw"
+             },
+             {
+              "or": [
+               {
+                "body": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "sz"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                "exists_region": {
+                 "lit": "safety_zone"
+                },
+                "var": "sz"
+               },
+               {
+                "body": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "md"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                "exists_region": {
+                 "lit": "median_or_divider"
+                },
+                "var": "md"
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       {
+        "body": {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "rw"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "roadway"
+        },
+        "var": "rw"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_283_1b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-283-1b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "v"
+         },
+         {
+          "lit": "DEF-NRS-484A-320::vehicle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "and": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "v"
+             }
+            ],
+            "derived": "prim_closest_approach_within",
+            "params": [
+             {
+              "param": "p.conflict_horizon"
+             }
+            ]
+           },
+           {
+            "cmp": "lt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "v"
+              }
+             ],
+             "params": [
+              {
+               "param": "p.conflict_horizon"
+              }
+             ],
+             "quantity": "prim_closest_approach_distance"
+            },
+            "rhs": {
+             "param": "p.conflict_centre_clearance"
+            }
+           }
+          ]
+         },
+         {
+          "cmp": "lt",
+          "lhs": {
+           "mul": [
+            {
+             "cond": {
+              "args": [],
+              "atom": "env_ice_or_snow",
+              "params": []
+             },
+             "else": {
+              "cond": {
+               "args": [],
+               "atom": "env_wet_road",
+               "params": []
+              },
+              "else": {
+               "param": "p.following_decel_dry"
+              },
+              "then": {
+               "param": "p.following_decel_wet"
+              }
+             },
+             "then": {
+              "param": "p.following_decel_ice"
+             }
+            },
+            {
+             "sub": [
+              {
+               "add": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "v"
+                  }
+                 ],
+                 "params": [
+                  {
+                   "param": "p.conflict_horizon"
+                  }
+                 ],
+                 "quantity": "prim_closest_approach_time"
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "v"
+                  }
+                 ],
+                 "params": [
+                  {
+                   "param": "p.conflict_horizon"
+                  }
+                 ],
+                 "quantity": "prim_closest_approach_time"
+                }
+               ]
+              },
+              {
+               "add": [
+                {
+                 "param": "p.driver_reaction_time"
+                },
+                {
+                 "param": "p.driver_reaction_time"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          "rhs": {
+           "args": [
+            {
+             "var": "v"
+            }
+           ],
+           "measure": "kin_speed"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "exists_user": "v"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "35d0d773356638da7437321f",
+  "candidate_digest": "17fe28436a690371fbb78524916de6e72351fdfe31930c038453d8923c642059"
+ }
+}

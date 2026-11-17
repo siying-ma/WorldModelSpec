@@ -1,0 +1,314 @@
+{
+ "node_id": "NRS_484B_283_1d1",
+ "law_refs": [
+  "NRS-484B-283-1d1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "r",
+   "text": "Except as otherwise provided in NRS 484B.287 [NRS-484B-287-1c, NRS-484B-287-1d, NRS-484B-287-1e, LVMC-11-30-060-A, LVMC-11-30-060-B], 484B.290 [LVMC-11-30-140-B] and 484B.350 [LVMC-11-46-030]:",
+   "role": "reference"
+  },
+  {
+   "id": "c0",
+   "text": "Whenever signals exhibiting the words “Walk,” “Don’t Walk,” “Wait” or similar symbols are in place, such signals indicate as follows:",
+   "role": "condition"
+  },
+  {
+   "id": "t",
+   "text": "While the “Walk” indication or walking person symbol is illuminated,",
+   "role": "trigger"
+  },
+  {
+   "id": "c1",
+   "text": "pedestrians facing the signal",
+   "role": "condition"
+  },
+  {
+   "id": "c2",
+   "text": "may proceed across the highway in the direction of the signal",
+   "role": "condition"
+  },
+  {
+   "id": "ob",
+   "text": "and must be given",
+   "role": "obligation"
+  },
+  {
+   "id": "st",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s",
+   "text": "by the drivers of all vehicles.",
+   "role": "subject"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c0",
+   "atoms": [
+    "dev.pedestrian_signal",
+    "dev.governs",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "Signals exhibiting 'Walk', 'Don't Walk', 'Wait' or similar symbols are pedestrian heads (dev.pedestrian_signal: 'a pedestrian head; state ∈ {walk, dont_walk_flashing, dont_walk_steady, dark}'); 'in place' is a head present in the scene. 'such signals' regulate the crossing of the roadway they control: dev.governs ('the travel regions whose traffic the device controls — a lane, ... roadway'), traffic including pedestrians (DEF-NRS-484A-285: 'pedestrians, ridden or herded animals, vehicles'), ties the head to the roadway or lane its crossing traverses (kinds st.roadway, st.lane). dev.governs is not used as a position."
+  },
+  {
+   "span": "t",
+   "atoms": [
+    "dev.pedestrian_signal"
+   ],
+   "derived": [],
+   "justification": "'the “Walk” indication or walking person symbol is illuminated' is the head's state walk (dev.pedestrian_signal state 'walk')."
+  },
+  {
+   "span": "c1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "kin.heading",
+    "kin.position",
+    "dev.position"
+   ],
+   "derived": [],
+   "justification": "'pedestrians' is the admitted aggregate DEF-NRS-484A-165::pedestrian. 'facing the signal': the head's location (dev.position, 'location of the device head / sign face') lies ahead of the pedestrian's position (kin.position) along the direction its body points (kin.heading, 'direction the body points'), within a cone and a reach. dev.position is used as the head's location, not as the place of a stop line or crossing, which its exclusion names."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "'may proceed across the highway in the direction of the signal' identifies the pedestrians the right-of-way is owed to: those on the roadway the head governs (rel.occupies of a st.roadway or st.lane region that head governs), facing the head, so moving toward it across the way. The highway (DEF-NRS-484A-095: 'the entire width between the boundary lines') is crossed by traversing its roadway; the sidewalk the words of the sibling subparagraphs call a place of safety is no part of the crossing."
+  },
+  {
+   "span": "ob",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "Giving the right-of-way (DEF-NRS-484A-210: 'the right of one vehicle or pedestrian to proceed in a lawful manner in preference to another') is observed as the vehicle not reaching the pedestrian (no rel.contact) with its speed (kin.speed) bounded as the standard sets, as the index maps 'Yield'."
+  },
+  {
+   "span": "s",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the drivers of all vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle, the driver read through the vehicle's controlled motion."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "st",
+   "standard": "the right-of-way: precedence where the two approach 'under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence' (DEF-NRS-484A-210)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: while the vehicle moves (speed above the halt tolerance), a predicted closest approach of the two centres within the conflict horizon at a centre distance below the conflict clearance is a danger of a crash in which the vehicle has not granted precedence",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1c",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1d",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1e",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_A",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_B",
+   "map": {
+    "subject": "p"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), not engaged by LVMC_11_30_140_B_o1, LVMC_11_30_140_B_o2, LVMC_11_46_030_o1 or LVMC_11_46_030_o2. There are a pedestrian p (ru.aggregate DEF-NRS-484A-165::pedestrian), a pedestrian signal head d showing walk, and a roadway or lane r governed by d (dev.governs), with p's footprint overlapping r (rel.occupies), p facing d, and p not engaged by NRS_484B_287_1c, NRS_484B_287_1d, NRS_484B_287_1e, LVMC_11_30_060_A or LVMC_11_30_060_B. p faces d where, with Δ the vector from p's kin.position to d's dev.position and h p's kin.heading: h·Δ > 0, (h·Δ)² ≥ p.ped_signal_facing_cos² · (Δx² + Δy²), and Δx² + Δy² ≤ p.ped_signal_facing_reach².",
+ "obligation": "For every such pedestrian p: the subject is not in contact with p (rel.contact), and where the subject's speed (kin.speed) is above p.halt_speed_tolerance, it is not the case that the closest approach of the subject and p falls within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.halt_speed_tolerance",
+  "p.ped_signal_facing_cos",
+  "p.ped_signal_facing_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s",
+   "why": "'the drivers' is read through the vehicles' controlled motion: the duty binds each vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian on the roadway faces a pedestrian head 12 m ahead that governs that roadway and shows walk; the subject turns toward the crossing at 8 m/s with a predicted closest approach of 0.8 m in 1.2 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene with the subject at rest before the crossing."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The faced head shows dont_walk_steady."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same as forbid, but the head's state is not observed.",
+   "masked": [
+    "dev.pedestrian_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The head shows walk but no pedestrian is in the scene: decided for the subject alone as not engaged."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (Hayward 1972; Swedish traffic conflict technique)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.ped_signal_facing_cos",
+   "unit": "ratio",
+   "value": 0.87,
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a pedestrian signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "MUTCD section 4E.08 (pedestrian signal heads placed at the far end of the crossing, in the pedestrian's line of sight)"
+  },
+  {
+   "name": "p.ped_signal_facing_reach",
+   "unit": "m",
+   "value": 40.0,
+   "convention": "the largest distance from a pedestrian to a pedestrian signal head at which the head counts as the one across the crossing the pedestrian faces: a wide urban crossing (six lanes and a median, about 30 m) plus the head's set-back behind the far curb",
+   "source": "MUTCD section 4E.08; AASHTO Green Book urban cross-section widths"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_060_A": "b25abeb2b072cc20adb2f7a822ab21509f741e809097b85891f031d5268ae88e",
+  "LVMC_11_30_060_B": "71bec52093f93801bd1f41edfbe97f4ac0c9bb11ccc613e801f4a9b7c4c86ac1",
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1",
+  "LVMC_11_46_030_o1": "6b22faa56ad9d67e840373b0eb1578cc2c1d82d0374edd04dbfe9b9bcabf52a2",
+  "LVMC_11_46_030_o2": "c24852cc030e8482ca411e31fc3f93fd82b053e08138b9598e345cba39b1b7e0",
+  "NRS_484B_287_1c": "4184e64459a2f1c6e4e0009b7f0ad70732d4c089694a31254ade8d1df8faff95",
+  "NRS_484B_287_1d": "35f17d5c1df998d5c2e9db99e1a0fa75ab5bd1c28fba4fb93fb84d4516a068e5",
+  "NRS_484B_287_1e": "1a60ada8f73279c767abb9c1b8b4a2ce78a9d2cc6b30a3931701edbfea1d3ca4"
+ }
+}

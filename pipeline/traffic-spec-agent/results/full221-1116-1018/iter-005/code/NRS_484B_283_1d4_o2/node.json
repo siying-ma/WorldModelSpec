@@ -1,0 +1,341 @@
+{
+ "node_id": "NRS_484B_283_1d4_o2",
+ "law_refs": [
+  "NRS-484B-283-1d4"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "r",
+   "text": "Except as otherwise provided in NRS 484B.287 [NRS-484B-287-1c, NRS-484B-287-1d, NRS-484B-287-1e, LVMC-11-30-060-A, LVMC-11-30-060-B], 484B.290 [LVMC-11-30-140-B] and 484B.350 [LVMC-11-46-030]:",
+   "role": "reference"
+  },
+  {
+   "id": "c0",
+   "text": "Whenever signals exhibiting the words “Walk,” “Don’t Walk,” “Wait” or similar symbols are in place, such signals indicate as follows:",
+   "role": "condition"
+  },
+  {
+   "id": "t",
+   "text": "While the “Don’t Walk” or “Wait” indication or an upraised hand symbol is illuminated and steady",
+   "role": "trigger"
+  },
+  {
+   "id": "s1",
+   "text": "a pedestrian",
+   "role": "sibling"
+  },
+  {
+   "id": "ob1",
+   "text": "may not proceed to cross the highway,",
+   "role": "sibling"
+  },
+  {
+   "id": "s2",
+   "text": "but a pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "e1",
+   "text": "who entered the highway lawfully pursuant to subparagraph (1) or (2)",
+   "role": "condition"
+  },
+  {
+   "id": "ref2",
+   "text": "[NRS-484B-283-1d1, NRS-484B-283-1d2]",
+   "role": "reference"
+  },
+  {
+   "id": "e2",
+   "text": "may continue to cross the highway",
+   "role": "condition"
+  },
+  {
+   "id": "ob2",
+   "text": "but must proceed to a curb, sidewalk, safety zone if one is provided or other place of safety",
+   "role": "obligation"
+  },
+  {
+   "id": "st",
+   "text": "as soon as possible.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c0",
+   "atoms": [
+    "dev.pedestrian_signal",
+    "dev.governs",
+    "dev.position",
+    "kin.position",
+    "kin.heading",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "Signals exhibiting 'Walk', 'Don't Walk', 'Wait' or similar symbols are pedestrian heads (dev.pedestrian_signal: 'a pedestrian head; state ∈ {walk, dont_walk_flashing, dont_walk_steady, dark}; countdown attribute'). The signal that indicates to a pedestrian is the head that governs the roadway or lane its crossing traverses (dev.governs, 'the travel regions whose traffic the device controls', traffic including pedestrians by DEF-NRS-484A-285; kinds st.roadway, st.lane) and that the pedestrian faced when it stepped onto it: dev.position ('location of the device head') ahead of kin.position along kin.heading ('direction the body points') within a cone and a reach. dev.position is not used as a stop line or crossing."
+  },
+  {
+   "span": "t",
+   "atoms": [
+    "dev.pedestrian_signal"
+   ],
+   "derived": [],
+   "justification": "'illuminated and steady' is the head's state dont_walk_steady."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'a pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian."
+  },
+  {
+   "span": "e1",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane",
+    "st.sidewalk",
+    "dev.pedestrian_signal",
+    "dev.governs",
+    "dev.position",
+    "kin.position",
+    "kin.heading"
+   ],
+   "derived": [],
+   "source_spans": [
+    "ref2"
+   ],
+   "justification": "Entering the highway lawfully pursuant to subparagraph (1) or (2) borrows their words: (1) 'While the “Walk” indication or walking person symbol is illuminated, pedestrians facing the signal may proceed across the highway in the direction of the signal'; (2) 'While the “Don’t Walk” or “Wait” indication or an upraised hand symbol is illuminated, is flashing and is accompanied by a countdown timer, a pedestrian may proceed across the highway in the direction of the signal'. It is the pedestrian's latest step from a sidewalk (st.sidewalk) onto the roadway or lane r (rel.occupies of st.roadway / st.lane) made while the head d (dev.pedestrian_signal) governing r (dev.governs) showed walk, or dont_walk_flashing with its countdown, and the pedestrian faced d (dev.position ahead of kin.position along kin.heading within the cone and reach)."
+  },
+  {
+   "span": "e2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "Continuing to cross is the pedestrian's footprint still overlapping r (rel.occupies) while d shows the steady indication."
+  },
+  {
+   "span": "ob2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "Proceeding to a curb, sidewalk, safety zone or other place of safety is moving off the roadway or lane crossed: while the footprint overlaps r (rel.occupies), the pedestrian moves (kin.speed, 'magnitude of velocity'), at the pace the standard bounds. kin.speed is used as the magnitude of motion, not as acceleration."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "st",
+   "standard": "as soon as possible",
+   "concepts": [
+    "kin.speed"
+   ],
+   "params": [
+    "p.pedestrian_clearing_speed_min"
+   ],
+   "convention": "pedestrian clearance walking speed: a pedestrian still on the roadway after the steady indication proceeds as soon as possible where its speed is at least a floor well below the slow walking speed the clearance interval is timed for; lingering or halting on the roadway is below it",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1c",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1d",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "NRS_484B_287_1e",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_A",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_060_B",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o1",
+   "map": {
+    "subject": "v"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "r",
+   "rule": "LVMC_11_46_030_o2",
+   "map": {
+    "subject": "v"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "ref2",
+   "as": "definition",
+   "source": "NRS-484B-283-1d1",
+   "why": "It borrows the circumstances of subparagraph (1)'s permission — the walk indication illuminated, the pedestrian facing the signal, proceeding across the highway in its direction — to qualify how the pedestrian entered. Subparagraph (1)'s rule is a duty on drivers to give the right-of-way; whether that duty applied to some vehicle, held, or was complied with says nothing of how this pedestrian entered, so no rule of it is composed and the qualified fact is carried by this node's own atoms.",
+   "quote": "While the “Walk” indication or walking person symbol is illuminated, pedestrians facing the signal may proceed across the highway in the direction of the signal"
+  },
+  {
+   "span": "ref2",
+   "as": "definition",
+   "source": "NRS-484B-283-1d2",
+   "why": "It borrows the circumstances of subparagraph (2)'s permission — the flashing don't-walk indication accompanied by a countdown timer, the pedestrian proceeding across the highway in the direction of the signal — to qualify how the pedestrian entered. Subparagraph (2)'s rule is the duty to complete the crossing before the countdown ends; lawful entry under (2) does not depend on that later duty being complied with (the entry precedes it), so no rule of it is composed and the qualified fact is carried by this node's own atoms.",
+   "quote": "While the “Don’t Walk” or “Wait” indication or an upraised hand symbol is illuminated, is flashing and is accompanied by a countdown timer, a pedestrian may proceed across the highway in the direction of the signal"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian), not engaged by NRS_484B_287_1c, NRS_484B_287_1d, NRS_484B_287_1e, LVMC_11_30_060_A, LVMC_11_30_060_B, LVMC_11_30_140_B_o1 or LVMC_11_30_140_B_o2, with no vehicle v of the scene engaged by LVMC_11_46_030_o1 or LVMC_11_46_030_o2. There are a pedestrian head d (dev.pedestrian_signal) showing dont_walk_steady and a roadway or lane r governed by d (dev.governs) such that the subject's footprint overlaps r here and the subject's latest step from a sidewalk onto r (history bound: that step, searched back without other limit) was made while d showed walk, or dont_walk_flashing with its countdown, and the subject faced d. The subject faces d where, with Δ the vector from its kin.position to d's dev.position and h its kin.heading: h·Δ > 0, (h·Δ)² ≥ p.ped_signal_facing_cos² · (Δx² + Δy²), and Δx² + Δy² ≤ p.ped_signal_facing_reach². Where that step lies before the recording, applicability is unknown.",
+ "obligation": "The subject's speed (kin.speed) is at least p.pedestrian_clearing_speed_min: it keeps moving off the roadway rather than lingering on it.",
+ "params": [
+  "p.pedestrian_clearing_speed_min",
+  "p.ped_signal_facing_cos",
+  "p.ped_signal_facing_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "ob2",
+   "why": "'proceed to a curb, sidewalk, safety zone ... or other place of safety' is read through the pedestrian's motion while still on the roadway; the direction it moves in (forward or back to the curb it left) is not read, and the kind of place reached is not checked.",
+   "kind": "reading"
+  },
+  {
+   "span": "st",
+   "why": "'as soon as possible' is read as a speed floor at every observation on the roadway after the steady indication; the pedestrian's own ability (a slower walker) is not measured.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The pedestrian stepped onto r from the sidewalk facing d while d showed walk; d now shows dont_walk_steady and the pedestrian stands still (0.0 m/s) in the middle of r."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but the pedestrian walks on across r at 1.3 m/s."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "d shows dont_walk_steady and the pedestrian waits on the sidewalk, off r."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same as forbid but the pedestrian's speed is not observed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the pedestrian standing on r while d shows dont_walk_steady; its step onto r is not recorded, so whether it entered lawfully cannot be told.",
+   "boundary": "the pedestrian's step from the sidewalk onto r, which lies before the recording"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.pedestrian_clearing_speed_min",
+   "unit": "m/s",
+   "value": 0.5,
+   "convention": "the speed below which a pedestrian still on the roadway counts as lingering rather than proceeding to a place of safety: about half the 3.0 ft/s (0.9 m/s) walking speed to which pedestrian clearance intervals are timed for slower pedestrians",
+   "source": "MUTCD section 4E.06 pedestrian clearance walking speeds (3.5 ft/s, 3.0 ft/s for slower pedestrians)"
+  },
+  {
+   "name": "p.ped_signal_facing_cos",
+   "unit": "ratio",
+   "value": 0.87,
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a pedestrian signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "MUTCD section 4E.08 (pedestrian signal heads placed at the far end of the crossing, in the pedestrian's line of sight)"
+  },
+  {
+   "name": "p.ped_signal_facing_reach",
+   "unit": "m",
+   "value": 40.0,
+   "convention": "the largest distance from a pedestrian to a pedestrian signal head at which the head counts as the one across the crossing the pedestrian faces: a wide urban crossing (six lanes and a median, about 30 m) plus the head's set-back behind the far curb",
+   "source": "MUTCD section 4E.08; AASHTO Green Book urban cross-section widths"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_060_A": "b25abeb2b072cc20adb2f7a822ab21509f741e809097b85891f031d5268ae88e",
+  "LVMC_11_30_060_B": "71bec52093f93801bd1f41edfbe97f4ac0c9bb11ccc613e801f4a9b7c4c86ac1",
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1",
+  "LVMC_11_46_030_o1": "6b22faa56ad9d67e840373b0eb1578cc2c1d82d0374edd04dbfe9b9bcabf52a2",
+  "LVMC_11_46_030_o2": "c24852cc030e8482ca411e31fc3f93fd82b053e08138b9598e345cba39b1b7e0",
+  "NRS_484B_287_1c": "4184e64459a2f1c6e4e0009b7f0ad70732d4c089694a31254ade8d1df8faff95",
+  "NRS_484B_287_1d": "35f17d5c1df998d5c2e9db99e1a0fa75ab5bd1c28fba4fb93fb84d4516a068e5",
+  "NRS_484B_287_1e": "1a60ada8f73279c767abb9c1b8b4a2ce78a9d2cc6b30a3931701edbfea1d3ca4"
+ }
+}

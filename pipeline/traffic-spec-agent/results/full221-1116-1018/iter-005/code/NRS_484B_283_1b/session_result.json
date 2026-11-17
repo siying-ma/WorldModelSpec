@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "81d0515fe9c44e06b51071d10a51ab24",
+ "result": {
+  "duration_api_ms": 275914,
+  "stop_reason": "end_turn",
+  "session_id": "941f6aac-6bea-409f-b6d3-3123b4dc36e9",
+  "total_cost_usd": 1.6688796300000004,
+  "usage": {
+   "input_tokens": 24,
+   "cache_creation_input_tokens": 93261,
+   "cache_read_input_tokens": 897501,
+   "output_tokens": 29369,
+   "output_tokens_details": {
+    "thinking_tokens": 15559
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 93261,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 741,
+     "cache_read_input_tokens": 95551,
+     "cache_creation_input_tokens": 2178,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2178
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 40851,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004509010000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 24,
+    "outputTokens": 29369,
+    "cacheReadInputTokens": 897501,
+    "cacheCreationInputTokens": 93261,
+    "webSearchRequests": 0,
+    "costUSD": 1.6643706200000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 15559,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 93261,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 26,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "NRS_484B_283_1b passed the gate (**OK**) on the sixth and last run: all 9 witnesses gave their expected verdicts and all 9 composed exception rules resolved. After that run I only changed comments in the two file headers; the harness re-runs the gate on the final files itself.\n\n**The rule** (`NRS_484B_283_1b.lean`):\n- **Who and when:** the subject is a pedestrian who, at this observation, is on a roadway and at the previous observation was on no roadway but on a sidewalk, safety zone or median. All nine exception rules must also not apply.\n- **The duty:** no vehicle may have a predicted closest approach to the pedestrian within the 3 s horizon, closer than the clearance distance, while being unable to stop. \"Unable to stop\" uses the record's stopping-distance test, rewritten in an equivalent form so the surface-dependent braking rate (ice, else wet, else dry) appears only once. With four copies, the gate hit a stack overflow.\n- **Narrowings:** none of my own; the formulas follow the record's reading.\n\n**The witnesses** (`NRS_484B_283_1b.lean` under `TrafficSpecWitness`): the five planned scenarios, plus four extra ones:\n- `branch_2`: on a wet road the pedestrian is too close, though on a dry road it would comply.\n- `branch_3`: the same on ice, against wet and dry.\n- `branch_4` and `branch_5`: the pedestrian steps off a safety zone or a median instead of a sidewalk.\n\n**Something the plan agent should check:** the planned scenes only reached \"violated\" or \"compliant\" once I put a marked crosswalk where the pedestrian steps off. Without it, one of the exceptions applied and every scene came back \"not applicable\". I wasn't allowed to read those rules, so I'm guessing it is one of the NRS 484B.287 rules about crossing outside a crosswalk. If so, this duty never applies to a pedestrian stepping off anywhere except a crosswalk. That fits how the statute is laid out, but it should be confirmed as intended. I noted this in `task_result.md`.\n\n`task_result.md` also covers what changed after each gate run and the choices the node left open.",
+  "ttft_ms": 67684,
+  "type": "result",
+  "duration_ms": 385902,
+  "uuid": "76c8490c-c030-423f-9287-9c1da62342aa",
+  "ttft_stream_ms": 1515,
+  "time_to_request_ms": 361,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 57,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 13,
+   "input_hooks": 4,
+   "conversation_append": 1,
+   "transcript_persist": 40,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 7,
+   "engine_pickup": 11,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 188,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 7,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 43,
+  "time_to_request_cpu_ms": 388,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 13,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 4,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1516,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 40851,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004509010000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 24,
+    "outputTokens": 29369,
+    "cacheReadInputTokens": 897501,
+    "cacheCreationInputTokens": 93261,
+    "webSearchRequests": 0,
+    "costUSD": 1.6643706200000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 15559,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 93261,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}
