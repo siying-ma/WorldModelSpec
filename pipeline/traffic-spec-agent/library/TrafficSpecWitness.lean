@@ -93,6 +93,7 @@ import TrafficSpecWitness.NRS_484B.NRS_484B_270_2a_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_2a_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_2b_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_2b_o2
+import TrafficSpecWitness.NRS_484B.NRS_484B_270_2b_o3
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_5a
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_7a
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_7b
@@ -113,6 +114,7 @@ import TrafficSpecWitness.NRS_484B.NRS_484B_293
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_12a
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_12b
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_2a
+import TrafficSpecWitness.NRS_484B.NRS_484B_307_2b
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_3a
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_4a_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_4a_o2
@@ -126,6 +128,7 @@ import TrafficSpecWitness.NRS_484B.NRS_484B_307_8a_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_8a_o3
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_8c
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_8e
+import TrafficSpecWitness.NRS_484B.NRS_484B_307_9c
 import TrafficSpecWitness.NRS_484B.NRS_484B_310_1
 import TrafficSpecWitness.NRS_484B.NRS_484B_330_1
 import TrafficSpecWitness.NRS_484B.NRS_484B_363_1
@@ -317,6 +320,7 @@ def allScenarios : List Scenario := TrafficSpecWitness.LVMC_11_12_070_B.scenario
   TrafficSpecWitness.NRS_484B_270_2a_o2.scenarios ++
   TrafficSpecWitness.NRS_484B_270_2b_o1.scenarios ++
   TrafficSpecWitness.NRS_484B_270_2b_o2.scenarios ++
+  TrafficSpecWitness.NRS_484B_270_2b_o3.scenarios ++
   TrafficSpecWitness.NRS_484B_270_5a.scenarios ++
   TrafficSpecWitness.NRS_484B_270_7a.scenarios ++
   TrafficSpecWitness.NRS_484B_270_7b.scenarios ++
@@ -337,6 +341,7 @@ def allScenarios : List Scenario := TrafficSpecWitness.LVMC_11_12_070_B.scenario
   TrafficSpecWitness.NRS_484B_307_12a.scenarios ++
   TrafficSpecWitness.NRS_484B_307_12b.scenarios ++
   TrafficSpecWitness.NRS_484B_307_2a.scenarios ++
+  TrafficSpecWitness.NRS_484B_307_2b.scenarios ++
   TrafficSpecWitness.NRS_484B_307_3a.scenarios ++
   TrafficSpecWitness.NRS_484B_307_4a_o1.scenarios ++
   TrafficSpecWitness.NRS_484B_307_4a_o2.scenarios ++
@@ -350,6 +355,7 @@ def allScenarios : List Scenario := TrafficSpecWitness.LVMC_11_12_070_B.scenario
   TrafficSpecWitness.NRS_484B_307_8a_o3.scenarios ++
   TrafficSpecWitness.NRS_484B_307_8c.scenarios ++
   TrafficSpecWitness.NRS_484B_307_8e.scenarios ++
+  TrafficSpecWitness.NRS_484B_307_9c.scenarios ++
   TrafficSpecWitness.NRS_484B_310_1.scenarios ++
   TrafficSpecWitness.NRS_484B_330_1.scenarios ++
   TrafficSpecWitness.NRS_484B_363_1.scenarios ++
@@ -540,6 +546,7 @@ def taggedScenarios : List (String × List Scenario) := [
   ("NRS_484B_270_2a_o2", TrafficSpecWitness.NRS_484B_270_2a_o2.scenarios),
   ("NRS_484B_270_2b_o1", TrafficSpecWitness.NRS_484B_270_2b_o1.scenarios),
   ("NRS_484B_270_2b_o2", TrafficSpecWitness.NRS_484B_270_2b_o2.scenarios),
+  ("NRS_484B_270_2b_o3", TrafficSpecWitness.NRS_484B_270_2b_o3.scenarios),
   ("NRS_484B_270_5a", TrafficSpecWitness.NRS_484B_270_5a.scenarios),
   ("NRS_484B_270_7a", TrafficSpecWitness.NRS_484B_270_7a.scenarios),
   ("NRS_484B_270_7b", TrafficSpecWitness.NRS_484B_270_7b.scenarios),
@@ -560,6 +567,7 @@ def taggedScenarios : List (String × List Scenario) := [
   ("NRS_484B_307_12a", TrafficSpecWitness.NRS_484B_307_12a.scenarios),
   ("NRS_484B_307_12b", TrafficSpecWitness.NRS_484B_307_12b.scenarios),
   ("NRS_484B_307_2a", TrafficSpecWitness.NRS_484B_307_2a.scenarios),
+  ("NRS_484B_307_2b", TrafficSpecWitness.NRS_484B_307_2b.scenarios),
   ("NRS_484B_307_3a", TrafficSpecWitness.NRS_484B_307_3a.scenarios),
   ("NRS_484B_307_4a_o1", TrafficSpecWitness.NRS_484B_307_4a_o1.scenarios),
   ("NRS_484B_307_4a_o2", TrafficSpecWitness.NRS_484B_307_4a_o2.scenarios),
@@ -573,6 +581,7 @@ def taggedScenarios : List (String × List Scenario) := [
   ("NRS_484B_307_8a_o3", TrafficSpecWitness.NRS_484B_307_8a_o3.scenarios),
   ("NRS_484B_307_8c", TrafficSpecWitness.NRS_484B_307_8c.scenarios),
   ("NRS_484B_307_8e", TrafficSpecWitness.NRS_484B_307_8e.scenarios),
+  ("NRS_484B_307_9c", TrafficSpecWitness.NRS_484B_307_9c.scenarios),
   ("NRS_484B_310_1", TrafficSpecWitness.NRS_484B_310_1.scenarios),
   ("NRS_484B_330_1", TrafficSpecWitness.NRS_484B_330_1.scenarios),
   ("NRS_484B_363_1", TrafficSpecWitness.NRS_484B_363_1.scenarios),

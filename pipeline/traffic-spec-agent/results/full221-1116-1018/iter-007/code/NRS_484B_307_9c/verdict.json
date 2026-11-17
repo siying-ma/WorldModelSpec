@@ -1,0 +1,1604 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 19 names, composes NRS_484B_283_1d1,NRS_484B_283_1d2,NRS_484B_283_1d3_o1,NRS_484B_283_1d4_o1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "h"
+            },
+            {
+             "lit": "circular_red"
+            }
+           ],
+           "atom": "dev_traffic_signal_shows",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "h"
+                },
+                {
+                 "lit": "green_arrow(left)"
+                }
+               ],
+               "atom": "dev_traffic_signal_shows",
+               "params": []
+              },
+              {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "h"
+                  },
+                  {
+                   "lit": "green_arrow(right)"
+                  }
+                 ],
+                 "atom": "dev_traffic_signal_shows",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "h"
+                  },
+                  {
+                   "lit": "green_arrow(u_turn)"
+                  }
+                 ],
+                 "atom": "dev_traffic_signal_shows",
+                 "params": []
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "not": {
+              "args": [
+               {
+                "var": "h"
+               },
+               {
+                "lit": "circular_green"
+               }
+              ],
+              "atom": "dev_traffic_signal_shows",
+              "params": []
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "and": [
+            {
+             "cmp": "gt",
+             "lhs": {
+              "add": [
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "x"
+                   }
+                  ],
+                  "measure": "kin_heading"
+                 },
+                 {
+                  "sub": [
+                   {
+                    "args": [
+                     {
+                      "var": "h"
+                     },
+                     {
+                      "lit": "x"
+                     }
+                    ],
+                    "measure": "dev_position"
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "lit": "x"
+                     }
+                    ],
+                    "measure": "kin_position"
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "y"
+                   }
+                  ],
+                  "measure": "kin_heading"
+                 },
+                 {
+                  "sub": [
+                   {
+                    "args": [
+                     {
+                      "var": "h"
+                     },
+                     {
+                      "lit": "y"
+                     }
+                    ],
+                    "measure": "dev_position"
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "lit": "y"
+                     }
+                    ],
+                    "measure": "kin_position"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "rhs": {
+              "lit": {
+               "den": 1,
+               "num": 0
+              },
+              "unit": "metre"
+             }
+            },
+            {
+             "and": [
+              {
+               "cmp": "ge",
+               "lhs": {
+                "mul": [
+                 {
+                  "add": [
+                   {
+                    "mul": [
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     },
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "mul": [
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     },
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "add": [
+                   {
+                    "mul": [
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     },
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "mul": [
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     },
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "rhs": {
+                "mul": [
+                 {
+                  "mul": [
+                   {
+                    "param": "p.ped_traffic_signal_facing_cos"
+                   },
+                   {
+                    "param": "p.ped_traffic_signal_facing_cos"
+                   }
+                  ]
+                 },
+                 {
+                  "add": [
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "h"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              {
+               "cmp": "le",
+               "lhs": {
+                "add": [
+                 {
+                  "mul": [
+                   {
+                    "sub": [
+                     {
+                      "args": [
+                       {
+                        "var": "h"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "dev_position"
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "kin_position"
+                     }
+                    ]
+                   },
+                   {
+                    "sub": [
+                     {
+                      "args": [
+                       {
+                        "var": "h"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "dev_position"
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "kin_position"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "mul": [
+                   {
+                    "sub": [
+                     {
+                      "args": [
+                       {
+                        "var": "h"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "dev_position"
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "kin_position"
+                     }
+                    ]
+                   },
+                   {
+                    "sub": [
+                     {
+                      "args": [
+                       {
+                        "var": "h"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "dev_position"
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "kin_position"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "rhs": {
+                "mul": [
+                 {
+                  "param": "p.ped_traffic_signal_facing_reach"
+                 },
+                 {
+                  "param": "p.ped_traffic_signal_facing_reach"
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "h"
+                 },
+                 {
+                  "var": "i"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "h"
+                    },
+                    {
+                     "var": "g"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "g"
+                    },
+                    {
+                     "var": "i"
+                    }
+                   ],
+                   "atom": "st_lane_enters",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "travel_region"
+                },
+                "var": "g"
+               }
+              ]
+             },
+             {
+              "cmp": "le",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "measure": "st_region_geometry_distance"
+              },
+              "rhs": {
+               "param": "p.ped_traffic_signal_facing_reach"
+              }
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "intersection"
+           },
+           "var": "i"
+          }
+         ]
+        }
+       ]
+      },
+      "exists_device": {
+       "lit": "traffic_signal"
+      },
+      "var": "h"
+     },
+     {
+      "and": [
+       {
+        "not": {
+         "body": {
+          "and": [
+           {
+            "or": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "lit": "walk"
+               }
+              ],
+              "atom": "dev_pedestrian_signal_state",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "lit": "dont_walk_flashing"
+                 }
+                ],
+                "atom": "dev_pedestrian_signal_state",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 }
+                ],
+                "atom": "dev_pedestrian_signal_countdown",
+                "params": []
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "and": [
+               {
+                "cmp": "gt",
+                "lhs": {
+                 "add": [
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    },
+                    {
+                     "sub": [
+                      {
+                       "args": [
+                        {
+                         "var": "d"
+                        },
+                        {
+                         "lit": "x"
+                        }
+                       ],
+                       "measure": "dev_position"
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "lit": "x"
+                        }
+                       ],
+                       "measure": "kin_position"
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    },
+                    {
+                     "sub": [
+                      {
+                       "args": [
+                        {
+                         "var": "d"
+                        },
+                        {
+                         "lit": "y"
+                        }
+                       ],
+                       "measure": "dev_position"
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "lit": "y"
+                        }
+                       ],
+                       "measure": "kin_position"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 1,
+                  "num": 0
+                 },
+                 "unit": "metre"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "cmp": "ge",
+                  "lhs": {
+                   "mul": [
+                    {
+                     "add": [
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "add": [
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "rhs": {
+                   "mul": [
+                    {
+                     "mul": [
+                      {
+                       "param": "p.ped_signal_facing_cos"
+                      },
+                      {
+                       "param": "p.ped_signal_facing_cos"
+                      }
+                     ]
+                    },
+                    {
+                     "add": [
+                      {
+                       "mul": [
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "x"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "mul": [
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        },
+                        {
+                         "sub": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "dev_position"
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "lit": "y"
+                            }
+                           ],
+                           "measure": "kin_position"
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "cmp": "le",
+                  "lhs": {
+                   "add": [
+                    {
+                     "mul": [
+                      {
+                       "sub": [
+                        {
+                         "args": [
+                          {
+                           "var": "d"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "dev_position"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_position"
+                        }
+                       ]
+                      },
+                      {
+                       "sub": [
+                        {
+                         "args": [
+                          {
+                           "var": "d"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "dev_position"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_position"
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "mul": [
+                      {
+                       "sub": [
+                        {
+                         "args": [
+                          {
+                           "var": "d"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "dev_position"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_position"
+                        }
+                       ]
+                      },
+                      {
+                       "sub": [
+                        {
+                         "args": [
+                          {
+                           "var": "d"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "dev_position"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_position"
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "rhs": {
+                   "mul": [
+                    {
+                     "param": "p.ped_signal_facing_reach"
+                    },
+                    {
+                     "param": "p.ped_signal_facing_reach"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "or": [
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "q"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    },
+                    {
+                     "var": "q"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "roadway"
+                },
+                "var": "q"
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "q"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    },
+                    {
+                     "var": "q"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "lane"
+                },
+                "var": "q"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "exists_device": {
+          "lit": "pedestrian_signal"
+         },
+         "var": "d"
+        }
+       },
+       {
+        "and": [
+         {
+          "not": {
+           "map": {
+            "subject": "subject"
+           },
+           "rule_applies": "NRS_484B_283_1d1"
+          }
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "map": {
+              "subject": "subject"
+             },
+             "rule_applies": "NRS_484B_283_1d2"
+            }
+           },
+           {
+            "and": [
+             {
+              "not": {
+               "map": {
+                "subject": "subject"
+               },
+               "rule_applies": "NRS_484B_283_1d3_o1"
+              }
+             },
+             {
+              "not": {
+               "map": {
+                "subject": "subject"
+               },
+               "rule_applies": "NRS_484B_283_1d4_o1"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_307_9c",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-307-9c"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "and": [
+      {
+       "or": [
+        {
+         "body": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "roadway"
+         },
+         "var": "r"
+        },
+        {
+         "body": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "lane"
+         },
+         "var": "r"
+        }
+       ]
+      },
+      {
+       "rises": {
+        "or": [
+         {
+          "or": [
+           {
+            "body": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            "exists_region": {
+             "lit": "roadway"
+            },
+            "var": "r"
+           },
+           {
+            "body": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            "exists_region": {
+             "lit": "lane"
+            },
+            "var": "r"
+           }
+          ]
+         },
+         {
+          "or": [
+           {
+            "body": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            "exists_region": {
+             "lit": "median_or_divider"
+            },
+            "var": "r"
+           },
+           {
+            "body": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            "exists_region": {
+             "lit": "safety_zone"
+            },
+            "var": "r"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "449e69b7fe446cc9b2d3d649",
+  "candidate_digest": "ba750bee5f8085a4008cd0ffccf96c14b542bf4063d22d76c0b890a5d1f70eff"
+ }
+}

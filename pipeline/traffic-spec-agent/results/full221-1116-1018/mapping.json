@@ -176,7 +176,7 @@
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_270_2b_o2",
+  "node": "NRS_484B_270_2b_o3",
   "role": "trigger"
  },
  "a bicycle, an electric bicycle or an electric scooter.": {
@@ -727,6 +727,16 @@
    "sig.siren"
   ],
   "node": "LVMC_11_40_180_C_o2",
+  "role": "obligation"
+ },
+ "and shall not move again to the right side of the highway": {
+  "atoms": [
+   "drv.lane.heading_right_of_carrier",
+   "rel.bearing",
+   "rel.occupies",
+   "st.lane"
+  ],
+  "node": "NRS_484B_270_2b_o3",
   "role": "obligation"
  },
  "and shall provide signage or other markings to indicate where such parking is permitted.": {
@@ -1842,6 +1852,20 @@
   "node": "NRS_484B_257_2_o1",
   "role": "exception"
  },
+ "facing such a signal": {
+  "atoms": [
+   "dev.governs",
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "st.intersection",
+   "st.lane_enters",
+   "st.region_geometry",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_9c",
+  "role": "trigger"
+ },
  "for a distance of one hundred feet along all such streets or highways": {
   "atoms": [
    "st.highway",
@@ -2117,7 +2141,7 @@
    "st.lane",
    "st.lane_adjacency"
   ],
-  "node": "NRS_484B_270_2b_o2",
+  "node": "NRS_484B_270_2b_o3",
   "role": "condition"
  },
  "in a bus stop,": {
@@ -2594,6 +2618,18 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_307_3a",
+  "role": "trigger"
+ },
+ "may proceed across the highway": {
+  "atoms": [
+   "drv.motion.moving_across_carrier",
+   "rel.occupies",
+   "st.highway",
+   "st.lane",
+   "st.on_way",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_307_2b",
   "role": "trigger"
  },
  "may proceed across the highway in the direction of the signal": {
@@ -3487,7 +3523,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
   ],
-  "node": "NRS_484B_287_1c",
+  "node": "NRS_484B_307_9c",
   "role": "subject"
  },
  "pedestrians facing the signal": {
@@ -3541,7 +3577,7 @@
    "kin.speed",
    "rel.same_direction"
   ],
-  "node": "NRS_484B_270_2b_o2",
+  "node": "NRS_484B_270_2b_o3",
   "role": "trigger"
  },
  "project into the street more than fifteen feet measured on a line at right angles to the curb.": {
@@ -3792,6 +3828,17 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_217_2",
+  "role": "obligation"
+ },
+ "shall not enter the highway,": {
+  "atoms": [
+   "rel.occupies",
+   "st.lane",
+   "st.median_or_divider",
+   "st.roadway",
+   "st.safety_zone"
+  ],
+  "node": "NRS_484B_307_9c",
   "role": "obligation"
  },
  "shall not follow another vehicle": {
@@ -4290,7 +4337,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
   ],
-  "node": "NRS_484B_270_2b_o2",
+  "node": "NRS_484B_270_2b_o3",
   "role": "subject"
  },
  "the driver of a vehicle": {
@@ -4863,6 +4910,20 @@
   "node": "NRS_484B_497",
   "role": "exception"
  },
+ "unless permitted to proceed by another device": {
+  "atoms": [
+   "dev.governs",
+   "dev.pedestrian_signal",
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "rel.occupies",
+   "st.lane",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_307_9c",
+  "role": "exception"
+ },
  "unless pick-up, delivery or essential use is required enroute": {
   "atoms": [
    "drv.motion.parked"
@@ -5336,7 +5397,7 @@
    "drv.interaction.overtake_pass",
    "rel.longitudinal_overlap"
   ],
-  "node": "NRS_484B_270_2b_o2",
+  "node": "NRS_484B_270_2b_o3",
   "role": "trigger"
  },
  "when passing a standing vehicle or one proceeding in the same direction.": {
@@ -5441,9 +5502,15 @@
  },
  "when the signal is circular green alone:": {
   "atoms": [
-   "dev.traffic_signal"
+   "dev.governs",
+   "dev.traffic_signal",
+   "st.highway",
+   "st.intersection",
+   "st.lane_enters",
+   "st.on_way",
+   "st.travel_region"
   ],
-  "node": "NRS_484B_307_2a",
+  "node": "NRS_484B_307_2b",
   "role": "trigger"
  },
  "when there is in the crosswalk": {
@@ -5625,6 +5692,13 @@
    "dev.traffic_signal"
   ],
   "node": "NRS_484B_307_8a_o3",
+  "role": "trigger"
+ },
+ "where the signal is a steady red with a green turn arrow:": {
+  "atoms": [
+   "dev.traffic_signal"
+  ],
+  "node": "NRS_484B_307_9c",
   "role": "trigger"
  },
  "where the signal is a steady yellow signal alone:": {
@@ -5915,6 +5989,14 @@
   ],
   "node": "NRS_484B_253_o2",
   "role": "condition"
+ },
+ "within any marked or unmarked crosswalk,": {
+  "atoms": [
+   "rel.occupies",
+   "st.crosswalk"
+  ],
+  "node": "NRS_484B_307_2b",
+  "role": "obligation"
  },
  "without first giving an appropriate signal": {
   "atoms": [

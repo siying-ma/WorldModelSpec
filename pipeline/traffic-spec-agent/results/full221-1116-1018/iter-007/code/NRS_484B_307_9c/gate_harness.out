@@ -1,0 +1,153 @@
+'TrafficSpec.Rules.NRS_484B_307_9c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_9c.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_307_9c","intentions":[],"laws":["NRS-484B-307-9c"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"and":[{"args":[{"var":"h"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"h"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]},{"not":{"args":[{"var":"h"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"cmp":"ge","lhs":{"mul":[{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]},"rhs":{"mul":[{"mul":[{"param":"p.ped_traffic_signal_facing_cos"},{"param":"p.ped_traffic_signal_facing_cos"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]}},{"cmp":"le","lhs":{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"mul":[{"param":"p.ped_traffic_signal_facing_reach"},{"param":"p.ped_traffic_signal_facing_reach"}]}}]}]},{"body":{"and":[{"or":[{"args":[{"var":"h"},{"var":"i"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"h"},{"var":"g"}],"atom":"dev_governs","params":[]},{"args":[{"var":"g"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"g"}]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"i"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.ped_traffic_signal_facing_reach"}}]},"exists_region":{"lit":"intersection"},"var":"i"}]}]},"exists_device":{"lit":"traffic_signal"},"var":"h"},{"and":[{"not":{"body":{"and":[{"or":[{"args":[{"var":"d"},{"lit":"walk"}],"atom":"dev_pedestrian_signal_state","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"dont_walk_flashing"}],"atom":"dev_pedestrian_signal_state","params":[]},{"args":[{"var":"d"}],"atom":"dev_pedestrian_signal_countdown","params":[]}]}]},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"cmp":"ge","lhs":{"mul":[{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]},"rhs":{"mul":[{"mul":[{"param":"p.ped_signal_facing_cos"},{"param":"p.ped_signal_facing_cos"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]}},{"cmp":"le","lhs":{"add":[{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"mul":[{"param":"p.ped_signal_facing_reach"},{"param":"p.ped_signal_facing_reach"}]}}]}]},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"q"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"q"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"roadway"},"var":"q"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"q"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"q"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"lane"},"var":"q"}]}]}]},"exists_device":{"lit":"pedestrian_signal"},"var":"d"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d1"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d2"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d3_o1"}},{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d4_o1"}}]}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_307_9c","intentions":[],"laws":["NRS-484B-307-9c"],"narrowings":[],"obligation":{"not":{"and":[{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"lane"},"var":"r"}]},{"rises":{"or":[{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"lane"},"var":"r"}]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"median_or_divider"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"safety_zone"},"var":"r"}]}]}}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"and":[{"args":[{"var":"h"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"h"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]},{"not":{"args":[{"var":"h"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"cmp":"ge","lhs":{"mul":[{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]},"rhs":{"mul":[{"mul":[{"param":"p.ped_traffic_signal_facing_cos"},{"param":"p.ped_traffic_signal_facing_cos"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]}},{"cmp":"le","lhs":{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"mul":[{"param":"p.ped_traffic_signal_facing_reach"},{"param":"p.ped_traffic_signal_facing_reach"}]}}]}]},{"body":{"and":[{"or":[{"args":[{"var":"h"},{"var":"i"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"h"},{"var":"g"}],"atom":"dev_governs","params":[]},{"args":[{"var":"g"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"g"}]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"i"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.ped_traffic_signal_facing_reach"}}]},"exists_region":{"lit":"intersection"},"var":"i"}]}]},"exists_device":{"lit":"traffic_signal"},"var":"h"},{"and":[{"not":{"body":{"and":[{"or":[{"args":[{"var":"d"},{"lit":"walk"}],"atom":"dev_pedestrian_signal_state","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"dont_walk_flashing"}],"atom":"dev_pedestrian_signal_state","params":[]},{"args":[{"var":"d"}],"atom":"dev_pedestrian_signal_countdown","params":[]}]}]},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"cmp":"ge","lhs":{"mul":[{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]},"rhs":{"mul":[{"mul":[{"param":"p.ped_signal_facing_cos"},{"param":"p.ped_signal_facing_cos"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]}},{"cmp":"le","lhs":{"add":[{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"d"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"mul":[{"param":"p.ped_signal_facing_reach"},{"param":"p.ped_signal_facing_reach"}]}}]}]},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"q"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"q"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"roadway"},"var":"q"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"q"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"q"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"lane"},"var":"q"}]}]}]},"exists_device":{"lit":"pedestrian_signal"},"var":"d"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d1"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d2"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d3_o1"}},{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d4_o1"}}]}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_307_9c","intentions":[],"laws":["NRS-484B-307-9c"],"narrowings":[],"obligation":{"not":{"and":[{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"lane"},"var":"r"}]},{"rises":{"or":[{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"lane"},"var":"r"}]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"median_or_divider"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"safety_zone"},"var":"r"}]}]}}]}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,dev_traffic_signal,dev_traffic_signal_shows,kin_heading,dev_position,kin_position,st_intersection,dev_governs,st_travel_region,st_lane_enters,st_region_geometry_distance,dev_pedestrian_signal,dev_pedestrian_signal_state,dev_pedestrian_signal_countdown,st_roadway,rel_occupies,st_lane,st_median_or_divider,st_safety_zone
+COMPOSES	NRS_484B_283_1d1,NRS_484B_283_1d2,NRS_484B_283_1d3_o1,NRS_484B_283_1d4_o1
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.position
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	subject
+OCC	?h
+OCC	h
+OCC	h
+OCC	h
+OCC	h
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	?i
+OCC	h,i
+OCC	?g
+OCC	h,g
+OCC	g,i
+OCC	subject,i
+OCC	?d
+OCC	d
+OCC	d
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	subject
+OCC	d
+OCC	subject
+OCC	subject
+OCC	d
+OCC	subject
+OCC	subject
+OCC	d
+OCC	subject
+OCC	subject
+OCC	d
+OCC	subject
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	d
+OCC	subject
+OCC	?q
+OCC	subject,q
+OCC	d,q
+OCC	?q
+OCC	subject,q
+OCC	d,q
+OCC	$,subject
+OCC	$,subject
+OCC	$,subject
+OCC	$,subject
+OCC	?r
+OCC	subject,r
+OCC	?r
+OCC	subject,r
+OCC	?r
+OCC	subject,r
+OCC	?r
+OCC	subject,r
+OCC	?r
+OCC	subject,r
+OCC	?r
+OCC	subject,r
+TIME	occurrences	0
+TIME	checks	230
+TIME	lint	159
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	277
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	266
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	213
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	278
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	303
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	291
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	317
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	281
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	272
+TIME	witnesses	2499
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_307_9c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_9c.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+ADEQ_SIZE	NRS_484B_307_9c	32	8
+TIME	adequacy_start	92
+TIME	adequacy	49756
+DONE

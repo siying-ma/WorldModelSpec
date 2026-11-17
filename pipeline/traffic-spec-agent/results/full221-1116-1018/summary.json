@@ -1,15 +1,15 @@
 {
  "run": "full221-1116-1018",
- "iteration": 6,
+ "iteration": 7,
  "status": "incomplete",
- "stop_reason": "the iteration bound (6) was reached",
+ "stop_reason": "the iteration bound (7) was reached",
  "laws": {
-  "planned": 158,
-  "blocked": 61,
+  "planned": 156,
+  "blocked": 62,
   "failed": 1,
-  "returned": 1
+  "returned": 2
  },
- "accepted_nodes": 186,
+ "accepted_nodes": 189,
  "accepted_concepts": 16,
  "concepts": {
   "accepted": 16,
@@ -20,8 +20,8 @@
   "core_panics": 0,
   "held_for_operator": []
  },
- "gaps_total": 79,
- "gaps_created_by_this_run": 79,
+ "gaps_total": 80,
+ "gaps_created_by_this_run": 80,
  "never_planned": [],
  "stop": "iteration_limit",
  "stage": "done",
@@ -97,6 +97,7 @@
    "NRS-484B-267-2b",
    "NRS-484B-267-2e",
    "NRS-484B-270-2a",
+   "NRS-484B-270-2b",
    "NRS-484B-270-5a",
    "NRS-484B-270-7a",
    "NRS-484B-270-7b",
@@ -115,6 +116,7 @@
    "NRS-484B-307-12a",
    "NRS-484B-307-12b",
    "NRS-484B-307-2a",
+   "NRS-484B-307-2b",
    "NRS-484B-307-3a",
    "NRS-484B-307-4a",
    "NRS-484B-307-5a",
@@ -122,6 +124,7 @@
    "NRS-484B-307-7a",
    "NRS-484B-307-8c",
    "NRS-484B-307-8e",
+   "NRS-484B-307-9c",
    "NRS-484B-310-1",
    "NRS-484B-330-1",
    "NRS-484B-363-1",
@@ -182,14 +185,9 @@
    "NRS-486-351-2"
   ],
   "awaiting_label_repair": [],
-  "generating": [
-   "NRS-484B-270-2b",
-   "NRS-484B-307-2b",
-   "NRS-484B-307-4b",
-   "NRS-484B-307-8b",
-   "NRS-484B-307-9c"
-  ],
+  "generating": [],
   "to_plan": [
+   "NRS-484B-307-4b",
    "NRS-484B-307-9a"
   ],
   "blocked": [
@@ -236,6 +234,7 @@
    "NRS-484B-297-6",
    "NRS-484B-300-1",
    "NRS-484B-307-8a",
+   "NRS-484B-307-8b",
    "NRS-484B-307-8d",
    "NRS-484B-307-9b",
    "NRS-484B-360-1",
@@ -302,6 +301,7 @@
     "NRS-484B-267-2b",
     "NRS-484B-267-2e",
     "NRS-484B-270-2a",
+    "NRS-484B-270-2b",
     "NRS-484B-270-5a",
     "NRS-484B-270-7a",
     "NRS-484B-270-7b",
@@ -318,6 +318,7 @@
     "NRS-484B-287-1e",
     "NRS-484B-293",
     "NRS-484B-307-2a",
+    "NRS-484B-307-2b",
     "NRS-484B-307-3a",
     "NRS-484B-307-4a",
     "NRS-484B-307-5a",
@@ -325,6 +326,7 @@
     "NRS-484B-307-7a",
     "NRS-484B-307-8c",
     "NRS-484B-307-8e",
+    "NRS-484B-307-9c",
     "NRS-484B-307-12a",
     "NRS-484B-307-12b",
     "NRS-484B-310-1",
@@ -418,15 +420,10 @@
     "NRS-484B-507-1",
     "NRS-484B-477-1a"
    ],
-   "generating": [
-    "NRS-484B-270-2b",
-    "NRS-484B-307-2b",
-    "NRS-484B-307-4b",
-    "NRS-484B-307-8b",
-    "NRS-484B-307-9c"
-   ],
+   "generating": [],
    "waiting_provider": {},
    "to_plan": {
+    "NRS-484B-307-4b": "gate WITNESS_FAIL; branch_1: expected not_applicable, got violated",
     "NRS-484B-307-9a": "NRS_484B_307_9a_o1: the normative reference “Except as otherwise provided in paragraph (b) [NRS-484B-307-9b]” names NRS-484B-307-9b, and no composition of a usable node on its span s2 composes a node of NRS-484B-307-9b: each law the reference names is composed (how they combine is stated by the compositions' kinds), even one not yet accepted; NRS_484B_307_9a_o2: the normative reference “Except as otherwise provided in paragraph (b) [NRS-484B-307-9b]” names NRS-484B-307-9b, and no composition of a usable node on its span s2 composes a node of NRS-484B-307-9b: each law the reference names is composed (how they combine is stated by the compositions' kinds), even one not yet accepted"
    },
    "blocked": {
@@ -488,6 +485,9 @@
     ],
     "NRS-484B-307-8a": [
      "G93"
+    ],
+    "NRS-484B-307-8b": [
+     "G96"
     ],
     "NRS-484B-307-8d": [
      "G93"
@@ -719,6 +719,9 @@
    ],
    "NRS-484B-307-8a": [
     "G93"
+   ],
+   "NRS-484B-307-8b": [
+    "G96"
    ],
    "NRS-484B-307-8d": [
     "G93"

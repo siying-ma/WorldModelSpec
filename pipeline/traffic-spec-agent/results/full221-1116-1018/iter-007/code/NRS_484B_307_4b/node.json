@@ -1,0 +1,206 @@
+{
+ "node_id": "NRS_484B_307_4b",
+ "law_refs": [
+  "NRS-484B-307-4b"
+ ],
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where the signal is a green turn arrow alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Pedestrians",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "facing such a signal",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "shall not enter the highway",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "until permitted to proceed by another device as provided in NRS 484B.283 [NRS-484B-283-1d1, NRS-484B-283-1d2, NRS-484B-283-1d3, NRS-484B-283-1d4].",
+   "role": "reference"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal, 'a signal head; state ∈ {circular_green, circular_yellow, circular_red, green_arrow(dir), ...} with dir ∈ {left, right, straight, u_turn}; several states may be displayed at once': a green turn arrow alone is the head displaying green_arrow with direction left, right or u_turn and no state other than green turn arrows (no circular indication, no straight arrow, no yellow, red or flashing arrow). Same words, same atom as the index (NRS_484B_307_4a_o1)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'), claimed as ru.aggregate ('membership of a legal aggregate') and never replaced by the class atom ru.pedestrian."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.position",
+    "kin.heading",
+    "kin.position"
+   ],
+   "derived": [],
+   "justification": "'facing such a signal': the head of s1, at its position (dev.position, 'location of the device head / sign face'), lies within p.ped_traffic_signal_facing_reach of the pedestrian's position (kin.position, 'position of the body's reference point'), and the pedestrian's heading (kin.heading, 'direction the body points') makes with the line from its position to the head an angle whose cosine is at least p.ped_traffic_signal_facing_cos. Not a stand-in: dev.position is read as the place of the head only, never as a stop line or crossing ('the distance to a signal head is a different quantity'). Same words, same atoms as the index (NRS_484B_307_2b). The head is tied to the subject's scene not by this comparison but by the highway of s4, which the head controls."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.highway",
+    "st.on_way",
+    "st.intersection",
+    "st.travel_region",
+    "st.lane_enters",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "'the highway' is the definite highway: the one at which 'such a signal' stands and whose traffic it controls. The head controls a junction x (st.intersection, 'the region where two roadways meet'): it governs x itself (dev.governs, 'an intersection, read as control of the junction itself'), or it governs a carrier l (st.travel_region, the abstract kind of every region a device can govern) that runs into x (st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end'). 'The highway' (DEF-NRS-484A-095, 'the entire width between the boundary lines of every way dedicated to a public authority') is each way w (st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders') on which x lies (st.on_way, 'an intersection lies on every way that meets there'): the device of the junction is tied to its ways by relation atoms, never by distance. 'shall not enter': the pedestrian's footprint comes to overlap (rel.occupies, 'a road user's footprint overlaps a lane / region') a roadway (st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder') lying on w (st.on_way), having overlapped none at the previous observation. The pedestrian who faces the head from the sidewalk or the curb already lies within the highway's width, so the only entry the words can forbid is the step onto its roadway (narrowing on s4); st.roadway's exclusion ('Not a stand-in for: the sidewalk') is the distinction wanted."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s5",
+   "rule": "NRS_484B_283_1d1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s5",
+   "rule": "NRS_484B_283_1d2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s5",
+   "rule": "NRS_484B_283_1d3_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s5",
+   "rule": "NRS_484B_283_1d4_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (DEF-NRS-484A-165::pedestrian). At the judged observation there are a traffic signal head s (dev.traffic_signal), an intersection x (st.intersection) and a highway w (st.highway) such that: the subject faces s — s's position (dev.position) lies within p.ped_traffic_signal_facing_reach of the subject's position (kin.position), and the cosine of the angle between the subject's heading (kin.heading) and the line from its position to s is at least p.ped_traffic_signal_facing_cos; s displays a green turn arrow alone (green_arrow with direction left, right or u_turn, and no state other than green turn arrows); s controls x: dev.governs(s, x), or dev.governs(s, l) for some travel region l (st.travel_region) with st.lane_enters(l, x); x lies on w (st.on_way(x, w)); and at the previous observation the subject's footprint overlapped (rel.occupies) no roadway r (st.roadway) with st.on_way(r, w). The duty does not apply where NRS_484B_283_1d1 or NRS_484B_283_1d2 applies to the subject (a pedestrian signal permits it to proceed across), nor where NRS_484B_283_1d3_o2 or NRS_484B_283_1d4_o2 applies (a pedestrian who entered lawfully continuing to cross).",
+ "obligation": "For every head s, intersection x and highway w selected again with the applicability's whole selection (the subject faces s as stated there; s displays a green turn arrow alone; s governs x or a travel region that enters x; x lies on w; at the previous observation the subject overlapped no roadway lying on w), and for every roadway r (st.roadway) with st.on_way(r, w): the subject's footprint does not overlap r (rel.occupies). It does not step from the sidewalk, curb or other place off the roadway onto the roadway of the highway the signal controls while it faces the green turn arrow alone. Where whether a roadway lies on w, or whether the subject overlaps it, is unobserved and the verdict turns on it, unknown.",
+ "params": [
+  "p.ped_traffic_signal_facing_cos",
+  "p.ped_traffic_signal_facing_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "'enter the highway' is read as coming onto the roadway of a highway on which the junction the signal controls lies (the junction it governs, or the one a carrier it governs enters). The highway's defined extent includes the sidewalk, on which a pedestrian facing the head already stands, so read literally the words would never be engaged by the pedestrians they address; the entry they forbid is the step onto the vehicular part of the highway at that signal. Entry onto a shoulder or verge alone is not read as entry, and a roadway of a way that does not meet at that junction is not 'the highway'.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian stands on the corner sidewalk of a highway that meets another at a signalized intersection, 25 m from a vehicular head it faces (heading within 10 degrees of the line to the head) that governs a lane entering the intersection and displays green_arrow(left) alone; the pedestrian head it faces displays dont_walk_steady. At the next observation its footprint overlaps the roadway of a highway on which the intersection lies."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; the pedestrian stays on the sidewalk while the head displays green_arrow(left) alone; its footprint never overlaps the roadway."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The head the pedestrian faces displays circular_green alone; it steps onto the roadway."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source supplies no heading for the pedestrian: whether it faces the head is unknown.",
+   "masked": [
+    "kin.heading"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but the pedestrian head it faces displays walk: NRS_484B_283_1d1 applies to it and the duty of this paragraph does not."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "As forbid, but the roadway the pedestrian steps onto lies on a way that does not meet at the intersection the head controls (no st.on_way to any highway on which that intersection lies); it never overlaps a roadway of the highway at the signal."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "As forbid, but the head governs the intersection itself (dev.governs on the intersection) rather than an approach lane; the pedestrian steps onto the roadway of a highway on which that intersection lies."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.ped_traffic_signal_facing_cos",
+   "unit": "ratio",
+   "value": 0.87,
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a vehicular signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "proposed this iteration by NRS_484B_307_2b; repeated unchanged"
+  },
+  {
+   "name": "p.ped_traffic_signal_facing_reach",
+   "unit": "m",
+   "value": 60.0,
+   "convention": "the largest distance from a pedestrian to a vehicular signal head at which the head counts as one the pedestrian faces across the intersection: a wide urban intersection (about 40 m) plus the set-back of a far-side head beyond the far crosswalk",
+   "source": "proposed this iteration by NRS_484B_307_2b; repeated unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "NRS_484B_283_1d1": "b6069a6fe3f532ef3be7cb566e12e6d5854348464d3ce7b781555a44a62652df",
+  "NRS_484B_283_1d2": "5d9f34769ca9aea6c016413ce2707bc864652b9e8b14257c6cbf598d40ea3e4e",
+  "NRS_484B_283_1d3_o2": "8222588abf2cb99450a7b3533234d9b6f44a9843403d41320c634673d1f7be39",
+  "NRS_484B_283_1d4_o2": "0a057b83839d4cc50f11bd48a01aa3caba54a57c8fe0ac2712c9bad01903a85f"
+ }
+}

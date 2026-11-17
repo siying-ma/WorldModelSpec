@@ -92,6 +92,7 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2a_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2a_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2b_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2b_o2
+import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2b_o3
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_5a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_7a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_7b
@@ -112,6 +113,7 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_293
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_12a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_12b
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_2a
+import TrafficSpec.Rules.NRS_484B.NRS_484B_307_2b
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_3a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_4a_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_4a_o2
@@ -125,6 +127,7 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_307_8a_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_8a_o3
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_8c
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_8e
+import TrafficSpec.Rules.NRS_484B.NRS_484B_307_9c
 import TrafficSpec.Rules.NRS_484B.NRS_484B_310_1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_330_1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_363_1
@@ -297,6 +300,7 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_270_2a_o2.rule,
   TrafficSpec.Rules.NRS_484B_270_2b_o1.rule,
   TrafficSpec.Rules.NRS_484B_270_2b_o2.rule,
+  TrafficSpec.Rules.NRS_484B_270_2b_o3.rule,
   TrafficSpec.Rules.NRS_484B_270_5a.rule,
   TrafficSpec.Rules.NRS_484B_270_7a.rule,
   TrafficSpec.Rules.NRS_484B_270_7b.rule,
@@ -317,6 +321,7 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_307_12a.rule,
   TrafficSpec.Rules.NRS_484B_307_12b.rule,
   TrafficSpec.Rules.NRS_484B_307_2a.rule,
+  TrafficSpec.Rules.NRS_484B_307_2b.rule,
   TrafficSpec.Rules.NRS_484B_307_3a.rule,
   TrafficSpec.Rules.NRS_484B_307_4a_o1.rule,
   TrafficSpec.Rules.NRS_484B_307_4a_o2.rule,
@@ -330,6 +335,7 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_307_8a_o3.rule,
   TrafficSpec.Rules.NRS_484B_307_8c.rule,
   TrafficSpec.Rules.NRS_484B_307_8e.rule,
+  TrafficSpec.Rules.NRS_484B_307_9c.rule,
   TrafficSpec.Rules.NRS_484B_310_1.rule,
   TrafficSpec.Rules.NRS_484B_330_1.rule,
   TrafficSpec.Rules.NRS_484B_363_1.rule,
