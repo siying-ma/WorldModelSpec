@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 46163,
+  "stop_reason": "end_turn",
+  "session_id": "7a43cccf-2332-4bb2-975d-c827b5041907",
+  "total_cost_usd": 0.22588334999999998,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 10723,
+   "cache_read_input_tokens": 1526,
+   "output_tokens": 5911,
+   "output_tokens_details": {
+    "thinking_tokens": 2487
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 10723,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 5911,
+     "cache_read_input_tokens": 1526,
+     "cache_creation_input_tokens": 10723,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 10723
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 10213,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00113443,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 5911,
+    "cacheReadInputTokens": 1526,
+    "cacheCreationInputTokens": 10723,
+    "webSearchRequests": 0,
+    "costUSD": 0.22474892,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2487,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 10723,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-NRS-486-057\", \"term\": \"trimobile\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-486-057::trimobile\", \"quote\": \"“Trimobile” means every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground, at least one of which is power driven.\", \"reason\": \"The definition denotes a set of motor vehicles identified by their design, which can be classified by the road-user classes.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-486-057::trimobile\", \"term\": \"trimobile\", \"definition\": \"DEF-NRS-486-057\",\n  \"classifications\": [\n   {\"class\": \"ru.bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-130\", \"words\": \"“Motor vehicle” means every vehicle which is self-propelled\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(1) Devices moved by human power or used exclusively upon stationary rails\"}], \"reason\": \"Human-powered devices are excepted from vehicle and are not self-propelled, so they are not motor vehicles.\"},\n   {\"class\": \"ru.bus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"Membership turns on handlebars, a saddle seat and three wheels, and the bus contract does not fix these features, so the words neither admit nor exclude its members.\"},\n   {\"class\": \"ru.child\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-165\", \"words\": \"“Pedestrian” means a person afoot\"}], \"reason\": \"The class is a pedestrian person, not a motor vehicle.\"},\n   {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"The class is defined by mass or licensing, not by handlebars, saddle seat or wheel count, so the words do not decide its members.\"},\n   {\"class\": \"ru.electric_bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-130\", \"words\": \"The term does not include an electric bicycle or an electric scooter.\"}], \"reason\": \"Electric bicycles are expressly excluded from motor vehicle, so no member of the class is admitted.\"},\n   {\"class\": \"ru.electric_scooter\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-130\", \"words\": \"The term does not include an electric bicycle or an electric scooter.\"}], \"reason\": \"Electric scooters are expressly excluded from motor vehicle, so no member of the class is admitted.\"},\n   {\"class\": \"ru.emergency_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"An emergency vehicle may or may not be a three-wheeled handlebar-and-saddle motor vehicle, and the contract does not fix these features.\"},\n   {\"class\": \"ru.fire_apparatus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"The contract does not fix handlebars, saddle seat or wheel count, so the words do not decide its members.\"},\n   {\"class\": \"ru.moped\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground, at least one of which is power driven\"}, {\"definition\": \"DEF-NRS-484A-125\", \"words\": \"Is designed to travel on not more than three wheels in contact with the ground\"}], \"reason\": \"Mopeds are not excepted from motor vehicle and may have two or three wheels, so only some members (three-wheeled, with handlebars and saddle seat) are admitted.\"},\n   {\"class\": \"ru.motor_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"Only motor vehicles with handlebars, a saddle seat and three wheels are admitted, and the class contract does not fix those features.\"},\n   {\"class\": \"ru.motorcycle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"designed to travel with three wheels in contact with the ground, at least one of which is power driven. The term does not include a motorcycle with a sidecar.\"}], \"reason\": \"Three-wheeled handlebar-and-saddle motorcycles are admitted but two-wheeled ones and those with a sidecar are not, so the words admit only some members of the class.\"},\n   {\"class\": \"ru.official_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"The contract does not fix handlebars, saddle seat or wheel count, so the words do not decide its members.\"},\n   {\"class\": \"ru.pedestrian\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-165\", \"words\": \"“Pedestrian” means a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device\"}], \"reason\": \"The class is a person, not a motor vehicle, so no member is admitted.\"},\n   {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-165\", \"words\": \"“Pedestrian” means a person afoot\"}], \"reason\": \"The class is a pedestrian person, not a motor vehicle.\"},\n   {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-130\", \"words\": \"every vehicle which is self-propelled but not operated upon rails\"}], \"reason\": \"On-track equipment is operated upon rails and so is not a motor vehicle.\"},\n   {\"class\": \"ru.school_bus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"The contract does not fix handlebars, saddle seat or wheel count, so the words do not decide its members.\"},\n   {\"class\": \"ru.taxicab\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"A vehicle for hire may or may not be a three-wheeled handlebar-and-saddle motor vehicle, and the contract does not fix these features.\"},\n   {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"The contract does not fix handlebars, saddle seat or wheel count, so the words do not decide its members.\"},\n   {\"class\": \"ru.trailer_or_combination\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-130\", \"words\": \"every vehicle which is self-propelled\"}, {\"definition\": \"DEF-NRS-486-057\", \"words\": \"designed to travel with three wheels in contact with the ground\"}], \"reason\": \"A drawn vehicle is not self-propelled, but the class also covers a combination whose drawing unit may be a motor vehicle, and the words do not decide whether such a combination is a trimobile.\"},\n   {\"class\": \"ru.transit_bus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"The contract does not fix handlebars, saddle seat or wheel count, so the words do not decide its members.\"},\n   {\"class\": \"ru.truck\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-486-057\", \"words\": \"every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels in contact with the ground\"}], \"reason\": \"A goods-carrying motor vehicle may or may not have handlebars, a saddle seat and three wheels, and the contract does not fix these features.\"}\n  ]}]}\n```",
+  "ttft_ms": 23371,
+  "type": "result",
+  "duration_ms": 46055,
+  "uuid": "e3016dd8-d264-4c66-9b24-9302b86b767a",
+  "ttft_stream_ms": 1336,
+  "time_to_request_ms": 729,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 66,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 17,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 28,
+   "tool_pool_refresh": 2,
+   "init_message": 4,
+   "init_frame_send": 7,
+   "engine_pickup": 11,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 565,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 54,
+  "time_to_request_cpu_ms": 442,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 10,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 10,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1336,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 10213,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00113443,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 5911,
+    "cacheReadInputTokens": 1526,
+    "cacheCreationInputTokens": 10723,
+    "webSearchRequests": 0,
+    "costUSD": 0.22474892,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2487,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 10723,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:44.169Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,168 @@
+{
+ "node_id": "LVMC_11_22_010",
+ "law_refs": [
+  "LVMC-11-22-010"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "h1",
+   "text": "A person",
+   "role": "subject"
+  },
+  {
+   "id": "h2",
+   "text": "shall",
+   "role": "obligation"
+  },
+  {
+   "id": "h3",
+   "text": "when operating a vehicle",
+   "role": "condition"
+  },
+  {
+   "id": "h4",
+   "text": "give his full time and attention to the operation of the vehicle",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "h1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The person is the one operating the vehicle, read through the vehicle's controlled motion; the vehicle is the admitted aggregate DEF-NRS-484A-320::vehicle, and ru.aggregate's exclusion of 'who drives or controls a vehicle' is respected: the role is read through motion."
+  },
+  {
+   "span": "h2",
+   "atoms": [
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "The duty's conduct is checked through its outcome: the vehicle's body does not touch another road user or a structure (rel.contact 'the bodies of two road users, or a road user and a structure, touch or overlap (a collision)'; its exclusion 'a near miss' is respected — the near conflict is the operationalization's bound)."
+  },
+  {
+   "span": "h3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'operating' is read through the vehicle's controlled motion: kin.speed 'magnitude of velocity' above p.halt_speed_tolerance."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "h4",
+   "standard": "full time and attention to the operation of the vehicle",
+   "concepts": [
+    "rel.contact",
+    "rel.ahead_behind_in_lane",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.attention_ttc_min",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "surrogate safety measure for inattention: a driver who attends to the driving task neither collides nor closes on the road user ahead in its lane to a time-to-collision below the rear-end conflict threshold",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), is in motion: its kin.speed exceeds p.halt_speed_tolerance.",
+ "obligation": "The subject is in contact (rel.contact) with no road user and no structure; and for every road user o ahead of the subject in its lane (rel.ahead_behind_in_lane): not (prim.closest_approach_within(subject, o; p.attention_ttc_min) holds with prim.closest_approach_distance(subject, o; p.attention_ttc_min) below p.conflict_centre_clearance).",
+ "params": [
+  "p.attention_ttc_min",
+  "p.conflict_centre_clearance",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "h3",
+   "why": "'operating' is read through the vehicle's motion; a halted vehicle with its engine running is not judged",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "h4",
+   "why": "attention, a state of mind, is read only through its outcome on the road: no collision and no rear-end time-to-collision below the threshold; distraction that shows in no such outcome is not read",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject closes on a halted vehicle ahead in its lane at constant speed; the closest approach falls below the clearance within p.attention_ttc_min."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject follows a vehicle ahead at a steady gap, never closing within the threshold, and touches nothing."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is halted at a signal."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject's speed is not observed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject drives alone on an empty road, touching nothing."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.attention_ttc_min",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "time-to-collision threshold of a critical rear-end conflict",
+   "source": "van der Horst (1990) rear-end TTC thresholds"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car dimensions (AASHTO design vehicle P: 5.8 m by 2.1 m)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed noise floor of vehicle odometry and tracked-object estimates"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

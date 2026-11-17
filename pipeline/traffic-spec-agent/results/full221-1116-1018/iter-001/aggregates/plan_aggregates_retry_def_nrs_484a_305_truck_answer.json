@@ -1,0 +1,455 @@
+{
+ "digest": "83398d87fd8796270de798fdb1a0be9db9ce13edd15d068404c5b98348365e1e",
+ "answer": {
+  "selection": [
+   {
+    "definition": "DEF-NRS-484A-305",
+    "term": "truck",
+    "representation": "aggregate",
+    "target": "DEF-NRS-484A-305::truck",
+    "quote": "“Truck” means every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose.",
+    "reason": "The definition denotes an extensional set of motor vehicles whose eligibility can be classified by the ru.* classes of road users."
+   }
+  ],
+  "aggregates": [
+   {
+    "aggregate_id": "DEF-NRS-484A-305::truck",
+    "term": "truck",
+    "definition": "DEF-NRS-484A-305",
+    "classifications": [
+     {
+      "class": "ru.truck",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "Devices moved by human power or used exclusively upon stationary rails"
+       },
+       {
+        "definition": "DEF-NRS-484A-130",
+        "words": "every vehicle which is self-propelled but not operated upon rails"
+       }
+      ],
+      "reason": "A human-powered device is excepted from vehicle and so cannot be a motor vehicle or truck."
+     },
+     {
+      "class": "ru.electric_bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-130",
+        "words": "The term does not include an electric bicycle or an electric scooter."
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(2) Electric bicycles"
+       }
+      ],
+      "reason": "Electric bicycles are expressly excluded from motor vehicle and vehicle."
+     },
+     {
+      "class": "ru.electric_scooter",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-130",
+        "words": "The term does not include an electric bicycle or an electric scooter."
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(4) An electric scooter"
+       }
+      ],
+      "reason": "Electric scooters are expressly excluded from motor vehicle and vehicle."
+     },
+     {
+      "class": "ru.rail_vehicle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-130",
+        "words": "every vehicle which is self-propelled but not operated upon rails"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "Devices moved by human power or used exclusively upon stationary rails"
+       }
+      ],
+      "reason": "On-track equipment is operated upon rails and so is not a motor vehicle."
+     },
+     {
+      "class": "ru.pedestrian",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A pedestrian is a person, not a device by which persons or property are transported, so no member is a vehicle, motor vehicle or truck."
+     },
+     {
+      "class": "ru.child",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A child pedestrian is a person, not a device by which persons or property are transported, so no member is a truck."
+     },
+     {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "Such a pedestrian is a person, not a device by which persons or property are transported, so no member is a truck."
+     },
+     {
+      "class": "ru.motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "The words admit a motor vehicle only when it is used for goods transportation or delivery with a goods-built body, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.motor_vehicle",
+        "words": "a self-propelled vehicle other than a rail vehicle"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.motorcycle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "A motorcycle is admitted only when used for goods transportation or delivery with a goods-built body, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.motorcycle",
+        "words": "motor vehicle on two or three wheels ridden astride"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.moped",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "A moped is admitted only when it is a motor vehicle used for goods transportation or delivery with a goods-built body, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.commercial_motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "A commercial motor vehicle is admitted only when it is a motor vehicle used for goods transportation or delivery with a goods-built body, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.commercial_motor_vehicle",
+        "words": "vehicle over the jurisdiction's commercial mass class or marked as commercially licensed"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "Passenger-carrying design does not preclude goods use and a goods-built body, and every bus meeting those requirements satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.bus",
+        "words": "motor vehicle designed to carry many passengers"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.school_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "School-child designation does not preclude goods use and a goods-built body, and every member meeting those requirements satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.school_bus",
+        "words": "bus designated for carrying school children, with the jurisdiction's markings"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.transit_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "Public-transit service does not rule out goods use and a goods-built body, and every member meeting those requirements satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.transit_bus",
+        "words": "bus in public transit service, identifiable by its livery or route display"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.tour_bus_or_limousine",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "Passenger-service characteristics do not prohibit goods use and a goods-built body, and every member meeting those requirements satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.tour_bus_or_limousine",
+        "words": "a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.taxicab",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "The passenger-for-hire contract does not prohibit goods use or a goods-built body, and every member meeting those requirements satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.taxicab",
+        "words": "passenger vehicle for hire, identifiable by its markings"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.trailer_or_combination",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       },
+       {
+        "definition": "DEF-NRS-484A-130",
+        "words": "every vehicle which is self-propelled but not operated upon rails"
+       }
+      ],
+      "reason": "Only a self-propelled member used for goods transportation or delivery with a goods-built body is admitted, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.emergency_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "An emergency vehicle is admitted only when it is a motor vehicle used for goods transportation or delivery with a goods-built body, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.fire_apparatus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "A fire apparatus is admitted only when it is a motor vehicle used for goods transportation or delivery with a goods-built body, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.fire_apparatus",
+        "words": "a fire-fighting vehicle"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.official_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-305",
+        "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+       }
+      ],
+      "reason": "An official vehicle is admitted only when it is a motor vehicle used for goods transportation or delivery with a goods-built body, and every such member satisfies the ru.truck contract and so carries ru.truck.",
+      "covered_by": [
+       "ru.truck"
+      ],
+      "basis": [
+       {
+        "class": "ru.official_vehicle",
+        "words": "a vehicle in official or contracted road service, identifiable by livery or equipment"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

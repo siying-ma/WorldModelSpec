@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-285::traffic\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A human-powered device ridden by a person falls within 'other conveyances' even though human-powered devices are excepted from 'vehicle'.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A motor vehicle designed to carry passengers satisfies the transport-device language and is admitted by 'vehicles and other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract specifies a pedestrian, and 'pedestrians' admits that class without an age exception.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a vehicle, and 'vehicles and other conveyances' contains no exclusion based on commercial mass or licensing.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A bicycle with an assisting electric motor is a conveyance, and the electric-bicycle exception to 'vehicle' does not remove it from 'other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A standing or seated electric scooter is a conveyance, and its exception from 'vehicle' does not exclude it from 'other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle described by the contract is admitted by 'vehicles and other conveyances' without any requirement that it be responding.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A fire-fighting vehicle falls within 'vehicles and other conveyances', with no exception for its fire-fighting function.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The posted moped definition describes a transport vehicle and distinguishes it from electric bicycles and electric scooters, so the vehicle-admitting words reach it.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The self-propelled vehicle described by the contract falls within 'vehicles and other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A motor vehicle ridden astride on two or three wheels falls within 'vehicles and other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The road-service vehicle described by the contract falls within 'vehicles and other conveyances' without an exception for official or contracted service.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The pedestrian definition admits persons afoot, wheelchair users and qualifying mobility-device users, while 'other conveyances' also reaches person-carrying devices.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract specifies a pedestrian, and the admission of 'pedestrians' has no exception for a cane, guide animal or assistance from another person.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Rail transport falls within 'other conveyances' despite the stationary-rail exception to 'vehicle', and highway use is a scene condition rather than a class exclusion.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A bus designated to carry school children is a passenger-transport device admitted by 'vehicles and other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A passenger vehicle for hire satisfies the transport-device language and is admitted by 'vehicles and other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Both the bus and lengthened passenger-vehicle alternatives are transport devices admitted by 'vehicles and other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The words 'transported or drawn' and 'either singly or together' admit both a drawn vehicle and a vehicle combination.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A bus in public transit service is a passenger-transport device admitted by 'vehicles and other conveyances'.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A motor vehicle built to carry goods satisfies the property-transport language and is admitted by 'vehicles and other conveyances'.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 53402,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4928,
+   "input_tokens_details": {
+    "cache_write_tokens": 4925,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 4925
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 2497,
+   "output_tokens_details": {
+    "reasoning_tokens": 1354,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 7425,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_kxkwk_FWRkB1jkSHdUl8A1kAHCTm0wxJqOsxZ8hjvaaS98OdhTQKlsHa9z7e-L0dJc49OVdqDOJGquzLPkKy0F21MEIQGdRNwUcn5nXOuQZUnJu3TCGJEM9p7YClLeVsBFUbs9UhgSD81NBGSYdJFY3ppqgS7Gcd-AgBgO_Uk1Dse0tE-q3E8h4t_fmGirXKpAALThQuIEuWWeoi6ty-dwJnA4qXBwAq2ddDbcssbTGRVrH5lZx7EQK8t1fY_jVG01Z0s_wTACWZGr7_dS62ZXL9a8Fomqx_fZO_NFqnDjMDiDfjha9Dfgj6H9dpxx43gvMQIwLdOmEG6UCchGNOhaXubSP9Ks6YUMPLuUQJmJga4rMVQ0N9hPYg_XR9jpWZ65_KinTE6t6fGS05EKawwfg9yp4tt_V8suHVjO2qCNSJOGs=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

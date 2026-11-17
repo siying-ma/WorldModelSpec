@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 913268,
+  "stop_reason": "end_turn",
+  "session_id": "192eb964-85ac-4349-9c07-931c07e0cb72",
+  "total_cost_usd": 5.440388470000001,
+  "usage": {
+   "input_tokens": 20,
+   "cache_creation_input_tokens": 278285,
+   "cache_read_input_tokens": 2307681,
+   "output_tokens": 108787,
+   "output_tokens_details": {
+    "thinking_tokens": 58007
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 278285,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1065,
+     "cache_read_input_tokens": 279122,
+     "cache_creation_input_tokens": 3626,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3626
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 164203,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.09038865,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 20,
+    "outputTokens": 108787,
+    "cacheReadInputTokens": 2307681,
+    "cacheCreationInputTokens": 278285,
+    "webSearchRequests": 0,
+    "costUSD": 5.349999820000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 58007,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 278285,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 26,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've planned all eight laws as nine nodes, and the validator accepts all of them. No node carries a gap, no new concept was needed, and `aggregates.jsonl` is empty.\n\n| Node | How it reads the law |\n|---|---|\n| `NRS_484B_497` | Standing or parking on the left-hand side of a one-way roadway with lanes. The left side is judged against the roadway's own direction, so a parked car facing either way is handled. Permitting devices are a marked bay, an angle-parking sign, or a time-limited parking zone sign whose posted conditions hold. |\n| `NRS_484B_500` | Any halt where a hazardous-place zone sign or a no-stopping sign governs. |\n| `NRS_484B_503`, `_507_1`, `_510`, `_517` | Halting in passenger, freight, restricted and bus/taxi zones. \"Loading or unloading\" is read as a door open during the halt, kept under a duration limit. \"Interfere\" means a qualifying vehicle halted just outside the zone. |\n| `NRS_484B_533` | An unattended vehicle (nobody inside) halted on a measurable grade must have its engine off, its parking brake set, and its front wheels turned toward the nearest road edge. |\n| `NRS_484B_557_o1` | The vehicle must halt between the two stated distances from the crossing before entering it. If the recording starts inside that zone, the verdict is unknown. |\n| `NRS_484B_557_o2` | \"Due care\" when proceeding after that halt. This is a surrogate rule: it is read as no near-conflict with a train and no contact while on the crossing. |\n\n**\"Stop\" has two definitions.** The prohibitions use the \"when prohibited\" definition: halts in a queue, or in obedience to a sign, signal or officer, don't count. 557's \"shall stop\" uses the \"when required\" definition.\n\n**Validator fixes:** 533's and 557's obligation spans were each merged into one, and the narrowings it rejected on condition spans were removed. 507's \"used for the transportation of materials\" is now carried by the truck class itself, not as a purpose reading.\n\n**Things you may want to check** (all listed under \"For the operator\" in `PLAN.md`):\n- **Steering sign:** the steering-angle atom states no sign convention. `NRS_484B_533` assumes left is positive; a source using the opposite convention would invert its verdicts.\n- **Restricted parking hours:** the primitive that checks a sign's conditions combines its posted hours and its vehicle-class condition. As a result, `NRS_484B_510` treats a halt outside the posted hours as not for the restricted purpose, so it would flag it.\n- **Congested places:** there is no sign type for a \"congested place\", so `NRS_484B_500` reads it as a no-stopping sign.\n- **New parameters** awaiting your review:\n  - `p.zone_entry_wait_reach` (10 m)\n  - `p.grade_resolution` (0.005)\n  - `p.steer_angle_resolution` (2 deg)\n\nFiles are in `iter-001/plan/batch-24/`:\n- `blueprint.jsonl`\n- `aggregates.jsonl`\n- `PLAN.md`",
+  "ttft_ms": 502434,
+  "type": "result",
+  "duration_ms": 917122,
+  "uuid": "46927a0f-7808-4c1c-abef-1685357f6fea",
+  "ttft_stream_ms": 1670,
+  "time_to_request_ms": 619,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 22,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 17,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 36,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 4,
+   "engine_pickup": 6,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 502,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 10,
+  "time_to_request_cpu_ms": 267,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 16,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 8,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1670,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 164203,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.09038865,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 20,
+    "outputTokens": 108787,
+    "cacheReadInputTokens": 2307681,
+    "cacheCreationInputTokens": 278285,
+    "webSearchRequests": 0,
+    "costUSD": 5.349999820000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 58007,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 278285,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

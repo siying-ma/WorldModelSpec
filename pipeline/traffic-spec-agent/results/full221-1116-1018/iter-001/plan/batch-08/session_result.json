@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 821278,
+  "stop_reason": "end_turn",
+  "session_id": "205d7f14-3424-4ff7-9531-0aa6bf58e2bf",
+  "total_cost_usd": 4.265978200000001,
+  "usage": {
+   "input_tokens": 26,
+   "cache_creation_input_tokens": 194578,
+   "cache_read_input_tokens": 2132813,
+   "output_tokens": 94264,
+   "output_tokens_details": {
+    "thinking_tokens": 52452
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 194578,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1248,
+     "cache_read_input_tokens": 194906,
+     "cache_creation_input_tokens": 4135,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4135
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 95764,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.01055054,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 26,
+    "outputTokens": 94264,
+    "cacheReadInputTokens": 2132813,
+    "cacheCreationInputTokens": 194578,
+    "webSearchRequests": 0,
+    "costUSD": 4.2554276600000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 52452,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 194578,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 23,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've planned all eight laws. The validator accepts all eight nodes and the one new concept. One node, the bus time-limit rule (LVMC-11-60-030-A5), carries a gap and will not be coded until that gap is decided.\n\n- **Bus time limit (`LVMC_11_60_030_A5`):** the rule depends on \"the period of time … designated for such bus stop\". Signs have a \"duration limit\" field, but there is no measure a rule can read it through. A single parameter wouldn't work either, because the period differs from stop to stop. So I filed an atom gap for a new `dev.posted_duration_limit`; this law stays blocked until it's decided.\n- **Taxis standing outside a stand (`LVMC_11_60_040`):** a taxi on a street may stand only in a marked taxicab stand. A halt shorter than the passenger pick-up time (`p.standing_min_duration`) doesn't count as standing, which covers the \"temporarily stopping\" exception. \"In accordance with other stopping or parking regulations\" is recorded as words that don't change the verdict: those other rules judge such a stop themselves.\n- **Taxi right turn (`LVMC_11_60_090`):** at the exit of the first intersection after the cab leaves a stand, it must have turned right. The rule applies only where a right-turn-only sign governs the lane the cab is in as it leaves. \"Cab\" has no definition in the table, so it maps to the plain taxicab class.\n- **Stop sign and yield sign (`NRS_484A_450_2`, `_3`):** these follow the ontology's rule for an act required before an event. The vehicle must halt at the crosswalk marking its lane, else at the stop line, else at the edge of the intersection. Each node has a scenario for a recording that starts too late to show the halt (expected unknown).\n  - **The \"view of approaching traffic\" clause isn't checked:** I read the \"point nearest the intersecting highway\" as the intersection's edge, without testing sight distance.\n  - **Yield sign:** \"if required for safety to stop\" means another road user's closest approach, within the conflict time and distance limits, at some point on the approach.\n  - **Sign placement:** a sign counts only where the source records it as governing the approach lane.\n- **Driving through a safety zone (`NRS_484B_110`):** a moving vehicle must not overlap a safety zone.\n- **Backing into an intersection, over a crosswalk or around a corner (`NRS_484B_113_2`):** this uses the new backward-motion concept, `drv.motion.moving_backward`. While a vehicle is backing, it must not enter an intersection or be on a crosswalk. Backing around a street corner means its heading turns by at least `p.turn_heading_min` while it backs inside an intersection. Backing straight out of an intersection it is already in is not \"into\" it.\n- **Yielding while backing (`NRS_484B_113_3`):** the subsection doesn't mention backing. I limited it to backing because it sits under \"Limitations on backing\", and this is disclosed in the node. While backing, the vehicle must not get into a near-collision or touch moving traffic or any pedestrian, moving or not.\n\nI re-proposed seven parameters with the exact values and conventions earlier batches proposed. `PLAN.md` explains each decision and what would reverse it. Its \"For the operator\" section covers the gap and the sign-placement caveat.\n\nFiles are in `batch-08/`:\n- `blueprint.jsonl`\n- `PLAN.md`\n- `aggregates.jsonl` (empty: no law-local aggregates)",
+  "ttft_ms": 469030,
+  "type": "result",
+  "duration_ms": 825504,
+  "uuid": "44889d07-18a7-4665-9bf4-3e9c36acb136",
+  "ttft_stream_ms": 2444,
+  "time_to_request_ms": 728,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 37,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 22,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 39,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 6,
+   "engine_pickup": 10,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 579,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 26,
+  "time_to_request_cpu_ms": 348,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 8,
+   "cpu_ms": 17,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 6,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 8,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 2444,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 95764,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.01055054,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 26,
+    "outputTokens": 94264,
+    "cacheReadInputTokens": 2132813,
+    "cacheCreationInputTokens": 194578,
+    "webSearchRequests": 0,
+    "costUSD": 4.2554276600000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 52452,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 194578,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:44.169Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

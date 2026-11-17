@@ -4,6 +4,12 @@
 -/
 import TrafficSpec
 import TrafficSpec.Core.Evidence.Builders
+import TrafficSpecWitness.Concepts.lane.heading_right_of_carrier
+import TrafficSpecWitness.Concepts.motion.moving_across_carrier
+import TrafficSpecWitness.Concepts.motion.moving_against_carrier
+import TrafficSpecWitness.Concepts.motion.moving_backward
+import TrafficSpecWitness.Concepts.motion.u_turn
+import TrafficSpecWitness.Concepts.motion.u_turn_through_region
 namespace TrafficSpecWitness
 open TrafficSpec
 /-- A witness held as the gate holds it: Core's `Scenario.run`, and a `blind` witness Core refuses
@@ -28,12 +34,29 @@ def witnessRun (rules : List TrafficSpec.Rule) (sc : TrafficSpec.Scenario) (cs :
 /-- Every registered node scenario, in file order. -/
 def allScenarios : List Scenario := []
 /-- Every registered concept instance and its scenarios, in file order. -/
-def allInstances : List Concept.Instance := []
-def allConceptScenarios : List Scenario := []
+def allInstances : List Concept.Instance := TrafficSpecWitness.Concepts.lane.heading_right_of_carrier.instances ++
+  TrafficSpecWitness.Concepts.motion.moving_across_carrier.instances ++
+  TrafficSpecWitness.Concepts.motion.moving_against_carrier.instances ++
+  TrafficSpecWitness.Concepts.motion.moving_backward.instances ++
+  TrafficSpecWitness.Concepts.motion.u_turn.instances ++
+  TrafficSpecWitness.Concepts.motion.u_turn_through_region.instances
+def allConceptScenarios : List Scenario := TrafficSpecWitness.Concepts.lane.heading_right_of_carrier.scenarios ++
+  TrafficSpecWitness.Concepts.motion.moving_across_carrier.scenarios ++
+  TrafficSpecWitness.Concepts.motion.moving_against_carrier.scenarios ++
+  TrafficSpecWitness.Concepts.motion.moving_backward.scenarios ++
+  TrafficSpecWitness.Concepts.motion.u_turn.scenarios ++
+  TrafficSpecWitness.Concepts.motion.u_turn_through_region.scenarios
 /-- The rules every witness runs against: the registered rules and the concept instances. -/
 def witnessRules : List Rule := allRules ++ allInstances.filterMap (Concept.asRule allConcepts)
 /-- Every registered witness list, under the id of the node or concept that owns it. -/
-def taggedScenarios : List (String × List Scenario) := []
+def taggedScenarios : List (String × List Scenario) := [
+  ("drv.lane.heading_right_of_carrier", TrafficSpecWitness.Concepts.lane.heading_right_of_carrier.scenarios),
+  ("drv.motion.moving_across_carrier", TrafficSpecWitness.Concepts.motion.moving_across_carrier.scenarios),
+  ("drv.motion.moving_against_carrier", TrafficSpecWitness.Concepts.motion.moving_against_carrier.scenarios),
+  ("drv.motion.moving_backward", TrafficSpecWitness.Concepts.motion.moving_backward.scenarios),
+  ("drv.motion.u_turn", TrafficSpecWitness.Concepts.motion.u_turn.scenarios),
+  ("drv.motion.u_turn_through_region", TrafficSpecWitness.Concepts.motion.u_turn_through_region.scenarios)
+]
 /-- Run every witness against the registered rules and concepts with a reading; each failure as
     `<owner id>\t<scenario>: <why>`, so a failure names the node or concept it belongs to. -/
 def failures (ρ : Reading) : List String :=

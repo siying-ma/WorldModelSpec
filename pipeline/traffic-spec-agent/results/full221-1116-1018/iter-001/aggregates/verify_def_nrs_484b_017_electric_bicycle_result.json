@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484B-017::electric_bicycle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The opening alternative can admit unassisted two- or three-wheeled members outside ru.electric_bicycle, defeating complete coverage, while the bicycle contract does not itself establish the required wheel count.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The opening alternative admits rideable two- or three-wheeled devices, and the many-passenger motor-vehicle contract neither establishes nor rules out that configuration.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting words describe a device, whereas this contract describes a child pedestrian.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Commercial mass or licensing does not establish or preclude the rideable two- or three-wheeled configuration admitted by the opening alternative.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"An assisting electric motor alone establishes neither the opening alternative's wheel count nor the separate bicycle alternative's equipment, power and operating requirements.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly states that the term does not include an electric scooter.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation does not determine wheel count or prevent a device from satisfying the opening admitting alternative.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A fire-fighting purpose neither establishes nor rules out a rideable two- or three-wheeled device, which the opening alternative admits.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly states that the term does not include a moped.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract does not settle whether a member satisfies the opening two-or-three-wheel alternative, and excluding separately classified powered two-wheelers does not rule out qualifying three-wheelers.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The opening alternative directly admits rideable devices having two or three wheels, which the motorcycle contract describes, without restricting that alternative to pedalled bicycles.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official or contracted road service neither establishes nor precludes the rideable two- or three-wheeled configuration admitted by the opening alternative.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting words describe a device rather than the person described by the pedestrian contract.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The opening words admit devices, not pedestrians carrying a cane or accompanied or led by another.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The target definition does not exclude on-track devices, and the rail-vehicle contract does not settle whether they satisfy its rideability and wheel-count requirements.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School-bus designation and markings do not establish or rule out the configuration admitted by the opening two-or-three-wheel alternative.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Passenger-for-hire use and markings do not determine whether the vehicle meets the opening rideable two-or-three-wheel alternative.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract's service, body and livery descriptions do not settle the wheel-count requirement, and the opening alternative is not limited to pedalled bicycles.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Being drawn by another vehicle neither establishes nor precludes rideability with two or three wheels, and the target definition contains no drawn-vehicle exclusion.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service and identifying displays do not establish or rule out the rideable two-or-three-wheel configuration admitted by the opening alternative.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A goods-carrying body does not settle wheel count or preclude the opening admitting alternative, so the quoted bicycle-specific limb does not establish exclusion.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 185892,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4851,
+   "input_tokens_details": {
+    "cache_write_tokens": 4848,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 4848
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 7963,
+   "output_tokens_details": {
+    "reasoning_tokens": 6785,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 12814,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_GYGpa3V5O-rYjthNssn8cKz_pdz_CxH_DQByt81TcFep3hlW8jzzEfXRrA9K7HRJMVBfryMyoXdjI_g_zvgseDic7VKsQ_CwSAivnBU4LOM1HCgaCWpuHkmgTKSyEWSD6TzDBE7py-Z9Uxc5J96XjuKQQzHHyI8EiBWamWCZEEDvA5ZsiwkCH9ZhPvbcP7YvkprLiEKTcYu7LW6_km_LEqB16heRAYA-6HiuZ2YRHkxsbnkuYHehj-wkuwmO4EJn7TCKT-UNrtHZEbOZkKNyKopVT5QJKvV0lBupdil4vAKEgRnu3ZipkNaiLMEOV6AoVypww5DDhbRdVM6VcbKhbw4NOnq1hCL5rll6z5vQUio1SEYkgT10gfrcxKrl5I8sTPB_Ypq_tnIBnbnm_CvBeNykbnfk4q4-PVw9vFwZIJ97V5c=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

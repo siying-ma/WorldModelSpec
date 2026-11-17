@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-486-038::moped\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The nested vehicle definition excludes devices moved by human power, matching this class's human-powered contract.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The bus contract specifies neither minimum engine output nor minimum wheel count, so carrying many passengers does not establish incompatibility with the definition.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A child pedestrian is a person, whereas the admitting words describe a motor-driven vehicle.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Commercial licensing or membership in a commercial mass class does not establish an engine-output or wheel-count restriction that rules out every qualifying vehicle.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The exception is limited to electric bicycles satisfying the cross-referenced statutory definition, while the class contract does not require its power and assistance-cutoff limits.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The cross-referenced exception requires weight and motor-only speed limits that the electric-scooter contract does not impose.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The words permit a qualifying one-wheeled emergency vehicle, which would not satisfy ru.moped's two-or-three-wheel contract.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting-vehicle contract imposes no minimum engine output or wheel count that makes the admitting conditions impossible.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition admits the low-power, engine- or motor-driven two- or three-wheelers that this jurisdiction classes as mopeds.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A qualifying one-wheeled self-propelled vehicle is not barred by this contract but falls outside ru.moped's two-or-three-wheel contract.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every admitted motorcycle already has two or three wheels and, by satisfying the controlling moped definition, meets the jurisdiction-classified ru.moped contract.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official road service and identifying equipment do not prevent a qualifying one-wheeled vehicle that falls outside ru.moped's two-or-three-wheel contract.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person, including one using a mobility device, rather than the motor-driven vehicle admitted by the definition.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person rather than a motor-driven scooter, cycle or similar vehicle.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The on-track contract establishes neither incompatibility with the wheel limit nor the exclusive use upon stationary rails required by the nested vehicle exception.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School designation and markings establish no minimum engine output or wheel count that rules out every vehicle satisfying the definition.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Being an identifiable passenger vehicle for hire imposes no engine-output or wheel-count restriction that establishes the claimed exclusion.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The tour, shuttle and lengthened-passenger-vehicle descriptions establish no minimum engine output or wheel count incompatible with the definition.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract includes combinations with powered components, and the admitting words do not require every component to have its own engine.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public transit service and identifying displays impose no minimum engine output or wheel count that establishes the claimed exclusion.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A purpose-built goods body establishes neither minimum engine output nor minimum wheel count, so the contract does not rule out qualifying vehicles.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 141610,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5146,
+   "input_tokens_details": {
+    "cache_write_tokens": 5143,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5143
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 6328,
+   "output_tokens_details": {
+    "reasoning_tokens": 5178,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 11474,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_bs-WkL0PJEJppNOzHmQy6cgX_ex4hyrndxDdE7KDVbgRNQAy7jxYQPjnbNscAZ9zNFHaraxMrXzZA7DDZMnxOOmqChsEcMqXEi4cHLBKOfxXnv2A0j1cod7ywvyGcOFKWiTpHY8kA4IAmGyCArE-e96OuYCut2gZe1jYvAuKWRYvEg8dP0VTxLNXzTGCOn5u2qQeWD98EzltgqPWQrEPq_OygaJIZqjGJ_9TptWkKl9kSvKHQONu_w6QShx96AAAn4-twh7WG5qAc9B6JxaJqG1l-SMHOFVuvZY6cETZF4FqxfedSwLA3CtE9wnEWpCiZ_Rx4dZSZQZd9M0RLFgh5-0w-oVhCTJRG7b86PiEynZWF3G8dN-FDcwSsq5xoQ2PDqiDFMebnLGOubTTt8F3QVX_4Sl8D9N44k-d3-PFtYuhaec=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

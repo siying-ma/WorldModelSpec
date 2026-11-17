@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-460-2::high_occupancy_vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class contract describes human-powered devices, which the nested vehicle definition expressly excepts.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly admits buses, and its general vehicle limb also reaches this motor-vehicle class subject to the stated occupancy condition.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A child pedestrian is a person rather than a vehicle, so none of the admitting limbs reaches the class.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The general vehicle limb admits this class subject to the stated occupancy condition, without requiring commercial status.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Electric bicycles are expressly excepted from the nested vehicle definition and are not restored by another admitting limb.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Electric scooters are expressly excepted from the nested vehicle definition and are not restored by another admitting limb.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The general vehicle limb admits this class subject to the occupancy condition, without making emergency designation or responding conduct sufficient by itself.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A fire-fighting vehicle falls within the general vehicle admission subject to the stated occupancy condition.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Mopeds fall within the general vehicle admission subject to occupancy, even though the motorcycle definition excludes them from that separate limb.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The general vehicle limb admits this self-propelled vehicle class subject to the stated occupancy condition.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly admits motorcycles regardless of the number of passengers.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The general vehicle limb admits this vehicle class subject to the occupancy condition, without making official service sufficient by itself.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes persons rather than vehicles, and the nested definition additionally excludes electric personal assistive mobility devices.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class consists of pedestrians rather than vehicles, so none of the admitting limbs reaches it.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The nested vehicle definition expressly excepts devices used exclusively upon stationary rails.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The general vehicle admission reaches this class subject to occupancy, while the bus limb independently admits buses meeting the posted bus definition regardless of passenger count.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Taxicabs fall within the general vehicle admission subject to occupancy, notwithstanding their exclusion from the separate bus definition.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Both alternatives in the class contract are vehicles reached by the general admitting limb subject to the stated occupancy condition.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The nested vehicle definition expressly reaches devices used for transport or drawing, and the admitting limb retains its occupancy condition.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The general vehicle admission reaches this class subject to occupancy, while the bus limb independently admits buses meeting the posted bus definition regardless of passenger count.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The general vehicle limb admits goods-carrying motor vehicles subject to the stated occupancy condition.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 163061,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5650,
+   "input_tokens_details": {
+    "cache_write_tokens": 5647,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5647
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 6808,
+   "output_tokens_details": {
+    "reasoning_tokens": 5756,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 12458,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_mn9gZP2gQvM79MdzR7YMzteOU4TIakdxIc4km25RhByxO5yfPXmGVGAq1mGbXgd7lFsC1orS92xqUqMMa9Xt9eQadj35ca0mThNi2JaWmV0qXh0MggU78B_iCeuDawvwUWL-pTDadI3W1NoJAdOPB6vaV9WnO8Likp8wdUuapS5m4RP8Ny8nhg7asHCAp4CQHiIWFsIDmz4J3QCsfMbNJs14tWjITd0rJcjDImCMkpHXiEDW8PVoS3MYx8KfydMPZeR5vXlBCDHfNM6YaNle7UM4j_voOk5EWZsDh0Gh02IFk74vBRyVYsn4ZHduaKFXAGL5Y6LykCxmNr337oUr4VK8v2-NbnrcyCnIie6_zff5GFBJbQ7TWVyF_yKTrkhyUTTsyKZvr9hUW0FNcpjb5dbMwJ7op_Yu6Uxgxia5x6YW-XE=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

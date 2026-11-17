@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 683422,
+  "stop_reason": "end_turn",
+  "session_id": "fa4bd5fc-6431-463d-b479-a5913801f1bd",
+  "total_cost_usd": 3.467575540000001,
+  "usage": {
+   "input_tokens": 12,
+   "cache_creation_input_tokens": 174661,
+   "cache_read_input_tokens": 766424,
+   "output_tokens": 79622,
+   "output_tokens_details": {
+    "thinking_tokens": 48021
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 174661,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 984,
+     "cache_read_input_tokens": 175234,
+     "cache_creation_input_tokens": 3890,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3890
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 92656,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.010208660000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 12,
+    "outputTokens": 79622,
+    "cacheReadInputTokens": 766424,
+    "cacheCreationInputTokens": 174661,
+    "webSearchRequests": 0,
+    "costUSD": 3.457366880000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 48021,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 174661,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 9,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've planned all eight laws in batch 07, and the validator now accepts every node. Four of them carry gaps, so those four won't be coded until the gaps are resolved. The first run returned 305(A) twice: once for a definition span that carried nothing, and once for a `dev.governs` claim with no region kind it could bind to. I fixed both and re-ran the validator.\n\n**Ready to code (4):**\n- **11.52.136 (access aisle):** a vehicle parked where it overlaps a parking space marked as an access aisle.\n- **11.52.300 (non-motor vehicles, 1–6 a.m.):** parked continuously on a street for more than 30 minutes inside those hours, read from the clock time of day. Motor vehicles are excepted.\n- **11.52.340 (municipal spaces):** a non-city vehicle parked in a municipal-designated space. A \"City vehicle\" is recognised by municipal livery, so a city fire engine without it would be held to the rule.\n- **11.60.030(A)(4) (bus at the curb):** when a bus stops at a bus zone with a door open, the curb on its right must be within 18 inches of its body and the bus roughly parallel to the curb. The rule measures from the bus body, not the wheel, so it is slightly lenient.\n\n**Blocked by gaps (4):**\n- **11.52.180(C):** the limit is total time parked within any hour, across several stops. The rule language can only measure one continuous stretch, so I proposed an operator for cumulative duration.\n- **11.52.305(A):** three things have no atom: unladen weight over 8,000 lb, a sign that *permits* parking, and a vehicle being used for nearby service or construction work.\n- **11.60.030(A)(1) and (A)(2):** nothing records which route a bus is assigned to, so \"its own route's terminus\" can't be checked. (A)(2) also needs \"in case of an emergency\", which repeats the pending gap G20.\n\n**Decisions you may want to review:**\n- **\"Otherwise lawfully\" in 11.52.180(C):** I treated it as adding no restriction, so an otherwise-unlawful vehicle is still held to the 30-minute limit. If a reviewer disagrees, it would need the pending \"in compliance with law\" operator.\n- **Weight in an earlier batch:** that batch mapped similar weight words in 11.48.050 to the commercial-vehicle class. I recorded a dispute in `PLAN.md`, because that class's mass threshold isn't the stated 8,000 lb.\n- **Pounds in literals:** pounds isn't an allowed literal unit, so the 8,000 lb figure isn't declared as a literal.\n\nFiles are in `…/iter-001/plan/batch-07/`:\n- `blueprint.jsonl`\n- `PLAN.md`\n- `aggregates.jsonl` (empty)",
+  "ttft_ms": 437403,
+  "type": "result",
+  "duration_ms": 686264,
+  "uuid": "941f158c-20c4-4578-9cc4-210d08a3e22a",
+  "ttft_stream_ms": 2041,
+  "time_to_request_ms": 592,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 32,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 14,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 24,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 4,
+   "engine_pickup": 6,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 481,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 9,
+  "time_to_request_cpu_ms": 259,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 14,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 6,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 2,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 2041,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 92656,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.010208660000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 12,
+    "outputTokens": 79622,
+    "cacheReadInputTokens": 766424,
+    "cacheCreationInputTokens": 174661,
+    "webSearchRequests": 0,
+    "costUSD": 3.457366880000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 48021,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 174661,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:44.169Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

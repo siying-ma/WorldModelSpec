@@ -1,0 +1,78 @@
+{
+ "concept_id": "drv.lane.heading_left_of_carrier",
+ "kind": "formula",
+ "contract": "Road user a, moving, points to the left of the designated direction of travel of carrier region r by more than a tolerance: its heading has turned off r's direction toward the left. With h a's heading (kin.heading) and d r's designated direction (st.lane_direction), both as a formula reads them normalised, the dot product of d and h is positive, so that a points along d rather than against it, and the cross product d_x times h_y minus d_y times h_x exceeds sin_tol, so that h lies to the left of d, counter-clockwise in the world frame, by more than the angle whose sine is sin_tol; and a's speed (kin.speed) is above speed_tol. It is a state at one observation: it says nothing of whether a occupies r, of how long its heading has been so, of the path a will follow, or of why it turns. Not denoted: a road user at rest or moving at or below speed_tol; a heading within that angle of d, or turned to its right; a heading that points against d, the dot product being at or below zero. Where r carries no designated direction, or a's heading or speed is unobserved, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "sin_tol",
+   "unit": "ratio",
+   "meaning": "sine of the largest angle between a's heading and r's designated direction at which a counts as keeping to that direction: the heading noise and wander the observer tolerates"
+  },
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "the speed at or below which a counts as not moving: the source's speed resolution"
+  }
+ ],
+ "elements": [
+  {
+   "span": "h a's heading (kin.heading)",
+   "atoms": [
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.heading is the 'direction the body points', read normalised; the departure is of the body's pointing from the carrier's direction, not of a path."
+  },
+  {
+   "span": "d r's designated direction (st.lane_direction)",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction is the 'direction of travel designated for a structure a vehicle travels in', local to its carrier and unknown where none is carried, which is the reference the heading departs from."
+  },
+  {
+   "span": "a's speed (kin.speed) is above speed_tol",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the 'magnitude of velocity'; a road user at rest changes no course, so the state is read only while a moves above the tolerance."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a moves well above speed_tol in lane r whose designated direction points east; a's heading points east-north-east, turned counter-clockwise from r's direction by clearly more than the angle whose sine is sin_tol: the concept holds."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a moves in r with its heading aligned with r's designated direction (cross product below sin_tol): the concept does not hold."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "a moves turned to the left of the lane, but the source does not observe st.lane_direction for r.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_413_2"
+ ]
+}

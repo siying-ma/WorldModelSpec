@@ -1,0 +1,60 @@
+{
+ "concept_id": "drv.motion.complete_halt",
+ "kind": "formula",
+ "contract": "The road user is at rest at the observation — \"complete cessation from movement\" — observed as its speed (kin.speed) at or below a tolerance the caller sets for the source's speed resolution. It denotes a state at one observation: it says nothing of how long the road user stays at rest, where it is, or why. Not denoted: a slowing whose sampled speed stays above the tolerance.",
+ "definition": "DEF-NRS-484A-255",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its speed (kin.speed) at or below a tolerance",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed 'magnitude of velocity' in m/s; an absolute cessation is observed over sampled speeds only within the caller's tolerance. Its exclusion of acceleration does not apply."
+  }
+ ],
+ "residues": [
+  {
+   "span": "when required",
+   "why": "the scope of the definition (a stop that a law requires) is decided by the law that calls the concept, not by the state observed"
+  }
+ ],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A vehicle's sampled speed is at the tolerance or below."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A vehicle creeps forward with a sampled speed above the tolerance."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source does not observe the road user's speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_20_060_o1",
+  "LVMC_11_12_070_B"
+ ]
+}

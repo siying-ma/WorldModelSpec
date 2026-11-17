@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-486-057::trimobile\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract describes human-powered devices, which the incorporated vehicle definition excepts, so they cannot satisfy the required motor-vehicle condition.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The bus contract specifies passenger capacity but does not rule out three wheels, handlebars and a saddle seat.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person rather than the motor vehicle required by the definition.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Commercial mass or licensing does not settle whether a vehicle satisfies the required wheel, propulsion and equipment conditions.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The incorporated motor-vehicle definition expressly excludes electric bicycles, so three wheels and a saddle do not establish eligibility.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The incorporated motor-vehicle definition expressly excludes electric scooters, regardless of their wheel count or seating.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation does not determine whether the required wheel, propulsion and equipment conditions are met.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting function stated in the contract does not preclude three wheels, handlebars and a saddle seat.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract permits two- and three-wheeled mopeds without settling the required equipment, and the trimobile definition does not exclude mopeds.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class contract does not determine whether members have the required three wheels, handlebars and saddle seat.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract permits both two- and three-wheeled motorcycles, while the equipment requirements and sidecar exception prevent a class-wide determination.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official service and identifying equipment do not settle the required wheel, propulsion and seating conditions.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person, not the motor vehicle required by the definition.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person rather than a motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The incorporated motor-vehicle definition requires a vehicle not operated upon rails, which rules out the on-track equipment described by the contract.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School-passenger designation and markings do not establish that every member lacks the required three wheels, handlebars or saddle seat.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Passenger-for-hire use and identifying markings do not settle whether the trimobile requirements are met.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the tour or shuttle function nor the lengthened passenger-vehicle contract rules out the required three wheels, handlebars and saddle seat.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract includes combinations and does not establish that every member lacks a power-driven wheel or otherwise fails the trimobile requirements.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service and identifying livery do not rule out the required three wheels, handlebars and saddle seat.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A goods-carrying body does not settle whether a motor vehicle has the required three wheels, handlebars and saddle seat.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 63562,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5767,
+   "input_tokens_details": {
+    "cache_write_tokens": 5764,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5764
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 3367,
+   "output_tokens_details": {
+    "reasoning_tokens": 2292,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 9134,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_tNWheGJ3yTmrLJvTJbrnabDA5-E8nZqeRVZwjZjfJaP7aKR0VgE_P6BI2dPEz6dw5lXuJl4T0dssSNd_Tql4PiIn1byvIT6cDJ6nNh8l_rlqM_kIrL3ms6Z4yfgLycJdI8J2RE4n4T7E-pRAfsPitXvXYadnfgY5jCuYJ2feUNqov2fgI2170pLPYLMHTteon6ThvUlEOvWNaKFCVb0J23oMdKctPO5jkeoBh97287nLTLmYVtnMQGTPairnzzLACQ3odj3pBo_YRvXJfZyEMXvCE1G-QgnI365OhtCAzrSe7R8PEC8Mb1Bxpg7csvYu4icl-kVztjXEb6sGIbdA88B-U73f_UIe6DJJjYUHIYk5HIwShxsQnvXaJkd-RUBSpKIjl6WmVTn6onQZ8uwFk8IvmBm7XJiDSBZry0bDTYuNOSU=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

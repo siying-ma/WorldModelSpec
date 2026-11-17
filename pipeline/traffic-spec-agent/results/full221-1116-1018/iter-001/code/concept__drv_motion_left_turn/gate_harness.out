@@ -1,0 +1,30 @@
+'TrafficSpec.Concepts.motion.left_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"rises":{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"turn_min"}},{"cmp":"lt","lhs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"u_turn_min"}}]},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"yaw_tol"}}]}},"contract":"Road user a has completed a turn to the left. Its heading change over the window behind the observation (prim.heading_change over a window of length window, degrees, positive to the left) lies in the band from turn_min inclusive to u_turn_min exclusive, so that a heading change too small to be a turn and a reversal of direction both lie outside it. The act begins within the window behind the observation at which it is recognized. The act is recognized at the observation at which the heading change over the window behind lies in that band and a's yaw rate (kin.yaw_rate) is at most yaw_tol in magnitude, where this did not hold at the previous observation: the heading has stopped turning. The concept holds at that observation only, and not again until that condition has ceased to hold and then holds again. Conduct before the window behind is not read: a turn that takes longer than the window is not recognized. It denotes the change of a's heading only: it says nothing of the lane, the intersection or the way on which a turns, of its speed, or of why it turns. Not denoted: a heading change to the left smaller than turn_min, such as a lane change or a drift; a heading change of u_turn_min or more, which is a reversal of direction; a turn to the right; a turn still under way, whose yaw rate exceeds yaw_tol. Where the window is truncated or a yaw rate in it is missing, it is unknown.","definition":null,"id":"drv.motion.left_turn","kind":"formula","narrowings":[],"params":[{"name":"window","unit":"second"},{"name":"turn_min","unit":"degree"},{"name":"u_turn_min","unit":"degree"},{"name":"yaw_tol","unit":"degree_per_second"}],"residues":[],"supersedes":null}
+ATOMS	prim_heading_change,kin_yaw_rate
+READS	prim_heading_change,kin_yaw_rate
+AGGREGATES	
+HARDAGG	
+BODY	{"rises":{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"turn_min"}},{"cmp":"lt","lhs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"u_turn_min"}}]},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"yaw_tol"}}]}}
+WITNESS	holds	drv.motion.left_turn@w
+WITNESS	fails	drv.motion.left_turn@w
+WITNESS	blind	drv.motion.left_turn@w
+OCC	a
+OCC	a
+OCC	a
+INST	drv.motion.left_turn@w	ok
+TIME	checks	3
+REF	holds	drv.motion.left_turn@w	scene t=8000: track 1 keeps the heading it had at t=7000, but its yaw rate turns it 15° over the interval (the rate at a scene is held over the interval before it)
+REF	fails	drv.motion.left_turn@w	scene t=8000: track 1 keeps the heading it had at t=7000, but its yaw rate turns it 5° over the interval (the rate at a scene is held over the interval before it)
+REF	fails	drv.motion.left_turn@w	scene t=10000: track 1 keeps the heading it had at t=9000, but its yaw rate turns it -5° over the interval (the rate at a scene is held over the interval before it)
+REF	blind	drv.motion.left_turn@w	scene t=8000: track 1 keeps the heading it had at t=7000, but its yaw rate turns it 15° over the interval (the rate at a scene is held over the interval before it)
+TIME	lint	9
+SCEN	holds	drv.motion.left_turn@w	compliant	compliant	ok
+TIME	scenario:drv.motion.left_turn@w/holds	49
+SCEN	fails	drv.motion.left_turn@w	violated	violated	ok
+TIME	scenario:drv.motion.left_turn@w/fails	48
+SCEN	blind	drv.motion.left_turn@w	unknown	unknown	ok
+TIME	scenario:drv.motion.left_turn@w/blind	51
+TIME	witnesses	148
+DONE_WITNESSES

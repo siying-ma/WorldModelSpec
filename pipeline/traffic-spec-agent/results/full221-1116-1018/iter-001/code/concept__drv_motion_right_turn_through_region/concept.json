@@ -1,0 +1,82 @@
+{
+ "concept_id": "drv.motion.right_turn_through_region",
+ "kind": "formula",
+ "contract": "Road user a has made a turn to the right through region r, recognized as it leaves r. The act begins at the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation: its entry into r. The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r. The concept holds at that observation only, and not again until a has entered r again and left it. At that observation the heading change of a since its entry into r, in degrees and positive to the left, integrated from its yaw rate (kin.yaw_rate) with no interval between consecutive observations longer than step, lies in the band from minus u_turn_min exclusive to minus turn_min inclusive: a turn to the right by at least turn_min and by less than u_turn_min, so that a passage whose heading changes too little to be a turn and a reversal of direction both lie outside it. Conduct before the entry is not read. It denotes the change of a's heading between its entry into r and its exit only: it says nothing of the lanes a uses, of its speed, of its class, or of why it turns. Not denoted: a passage through r whose heading change is above minus turn_min, such as one straight through or a turn to the left; a heading change of minus u_turn_min or less, which is a reversal of direction; an observation at which a is still in r. Where the entry was not observed (it lies before the recording, or a's overlap with r was unknown at an observation since), where an interval between consecutive observations since the observation before the entry is longer than step, or where a yaw rate since the entry is missing, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "step",
+   "unit": "s",
+   "meaning": "the largest interval between consecutive observations across which the heading change is integrated: the sampling standard of the integration, not a window and not a bound on how long ago the entry lies"
+  },
+  {
+   "name": "turn_min",
+   "unit": "deg",
+   "meaning": "the smallest heading change to the right between entry and exit at which the passage counts as a turn rather than a passage straight through"
+  },
+  {
+   "name": "u_turn_min",
+   "unit": "deg",
+   "meaning": "the smallest heading change magnitude at which the passage counts as a reversal of direction rather than a turn"
+  }
+ ],
+ "act": {
+  "boundary": "event",
+  "onset": "The act begins at the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation: its entry into r.",
+  "recognition": "The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r.",
+  "extent": "The concept holds at that observation only, and not again until a has entered r again and left it.",
+  "history": "Conduct before the entry is not read."
+ },
+ "elements": [
+  {
+   "span": "a's footprint came to overlap r (rel.occupies)",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: \"a road user's footprint overlaps a lane / region\" — its rise marks the entry into r and its fall the exit; it is footprint overlap, not distance."
+  },
+  {
+   "span": "integrated from its yaw rate (kin.yaw_rate)",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate: \"rate of change of heading, positive when the heading turns to the left (counter-clockwise)\"; integrated by headingSince from the entry, a negative change is a turn to the right. Not a stand-in for road curvature: the road user's own turning is read."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "Region r is a roundabout region. Road user a enters r heading east, circulates and leaves r heading south, its yaw rate observed at every scene at the sampling standard: its heading change since the entry is a quarter turn to the right, inside the band, so the concept holds at the exit."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "Same region; a enters heading east and leaves heading east again after passing straight through: its heading change is near zero, above minus turn_min, so the concept does not hold at the exit."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in holds, but a's yaw rate is missing at the scenes inside r: the heading change since the entry is unknown, and so is the concept at the exit.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_43_010_C2"
+ ]
+}

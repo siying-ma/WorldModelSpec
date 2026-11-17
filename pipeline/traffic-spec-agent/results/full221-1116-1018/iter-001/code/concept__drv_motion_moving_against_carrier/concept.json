@@ -1,0 +1,65 @@
+{
+ "concept_id": "drv.motion.moving_against_carrier",
+ "kind": "formula",
+ "contract": "Road user a moves against the designated direction of travel of carrier region r: part of its motion runs opposite to r's designated direction. It is observed as the component of a's velocity (kin.velocity) along r's designated direction (st.lane_direction), the dot product of the velocity with the direction as a formula reads it normalised, being below minus speed_tol: the part of a's motion that runs against r's direction exceeds the speed the source cannot tell from rest. It is a state at one observation: it says nothing of whether a occupies r, of where a's body points, of the gear selected, of how long a has moved so, or of why. Not denoted: a road user at rest; one whose velocity component against r's direction is at or below speed_tol, such as one moving along r's direction or straight across it. Where r carries no designated direction, or a's velocity is unobserved, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "the speed component at or below which motion against the direction counts as none: the source's speed resolution"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the component of a's velocity (kin.velocity)",
+   "atoms": [
+    "kin.velocity"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity: 'velocity vector', m/s, world frame; its component along the direction is a dot product."
+  },
+  {
+   "span": "r's designated direction (st.lane_direction)",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction: 'direction of travel designated for a structure a vehicle travels in', read normalised by a formula; a place no carrier covers has none (unknown)."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "r's st.lane_direction is (1,0); a's kin.velocity is (-5,0) m/s; the component -5 m/s is below minus speed_tol."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "r's st.lane_direction is (1,0); a's kin.velocity is (5,0.2) m/s; the component is positive."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "a's kin.velocity is not observed.",
+   "masked": [
+    "kin.velocity"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_220_1"
+ ]
+}

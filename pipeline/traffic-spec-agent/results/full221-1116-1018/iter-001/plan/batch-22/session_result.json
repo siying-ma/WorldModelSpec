@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 996814,
+  "stop_reason": "end_turn",
+  "session_id": "9333631f-8e6c-4b51-95b5-e1f4682008c1",
+  "total_cost_usd": 5.687485760000001,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 282384,
+   "cache_read_input_tokens": 2032548,
+   "output_tokens": 121314,
+   "output_tokens_details": {
+    "thinking_tokens": 62898
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 282384,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1410,
+     "cache_read_input_tokens": 283654,
+     "cache_creation_input_tokens": 3193,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3193
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 156871,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.08635880000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 121314,
+    "cacheReadInputTokens": 2032548,
+    "cacheCreationInputTokens": 282384,
+    "webSearchRequests": 0,
+    "costUSD": 5.60112696,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 62898,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 282384,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 22,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I planned all eight laws, (1)(g)–(m) and (1)(o), and the validator accepts every node. One of them, (1)(i), carries an atom gap, so it won't be coded until the operator resolves that gap.\n\n**Shared opening clause.** All eight nodes split \"A person shall not stop, stand or park a vehicle, except when…\" the same way, reusing the mappings earlier batches gave these words (in 1a and LVMC_11_52_130_A11). Stopping, standing and parking are each a halting under the definitions, so the duty forbids any halt at the place, using the already-proposed `drv.motion.complete_halt`. \"Necessary to avoid conflict with other traffic\" is treated as a judgement standard and read narrowly: only a halt behind traffic ahead in the same lane, within `p.queue_halt_gap`, is excused. A halt to let crossing traffic clear is not excused.\n\n**How each place is read:**\n- **(g):** the vehicle is on the approach a traffic signal controls, its front within 30 ft of the signal head. \"At the side of a highway\" means the head stands beyond the roadway edge rather than over the road.\n- **(h):** the \"adjacent curb\" is the roadway edge nearest the safety zone. The vehicle is either between the two, or within 30 ft of the curb point opposite the zone's end, measured from its gap along the road and its gap to the curb.\n- **(i) — blocked by a gap.** The only rail the ontology has is at a level crossing. That misses railroad tracks running beside a road, and it can't exclude streetcars as the definition requires. I filed an atom gap proposing `st.railway_track` rather than quietly narrowing the place.\n- **(j):** within 20 ft of a fire-station entrance, or past the middle of the highway from it and within 75 ft. \"Past the middle\" is tested with the road edges, so it works without a centre line on one-way and divided roads too.\n- **(k):** an obstruction is off to the vehicle's side, and the halt leaves less than `p.free_passage_width` both between the vehicle and the obstruction and on its other side. Room for traffic beyond the far side of the obstruction is not checked.\n- **(l):** another vehicle is halted within the new parameter `p.edge_standing_gap` of a roadway edge, side by side with the subject, and on the same side of it as that edge.\n- **(m):** the vehicle overlaps a bridge, viaduct or tunnel (`st.elevated_structure`).\n- **(o):** the duty is read device by device: a no-stopping sign or curb forbids any halt, no-standing forbids standing, no-parking forbids parking. Standing and parking are told apart from a brief halt by how long the vehicle has been at rest.\n\n**Where the plan bends the words:**\n- **\"In compliance with law.\"** I mapped it to a halt commanded by a stop sign or red signal governing the vehicle's lane, as earlier batches did. That is narrower than the words: a halt another law requires without such a device is not excused. The validator doesn't allow that limit to be declared on an exception span, so it is stated in the element's justification and in `PLAN.md`. An open operator gap (G22) sits on the same words in law (1)(c). If the operator accepts it, these eight nodes, 1a, 1c, 1e and LVMC_11_52_130_A11 should be re-planned together.\n- **(o) is read per device, not literally.** The literal reading forbids any halt wherever any of the three is prohibited. I disclosed the per-device reading on the obligation span.\n- **(h) \"adjacent\".** Reading which curb is adjacent to the safety zone from the two regions' positions relative to the vehicle may be challenged. The prompt's rules say a relation between two regions with no atom is a gap. If a reviewer holds to that, (h) becomes a gap too.\n\nFive parameters are re-proposed with exactly the values and conventions earlier batches used; `p.edge_standing_gap` is the only new one. No new concepts were proposed, and `aggregates.jsonl` is empty because none of these clauses defines its own class of road users.\n\nFiles are in the batch-22 directory:\n- `blueprint.jsonl`\n- `PLAN.md`\n- `aggregates.jsonl`",
+  "ttft_ms": 514307,
+  "type": "result",
+  "duration_ms": 1000338,
+  "uuid": "e33d125f-2e08-4f8a-9fc2-a725ad82c003",
+  "ttft_stream_ms": 1521,
+  "time_to_request_ms": 650,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 26,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 16,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 34,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 6,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 531,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 29,
+  "time_to_request_cpu_ms": 332,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 16,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 8,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 0,
+   "placement_ms": 1,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1521,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 156871,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.08635880000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 121314,
+    "cacheReadInputTokens": 2032548,
+    "cacheCreationInputTokens": 282384,
+    "webSearchRequests": 0,
+    "costUSD": 5.60112696,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 62898,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 282384,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,80 @@
+{
+ "concept_id": "drv.motion.moving_across_carrier",
+ "kind": "formula",
+ "contract": "Road user a moves across the designated direction of travel of carrier region r: a is moving, its speed (kin.speed) above speed_tol, and its velocity (kin.velocity) makes with r's designated direction (st.lane_direction) an angle whose cosine, in absolute value, is at most cos_max: the absolute value of the dot product of the velocity with the normalised direction is at most cos_max times the speed. Either sense of crossing is denoted: the sign of the direction does not matter. It is a state at one observation: it says nothing of whether a occupies r, of where a began or will end its movement, or of how long it has moved so. Not denoted: a road user at rest or moving at or below speed_tol; a road user moving more nearly along r's direction than cos_max allows. Where r carries no designated direction, or a's velocity is not observed, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "the speed at or below which a sampled speed counts as no movement"
+  },
+  {
+   "name": "cos_max",
+   "unit": "ratio",
+   "meaning": "the largest absolute cosine between the velocity and the carrier's designated direction at which the motion counts as across the carrier"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its speed (kin.speed) above speed_tol",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed: 'magnitude of velocity' (m/s); above speed_tol the road user is moving."
+  },
+  {
+   "span": "its velocity (kin.velocity)",
+   "atoms": [
+    "kin.velocity"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity: 'velocity vector' (m/s, world frame); its dot product with the direction gives the motion along the carrier."
+  },
+  {
+   "span": "r's designated direction (st.lane_direction)",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction: 'direction of travel designated for a structure a vehicle travels in — a lane, ... or a roadway', read normalised; a place no carrier covers has none (unknown)."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A pedestrian on a lane whose direction is east walks north at 1.4 m/s: the dot product is zero, at most cos_max times the speed."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A pedestrian on the same lane walks east along it at 1.4 m/s: the absolute cosine is 1, above cos_max."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian on the lane moves, but its velocity is not observed.",
+   "masked": [
+    "kin.velocity"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_30_050",
+  "LVMC_11_30_060_A",
+  "LVMC_11_30_060_B"
+ ]
+}

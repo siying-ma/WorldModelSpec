@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 35735,
+  "stop_reason": "end_turn",
+  "session_id": "2fb58c87-a968-47dd-b878-4f7dd9252b42",
+  "total_cost_usd": 0.1560317,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 5945,
+   "cache_read_input_tokens": 1526,
+   "output_tokens": 4671,
+   "output_tokens_details": {
+    "thinking_tokens": 1404
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 5945,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 4671,
+     "cache_read_input_tokens": 1526,
+     "cache_creation_input_tokens": 5945,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 5945
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 5433,
+    "outputTokens": 21,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0006091800000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 4671,
+    "cacheReadInputTokens": 1526,
+    "cacheCreationInputTokens": 5945,
+    "webSearchRequests": 0,
+    "costUSD": 0.15542252,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1404,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 5945,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"term\": \"electric scooter\", \"representation\": \"aggregate\", \"target\": \"DEF-LVMC-11-02-083::electric_scooter\", \"quote\": \"\\\"Electric scooter\\\" means a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position and propelled by its electric motor or by propulsion provided by the rider.\", \"reason\": \"The definition denotes a set of tracked ridden devices whose eligibility can be classified by the road-user classes.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-LVMC-11-02-083::electric_scooter\", \"term\": \"electric scooter\", \"definition\": \"DEF-LVMC-11-02-083\",\n   \"classifications\": [\n     {\"class\": \"ru.electric_scooter\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position and propelled by its electric motor or by propulsion provided by the rider\"}]},\n     {\"class\": \"ru.electric_bicycle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position and propelled by its electric motor or by propulsion provided by the rider\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider and must have a maximum speed of not more than twenty miles per hour when powered solely by its electric motor.\"}], \"reason\": \"A bicycle with an assisting electric motor can meet the admitting words, but the words neither admit nor exclude bicycles as such and the weight and speed limits are not carried by the class contract.\"},\n     {\"class\": \"ru.moped\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"must have a maximum speed of not more than twenty miles per hour when powered solely by its electric motor\"}], \"reason\": \"A low-power electric two-wheeler ridden seated may or may not fall within the weight and speed limits, which the moped contract does not carry.\"},\n     {\"class\": \"ru.motorcycle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}], \"reason\": \"An electric motorcycle has handlebars and is ridden seated, and the words decide membership only by weight and speed limits that the motorcycle contract does not carry.\"},\n     {\"class\": \"ru.bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor\"}]},\n     {\"class\": \"ru.pedestrian\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"The term does not include a scooter that is designed or intended by its manufacturer to be used primarily as an assistive device\"}]},\n     {\"class\": \"ru.child\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on\"}]},\n     {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"The term does not include a scooter that is designed or intended by its manufacturer to be used primarily as an assistive device\"}]},\n     {\"class\": \"ru.motor_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.school_bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.transit_bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.taxicab\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.truck\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.trailer_or_combination\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"propelled by its electric motor or by propulsion provided by the rider\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.emergency_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.fire_apparatus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]},\n     {\"class\": \"ru.official_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"a device with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-LVMC-11-02-083\", \"words\": \"Such a device must not weigh more than one hundred pounds without a rider\"}]}\n   ]}]}\n```",
+  "ttft_ms": 14121,
+  "type": "result",
+  "duration_ms": 35553,
+  "uuid": "3aa4e044-6b25-42b6-8c3d-cf3231f11d49",
+  "ttft_stream_ms": 1272,
+  "time_to_request_ms": 525,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 33,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 13,
+   "input_hooks": 1,
+   "conversation_append": 1,
+   "transcript_persist": 31,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 2,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 412,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 1,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 12,
+  "time_to_request_cpu_ms": 247,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 8,
+   "cpu_ms": 6,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 7,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1273,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 5433,
+    "outputTokens": 21,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0006091800000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 4671,
+    "cacheReadInputTokens": 1526,
+    "cacheCreationInputTokens": 5945,
+    "webSearchRequests": 0,
+    "costUSD": 0.15542252,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1404,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 5945,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:44.169Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

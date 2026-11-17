@@ -1,0 +1,213 @@
+{
+ "node_id": "LVMC_11_16_090_A_o1",
+ "law_refs": [
+  "LVMC-11-16-090-A"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "No person shall engage in",
+   "role": "obligation"
+  },
+  {
+   "id": "g2",
+   "text": "any motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "g3",
+   "text": "speed contest or exhibition of power or speed",
+   "role": "standard"
+  },
+  {
+   "id": "g4",
+   "text": "on a highway",
+   "role": "condition"
+  },
+  {
+   "id": "g5",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g6",
+   "text": "no person shall aid or abet in",
+   "role": "sibling"
+  },
+  {
+   "id": "g7",
+   "text": "any such motor vehicle",
+   "role": "sibling"
+  },
+  {
+   "id": "g8",
+   "text": "speed contest or exhibition",
+   "role": "sibling"
+  },
+  {
+   "id": "g9",
+   "text": "upon any highway",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "kin.accel_longitudinal",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "Engaging is read through the subject vehicle's own conduct: kin.accel_longitudinal 'acceleration along heading, signed' ('Not a stand-in for: speed' respected: both are read separately) and kin.speed 'magnitude of velocity'. The person who engages is read through the vehicle's controlled motion (agency)."
+  },
+  {
+   "span": "g2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'motor vehicle' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle; ru.aggregate: 'membership of a legal aggregate'. The contest is one in a motor vehicle, so the subject is a member; the other party of a contest is a member too."
+  },
+  {
+   "span": "g4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.highway 'the entire public way between its boundary lines'; the subject is on it where its footprint overlaps it (rel.occupies). 'Not a stand-in for: the roadway' does not apply: the words name the highway."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "g3",
+   "standard": "speed contest or exhibition of power or speed",
+   "concepts": [
+    "kin.accel_longitudinal",
+    "kin.speed",
+    "rel.same_direction",
+    "rel.longitudinal_overlap"
+   ],
+   "params": [
+    "p.exhibition_accel_min",
+    "p.exhibition_speed_min",
+    "p.contest_accel_min",
+    "p.contest_window",
+    "p.contest_same_direction_cos"
+   ],
+   "convention": "naturalistic-driving harsh-event thresholds: an exhibition of power is a longitudinal acceleration above a harsh-acceleration threshold, an exhibition of speed a speed above a bound far beyond any posted limit, and a contest two motor vehicles side by side in the same direction both accelerating above a lower threshold throughout a window",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a motor vehicle (ru.aggregate DEF-NRS-484A-130::motor_vehicle), occupies a highway region (st.highway, rel.occupies).",
+ "obligation": "Not any of: (a) the subject's kin.accel_longitudinal is at least p.exhibition_accel_min; (b) its kin.speed is at least p.exhibition_speed_min; (c) at every observation of the time window p.contest_window behind, some other road user o that is a motor vehicle (same aggregate) has rel.same_direction(subject, o; p.contest_same_direction_cos), positive rel.longitudinal_overlap with the subject, and both the subject's and o's kin.accel_longitudinal are at least p.contest_accel_min (o bound inside the window, one road user throughout).",
+ "params": [
+  "p.exhibition_accel_min",
+  "p.exhibition_speed_min",
+  "p.contest_accel_min",
+  "p.contest_window",
+  "p.contest_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "g1",
+   "why": "'person ... engage' is read through the controlled motion of the motor vehicle the person drives",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "g3",
+   "why": "a contest or exhibition is a purpose shown in conduct; it is read only through acceleration, speed and side-by-side acceleration with another motor vehicle; burnouts, wheel spin and sliding manoeuvres are not read",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two motor vehicles side by side in the same direction on a highway both accelerating above p.contest_accel_min for the whole p.contest_window."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject accelerates moderately from a light, below every bound, alone in its direction."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is in a private parking lot that is no highway region."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Accelerations are not observed and the subject's speed is below the speed bound.",
+   "masked": [
+    "kin.accel_longitudinal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "No other road user in the scene; the subject alone accelerates above p.exhibition_accel_min (exhibition of power)."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.exhibition_accel_min",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "harsh-acceleration threshold: a longitudinal acceleration of about 0.4 g, beyond ordinary driving",
+   "source": "naturalistic driving studies' harsh-event thresholds (e.g. SHRP2, 100-Car study)"
+  },
+  {
+   "name": "p.exhibition_speed_min",
+   "unit": "m/s",
+   "value": 44.7,
+   "convention": "a speed of about 100 mph, beyond any posted limit in the jurisdiction",
+   "source": "highest posted limits in Nevada (80 mph) plus a margin"
+  },
+  {
+   "name": "p.contest_accel_min",
+   "unit": "m/s^2",
+   "value": 2.5,
+   "convention": "a sustained acceleration well above ordinary launches (about 0.25 g) held by both vehicles",
+   "source": "naturalistic driving acceleration distributions"
+  },
+  {
+   "name": "p.contest_window",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "duration a side-by-side hard acceleration must last to be a contest rather than a merge",
+   "source": "drag-race launch durations"
+  },
+  {
+   "name": "p.contest_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.95,
+   "convention": "cosine of the largest heading difference (about 18 degrees) for travel in the same direction",
+   "source": "lane-level heading alignment tolerance"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

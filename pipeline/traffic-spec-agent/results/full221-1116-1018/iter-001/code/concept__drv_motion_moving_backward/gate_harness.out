@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.moving_backward.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving_backward.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving_backward.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"speed_tol"}}},"contract":"Road user a is moving backward: it moves against the direction its body points. It is observed as the component of a's velocity (kin.velocity) along a's heading (kin.heading), the dot product of the velocity with the heading as a formula reads it normalised, being below minus speed_tol: the part of a's motion that runs against its heading exceeds the speed the source cannot tell from rest. It is a state at one observation: it says nothing of the gear selected, of the path a has followed or will follow, of where a is, or of why it moves so. Not denoted: a road user at rest, or one whose velocity component against its heading is at or below speed_tol; a road user moving forward. Where a's velocity or heading is unobserved, it is unknown.","definition":null,"id":"drv.motion.moving_backward","kind":"formula","narrowings":[],"params":[{"name":"speed_tol","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_velocity,kin_heading
+READS	kin_velocity,kin_heading
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"speed_tol"}}}
+WITNESS	holds	drv.motion.moving_backward@w
+WITNESS	fails	drv.motion.moving_backward@w
+WITNESS	blind	drv.motion.moving_backward@w
+OCC	a
+OCC	a
+OCC	a
+OCC	a
+INST	drv.motion.moving_backward@w	ok
+TIME	checks	3
+TIME	lint	1
+SCEN	holds	drv.motion.moving_backward@w	compliant	compliant	ok
+TIME	scenario:drv.motion.moving_backward@w/holds	9
+SCEN	fails	drv.motion.moving_backward@w	violated	violated	ok
+TIME	scenario:drv.motion.moving_backward@w/fails	7
+SCEN	blind	drv.motion.moving_backward@w	unknown	unknown	ok
+TIME	scenario:drv.motion.moving_backward@w/blind	11
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.moving_backward.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving_backward.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving_backward.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.moving_backward@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	31
+DONE

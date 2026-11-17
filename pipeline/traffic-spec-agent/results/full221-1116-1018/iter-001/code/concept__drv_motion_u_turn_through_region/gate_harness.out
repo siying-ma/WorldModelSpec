@@ -1,0 +1,36 @@
+'TrafficSpec.Concepts.motion.u_turn_through_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn_through_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn_through_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"and":[{"rises":{"not":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"abs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"rises":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}},"rhs":{"param":"u_turn_min"}},{"cmp":"le","lhs":{"abs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"rises":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}},"rhs":{"sub":[{"lit":{"den":1,"num":360},"unit":"degree"},{"param":"u_turn_min"}]}}]}]},"contract":"Road user a has turned \"so as to proceed in the opposite direction\" through region r, \"whether accomplished by one continuous movement or not\", recognized as it leaves r. The act begins at the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation: its entry into r. The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r. The concept holds at that observation only, and not again until a has entered r again and left it. At that observation the magnitude of the heading change of a since its entry into r, in degrees and positive to the left, integrated from its yaw rate (kin.yaw_rate) with no interval between consecutive observations longer than step, lies in the band from u_turn_min to a full turn minus u_turn_min, both inclusive, so that a turn short of a reversal and a full loop both lie outside it; a reversal to either hand is denoted, and one made in several movements, with halts or backing between them inside r, is denoted where its integrated heading change lies in the band. Conduct before the entry is not read. It denotes the change of a's heading between its entry into r and its exit only: it says nothing of the lanes a uses, of its speed, of its class, or of why it turns. Not denoted: a passage through r whose heading change magnitude is below u_turn_min, such as a turn to the left or the right or a passage straight through; a heading change magnitude above a full turn minus u_turn_min, which is a loop; an observation at which a is still in r. Where the entry was not observed (it lies before the recording, or a's overlap with r was unknown at an observation since), where an interval between consecutive observations since the observation before the entry is longer than step, or where a yaw rate since the entry is missing, it is unknown.","definition":"DEF-NRS-484B-077","id":"drv.motion.u_turn_through_region","kind":"formula","narrowings":[],"params":[{"name":"step","unit":"second"},{"name":"u_turn_min","unit":"degree"}],"residues":["the class of the road user and the way it turns on are not part of the motion; the caller states the class of a and binds r on the way the words name"],"supersedes":null}
+ATOMS	rel_occupies,kin_yaw_rate,kin_time
+READS	rel_occupies,kin_yaw_rate,kin_time
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"rises":{"not":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"abs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"rises":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}},"rhs":{"param":"u_turn_min"}},{"cmp":"le","lhs":{"abs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"rises":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}},"rhs":{"sub":[{"lit":{"den":1,"num":360},"unit":"degree"},{"param":"u_turn_min"}]}}]}]}
+WITNESS	holds	drv.motion.u_turn_through_region@w
+WITNESS	fails	drv.motion.u_turn_through_region@w
+WITNESS	blind	drv.motion.u_turn_through_region@w
+OCC	a,r
+OCC	a
+OCC	a,r
+OCC	a
+OCC	a,r
+LITERAL	360/1	TrafficSpec.PUnit'.degree
+INST	drv.motion.u_turn_through_region@w	ok
+TIME	checks	2
+TIME	lint	15
+SCEN	holds	drv.motion.u_turn_through_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.u_turn_through_region@w/holds	16
+SCEN	fails	drv.motion.u_turn_through_region@w	violated	violated	ok
+TIME	scenario:drv.motion.u_turn_through_region@w/fails	15
+SCEN	blind	drv.motion.u_turn_through_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.u_turn_through_region@w/blind	18
+TIME	witnesses	49
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.u_turn_through_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn_through_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn_through_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.u_turn_through_region@w	3	2
+TIME	adequacy_start	10
+TIME	adequacy	118
+DONE

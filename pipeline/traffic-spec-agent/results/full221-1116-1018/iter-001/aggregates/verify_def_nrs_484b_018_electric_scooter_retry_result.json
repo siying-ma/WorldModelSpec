@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484B-018::electric_scooter\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes human-powered devices, which the required definition of vehicle expressly excepts.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the many-passenger design in the contract nor the quoted weight limit establishes that every member weighs more than 100 pounds without riders.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The pedestrian contract permits a child in a motorized wheelchair, and the posted words do not settle that wheelchair's relevant equipment, weight, or speed.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract permits membership through commercial licensing alone and supplies no numerical commercial-mass threshold establishing a class-wide conflict with the 100-pound limit.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle definition expressly excepts electric bicycles, and the jurisdiction's electric-bicycle definition expressly disclaims electric scooters.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The required vehicle definition expressly excepts 'An electric scooter,' and the additional numerical requirements do not negate that class-naming exception.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation neither establishes the scooter's technical requirements nor supplies an exception removing the class.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting function in the contract establishes no minimum weight that conflicts with the quoted 100-pound limit.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract follows the jurisdiction's moped classification, whose posted definition expressly excludes electric scooters.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Even with separately classified powered two-wheelers removed, the contract leaves other configurations and their compliance with the scooter's technical limits unsettled.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The astride two- or three-wheel configuration neither establishes nor precludes the required electric equipment, weight, and speed, and no posted motorcycle-specific exception settles the class.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official or contracted road service neither establishes the scooter's technical requirements nor constitutes a posted exception.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The human-power and assistive-mobility exceptions do not exhaust the contract's motorized-wheelchair possibilities, whose scooter-specific properties remain unspecified.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The cane, guide-animal, or escort condition does not resolve the motorized-wheelchair possibilities permitted by the pedestrian contract.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract's description of on-track equipment does not establish exclusive use upon stationary rails, as the quoted exception requires.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School-child transport and jurisdictional markings establish no minimum unladen weight exceeding the quoted limit.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Marked passenger service for hire neither determines the required equipment, weight, and speed nor triggers a posted class-specific exception.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Tour or shuttle service and a lengthened passenger body establish no class-wide minimum weight above 100 pounds.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract does not forbid auxiliary motor or rider propulsion, and the quoted words impose no express single-unit restriction.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service, livery, and route displays establish no minimum weight conflicting with the quoted limit.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A body built for carrying goods establishes no minimum unladen weight above 100 pounds.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 190097,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4969,
+   "input_tokens_details": {
+    "cache_write_tokens": 4966,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 4966
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 8344,
+   "output_tokens_details": {
+    "reasoning_tokens": 7223,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 13313,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_Nj3BBuZnvafmp12sQe-4Khm23-sNavP-lvJdatoLAxEia0TCm46NMsETTZyiE_sljNtU-geVb2BCVTuR6bePrK20rgOwOZs47YNGcC7KdkYi3KDb5G4jxa4I69Kb7BlvHwqSthujUUS2WblvnSq7zLZaGCI90-Chd_OzIeydJpgB4fQsufCM9FTgPI1IOPBa8U_25WgqAvFf06mBlNzA_FABlNmtnwk_gEyjpvl30HdFQNyhtkbFjcsjd0p1l9AbKdvGruHTPJ-K1-XxoRMIDSTOYasktVGu6CgAGuX288LFPYxI0un3rBUGtL9G6wn1TMJ4ovN5n3j-f-BPA4q1nhqLwR0N9hGiMroc-U33Puie0PtQTLgEx4jfcitmr2KCz7Ta9UQPq7MFeYxsQtZI6A5mBNS43R8uF57KzTXaZi-64wo=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

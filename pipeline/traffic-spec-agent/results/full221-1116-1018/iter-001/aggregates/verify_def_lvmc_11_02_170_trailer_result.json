@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-LVMC-11-02-170::trailer\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract specifies human power, and the vehicle definition expressly excepts devices moved by human power.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract specifies a motor vehicle, which cannot satisfy the requirement that a trailer be without motor power.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person, not the unpowered vehicle designed for motor-vehicle towing required by the definition.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Mass or commercial licensing does not settle motor power, towing design, or membership in the separately defined commercial-vehicle exception.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract requires an electric motor, contrary to the trailer definition's requirement of no motor power.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes an electrically powered scooter, contrary to the requirement that a trailer be without motor power.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation does not establish or negate the required absence of motor power and design for motor-vehicle towing.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The fire-fighting function does not settle whether the vehicle is unpowered and designed to be drawn by a motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract specifies an engine or motor, which conflicts with the requirement that a trailer be without motor power.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract's self-propelled motor vehicle does not satisfy the requirement that a trailer be without motor power.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes a motor vehicle, which conflicts with the no-motor-power requirement.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official or contracted road service and identifying equipment do not settle motor power or design for motor-vehicle towing.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person rather than an unpowered vehicle designed and constructed for motor-vehicle towing.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person with specified assistance, not a vehicle meeting the trailer requirements.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract requires on-track equipment but not exclusive use upon stationary rails, so the quoted exception does not establish class-wide exclusion.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract specifies a designated bus, and the posted bus contract requires a motor vehicle inconsistent with being without motor power.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A marked passenger vehicle for hire is not necessarily motor-powered under its contract, and the posted exceptions do not otherwise establish exclusion of every member.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The lengthened-passenger-vehicle-for-hire branch does not require motor power or another disqualifying characteristic, so the words do not exclude the entire class.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract encompasses potentially qualifying drawn vehicles as well as powered combinations and excepted recreational vehicles, so it does not settle the class as a whole.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract specifies a bus in transit service, and the posted bus contract requires a motor vehicle inconsistent with being without motor power.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly requires a motor vehicle, contrary to the trailer definition's no-motor-power requirement.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 69417,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4552,
+   "input_tokens_details": {
+    "cache_write_tokens": 4549,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 4549
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 3164,
+   "output_tokens_details": {
+    "reasoning_tokens": 2070,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 7716,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_jrSKGtNp5pJSiV4dxEnUsSzyK0SXEzKbQHHavedKb3Zro2uz5hVCkxnCkKVB-VVyr0Xkpmu3zJGtFBwP_CaENd-5TfcVZ_fy_90__iqPOcA3a2v02qbDHijF-HPRWIUGook0Ngxj3G9_RJmxX2eP5gqhPThxen8W_ux_woI8MaJlG3RmN5vcb1f_8VK0hXBCSkMcVqRw42ei2BL9-lrQfOg6awlsXWlqCvUgObB8VtaA3Po_UfG9bX_1QM_nWVgoAlkjE6EIJR3pcZj_1JuHexeOX3JSRu2xhOjwUBGJ3w8AstOYPCLMoWUBMersQ_E0uKOzyPz3HK2qVBo7GcwYclYVYCWMlDQ6WaBzexeUCOpnVcK1qhnljSM5CYAqKrJu-ABtGuj9MkC9UsPJWj9Or5hb-E47iTOkpnC85pdBxwSNV1I=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

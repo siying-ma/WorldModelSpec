@@ -1,0 +1,13 @@
+{
+ "digest": "ded16c888891f9caa47170c892e79a35de03f49f179ea5ce5daea80b58951fc1",
+ "answer": {
+  "rulings": [
+   {
+    "item": 1,
+    "ruling": "dismissed",
+    "reason": "The contract states its test as a dot product with \"the normalised direction\", and the atom contract for st.lane_direction defines that reading: the vector is the unit vector times a factor of at least 1, exactly the unit vector only where the scaled length is a whole number of micrometres. For [20, 21] that length is 29/21, which is not a whole number of micrometres, so the read vector is slightly longer than the unit vector. Under that disclosed reading, the dot product at this exact boundary (8.7 against 0.6 × 14.5) slightly exceeds cos_max times the speed, which gives the body's verdict.",
+    "quote": "the absolute value of the dot product of the velocity with the normalised direction is at most cos_max times the speed"
+   }
+  ]
+ }
+}

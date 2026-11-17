@@ -1,0 +1,36 @@
+'TrafficSpec.Concepts.motion.moving_across_carrier.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving_across_carrier.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving_across_carrier.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tol"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"cos_max"},{"args":[{"var":"a"}],"measure":"kin_speed"}]}}]},"contract":"Road user a moves across the designated direction of travel of carrier region r: a is moving, its speed (kin.speed) above speed_tol, and its velocity (kin.velocity) makes with r's designated direction (st.lane_direction) an angle whose cosine, in absolute value, is at most cos_max: the absolute value of the dot product of the velocity with the normalised direction is at most cos_max times the speed. Either sense of crossing is denoted: the sign of the direction does not matter. It is a state at one observation: it says nothing of whether a occupies r, of where a began or will end its movement, or of how long it has moved so. Not denoted: a road user at rest or moving at or below speed_tol; a road user moving more nearly along r's direction than cos_max allows. Where r carries no designated direction, or a's velocity is not observed, it is unknown.","definition":null,"id":"drv.motion.moving_across_carrier","kind":"formula","narrowings":[],"params":[{"name":"speed_tol","unit":"metre_per_second"},{"name":"cos_max","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	kin_speed,kin_velocity,st_lane_direction
+READS	kin_speed,kin_velocity,st_lane_direction
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"gt","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tol"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"cos_max"},{"args":[{"var":"a"}],"measure":"kin_speed"}]}}]}
+WITNESS	holds	drv.motion.moving_across_carrier@w
+WITNESS	fails	drv.motion.moving_across_carrier@w
+WITNESS	blind	drv.motion.moving_across_carrier@w
+OCC	a
+OCC	a
+OCC	r
+OCC	a
+OCC	r
+OCC	a
+INST	drv.motion.moving_across_carrier@w	ok
+TIME	checks	3
+TIME	lint	8
+SCEN	holds	drv.motion.moving_across_carrier@w	compliant	compliant	ok
+TIME	scenario:drv.motion.moving_across_carrier@w/holds	9
+SCEN	fails	drv.motion.moving_across_carrier@w	violated	violated	ok
+TIME	scenario:drv.motion.moving_across_carrier@w/fails	7
+SCEN	blind	drv.motion.moving_across_carrier@w	unknown	unknown	ok
+TIME	scenario:drv.motion.moving_across_carrier@w/blind	10
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.moving_across_carrier.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving_across_carrier.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving_across_carrier.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.moving_across_carrier@w	2	2
+TIME	adequacy_start	3
+TIME	adequacy	54
+DONE

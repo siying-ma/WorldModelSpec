@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 971332,
+  "stop_reason": "end_turn",
+  "session_id": "19f001a8-418d-4b8d-ad12-8e3f4cbae4ef",
+  "total_cost_usd": 4.18843546,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 172355,
+   "cache_read_input_tokens": 1144440,
+   "output_tokens": 109724,
+   "output_tokens_details": {
+    "thinking_tokens": 60876
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 172355,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1403,
+     "cache_read_input_tokens": 170235,
+     "cache_creation_input_tokens": 5706,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 5706
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 53716,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005927460000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 109724,
+    "cacheReadInputTokens": 1144440,
+    "cacheCreationInputTokens": 172355,
+    "webSearchRequests": 0,
+    "costUSD": 4.182508,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 60876,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 172355,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 31,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The plan for all 8 laws is written and the harness validator accepts every node and the one new concept. It produces 11 nodes; 9 can go to coding, and 2 carry an atom gap that keeps their laws blocked:\n\n- **LVMC-11-16-030 (rail crossings) is blocked.** No atom measures how far a driver can see along a railway. The existing sight atoms measure along a public road, so I filed a gap proposing `st.sight_along_railway`.\n- **LVMC-11-16-090(A), the \"aid or abet\" half, is blocked.** No atom records someone helping another person's speed contest. I filed a gap proposing `rel.contest_assistance`.\n\n**Nodes that can be coded:**\n- **LVMC-11-12-070(B):** the driver on the through highway yields to a vehicle entering from a stop- or yield-controlled approach. \"Through highway\" is read from the signs on the road.\n- **LVMC-11-16-040:** 15 mph through an intersection when the view was blocked during the last 100 ft of the approach. It does not apply on through streets or at controlled intersections.\n- **LVMC-11-16-060:** 25 mph unless a speed-limit sign governs where the vehicle is.\n- **LVMC-11-16-090(A), \"engage in\":** marked surrogate, because a speed contest is defined by purpose. It is tested through hard acceleration, very high speed, or two vehicles accelerating hard side by side.\n- **LVMC-11-18-020:** don't drive into a \"School-Xing\" crosswalk while a person is in it on your side of the centre line. The two sentences authorising the City Traffic Engineer impose nothing on drivers, so they are recorded as carrying no condition.\n- **LVMC-11-20-060, split into three duties:**\n  - stop just before driving onto the sidewalk from a driveway or alley;\n  - yield to pedestrians while crossing the sidewalk;\n  - yield to vehicles when emerging onto the roadway.\n\n  The first is checked by searching back from the moment the vehicle reaches the sidewalk, and the plan includes the extra test case for a recording that starts too late to tell.\n- **LVMC-11-22-010 (full attention):** marked surrogate, because attention is a state of mind. It is tested as no collision and no dangerously short time-to-collision with the vehicle ahead in the lane.\n\n**Choices you may want to check:**\n1. **070(B) depends on subsection (A), which isn't available.** (A) is neither accepted nor in this batch, so the validator rejected composing it. I read \"having so yielded\" directly from the entering vehicle's conduct: it halted where a stop sign governs its approach, and it never pulled into the danger zone of a through vehicle. Once (A) is planned, check that its yield duty matches this.\n2. **Three laws don't say \"vehicle\".** I classed the subject of LVMC-11-16-030, 11-16-040 and 11-16-060 as a vehicle anyway, from the definition of \"driver\" and from what a speed limit governs. The validator accepted it, but it is a reading.\n3. **Prima facie limits are read as hard maximums.** Any speed above the limit is reported as a violation; the rebuttal a court may allow is not modelled.\n4. **All three yield duties share one test.** The yielding vehicle must not be moving while, at constant speeds, it would come within a set distance of the other road user within a set time. They use the same three parameters and conventions.\n5. **New assumption for LVMC-11-20-060.** `asm.business_or_residence_district` is a new id, and recordings must declare it or that law reports unknown.\n\nAll proposed parameter values are provisional and wait for your review: `p.conflict_horizon`, `p.conflict_centre_clearance`, `p.halt_speed_tolerance`, `p.stop_point_tolerance`, `p.attention_ttc_min`, and the five `p.exhibition_*` / `p.contest_*` parameters.\n\nFiles are in `.../iter-001/plan/batch-01/`:\n- `blueprint.jsonl`\n- `PLAN.md`\n- `aggregates.jsonl` (empty: no law-local aggregates)",
+  "ttft_ms": 535904,
+  "type": "result",
+  "duration_ms": 987406,
+  "uuid": "c396042d-e87f-4519-a648-a52353322202",
+  "ttft_stream_ms": 2876,
+  "time_to_request_ms": 692,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 31,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 14,
+   "input_hooks": 1,
+   "conversation_append": 1,
+   "transcript_persist": 32,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 4,
+   "engine_pickup": 7,
+   "loop_entry": 3,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 574,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 8,
+  "time_to_request_cpu_ms": 313,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 4,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 2876,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 53716,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005927460000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 109724,
+    "cacheReadInputTokens": 1144440,
+    "cacheCreationInputTokens": 172355,
+    "webSearchRequests": 0,
+    "costUSD": 4.182508,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 60876,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 172355,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:44.169Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

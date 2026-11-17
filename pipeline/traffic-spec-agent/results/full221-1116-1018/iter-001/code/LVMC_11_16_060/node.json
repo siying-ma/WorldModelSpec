@@ -1,0 +1,125 @@
+{
+ "node_id": "LVMC_11_16_060",
+ "law_refs": [
+  "LVMC-11-16-060"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "The prima facie speed limit is twenty-five miles per hour",
+   "role": "obligation"
+  },
+  {
+   "id": "f2",
+   "text": "on all streets and highways",
+   "role": "condition"
+  },
+  {
+   "id": "f3",
+   "text": "unless a different speed limit is posted as set forth in this Title",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed 'magnitude of velocity' in m/s is the speed the limit bounds; its exclusion of acceleration does not apply. A speed limit binds the vehicle travelling there: the subject is a vehicle (DEF-NRS-484A-320::vehicle)."
+  },
+  {
+   "span": "f2",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.highway 'the entire public way between its boundary lines'; streets (DEF-NRS-484A-265, highways inside a city) and highways together are every highway, so the city limit, a legal region class, is not needed. The subject is on one where its footprint overlaps it (rel.occupies). st.highway 'Not a stand-in for: the roadway' does not apply: the words name the whole way."
+  },
+  {
+   "span": "f3",
+   "atoms": [
+    "dev.speed_limit_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.speed_limit_sign 'sign stating a maximum or minimum speed, with value and unit; kind ∈ {maximum, minimum, structure_maximum, zone}': a posted limit is a sign of kind maximum, structure_maximum or zone governing (dev.governs 'the travel regions whose traffic the device controls') a travel region (st.travel_region) the subject occupies. 'posted as set forth in this Title' is the legal status of the posting, read through the sign's presence. A minimum is no different speed limit in the sense of a maximum replacing the prima facie one."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), occupies a highway region w (st.highway); and no speed limit sign of kind maximum, structure_maximum or zone governs (dev.governs) a travel region (st.travel_region) the subject occupies.",
+ "obligation": "The subject's kin.speed is at most twenty-five miles per hour.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "f1",
+   "why": "a prima facie limit is read as a maximum: a speed above it is reported violated; the rebuttal a court may admit is not modelled",
+   "kind": "reading"
+  },
+  {
+   "span": "f3",
+   "why": "'posted as set forth in this Title' is read through the presence of the posted speed limit sign governing the subject's travel region",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Subject on a street lane governed by no speed limit sign travels above twenty-five mph."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, at or below twenty-five mph."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject's lane is governed by a maximum speed limit sign (45 mph posting)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A speed limit sign is present but the source does not observe what it governs; subject above twenty-five mph.",
+   "masked": [
+    "dev.governs"
+   ]
+  }
+ ],
+ "literals": [
+  {
+   "span": "f1",
+   "text": "twenty-five miles per hour",
+   "value": 25,
+   "unit": "mph"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

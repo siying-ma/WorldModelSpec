@@ -1,0 +1,2675 @@
+{
+ "run": "lasvegas",
+ "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
+ "params": [
+  {
+   "name": "p.heading_since_step_carla_scene_graph",
+   "value": 50,
+   "unit": "ms",
+   "convention": "The sampling period of the carla_scene_graph acquisition standard, 20 Hz (one scene every 50 ms): the step bound of headingSince, the largest gap between two consecutive scenes it integrates across; not a look-back window and not an action window."
+  },
+  {
+   "name": "p.conflict_horizon",
+   "value": 3.0,
+   "unit": "s",
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hydén 1987)",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_12_070_B"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "value": 3.0,
+   "unit": "m",
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car dimensions (AASHTO design vehicle P: 5.8 m by 2.1 m)",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_12_070_B"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "value": 0.1,
+   "unit": "m/s",
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed noise floor of vehicle odometry and tracked-object estimates",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_12_070_B"
+  },
+  {
+   "name": "p.exhibition_accel_min",
+   "value": 4.0,
+   "unit": "m/s^2",
+   "convention": "harsh-acceleration threshold: a longitudinal acceleration of about 0.4 g, beyond ordinary driving",
+   "source": "naturalistic driving studies' harsh-event thresholds (e.g. SHRP2, 100-Car study)",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_16_090_A_o1"
+  },
+  {
+   "name": "p.exhibition_speed_min",
+   "value": 44.7,
+   "unit": "m/s",
+   "convention": "a speed of about 100 mph, beyond any posted limit in the jurisdiction",
+   "source": "highest posted limits in Nevada (80 mph) plus a margin",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_16_090_A_o1"
+  },
+  {
+   "name": "p.contest_accel_min",
+   "value": 2.5,
+   "unit": "m/s^2",
+   "convention": "a sustained acceleration well above ordinary launches (about 0.25 g) held by both vehicles",
+   "source": "naturalistic driving acceleration distributions",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_16_090_A_o1"
+  },
+  {
+   "name": "p.contest_window",
+   "value": 3.0,
+   "unit": "s",
+   "convention": "duration a side-by-side hard acceleration must last to be a contest rather than a merge",
+   "source": "drag-race launch durations",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_16_090_A_o1"
+  },
+  {
+   "name": "p.contest_same_direction_cos",
+   "value": 0.95,
+   "unit": "ratio",
+   "convention": "cosine of the largest heading difference (about 18 degrees) for travel in the same direction",
+   "source": "lane-level heading alignment tolerance",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_16_090_A_o1"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "value": 2.0,
+   "unit": "m",
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "MUTCD 3B.16 (stop line placed 4 ft in advance of a crosswalk) plus driver placement margin",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_20_060_o1"
+  },
+  {
+   "name": "p.attention_ttc_min",
+   "value": 1.5,
+   "unit": "s",
+   "convention": "time-to-collision threshold of a critical rear-end conflict",
+   "source": "van der Horst (1990) rear-end TTC thresholds",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_22_010"
+  },
+  {
+   "name": "p.overtake_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "AASHTO Green Book passing-manoeuvre model: passing times of about 4 to 11 s",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_030"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "value": 0.9,
+   "unit": "ratio",
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "heading angles of urban lane changes, typically below 20 degrees",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_030"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "value": 0.94,
+   "unit": "ratio",
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "geometric convention separating walking along a roadway from crossing it, from pedestrian heading resolution",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_050"
+  },
+  {
+   "name": "p.right_angle_crossing_cos",
+   "value": 0.26,
+   "unit": "ratio",
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the motion counts as at right angles to the curb: within about 15 degrees of perpendicular",
+   "source": "pedestrian tracking heading resolution and path deviation observed in square crossings",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_050"
+  },
+  {
+   "name": "p.grade_separation_reach",
+   "value": 30.0,
+   "unit": "m",
+   "convention": "ground distance from a pedestrian's body to a pedestrian tunnel or overpass within which a roadway crossing is made at the point that facility serves: the facility's width plus the stair or ramp landings at either end",
+   "source": "AASHTO Guide for the Planning, Design and Operation of Pedestrian Facilities: overpass stairs and ramps landing within about 30 m of the crossing line",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_060_B"
+  },
+  {
+   "name": "p.blind_person_approach_reach",
+   "value": 30.0,
+   "unit": "m",
+   "convention": "the centre distance within which a moving road user has approached a pedestrian carrying a white cane or led by another person: the stopping distance from an urban approach speed of about 13 m/s with a 1 s perception-reaction time and a 4.5 m/s^2 deceleration",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping-sight-distance model",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_140_B_o1"
+  },
+  {
+   "name": "p.immediate_stop_window",
+   "value": 4.0,
+   "unit": "s",
+   "convention": "the longest time from the moment a stop is due until the road user is at rest for the stop to be immediate: a 1 s perception-reaction time plus the braking time from an urban approach speed of about 13 m/s at 4.5 m/s^2",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping-sight-distance model",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_140_B_o1"
+  },
+  {
+   "name": "p.turn_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "the longest duration of a turn at a junction by a bicycle or a scooter, from the start of its heading change to its end",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities, turning speeds and radii at intersections",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_080_o1"
+  },
+  {
+   "name": "p.turn_heading_min",
+   "value": 45.0,
+   "unit": "deg",
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "naturalistic-driving manoeuvre classification by heading-change thresholds",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_080_o1"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "value": 135.0,
+   "unit": "deg",
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "naturalistic-driving manoeuvre classification by heading-change thresholds",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_080_o1"
+  },
+  {
+   "name": "p.turn_yaw_rate_tol",
+   "value": 3.0,
+   "unit": "deg/s",
+   "convention": "the yaw-rate magnitude at or below which a road user's heading counts as no longer turning: the yaw-rate noise floor of the source",
+   "source": "inertial and tracking yaw-rate resolution of the acquisition standard",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_080_o1"
+  },
+  {
+   "name": "p.rider_crossing_motion_cos",
+   "value": 0.94,
+   "unit": "ratio",
+   "convention": "largest absolute cosine between a rider's velocity and a carrier's designated direction at which the rider counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "bicycle crossing-trajectory observation at mid-block and intersection crossings",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_120"
+  },
+  {
+   "name": "p.usable_path_width_min",
+   "value": 1.2,
+   "unit": "m",
+   "convention": "the narrowest width of a bicycle path at which one bicycle or scooter rider can operate on it: the essential operating space of a bicyclist",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), bicyclist operating space",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_120"
+  },
+  {
+   "name": "p.bicycle_reaction_time",
+   "value": 2.5,
+   "unit": "s",
+   "convention": "perception-reaction time of a bicyclist in the stopping-sight-distance model",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), stopping sight distance",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_130"
+  },
+  {
+   "name": "p.bicycle_decel_dry",
+   "value": 3.1,
+   "unit": "m/s^2",
+   "convention": "braking deceleration of a bicycle on a dry paved surface in the stopping-sight-distance model (coefficient of friction about 0.32)",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), stopping sight distance",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_130"
+  },
+  {
+   "name": "p.bicycle_decel_wet",
+   "value": 1.6,
+   "unit": "m/s^2",
+   "convention": "braking deceleration of a bicycle on a wet surface in the stopping-sight-distance model (coefficient of friction about 0.16)",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), stopping sight distance",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_130"
+  },
+  {
+   "name": "p.bicycle_decel_ice",
+   "value": 0.5,
+   "unit": "m/s^2",
+   "convention": "braking deceleration on an icy or snow-covered surface (coefficient of friction about 0.05)",
+   "source": "winter road-surface friction measurements",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_130"
+  },
+  {
+   "name": "p.bicycle_lamp_reach",
+   "value": 30.0,
+   "unit": "m",
+   "convention": "the distance ahead a bicycle headlamp lights the path in darkness, within which the rider can see an obstacle",
+   "source": "bicycle headlamp illumination ranges",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_130"
+  },
+  {
+   "name": "p.roundabout_clockwise_sin_tol",
+   "value": 0.26,
+   "unit": "ratio",
+   "convention": "the share of a vehicle's speed across the line to the roundabout's centre at or below which its motion counts as towards or away from the centre rather than around it: within about 15 degrees of the radial direction",
+   "source": "roundabout entry and exit path geometry (FHWA Roundabouts: An Informational Guide, NCHRP Report 672)",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_43_010_A"
+  },
+  {
+   "name": "p.roundabout_critical_gap",
+   "value": 4.5,
+   "unit": "s",
+   "convention": "critical headway of an entering driver at a single-lane roundabout: the shortest time to the next conflicting road user an entering driver accepts",
+   "source": "Highway Capacity Manual, 6th edition, roundabouts chapter",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_43_010_B_o2"
+  },
+  {
+   "name": "p.delivery_halt_min_duration",
+   "value": 60.0,
+   "unit": "s",
+   "convention": "the shortest halt counted as a pick-up or delivery stop en route rather than a halt in traffic: the short end of a goods vehicle's curbside dwell",
+   "source": "urban freight curbside dwell-time studies",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_48_060"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "value": 5.0,
+   "unit": "m",
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "queue spacing at jam density in traffic flow practice (Highway Capacity Manual)",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_52_030_A"
+  },
+  {
+   "name": "p.mail_drop_box_reach",
+   "value": 3.0,
+   "unit": "m",
+   "convention": "the ground distance from a halted vehicle's body to a mail drop box within which a driver can post mail from the vehicle or a step away",
+   "source": "kerbside drop-box placement practice: box set at the curb face, reach of an arm plus one step",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_52_030_A"
+  },
+  {
+   "name": "p.mail_deposit_max_halt",
+   "value": 60.0,
+   "unit": "s",
+   "convention": "the longest halt counted as expeditious deposit of mail into a drop box: pull up, post, pull away",
+   "source": "curbside dwell of a single drop-off in curb management studies",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_52_030_A"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "value": 60.0,
+   "unit": "s",
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "curbside passenger pick-up and drop-off dwell times in curb management studies",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_52_040_A"
+  },
+  {
+   "name": "p.parked_heading_cos",
+   "value": 0.97,
+   "unit": "ratio",
+   "convention": "cosine of the largest angle (about fourteen degrees) between a standing vehicle's heading and its carrier's designated direction at which it counts as parallel with the edge and headed with traffic",
+   "source": "parallel-parking placement tolerance in curb parking practice",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_52_040_A"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "value": 180.0,
+   "unit": "s",
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "municipal passenger loading zone time limits",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_52_060"
+  },
+  {
+   "name": "p.parking_space_angle_resolution",
+   "value": 5.0,
+   "unit": "deg",
+   "convention": "the bay angle at or below which a mapped parking bay counts as parallel to the curb rather than angled: the source's angle resolution for mapped bays",
+   "source": "angle resolution of the source's map annotation",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_52_070"
+  },
+  {
+   "name": "p.curb_parallel_cos",
+   "value": 0.97,
+   "unit": "ratio",
+   "convention": "cosine of the largest angle (about fourteen degrees) between a stopped bus's heading and its carrier's designated direction, in either sense, at which the bus counts as approximately parallel to the curb",
+   "source": "transit agency bus stop design guidance on bus alignment at the curb",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_60_030_A4"
+  },
+  {
+   "name": "p.following_headway_dry",
+   "value": 2.0,
+   "unit": "s",
+   "convention": "time headway a following driver keeps on a dry surface: the two-second rule of driver manuals",
+   "source": "state driver handbooks",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.following_headway_wet",
+   "value": 3.0,
+   "unit": "s",
+   "convention": "time headway a following driver keeps on a wet surface or in rain: the two-second rule lengthened by a second",
+   "source": "state driver handbooks",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.following_headway_ice",
+   "value": 6.0,
+   "unit": "s",
+   "convention": "time headway a following driver keeps on an icy or snow-covered surface: the tripled following time driver manuals advise",
+   "source": "state driver handbooks",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "value": 6.0,
+   "unit": "m/s^2",
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "AASHTO Green Book; tyre-road friction tables",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "value": 4.0,
+   "unit": "m/s^2",
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "AASHTO Green Book; tyre-road friction tables",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "value": 1.0,
+   "unit": "m/s^2",
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "tyre-road friction tables",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.truck_space_open_time",
+   "value": 30.0,
+   "unit": "s",
+   "convention": "the time a following heavy vehicle needs to open a space behind a leader that has come ahead of it, easing off by a few miles per hour: about 150 m at a closing speed near 5 m/s",
+   "source": "heavy-vehicle following practice; commercial driver manuals",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_127_2"
+  },
+  {
+   "name": "p.door_swing_reach",
+   "value": 1.0,
+   "unit": "m",
+   "convention": "lateral reach of an open passenger-car side door beyond the vehicle body (a front door opens about 0.9 to 1.1 m)",
+   "source": "vehicle door-opening dimensions; dooring-zone guidance",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_153_2"
+  },
+  {
+   "name": "p.traffic_side_door_max_open",
+   "value": 60.0,
+   "unit": "s",
+   "convention": "the longest time a traffic-side door stays open for immediate loading or unloading: a passenger pick-up or drop-off dwell at the curb",
+   "source": "curbside passenger-loading dwell studies",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_153_3"
+  },
+  {
+   "name": "p.oncoming_heading_cos",
+   "value": 0.9,
+   "unit": "ratio",
+   "convention": "cosine of the largest angle off exactly opposed headings (about 25 degrees) at which two vehicles count as proceeding in opposite directions",
+   "source": "heading tolerance of road-geometry alignment; lane-change heading angles",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_203_1_o1"
+  },
+  {
+   "name": "p.meeting_horizon",
+   "value": 5.0,
+   "unit": "s",
+   "convention": "the time ahead within which two vehicles closing head-on on a narrow two-way road count as meeting, so that each keeps to its half: the decision-and-steering time of a driver adjusting lateral position",
+   "source": "AASHTO decision sight distance (avoidance manoeuvre times)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_203_1_o2"
+  },
+  {
+   "name": "p.lateral_position_tolerance",
+   "value": 0.3,
+   "unit": "m",
+   "convention": "the lateral margin within which a vehicle body counts as at a line or an edge: lane-keeping variability of a driven vehicle plus the source's position error",
+   "source": "lane-keeping lateral deviation studies",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_203_1_o2"
+  },
+  {
+   "name": "p.left_lane_move_over_time",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "the time a driver needs, once a faster vehicle closes from behind, to check the mirrors, signal and move one lane to the right: a perception-reaction time, a few seconds of signal and the lane change",
+   "source": "lane-change duration studies; driver manuals (signal at least 3 s before a lane change)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_208_1"
+  },
+  {
+   "name": "p.passing_sight_time",
+   "value": 11.0,
+   "unit": "s",
+   "convention": "the MUTCD minimum passing sight distance (Table 3B-1, the warrant for a no-passing zone) divided by the prevailing speed it is tabulated for: about eleven seconds of travel across 25 to 70 mph; the sight distance or the clear distance a pass needs is the subject's speed times this time",
+   "source": "MUTCD 2009 Section 3B.02, Table 3B-1",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_213_1"
+  },
+  {
+   "name": "p.curvature_resolution",
+   "value": 0.0005,
+   "unit": "1/m",
+   "convention": "the horizontal curvature at or below which a mapped roadway reads as straight: the curvature resolution of map centrelines (a radius of about two kilometres)",
+   "source": "map centreline curvature resolution of the acquisition source",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_213_2a"
+  },
+  {
+   "name": "p.course_departure_sin_tol",
+   "value": 0.035,
+   "unit": "ratio",
+   "convention": "sine of the largest angle (about two degrees) between a moving vehicle's heading and its lane's designated direction at which it counts as keeping its course: lane-keeping heading wander plus the source's heading noise, below the few degrees of heading a lane change takes",
+   "source": "lane-keeping and lane-change heading-angle measurements in naturalistic driving data",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_413_2"
+  },
+  {
+   "name": "p.vehicle_turn_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "the longest duration of a turn by a motor vehicle at a junction or into or out of a driveway, from the start of its heading change to its end, including the crossing of opposing lanes",
+   "source": "AASHTO Green Book intersection sight distance (left-turn time gap 7.5 s) plus a margin",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_217_2"
+  },
+  {
+   "name": "p.same_time_arrival_window",
+   "value": 2.0,
+   "unit": "s",
+   "convention": "the largest difference between the times two vehicles reach an intersection's edge at which they count as arriving at approximately the same time: a two-second headway, within which neither can clear the conflict area before the other arrives",
+   "source": "driver-manual two-second rule; follow-up headways of gap acceptance at uncontrolled junctions (Highway Capacity Manual)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_250_2"
+  },
+  {
+   "name": "p.yield_line_speed_max",
+   "value": 4.2,
+   "unit": "m/s",
+   "convention": "the speed at or below which a vehicle at the place of a yield sign counts as having slowed: the speed from which a passenger car can still halt within the stop-point tolerance at a comfortable deceleration of about 4.5 m/s^2",
+   "source": "AASHTO comfortable deceleration rate of the stopping sight distance model",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_257_1_o1"
+  },
+  {
+   "name": "p.merge_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "the time an entering or exiting vehicle takes, after coming onto or leaving the controlled-access highway, to complete its merge into or diverge from the highway's traffic: an acceleration or deceleration lane of about 250 m run at about 25 m/s",
+   "source": "AASHTO Green Book acceleration and deceleration lane lengths",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_263_o2"
+  },
+  {
+   "name": "p.emergency_immediate_approach_reach",
+   "value": 100.0,
+   "unit": "m",
+   "convention": "centre distance within which an emergency or enforcement vehicle closing on a road user with its warning lamps flashing is in immediate approach: about five seconds of travel at an urban response speed of 20 m/s, the time a driver needs to perceive the lamps and begin to clear the way",
+   "source": "driver-response studies of emergency-vehicle encounters (perception-reaction time plus lane-change time)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_267_1a"
+  },
+  {
+   "name": "p.emergency_pullover_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "the longest time from the onset of an emergency vehicle's immediate approach until a driver has moved to the right-hand edge: a perception-reaction time of about 1.5 s plus one or two lane changes of about 4 s each",
+   "source": "AASHTO perception-reaction time; naturalistic lane-change duration studies",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_267_1b_o1"
+  },
+  {
+   "name": "p.pullover_edge_gap",
+   "value": 1.0,
+   "unit": "m",
+   "convention": "the gap between a vehicle body and the right-hand curb or roadway edge within which a vehicle pulled over to clear the way counts as as close to the edge as it can be placed: the curb clearance of a parallel-parked car (about 0.3 m) plus lane-keeping variability and an edge margin",
+   "source": "curb-parking clearance conventions of municipal codes and driver manuals",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_267_1b_o1"
+  },
+  {
+   "name": "p.driver_reaction_time",
+   "value": 1.5,
+   "unit": "s",
+   "convention": "perception-reaction time of an alert driver to an expected hazard in the stopping-distance model",
+   "source": "Johansson and Rumar brake-reaction studies; AASHTO Green Book",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.curve_lateral_accel_max",
+   "value": 3.0,
+   "unit": "m/s^2",
+   "convention": "the lateral acceleration a passenger vehicle sustains on a curve within comfortable side friction on a dry or wet paved surface (about 0.3 g)",
+   "source": "AASHTO Green Book side-friction factors for horizontal curves",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.lane_keeping_heading_error",
+   "value": 0.03,
+   "unit": "ratio",
+   "convention": "the sine of the heading error (about 1.7 degrees) that a driver's lane keeping leaves uncorrected, so that the vehicle drifts laterally at that fraction of its speed",
+   "source": "lane-keeping and time-to-line-crossing studies (Godthelp)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.lane_departure_time_min",
+   "value": 1.0,
+   "unit": "s",
+   "convention": "the shortest time to line crossing a driver tolerates before correcting its lateral drift: the warning threshold of lane-departure warning systems",
+   "source": "ISO 17361 lane departure warning systems",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.low_beam_sight_reach",
+   "value": 50.0,
+   "unit": "m",
+   "convention": "the distance ahead a passenger-car low beam lights the road in darkness enough to see an obstacle",
+   "source": "UNECE R112 / SAE J1383 low-beam photometry",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.emergency_approach_reach",
+   "value": 150.0,
+   "unit": "m",
+   "convention": "centre distance within which a driver approaching an emergency or enforcement vehicle that shows flashing warning lamps counts as approaching it: about the distance at which the lamps are conspicuous by day and a driver at an urban speed of 15 m/s has ten seconds to slow",
+   "source": "emergency warning-light conspicuity studies; move-over law guidance",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_267_2a"
+  },
+  {
+   "name": "p.speed_decrease_decel_min",
+   "value": 0.3,
+   "unit": "m/s^2",
+   "convention": "the longitudinal deceleration at or beyond which a sampled acceleration counts as a decrease of speed rather than noise or rolling resistance: the acceleration resolution of the source",
+   "source": "vehicle-state estimation noise of the acquisition standard",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_267_2a"
+  },
+  {
+   "name": "p.emergency_pass_clearance",
+   "value": 1.5,
+   "unit": "m",
+   "convention": "the gap between bodies a driver keeps while passing alongside an emergency or enforcement vehicle: a lateral passing clearance of about half a lane's free width, leaving room for its crew and doors",
+   "source": "lateral passing-clearance conventions of driver manuals and move-over guidance",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_267_2b"
+  },
+  {
+   "name": "p.emergency_lane_change_window",
+   "value": 6.0,
+   "unit": "s",
+   "convention": "the time from the onset of an approach to an emergency or enforcement vehicle until a driver has moved one lane over: a perception-reaction time of about 1.5 s plus one lane change of about 4 s",
+   "source": "AASHTO Green Book perception-reaction time; naturalistic lane-change duration studies",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_267_2e"
+  },
+  {
+   "name": "p.rider_evasive_decel",
+   "value": 2.0,
+   "unit": "m/s^2",
+   "convention": "the longitudinal deceleration of a bicycle or scooter rider beyond which its braking counts as an evasive reaction to another road user rather than ordinary speed control: about 0.2 g, above comfortable bicycle braking",
+   "source": "bicycle braking studies; traffic-conflict technique",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_270_2a_o1"
+  },
+  {
+   "name": "p.bicycle_pass_safe_gap",
+   "value": 1.0,
+   "unit": "m",
+   "convention": "the lateral clearance between the body of a passing motor vehicle and a bicyclist's: the bicyclist's operating-space sway beyond its body width, about one metre of free space beside it",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (bicyclist operating space)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_270_2b_o2"
+  },
+  {
+   "name": "p.vehicle_evasive_decel",
+   "value": 4.0,
+   "unit": "m/s^2",
+   "convention": "the longitudinal deceleration of a motor vehicle at or beyond which its braking counts as an evasive reaction to another road user rather than ordinary speed control: about 0.4 g, above the comfortable deceleration of about 3.4 m/s^2",
+   "source": "AASHTO comfortable deceleration rate; traffic-conflict studies of evasive braking",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_270_7a"
+  },
+  {
+   "name": "p.pedestrian_near_reach",
+   "value": 3.0,
+   "unit": "m",
+   "convention": "the ground distance from a pedestrian's body to a place, a region or a vehicle within which the pedestrian is near it: about two walking strides plus a curb step",
+   "source": "pedestrian stride length (about 0.75 m) and curb heights (FHWA pedestrian facility guidance)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_280_1c"
+  },
+  {
+   "name": "p.ped_signal_facing_cos",
+   "value": 0.87,
+   "unit": "ratio",
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a pedestrian signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "MUTCD section 4E.08 (pedestrian signal heads placed at the far end of the crossing, in the pedestrian's line of sight)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_287_1e"
+  },
+  {
+   "name": "p.ped_signal_facing_reach",
+   "value": 40.0,
+   "unit": "m",
+   "convention": "the largest distance from a pedestrian to a pedestrian signal head at which the head counts as the one across the crossing the pedestrian faces: a wide urban crossing (six lanes and a median, about 30 m) plus the head's set-back behind the far curb",
+   "source": "MUTCD section 4E.08; AASHTO Green Book urban cross-section widths",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_287_1e"
+  },
+  {
+   "name": "p.pedestrian_clearing_speed_min",
+   "value": 0.5,
+   "unit": "m/s",
+   "convention": "the speed below which a pedestrian still on the roadway counts as lingering rather than proceeding to a place of safety: about half the 3.0 ft/s (0.9 m/s) walking speed to which pedestrian clearance intervals are timed for slower pedestrians",
+   "source": "MUTCD section 4E.06 pedestrian clearance walking speeds (3.5 ft/s, 3.0 ft/s for slower pedestrians)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_283_1d4_o2"
+  },
+  {
+   "name": "p.pedestrian_lateral_tolerance",
+   "value": 0.3,
+   "unit": "m",
+   "convention": "the lateral margin within which a pedestrian's reference point counts as on a line that divides a region or a way: half a pedestrian's shoulder breadth plus the source's position error for a pedestrian",
+   "source": "Highway Capacity Manual pedestrian body ellipse (about 0.6 m shoulder breadth) and pedestrian tracking position error",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_293"
+  },
+  {
+   "name": "p.ped_traffic_signal_facing_cos",
+   "value": 0.87,
+   "unit": "ratio",
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a vehicular signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "MUTCD signal head placement (Part 4D) and pedestrian heading variability",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_307_2b"
+  },
+  {
+   "name": "p.ped_traffic_signal_facing_reach",
+   "value": 60.0,
+   "unit": "m",
+   "convention": "the largest distance from a pedestrian to a vehicular signal head at which the head counts as one the pedestrian faces across the intersection: a wide urban intersection (about 40 m) plus the set-back of a far-side head beyond the far crosswalk",
+   "source": "MUTCD far-side signal head placement (Part 4D) and urban intersection widths",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_307_2b"
+  },
+  {
+   "name": "p.lane_opposed_direction_cos",
+   "value": 0.9,
+   "unit": "ratio",
+   "convention": "cosine of the largest angle (about twenty-five degrees) off exactly opposed at which the designated directions of two mapped lanes of one way count as opposite directions of travel: the direction noise of map lane segments along a gently curving way",
+   "source": "map lane-direction tolerance, matching the catalogue's tolerance for opposed vehicle headings (p.oncoming_heading_cos)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_307_8a_o2"
+  },
+  {
+   "name": "p.cross_direction_sin_min",
+   "value": 0.5,
+   "unit": "ratio",
+   "convention": "sine of the smallest angle (thirty degrees) by which a way's designated direction lies to one side of an approach's designated direction for that way's traffic to count as flowing to that side: the legs of a junction meet at larger angles, and map direction noise is far smaller",
+   "source": "intersection design guidance limiting the skew of junction legs",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_307_8a_o2"
+  },
+  {
+   "name": "p.approach_lane_same_direction_cos",
+   "value": 0.9,
+   "unit": "ratio",
+   "convention": "cosine of the largest angle (about twenty-five degrees) between the designated directions of two mapped lanes entering one intersection at which they count as lanes of the same approach carrying traffic the same way: the direction noise of map lane segments along a gently curving way, far below the angle between the legs of a junction",
+   "source": "map lane-direction noise; mirrors p.lane_opposed_direction_cos proposed this iteration by NRS_484B_307_8a_o2",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_400_1_o1"
+  },
+  {
+   "name": "p.crest_near_reach",
+   "value": 150.0,
+   "unit": "m",
+   "convention": "the ground distance from a road user's body to a crest within which the road user is on the approach to or near the crest: the length of a crest vertical curve over which forward sight is restricted, about the stopping sight distance at 90 km/h",
+   "source": "AASHTO Green Book, stopping sight distance and crest vertical curve design",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.sudden_decel_min",
+   "value": 3.4,
+   "unit": "m/s^2",
+   "convention": "the longitudinal deceleration beyond which a decrease of speed counts as sudden: the comfortable deceleration most drivers use when braking for an expected stop",
+   "source": "AASHTO Green Book, deceleration rate for stopping sight distance (3.4 m/s^2)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_413_3"
+  },
+  {
+   "name": "p.rear_signal_reach",
+   "value": 30.0,
+   "unit": "m",
+   "convention": "the gap between bodies within which a following vehicle in the same lane is immediately to the rear of a vehicle: two seconds of headway at an urban speed of about 15 m/s",
+   "source": "two-second following rule of driver manuals",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_413_3"
+  },
+  {
+   "name": "p.stop_signal_lead_window",
+   "value": 3.0,
+   "unit": "s",
+   "convention": "the time behind the onset of a halt or a sudden deceleration within which a stop or slow signal shown counts as given first for it: two perception-reaction times of an alert following driver",
+   "source": "AASHTO perception-reaction time of an alert driver to an expected cue (about 1.5 s)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_413_3"
+  },
+  {
+   "name": "p.free_passage_width",
+   "value": 3.0,
+   "unit": "m",
+   "convention": "the free lateral width one passing vehicle needs beside a standing vehicle: the width of a design passenger or single-unit vehicle with its lateral clearance, about a narrow traffic lane",
+   "source": "AASHTO design vehicle widths and lane widths (Green Book)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_450_1k"
+  },
+  {
+   "name": "p.edge_standing_gap",
+   "value": 0.6,
+   "unit": "m",
+   "convention": "the gap between a standing vehicle's body and the curb or roadway edge within which the vehicle counts as standing at that edge: the curb clearance of a parallel-parked vehicle plus the source's position error",
+   "source": "Uniform Vehicle Code parallel-parking curb clearance (18 inches) and source position error",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_450_1l"
+  },
+  {
+   "name": "p.commercial_loading_max_halt",
+   "value": 1800.0,
+   "unit": "s",
+   "convention": "the longest halt of a commercial vehicle counted as expeditious loading or unloading of goods or passengers: the thirty-minute limit common to commercial loading zones",
+   "source": "municipal commercial loading zone time limits",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_507_1"
+  },
+  {
+   "name": "p.zone_entry_wait_reach",
+   "value": 10.0,
+   "unit": "m",
+   "convention": "the ground distance from a halted vehicle's body to a curb zone within which the vehicle counts as waiting to enter the zone: about one design passenger-car length plus the spacing of halted vehicles in a queue",
+   "source": "AASHTO Green Book design vehicle dimensions; HCM queue spacing",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_507_1"
+  },
+  {
+   "name": "p.grade_resolution",
+   "value": 0.005,
+   "unit": "ratio",
+   "convention": "the longitudinal slope at or below which a roadway reads as level: the grade resolution of map elevation profiles",
+   "source": "HD-map elevation profile accuracy specifications",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_533"
+  },
+  {
+   "name": "p.steer_angle_resolution",
+   "value": 2.0,
+   "unit": "deg",
+   "convention": "the front-wheel steering angle at or below which a parked vehicle's wheels read as straight: the steering-angle sensor resolution plus the play of a parked vehicle's wheels",
+   "source": "steering-angle sensor specifications (SAE J670 vehicle dynamics terminology)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_533"
+  },
+  {
+   "name": "p.railroad_crossing_approach_reach",
+   "value": 15.2,
+   "unit": "m",
+   "convention": "the ground distance from a vehicle's body to a railroad grade crossing within which the vehicle is at the crossing, on the stretch where a halt for the crossing is made: the 50-ft outer bound of the zone in which grade-crossing practice places the halt before the nearest rail",
+   "source": "MUTCD Part 8 highway-rail grade crossing stop-line placement and the Uniform Vehicle Code grade-crossing stop zone",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_560_3_o1"
+  },
+  {
+   "name": "p.side_by_side_same_direction_cos",
+   "value": 0.9,
+   "unit": "ratio",
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two road users standing or moving side by side count as travelling the same way: the heading spread of vehicles queued in adjacent lanes",
+   "source": "lane-change and queue heading variability in naturalistic driving data",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_560_3_o2"
+  },
+  {
+   "name": "p.curve_approach_reach",
+   "value": 150.0,
+   "unit": "m",
+   "convention": "the distance a road user travels ahead within which a bend it reaches counts as one it is approaching: about the stopping sight distance at 90 km/h, the distance over which a driver must already be slowing for the bend",
+   "source": "AASHTO Green Book stopping sight distance and horizontal curve warning placement (MUTCD Table 2C-4)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_603_1_o1"
+  },
+  {
+   "name": "p.narrow_lane_width",
+   "value": 3.0,
+   "unit": "m",
+   "convention": "the lane width at or below which a highway's lane counts as narrow: below the 3.3 to 3.6 m design lane width at which a passenger car and a truck meet with comfortable lateral clearance",
+   "source": "AASHTO Green Book, lane width",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_603_1_o1"
+  },
+  {
+   "name": "p.impeding_speed_margin",
+   "value": 4.5,
+   "unit": "m/s",
+   "convention": "the amount by which a vehicle's speed below the posted maximum of its way holds back the traffic immediately behind it: about ten miles per hour, the differential at which slow-vehicle turnout and keep-right practice treats a vehicle as slow-moving",
+   "source": "FHWA and state slow-moving-vehicle turnout practice",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_627_1a"
+  },
+  {
+   "name": "p.bicycle_keep_right_gap",
+   "value": 1.0,
+   "unit": "m",
+   "convention": "the gap between a bicycle or scooter rider's body and the right-hand curb or roadway edge within which the rider counts as riding as near to the right side as practicable: the shy distance a bicyclist keeps from a curb or edge plus the sway of its operating space and the source's position error",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (bicyclist operating space and shy distance)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_777_1_o1"
+  },
+  {
+   "name": "p.nearby_traffic_reach",
+   "value": 30.0,
+   "unit": "m",
+   "convention": "the gap between bodies within which another road user counts as nearby traffic: two seconds of headway at an urban speed of about 15 m/s",
+   "source": "two-second following rule of driver manuals",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_777_1_o1"
+  },
+  {
+   "name": "p.commensurate_speed_margin",
+   "value": 2.2,
+   "unit": "m/s",
+   "convention": "the amount by which the speed of nearby traffic travelling the same way may exceed a rider's speed with the rider still counted as keeping pace with it: about five miles per hour, the speed differential within which road users travel as one stream",
+   "source": "speed-study practice (5 mph speed bins, Highway Capacity Manual platoon definitions)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_777_1_o1"
+  },
+  {
+   "name": "p.right_side_impede_reach",
+   "value": 15.0,
+   "unit": "m",
+   "convention": "the gap between a rider's body and an object or road user on its right within which that object impedes the rider's access to the right side of the roadway: about three seconds of travel at a bicyclist's cruising speed of 5 m/s, the distance within which a rider must steer around it",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (bicyclist speed and reaction distance)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_777_1_o1"
+  },
+  {
+   "name": "p.shared_lane_min_width",
+   "value": 4.3,
+   "unit": "m",
+   "convention": "the lane width below which a bicycle and a motor vehicle cannot travel safely side by side within the lane: 14 ft, the wide outside lane width of bicycle facility guidance",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities; MUTCD shared-lane guidance",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_777_1_o1"
+  },
+  {
+   "name": "p.abreast_gap_max",
+   "value": 1.5,
+   "unit": "m",
+   "convention": "the gap between the bodies of two riders side by side within which they ride abreast in one row: the handlebar-to-handlebar spacing of a group riding side by side plus the source's position error",
+   "source": "group-riding practice and bicyclist operating space (AASHTO)",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_777_3"
+  }
+ ],
+ "aggregates": [
+  {
+   "id": "DEF-LVMC-11-02-070::commercial_vehicle",
+   "term": "commercial vehicle",
+   "definition": "DEF-LVMC-11-02-070",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "90202f151d80a318b3bbb58d6a3bcf1e286293ea7852b593df2a5d845adaa367",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-082::electric_bicycle",
+   "term": "electric bicycle",
+   "definition": "DEF-LVMC-11-02-082",
+   "included": [
+    "ru.electric_bicycle"
+   ],
+   "unresolved": [
+    "ru.bicycle",
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.motor_vehicle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "ef57822c3e57d62bff3d318825142599e4e946532b5ca0bea7b47d9fbb4a59bc",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-083::electric_scooter",
+   "term": "electric scooter",
+   "definition": "DEF-LVMC-11-02-083",
+   "included": [],
+   "unresolved": [
+    "ru.bicycle",
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "08ed2990ddb669693d7eb07ce04fe6e36666bd69bca1ae8abc05f63b6c7412f9",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-090::limo",
+   "term": "limo",
+   "definition": "DEF-LVMC-11-02-090",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "cb1f6b319076fdbdb474a5e06b9499c346c6c342762f5f021fa53adcd54eb5ec",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-110::recreational_vehicle",
+   "term": "recreational vehicle",
+   "definition": "DEF-LVMC-11-02-110",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "f387e6240c57fdb18f45d464a3705cba74abbec3548ccb86d2016504380c23e6",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-120::rtc_bus",
+   "term": "rtc bus",
+   "definition": "DEF-LVMC-11-02-120",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "142c74851c5cb0763446cb83933a585947ae7e24e9927ebe5900d63aff7eb377",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-140::taxicab",
+   "term": "taxicab",
+   "definition": "DEF-LVMC-11-02-140",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "b268f7952e82c2e154fc0f0e3fb366d917c96062feddfd3962567bc03aa65340",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-150::shuttle_bus",
+   "term": "shuttle bus",
+   "definition": "DEF-LVMC-11-02-150",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "57cc5b9244357c387f962ecdbea4988867f1f142be9e77a20a51c7a50edabd3b",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-150::tour_bus",
+   "term": "tour bus",
+   "definition": "DEF-LVMC-11-02-150",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "177ccb5e4dc62b4425def8db63b4b53f0802d26f17a8af001df50bb9101a74b2",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-LVMC-11-02-170::trailer",
+   "term": "trailer",
+   "definition": "DEF-LVMC-11-02-170",
+   "included": [],
+   "unresolved": [
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination"
+   ],
+   "certificate": "634b23c294b2ad4bba88df8d4836e77fcabaddcfd53ca589f9184663370a6a2e",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-020::authorized_emergency_vehicle",
+   "term": "authorized emergency vehicle",
+   "definition": "DEF-NRS-484A-020",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "81e9dca56aa054de333090abf3691430555d2d8b8a1e070e96c2c55b5bb33bd4",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-025::bicycle",
+   "term": "bicycle",
+   "definition": "DEF-NRS-484A-025",
+   "included": [
+    "ru.bicycle"
+   ],
+   "unresolved": [],
+   "covered": [
+    {
+     "class": "ru.bus",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.commercial_motor_vehicle",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.electric_bicycle",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.electric_bicycle",
+       "words": "a bicycle with an assisting electric motor"
+      },
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.electric_scooter",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.emergency_vehicle",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.fire_apparatus",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.motor_vehicle",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.motorcycle",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.official_vehicle",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.rail_vehicle",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.school_bus",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.taxicab",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.tour_bus_or_limousine",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.trailer_or_combination",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.transit_bus",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    },
+    {
+     "class": "ru.truck",
+     "covered_by": [
+      "ru.bicycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-025",
+       "words": "a device propelled by human power upon which a person may ride"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bicycle",
+       "words": "human-powered wheeled vehicle ridden by a person"
+      }
+     ]
+    }
+   ],
+   "certificate": "f7765fa54c14a0a4859356c027beb484f2a417115109c1f065190d1fc958e5be",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-030::bus",
+   "term": "bus",
+   "definition": "DEF-NRS-484A-030",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "f88f0ba9df245f9ae7bd73d1eb1cf4cdb71dd179e33cb0c62a3e29c2ce5e3997",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-050::combination_of_vehicles",
+   "term": "combination of vehicles",
+   "definition": "DEF-NRS-484A-050",
+   "included": [
+    "ru.trailer_or_combination"
+   ],
+   "unresolved": [],
+   "covered": [
+    {
+     "class": "ru.bus",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.commercial_motor_vehicle",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.emergency_vehicle",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.fire_apparatus",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.moped",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.motor_vehicle",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.motorcycle",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.official_vehicle",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.school_bus",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.taxicab",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.tour_bus_or_limousine",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.transit_bus",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    },
+    {
+     "class": "ru.truck",
+     "covered_by": [
+      "ru.trailer_or_combination"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-050",
+       "words": "two or more vehicles coupled together"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      }
+     ]
+    }
+   ],
+   "certificate": "52716dc5603b282fde0ed682bf60347c04ac88751e9970043d2ed8aad95581e5",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-125::moped",
+   "term": "moped",
+   "definition": "DEF-NRS-484A-125",
+   "included": [
+    "ru.moped"
+   ],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.motor_vehicle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "covered": [
+    {
+     "class": "ru.motorcycle",
+     "covered_by": [
+      "ru.moped"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-125",
+       "words": "“Moped” means a motor-driven scooter, motor-driven cycle or similar vehicle that is propelled by a small engine which produces not more than 2 gross brake horsepower, has a displacement of not more than 50 cubic centimeters or produces not more than 1500 watts final output"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+      }
+     ]
+    }
+   ],
+   "certificate": "e00e84214585a6112b9d20afd42f45576e7eb3b888deac2412dae49a00868c28",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-130::motor_vehicle",
+   "term": "motor vehicle",
+   "definition": "DEF-NRS-484A-130",
+   "included": [
+    "ru.bus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.school_bus",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": [
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination"
+   ],
+   "covered": [
+    {
+     "class": "ru.commercial_motor_vehicle",
+     "covered_by": [
+      "ru.moped",
+      "ru.motor_vehicle",
+      "ru.motorcycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-130",
+       "words": "every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter."
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.commercial_motor_vehicle",
+       "words": "vehicle over the jurisdiction's commercial mass class or marked as commercially licensed"
+      },
+      {
+       "class": "ru.motor_vehicle",
+       "words": "a self-propelled vehicle other than a rail vehicle; excludes the powered two-wheelers a jurisdiction classes separately below"
+      },
+      {
+       "class": "ru.motorcycle",
+       "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+      },
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+      }
+     ]
+    },
+    {
+     "class": "ru.emergency_vehicle",
+     "covered_by": [
+      "ru.moped",
+      "ru.motor_vehicle",
+      "ru.motorcycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-130",
+       "words": "every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter."
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.emergency_vehicle",
+       "words": "vehicle of a class the jurisdiction designates as emergency"
+      },
+      {
+       "class": "ru.motor_vehicle",
+       "words": "a self-propelled vehicle other than a rail vehicle; excludes the powered two-wheelers a jurisdiction classes separately below"
+      },
+      {
+       "class": "ru.motorcycle",
+       "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+      },
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+      }
+     ]
+    },
+    {
+     "class": "ru.fire_apparatus",
+     "covered_by": [
+      "ru.moped",
+      "ru.motor_vehicle",
+      "ru.motorcycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-130",
+       "words": "every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter."
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.fire_apparatus",
+       "words": "a fire-fighting vehicle"
+      },
+      {
+       "class": "ru.motor_vehicle",
+       "words": "a self-propelled vehicle other than a rail vehicle; excludes the powered two-wheelers a jurisdiction classes separately below"
+      },
+      {
+       "class": "ru.motorcycle",
+       "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+      },
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+      }
+     ]
+    },
+    {
+     "class": "ru.official_vehicle",
+     "covered_by": [
+      "ru.moped",
+      "ru.motor_vehicle",
+      "ru.motorcycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-130",
+       "words": "every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter."
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.official_vehicle",
+       "words": "a vehicle in official or contracted road service, identifiable by livery or equipment"
+      },
+      {
+       "class": "ru.motor_vehicle",
+       "words": "a self-propelled vehicle other than a rail vehicle; excludes the powered two-wheelers a jurisdiction classes separately below"
+      },
+      {
+       "class": "ru.motorcycle",
+       "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+      },
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+      }
+     ]
+    },
+    {
+     "class": "ru.taxicab",
+     "covered_by": [
+      "ru.moped",
+      "ru.motor_vehicle",
+      "ru.motorcycle"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-130",
+       "words": "every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter."
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.taxicab",
+       "words": "passenger vehicle for hire, identifiable by its markings"
+      },
+      {
+       "class": "ru.motor_vehicle",
+       "words": "a self-propelled vehicle other than a rail vehicle; excludes the powered two-wheelers a jurisdiction classes separately below"
+      },
+      {
+       "class": "ru.motorcycle",
+       "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+      },
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+      }
+     ]
+    }
+   ],
+   "certificate": "334123aa91118549adc7c9b7a9b86a30f456a2f0f6d32bcfcb697d842fe88daa",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-135::motorcycle",
+   "term": "motorcycle",
+   "definition": "DEF-NRS-484A-135",
+   "included": [
+    "ru.motorcycle"
+   ],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.motor_vehicle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "a39ee8db39d7ef7015f16f9f5f70c0d566eb6f68ea07c1702be69d45e550eb29",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-165::pedestrian",
+   "term": "pedestrian",
+   "definition": "DEF-NRS-484A-165",
+   "included": [
+    "ru.child",
+    "ru.pedestrian",
+    "ru.pedestrian_with_white_cane_or_guide_animal"
+   ],
+   "unresolved": [],
+   "covered": [
+    {
+     "class": "ru.electric_scooter",
+     "covered_by": [
+      "ru.pedestrian"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-165",
+       "words": "a person on an electric personal assistive mobility device as defined in NRS 482.029"
+      },
+      {
+       "definition": "DEF-NRS-482-029",
+       "words": "“Electric personal assistive mobility device” means a self-balancing, two nontandem wheeled device, designed to transport only one person, with an electric propulsion system that limits the maximum speed of the device to 15 miles per hour or less."
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.pedestrian",
+       "words": "a person on foot, in a wheelchair, or on a device the jurisdiction treats as on foot"
+      }
+     ]
+    }
+   ],
+   "certificate": "c8f226e98e04f8c4323ab6eadc4ca4b8ffc137d5d2574ced80ff71554c4afacc",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-230::school_bus",
+   "term": "school bus",
+   "definition": "DEF-NRS-484A-230",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "22355a9645d478b7fc51f623ca043a631f2b46a0ac34f56443f436c59f99a269",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-270::taxicab",
+   "term": "taxicab",
+   "definition": "DEF-NRS-484A-270",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "54838c581da6846ce3ee879ad484074d74f8c134cd335a01df725808afc58093",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-280::tow_car",
+   "term": "tow car",
+   "definition": "DEF-NRS-484A-280",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "0106298cda5747147d8ab07981db2de0f021614c1018eee2df31b845a35dca0d",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-285::traffic",
+   "term": "traffic",
+   "definition": "DEF-NRS-484A-285",
+   "included": [
+    "ru.bicycle",
+    "ru.bus",
+    "ru.child",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.pedestrian",
+    "ru.pedestrian_with_white_cane_or_guide_animal",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": [],
+   "certificate": "1172c4c28a51a341e228c18d43d493adde30783d45a9dd0aa44286f8dd52dc8e",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-305::truck",
+   "term": "truck",
+   "definition": "DEF-NRS-484A-305",
+   "included": [
+    "ru.truck"
+   ],
+   "unresolved": [],
+   "covered": [
+    {
+     "class": "ru.bus",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.bus",
+       "words": "motor vehicle designed to carry many passengers"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.commercial_motor_vehicle",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.commercial_motor_vehicle",
+       "words": "vehicle over the jurisdiction's commercial mass class or marked as commercially licensed"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.emergency_vehicle",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.emergency_vehicle",
+       "words": "vehicle of a class the jurisdiction designates as emergency"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.fire_apparatus",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.fire_apparatus",
+       "words": "a fire-fighting vehicle"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.moped",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.motor_vehicle",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.motor_vehicle",
+       "words": "a self-propelled vehicle other than a rail vehicle"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.motorcycle",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.motorcycle",
+       "words": "motor vehicle on two or three wheels ridden astride"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.official_vehicle",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.official_vehicle",
+       "words": "a vehicle in official or contracted road service, identifiable by livery or equipment"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.school_bus",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.school_bus",
+       "words": "bus designated for carrying school children, with the jurisdiction's markings"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.taxicab",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.taxicab",
+       "words": "passenger vehicle for hire, identifiable by its markings"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.tour_bus_or_limousine",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.tour_bus_or_limousine",
+       "words": "a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.trailer_or_combination",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      },
+      {
+       "definition": "DEF-NRS-484A-130",
+       "words": "every vehicle which is self-propelled but not operated upon rails"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.trailer_or_combination",
+       "words": "vehicle drawn by another, or the combination"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    },
+    {
+     "class": "ru.transit_bus",
+     "covered_by": [
+      "ru.truck"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-484A-305",
+       "words": "every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.transit_bus",
+       "words": "bus in public transit service, identifiable by its livery or route display"
+      },
+      {
+       "class": "ru.truck",
+       "words": "motor vehicle for carrying goods, with a body built for that purpose"
+      }
+     ]
+    }
+   ],
+   "certificate": "f71cc082e8c7ef81005634859f46a28f5a35b371c0525a1920a007f8361daca1",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-320::vehicle",
+   "term": "vehicle",
+   "definition": "DEF-NRS-484A-320",
+   "included": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": [
+    "ru.electric_scooter",
+    "ru.rail_vehicle"
+   ],
+   "certificate": "54a3ad5f2cc1c3782ef7c5caacab54ab33197f9422ce02d71db8a9edd8462d93",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-460-2::high_occupancy_vehicle",
+   "term": "high-occupancy vehicle",
+   "definition": "DEF-NRS-484A-460-2",
+   "included": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": [],
+   "certificate": "82b3117438fc168434b7ab872828532c84ca816889d2600ab25f9b8e577ed372",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484B-017::electric_bicycle",
+   "term": "electric bicycle",
+   "definition": "DEF-NRS-484B-017",
+   "included": [
+    "ru.electric_bicycle"
+   ],
+   "unresolved": [
+    "ru.bicycle",
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "febf9e70a4b1009d8d1de326c469bc00fd544cdd1f8bbc45190ce7d503d5021e",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484B-018::electric_scooter",
+   "term": "electric scooter",
+   "definition": "DEF-NRS-484B-018",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.child",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.pedestrian",
+    "ru.pedestrian_with_white_cane_or_guide_animal",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "7dab43498e2fa573e506f9ddc1c63bdeeb27ffc79bbffe1411be6041589426ff",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-486-038::moped",
+   "term": "moped",
+   "definition": "DEF-NRS-486-038",
+   "included": [
+    "ru.moped"
+   ],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.motor_vehicle",
+    "ru.official_vehicle",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "covered": [
+    {
+     "class": "ru.motorcycle",
+     "covered_by": [
+      "ru.moped"
+     ],
+     "quotes": [
+      {
+       "definition": "DEF-NRS-486-038",
+       "words": "a motor-driven scooter, motor-driven cycle or similar vehicle that is propelled by a small engine which produces not more than 2 gross brake horsepower"
+      }
+     ],
+     "basis": [
+      {
+       "class": "ru.moped",
+       "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+      },
+      {
+       "class": "ru.motorcycle",
+       "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+      }
+     ]
+    }
+   ],
+   "certificate": "2cab71ef7240296c0933413595de81ba80a1fa70759da7647546b68e76eb41ff",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-486-041::motorcycle",
+   "term": "motorcycle",
+   "definition": "DEF-NRS-486-041",
+   "included": [
+    "ru.motorcycle"
+   ],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.motor_vehicle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "81e4f923b684780820ca8595e1cbeb76b4c2356e0ff5846a60ea725762882b49",
+   "admitted": "full221-1116-1018/iter-001"
+  },
+  {
+   "id": "DEF-NRS-486-057::trimobile",
+   "term": "trimobile",
+   "definition": "DEF-NRS-486-057",
+   "included": [],
+   "unresolved": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "certificate": "78b2a098f4da20d1352b48af4d9401661d8198397eb53690a53d747cf0bbfcc1",
+   "admitted": "full221-1116-1018/iter-001"
+  }
+ ],
+ "declarations": [
+  {
+   "id": "asm.business_or_residence_district",
+   "meaning": "the place of the road user at the observation lies in a business district or a residence district, as the map's reading classifies the area",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_20_060_o1"
+  },
+  {
+   "id": "asm.within_city_limits",
+   "meaning": "the place of the road user at the observation lies within the territorial limits of the incorporated city whose ordinances the reading applies, as the map's reading classifies the area",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_22_020"
+  },
+  {
+   "id": "asm.business_district",
+   "meaning": "the place of the road user at the observation lies in a business district, as the map's reading classifies the area",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_30_070_B"
+  },
+  {
+   "id": "asm.fremont_street_main_to_seventh",
+   "meaning": "the place of the road user at the observation lies on Fremont Street between Main Street and Seventh Street, as the map's reading records the named way and its limits",
+   "proposed": "full221-1116-1018/iter-001 LVMC_11_40_180_A"
+  },
+  {
+   "id": "asm.within_city_or_town_limits",
+   "meaning": "the place of the road user at the observation lies within the geographical limits of an incorporated city or of a town, as the map's reading classifies the area",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_208_1"
+  },
+  {
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the left at the target region, the plan's preparation for that turn included",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_208_1"
+  },
+  {
+   "id": "int.right_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the right at the target region, the plan's preparation for that turn included",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_223_4a"
+  },
+  {
+   "id": "asm.within_incorporated_city",
+   "meaning": "the place of the road user at the observation lies within the territorial limits of an incorporated city, as the map's reading classifies the area",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_307_8e"
+  },
+  {
+   "id": "asm.school_in_session_day",
+   "meaning": "the date of the observation is a day on which the school served by the signed zone at the road user's place is in session, as the reading declares from that school's calendar",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_363_1"
+  },
+  {
+   "id": "asm.school_outside_operation_margin",
+   "meaning": "the time of the observation lies in the period from a half hour after the school served by the signed zone at the road user's place ceased operation to a half hour before that school next begins operation, as the reading declares from that school's schedule",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_363_1"
+  },
+  {
+   "id": "asm.pupils_in_class",
+   "meaning": "the pupils of the school served by the signed zone at the road user's place are in class at the time of the observation, as the reading declares from that school's schedule",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_363_1"
+  },
+  {
+   "id": "asm.left_curb_parking_permitted",
+   "meaning": "the one-way way at the place of the road user at the observation is one on which the local authority having jurisdiction permits vehicles to park with their left-hand wheels at the left-hand curb, as the map's reading records",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_457_1"
+  },
+  {
+   "id": "asm.local_alley_ordinance",
+   "meaning": "the alley at the place of the road user at the observation is one on which an ordinance of the local authority having jurisdiction regulates stopping, standing or parking by provisions of its own, as the map's reading records",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_477_1a"
+  },
+  {
+   "id": "asm.public_access_premises",
+   "meaning": "the place of the road user at the observation lies on premises to which the public has access, as the map's reading classifies the area",
+   "proposed": "full221-1116-1018/iter-001 NRS_484B_653_1a"
+  }
+ ],
+ "_fields": {
+  "aggregates": "optional operator overrides only: word, classes (ru.* ids or other words). The run derives every aggregate the laws use from the corpus definitions (results/<run>/reading.json, for review); an operator entry here takes precedence over the derived one."
+ }
+}

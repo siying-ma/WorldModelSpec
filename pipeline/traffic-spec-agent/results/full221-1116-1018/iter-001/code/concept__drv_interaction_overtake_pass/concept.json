@@ -1,0 +1,86 @@
+{
+ "concept_id": "drv.interaction.overtake_pass",
+ "kind": "formula",
+ "contract": "Road user a overtakes and passes road user b from the rear: a, travelling in the same direction as b, comes from having b ahead of it to having b behind it. b is ahead of a where the longitudinal component of b's bearing in a's frame (rel.bearing) is positive and the two bodies' projections on a's heading share no length (rel.longitudinal_overlap negative); b is behind a where that component is negative and the projections share no length. The act begins at the last observation of the window behind at which b was ahead of a with their headings aligned within same_dir_cos (rel.same_direction). The act is recognized at the observation at which b is behind a and was not behind a at the previous observation, where b was ahead of a with headings aligned at some observation of the window behind. The concept holds at that observation only, and not again until b has again been ahead of a and then comes to be behind it. Conduct before the window behind is not read: a pass that takes longer than the window is not recognized. It denotes the relative motion of the two road users only: it says nothing of the lanes they occupy, of whether b moves, or of why a passes. Not denoted: a drawing alongside b that does not clear b; b ahead of a only while their headings are not aligned (a road user met head-on or crossing); b behind a at every observation of the window.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "b",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "window",
+   "unit": "s",
+   "meaning": "the longest duration of a pass the concept recognizes: how far behind the observation it looks for b ahead of a"
+  },
+  {
+   "name": "same_dir_cos",
+   "unit": "ratio",
+   "meaning": "cosine of the largest heading difference at which a and b count as travelling in the same direction"
+  }
+ ],
+ "act": {
+  "boundary": "window",
+  "window": "window",
+  "onset": "The act begins at the last observation of the window behind at which b was ahead of a with their headings aligned within same_dir_cos (rel.same_direction).",
+  "recognition": "The act is recognized at the observation at which b is behind a and was not behind a at the previous observation, where b was ahead of a with headings aligned at some observation of the window behind.",
+  "extent": "The concept holds at that observation only, and not again until b has again been ahead of a and then comes to be behind it.",
+  "history": "Conduct before the window behind is not read: a pass that takes longer than the window is not recognized."
+ },
+ "elements": [
+  {
+   "span": "the longitudinal component of b's bearing in a's frame (rel.bearing)",
+   "atoms": [
+    "rel.bearing"
+   ],
+   "concepts": [],
+   "justification": "rel.bearing: 'direction of b from a in a's frame (for \"on the right of\", \"immediately to the rear\")'; its longitudinal component's sign tells b ahead of a from b behind it."
+  },
+  {
+   "span": "the two bodies' projections on a's heading share no length (rel.longitudinal_overlap negative)",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "concepts": [],
+   "justification": "rel.longitudinal_overlap: 'the length the two footprints' projections on that axis share, negative for the gap between the projections'; a negative value means the bodies are not side by side, so a has cleared b (or not yet reached it). Used as a projection, not as a contact or a distance."
+  },
+  {
+   "span": "with their headings aligned within same_dir_cos (rel.same_direction)",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction: 'headings aligned: the cosine of the angle between the headings is above its tolerance', with the tolerance same_dir_cos; it tells an overtaking from a meeting or a crossing."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a follows b in the same lane 15 m behind at 12 m/s while b is halted; a moves to the adjacent lane, draws alongside and, 4 s after b was last ahead of it, has b 3 m behind it: at that observation the concept holds."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a follows b, moves to the adjacent lane and draws alongside b, then halts with the two bodies still side by side; b never comes to be behind a within the window."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "a draws past b in the adjacent lane, but the bearing of b from a is not observed.",
+   "masked": [
+    "rel.bearing"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_30_030"
+ ]
+}

@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-320::vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The exception for devices moved by human power describes the human-powered device in this class's contract.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A motor vehicle designed to carry passengers satisfies the admitting clause, and no exception describes this class.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause reaches devices rather than the child pedestrian described by this contract.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause reaches vehicles transporting persons or property, and neither commercial mass nor commercial licensing is an exception.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly excepts electric bicycles, whose class attribute the contract ties to the jurisdiction's taxonomy.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract establishes handlebars and a standing or seated riding position but does not establish the weight and maximum-speed limits restricting the defined electric-scooter exception.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause reaches the transportation devices described by this vehicle class without imposing a responding requirement or an emergency-vehicle exception.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A fire-fighting vehicle falls within the admitting clause for devices transporting persons or property, and no exception describes this class.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A jurisdiction-classed moped is a motor-propelled transportation device, and the posted moped definition distinguishes it from the excepted electric bicycles and electric scooters.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract's self-propelled, non-rail vehicles fall within the admitting clause, with separately classed powered two-wheelers outside this contract.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A motor vehicle ridden astride transports a person within the admitting clause, and no exception describes motorcycles.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause reaches road-service vehicles transporting persons or property, and official or contracted service is not an exception.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person rather than a device, so the admitting clause does not reach the pedestrian.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person, not a device admitted by the definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract describes on-track equipment but does not establish the exclusive use upon stationary rails required by the exception.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A bus designated to carry school children satisfies the admitting clause for passenger-transporting devices, and no exception describes this class.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A passenger vehicle for hire satisfies the admitting clause, and neither hiring nor identifying markings create an exception.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Both the bus and lengthened passenger-vehicle alternatives satisfy the admitting clause, and no exception describes either alternative.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause expressly reaches devices by which persons or property may be transported or drawn, encompassing the drawn vehicle or combination described by the contract.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A bus in public transit service satisfies the admitting clause for passenger-transporting devices, and no exception describes this class.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A motor vehicle built to carry goods satisfies the admitting clause for property-transporting devices, and no exception describes this class.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 131733,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4454,
+   "input_tokens_details": {
+    "cache_write_tokens": 4451,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 4451
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 5460,
+   "output_tokens_details": {
+    "reasoning_tokens": 4367,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 9914,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_PUQtr4e4OlHCcz8CP6OWpOxZdKJ6bO9HI5BuQ1XSEuthRLwBtZRx3t1tr72mF6adbjG0cPDnkUfgMeG8mwXWSwb1kK6MmZ9WntjXRc5b_guhNIiGBjw-aEPZmLPjYib2FUDpx1_-DVc6BJBd-HQH9ANY5IuxBJ_nhK6tIuV4EMEBObK2gl46q9lvz6E03DYWhgnWIrFxed5YEWEonD2szJQqgfi3jIPjdGYe_JKpnP2Ebil7ZLR1BQY3TYeEkfOTvRqBssOY2Ts0wDL_hXfw6k2qA9PTOFEssQ5z0gszKzdkrdte27z1vOc8ADmHyxL4zWeaa8gTnWDBs5wP6YDf9LTa_y9f7NZ8vv1G1QCZOGh4L4fYCn6ERoZWw1y_O-j7ksXyEo45ak9Gw7ddJiuF1noDr42uWsjtQlFcPYnua6PrD5Y=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

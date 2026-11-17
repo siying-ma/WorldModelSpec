@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-LVMC-11-02-150::tour_bus\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition requires a motor vehicle, while the vehicle definition excludes devices moved by human power.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The bus contract does not establish the required design, maintenance and use for transporting persons to or from the listed destinations.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A pedestrian child is a person rather than the motor vehicle required by the definition.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Commercial mass or licensing does not establish or preclude the required passenger capacity and service.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Electric bicycles are expressly excluded from motor vehicles, which the controlling definition requires.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Electric scooters are expressly excluded from motor vehicles, which the controlling definition requires.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation neither establishes nor precludes the required passenger capacity and service.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The fire-fighting vehicle contract does not settle whether the vehicle also meets the passenger-capacity and service requirements.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the moped contract nor its posted definition imposes a passenger-capacity limit that makes transporting more than six persons impossible.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Being a motor vehicle does not settle the limousine exception or the additional passenger-capacity and service requirements.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The motorcycle contract specifies wheel count and astride riding but imposes no passenger-capacity limit that supports excluding every member.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official or contracted road service does not establish or preclude the required passenger capacity and service.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The pedestrian contract describes a person, including a person using a mobility device, rather than the required motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A pedestrian using the specified assistance is a person rather than the required motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly requires a vehicle not operated upon rails.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"School-bus designation does not settle whether the bus is designed, maintained and used for the passenger transport and destinations specified.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The taxicab contract does not settle the required passenger capacity or service.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The combined contract encompasses tour or shuttle buses as well as limousines expressly excepted by the definition.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The disjunctive contract does not establish that every member lacks self-propulsion or that its combinations satisfy the remaining requirements.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Public-transit service does not settle whether the bus is designed, maintained and used for the transport specified in the definition.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A body built for carrying goods does not expressly preclude or establish the required passenger capacity and service.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 47793,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5130,
+   "input_tokens_details": {
+    "cache_write_tokens": 5127,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5127
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 2306,
+   "output_tokens_details": {
+    "reasoning_tokens": 1278,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 7436,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_bfiOL_1Q2zH5hltZ4K8gf8WI5yuzl-V9zuyUno0gR0nC_gG2Zd3H0JzHIUulfw1NmSSOdCqNWlYLzs6kP4TeGmRm8zDs_VMXYvo6sWUXoiKt0zipv7Ez_ugswhaMX-mW9v4uUd7uqFjD7j3FNHHWe4A7uam8tjl854x-4fXMAy2bPE-s6yRztGRQKoSP4aLUQjqyeSgfqKpiBvhMo23DxRHdMFLSoWmJjZ21tDgwFcx_00LE9W27mCYUZb6Afzfh-PmqnirdkYDTXt7DwplQbaI9pfhPH_USlXjkXAihShq6q63GqmJt1cnCPcoNRza2onw1TcURccjPWmqq-cR2ZA8P1-xEyOvrMkzntoXJi6cyu9McLPwwHSAI2Fo_mtlHMjPAL8PrEVVkCknPCKvPIftQeZ9d-AcnySZYWOVgxjq8XFA=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

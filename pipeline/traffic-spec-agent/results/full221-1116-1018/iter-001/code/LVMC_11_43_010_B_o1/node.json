@@ -1,0 +1,226 @@
+{
+ "node_id": "LVMC_11_43_010_B_o1",
+ "law_refs": [
+  "LVMC-11-43-010-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "The following regulations pertain to",
+   "role": "boilerplate"
+  },
+  {
+   "id": "b2",
+   "text": "the operation of vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "b3",
+   "text": "within a roundabout",
+   "role": "condition"
+  },
+  {
+   "id": "b4",
+   "text": "The operator of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "b5",
+   "text": "entering a roundabout",
+   "role": "trigger"
+  },
+  {
+   "id": "b6",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "b7",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "b8",
+   "text": "to vehicles already in the roundabout",
+   "role": "condition"
+  },
+  {
+   "id": "b9",
+   "text": "and wait",
+   "role": "sibling"
+  },
+  {
+   "id": "b10",
+   "text": "for a gap",
+   "role": "sibling"
+  },
+  {
+   "id": "b11",
+   "text": "in traffic",
+   "role": "sibling"
+  },
+  {
+   "id": "b12",
+   "text": "before entering",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is admitted as DEF-NRS-484A-320::vehicle; 'operation' read through controlled motion."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "st.roundabout 'a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches' (DEF-LVMC-11-02-130's area, crosswalks of the entering and exiting roadways included); rel.occupies anchors the subject: at its entry it occupies the roundabout."
+  },
+  {
+   "span": "b4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'The operator' read through the vehicle's controlled motion."
+  },
+  {
+   "span": "b5",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "Entering is the event at which the subject's footprint comes to overlap the roundabout (rel.occupies true and false at the observation before); st.roundabout is the region entered."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "'shall yield' as in the mapping index: kin.speed 'magnitude of velocity' and rel.contact 'the bodies of two road users ... touch or overlap (a collision)'."
+  },
+  {
+   "span": "b8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'already in the roundabout': each occupies (rel.occupies) the roundabout region r the subject enters at the observation before the entry and at the entry."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "b7",
+   "standard": "the right-of-way: preference over another approaching 'under such circumstances of direction, speed and proximity as to give rise to the danger of a crash' (DEF-NRS-484A-210)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: a circulating vehicle whose centre comes, under constant velocities, within the conflict clearance of the entering vehicle's centre within the conflict horizon is approaching so as to give rise to the danger of a crash",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject belongs to DEF-NRS-484A-320::vehicle, and at the judged observation it enters an st.roundabout region r: rel.occupies(subject, r) holds there and not at the observation before.",
+ "obligation": "At that entry, for every road user v of the scene other than the subject that belongs to DEF-NRS-484A-320::vehicle and occupies r at the observation before the entry and at the entry: the subject is not in contact with v (rel.contact), and it is not the case that prim.closest_approach_within(subject, v; p.conflict_horizon) holds with prim.closest_approach_distance(subject, v; p.conflict_horizon) below p.conflict_centre_clearance. An entry with no such vehicle is compliant.",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "b4",
+   "why": "'The operator' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b6",
+   "why": "Yielding is judged at the entry: the subject enters only where no vehicle already in the roundabout is in conflict with it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car enters the roundabout while a circulating car, already in it, is on a course whose closest approach to the entering car falls within the conflict horizon and below the clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car enters the roundabout while the only circulating car is on the far side, its closest approach above the clearance."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car circulates inside the roundabout throughout the recording without entering it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car near the roundabout's edge beside a circulating car, where the source does not observe which regions the cars occupy.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car enters an empty roundabout: no other vehicle is in the scene, and the duty is met."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Hydén, The development of a method for traffic safety evaluation: the Swedish Traffic Conflicts Technique (1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design dimensions (AASHTO Green Book design vehicle)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,94 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 1 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.yaw_rate"
+  ],
+  "refs": [],
+  "canonical_body": "{\"rises\":{\"and\":[{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"abs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"}},\"rhs\":{\"param\":\"$p1\"}},{\"cmp\":\"le\",\"lhs\":{\"abs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"}},\"rhs\":{\"sub\":[{\"lit\":{\"den\":1,\"num\":360},\"unit\":\"degree\"},{\"param\":\"$p1\"}]}}]},{\"cmp\":\"le\",\"lhs\":{\"abs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_yaw_rate\"}},\"rhs\":{\"param\":\"$p2\"}}]}}",
+  "body_json": {
+   "rises": {
+    "and": [
+     {
+      "and": [
+       {
+        "cmp": "ge",
+        "lhs": {
+         "abs": {
+          "args": [
+           {
+            "var": "a"
+           }
+          ],
+          "params": [
+           {
+            "param": "window"
+           }
+          ],
+          "quantity": "prim_heading_change"
+         }
+        },
+        "rhs": {
+         "param": "u_turn_min"
+        }
+       },
+       {
+        "cmp": "le",
+        "lhs": {
+         "abs": {
+          "args": [
+           {
+            "var": "a"
+           }
+          ],
+          "params": [
+           {
+            "param": "window"
+           }
+          ],
+          "quantity": "prim_heading_change"
+         }
+        },
+        "rhs": {
+         "sub": [
+          {
+           "lit": {
+            "den": 1,
+            "num": 360
+           },
+           "unit": "degree"
+          },
+          {
+           "param": "u_turn_min"
+          }
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "cmp": "le",
+      "lhs": {
+       "abs": {
+        "args": [
+         {
+          "var": "a"
+         }
+        ],
+        "measure": "kin_yaw_rate"
+       }
+      },
+      "rhs": {
+       "param": "yaw_tol"
+      }
+     }
+    ]
+   }
+  },
+  "context": "631bdaf3d780d60913149c2a",
+  "candidate_digest": "a5ec8e7f55b9596d931af4f9770a24cfe53e79ed127ad602de809024b9bff59d"
+ }
+}

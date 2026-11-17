@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-305::truck\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The human-powered devices described by this contract are expressly excluded from vehicles and therefore cannot satisfy the motor-vehicle requirement.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Passenger-carrying design does not preclude goods use and a goods-built body, and every member meeting those statutory requirements satisfies the supplied truck contract.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person rather than a motor vehicle, so the admitting words reach no member.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every commercial-class member admitted by the motor-vehicle, goods-use and goods-built-body requirements satisfies the quoted ru.truck contract.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The quoted motor-vehicle definition expressly excludes electric bicycles, preventing them from satisfying the truck definition.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The quoted motor-vehicle definition expressly excludes electric scooters, preventing them from satisfying the truck definition.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any emergency vehicle admitted by the quoted motor-vehicle, goods-use and goods-built-body requirements necessarily satisfies the supplied ru.truck contract.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any fire-fighting vehicle admitted by the quoted requirements necessarily has the motor-vehicle and goods-body characteristics specified by the ru.truck contract.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every moped meeting the quoted motor-vehicle, goods-use and goods-built-body requirements also meets the supplied ru.truck contract.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The quoted definition admits members of this class only with goods use and a body built for that purpose, which together satisfy the ru.truck contract.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any motorcycle admitted by the goods-use and goods-built-body requirements satisfies the supplied ru.truck contract regardless of its wheel configuration.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every official-service vehicle admitted by the quoted motor-vehicle, goods-use and goods-built-body requirements satisfies the ru.truck contract.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"This contract describes a person rather than a motor vehicle, so the quoted admitting words reach no member.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The cane, animal or accompanying person does not change the contract's pedestrian person into a motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The quoted motor-vehicle definition rules out operation upon rails, matching the on-track equipment described by this contract.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"School-child designation does not preclude goods use and a goods-built body, and every member meeting the statutory requirements satisfies the supplied truck contract.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The passenger-for-hire contract does not prohibit goods use or a goods-built body, and every member satisfying the definition also satisfies the supplied truck contract.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract's passenger-service characteristics do not prohibit the statutory goods-use and body characteristics, whose satisfaction also meets the supplied truck contract.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Every combination admitted by the quoted motor-vehicle, goods-use and goods-built-body requirements necessarily satisfies the supplied truck contract, so variation among other members does not establish unresolvedness.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Public-transit service does not rule out goods use and a goods-built body, and every member satisfying the definition also satisfies the supplied truck contract.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract supplies the motor-vehicle, goods-carrying and purpose-built-body characteristics required by the quoted definition, with no applicable exception removing the class.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 78124,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5218,
+   "input_tokens_details": {
+    "cache_write_tokens": 5215,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5215
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 3602,
+   "output_tokens_details": {
+    "reasoning_tokens": 2439,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 8820,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_sRXAksF80PmCdYTLj-EbGwsTOyuCopPvXF4MueN5lCK54RAsdAnd2Yfk46p80TOKawt8rh8qRTV30gpMmq3jA_2RuRicQkgauH27Ayi6PWF7ac0VE-U79SXxFwKfuAc9GVasR6eQkqBG1Jvipl0PMgL3ZyPZqvsu-JYAntn5DeRaRp--pZOqAP9MSGFYtDb_ZRcykpVww8NBkxx6yps0Qobhp6ltZAH_NhtgJDrsVFXviN1iSKHzkl2mT7lXOA4bUSONBsxo0C2DW8d2bTiI0lTSdxyL9B9o2eNmhA0mYIHa2E61GJvkP9MhbjSU41x8B4K4LBAfLP_0UXjxpAHglJbPuqHWCnb5JuK-uvSq2S8qKA8VO7mGWz0LXIyNc8vY0oafMMmiRCkiGmwKIN40_NV5ojISqiDTu5bF2E5DNXiFcdU=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

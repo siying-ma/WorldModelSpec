@@ -1,0 +1,235 @@
+{
+ "node_id": "LVMC_11_43_010_B_o2",
+ "law_refs": [
+  "LVMC-11-43-010-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "The following regulations pertain to",
+   "role": "boilerplate"
+  },
+  {
+   "id": "b2",
+   "text": "the operation of vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "b3",
+   "text": "within a roundabout",
+   "role": "condition"
+  },
+  {
+   "id": "b4",
+   "text": "The operator of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "b5",
+   "text": "entering a roundabout",
+   "role": "trigger"
+  },
+  {
+   "id": "b6",
+   "text": "shall yield",
+   "role": "sibling"
+  },
+  {
+   "id": "b7",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "b8",
+   "text": "to vehicles already in the roundabout",
+   "role": "sibling"
+  },
+  {
+   "id": "b9",
+   "text": "and wait",
+   "role": "obligation"
+  },
+  {
+   "id": "b10",
+   "text": "for a gap",
+   "role": "standard"
+  },
+  {
+   "id": "b11",
+   "text": "in traffic",
+   "role": "condition"
+  },
+  {
+   "id": "b12",
+   "text": "before entering",
+   "role": "trigger"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is admitted as DEF-NRS-484A-320::vehicle; 'operation' read through controlled motion."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "st.roundabout 'a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches'; rel.occupies anchors the subject: at its entry it occupies the roundabout."
+  },
+  {
+   "span": "b4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'The operator' read through the vehicle's controlled motion."
+  },
+  {
+   "span": "b5",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "Entering is the event at which the subject's footprint comes to overlap the roundabout region (rel.occupies true and false at the observation before)."
+  },
+  {
+   "span": "b9",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "'wait ... before entering' is a condition on the entry: the subject's footprint comes to overlap the roundabout (rel.occupies of st.roundabout) only where the gap holds; waiting where none holds is staying out of it."
+  },
+  {
+   "span": "b11",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "'traffic' is admitted as DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel'); the traffic of the gap is the traffic in the roundabout the subject enters (rel.occupies of that st.roundabout region, crosswalks of its entering and exiting roadways included)."
+  },
+  {
+   "span": "b12",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "'before entering' fixes the moment: the observation at which the subject's footprint comes to overlap the roundabout region, the same event as b5."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "b10",
+   "standard": "a gap in traffic sufficient to enter",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.roundabout_critical_gap",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "gap-acceptance convention of roundabout entry capacity: an entering driver accepts a gap when no road user in the roundabout comes, under constant velocities, within the conflict clearance of it sooner than the critical headway",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject belongs to DEF-NRS-484A-320::vehicle, and at the judged observation it enters an st.roundabout region r: rel.occupies(subject, r) holds there and not at the observation before.",
+ "obligation": "At that entry, for every road user u of the scene other than the subject that belongs to DEF-NRS-484A-285::traffic and occupies r: the subject is not in contact with u (rel.contact), and it is not the case that prim.closest_approach_within(subject, u; p.roundabout_critical_gap) holds with prim.closest_approach_distance(subject, u; p.roundabout_critical_gap) below p.conflict_centre_clearance. An entry with no such road user is compliant.",
+ "params": [
+  "p.roundabout_critical_gap",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "b4",
+   "why": "'The operator' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b9",
+   "why": "'wait for a gap' is read as entering only at a gap: where a gap is present when the subject arrives no halt is required, and an entry without a gap is the failure to wait.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car enters the roundabout while a pedestrian on one of its crosswalks is on a course whose closest approach to the car comes within the clearance sooner than the critical gap."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car waits at the edge and enters once no road user in the roundabout comes within the clearance of it within the critical gap."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car drives on a street away from any roundabout."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car at the roundabout's edge beside circulating traffic, where the source does not observe which regions the road users occupy.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car enters an empty roundabout: no other road user is in the scene, and the duty is met."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.roundabout_critical_gap",
+   "unit": "s",
+   "value": 4.5,
+   "convention": "critical headway of an entering driver at a single-lane roundabout: the shortest time to the next conflicting road user an entering driver accepts",
+   "source": "Highway Capacity Manual, 6th edition, roundabouts chapter"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design dimensions (AASHTO Green Book design vehicle)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

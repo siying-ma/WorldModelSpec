@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 57807,
+  "stop_reason": "end_turn",
+  "session_id": "3d4af503-841c-45ee-ba0e-ae382b918988",
+  "total_cost_usd": 0.22791362000000004,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 9010,
+   "cache_read_input_tokens": 1526,
+   "output_tokens": 6697,
+   "output_tokens_details": {
+    "thinking_tokens": 3815
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 9010,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6697,
+     "cache_read_input_tokens": 1526,
+     "cache_creation_input_tokens": 9010,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 9010
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 8500,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0009471000000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6697,
+    "cacheReadInputTokens": 1526,
+    "cacheCreationInputTokens": 9010,
+    "webSearchRequests": 0,
+    "costUSD": 0.22696652000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3815,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 9010,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-NRS-484B-017\", \"term\": \"electric bicycle\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484B-017::electric_bicycle\", \"quote\": \"“Electric bicycle” means a device upon which a person may ride, having two or three wheels, or every such device generally recognized as a bicycle that has fully operable pedals, a seat or saddle for the rider, an electric motor which produces not more than 750 watts\", \"reason\": \"The definition denotes a set of ridden devices that road-user classes can classify, so it is an aggregate.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484B-017::electric_bicycle\", \"term\": \"electric bicycle\", \"definition\": \"DEF-NRS-484B-017\",\n  \"classifications\": [\n   {\"class\": \"ru.electric_bicycle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"every such device generally recognized as a bicycle that has fully operable pedals, a seat or saddle for the rider, an electric motor which produces not more than 750 watts and meets the requirements of one of the following three classes\"}], \"reason\": \"A bicycle with an assisting electric motor, carrying the jurisdiction's class label, is the device the definition admits through its three classes.\"},\n   {\"class\": \"ru.bicycle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"every such device generally recognized as a bicycle that has fully operable pedals, a seat or saddle for the rider, an electric motor which produces not more than 750 watts\"}], \"reason\": \"The definition admits a bicycle only when it carries an electric motor, and every such bicycle with an assisting electric motor carries ru.electric_bicycle.\", \"covered_by\": [\"ru.electric_bicycle\"], \"basis\": [{\"class\": \"ru.electric_bicycle\", \"words\": \"a bicycle with an assisting electric motor\"}, {\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n   {\"class\": \"ru.moped\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"The term does not include a moped or an electric scooter.\"}, {\"definition\": \"DEF-NRS-484A-125\", \"words\": \"The term does not include an electric bicycle or an electric scooter.\"}]},\n   {\"class\": \"ru.electric_scooter\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"The term does not include a moped or an electric scooter.\"}]},\n   {\"class\": \"ru.motorcycle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"that has fully operable pedals, a seat or saddle for the rider, an electric motor which produces not more than 750 watts and meets the requirements of one of the following three classes\"}], \"reason\": \"The opening alternative admits any rideable two- or three-wheeled device. The words do not settle whether the pedal, 750-watt and class requirements also bind that alternative. So a low-power two- or three-wheeler ridden astride may or may not be admitted, and no exception names motorcycles.\"},\n   {\"class\": \"ru.motor_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}], \"reason\": \"A self-propelled two- or three-wheeled device with an electric motor of 750 watts or less fits the opening alternative. The words neither admit nor exclude every motor vehicle, and no exception names this class.\"},\n   {\"class\": \"ru.emergency_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"An emergency-designated two- or three-wheeled electric device of 750 watts or less fits the words. Other emergency vehicles do not, and the definition names no exception for the class.\"},\n   {\"class\": \"ru.fire_apparatus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix wheel count or power, so a fire-service two- or three-wheeled electric device would fit while other apparatus would not, and no exception decides the class.\"},\n   {\"class\": \"ru.official_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"Official service can use a two- or three-wheeled electric device that fits the words, while most official vehicles do not, and no exception decides the class.\"},\n   {\"class\": \"ru.taxicab\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"A three-wheeled electric passenger device for hire of 750 watts or less fits the opening words, while other taxicabs do not, and no exception decides the class.\"},\n   {\"class\": \"ru.bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}]},\n   {\"class\": \"ru.school_bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}]},\n   {\"class\": \"ru.transit_bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}]},\n   {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}]},\n   {\"class\": \"ru.truck\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}]},\n   {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"having two or three wheels\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}]},\n   {\"class\": \"ru.trailer_or_combination\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"an electric motor which produces not more than 750 watts\"}]},\n   {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"having two or three wheels\"}]},\n   {\"class\": \"ru.pedestrian\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride\"}]},\n   {\"class\": \"ru.child\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride\"}]},\n   {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride\"}]}\n  ]}]}\n```",
+  "ttft_ms": 38029,
+  "type": "result",
+  "duration_ms": 57782,
+  "uuid": "5870c25c-1969-4557-9f5d-d2077347b55c",
+  "ttft_stream_ms": 1528,
+  "time_to_request_ms": 761,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 38,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 21,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 65,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 11,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 3,
+   "request_announcements": 581,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 1,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 25,
+  "time_to_request_cpu_ms": 463,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 13,
+   "cpu_ms": 11,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 13,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1528,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 8500,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0009471000000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6697,
+    "cacheReadInputTokens": 1526,
+    "cacheCreationInputTokens": 9010,
+    "webSearchRequests": 0,
+    "costUSD": 0.22696652000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3815,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 9010,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:44.169Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

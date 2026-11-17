@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-135::motorcycle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a human-powered device, which the vehicle definition excepts and therefore cannot satisfy the motorcycle definition's motor-vehicle requirement.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The passenger-carrying motor-vehicle contract does not determine whether the vehicle meets the three-wheel limit.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person rather than a device qualifying as a motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Commercial mass or licensing does not establish or rule out the required motor-vehicle form, driver's seat or saddle, and wheel limit.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motorcycle definition expressly excludes electric bicycles.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Electric scooters are expressly excluded from motor vehicle, which is a prerequisite for motorcycle.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation does not determine whether a vehicle satisfies the motorcycle definition's physical requirements.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The fire-fighting-vehicle contract does not establish or rule out compliance with the three-wheel limit.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motorcycle definition expressly excludes mopeds.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract leaves seating and wheel count open, and an admitted seated three-wheeler need not be ridden astride or carry another qualifying class.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract's two- or three-wheeled motor vehicle ridden astride matches the admitting seat-or-saddle and wheel-limit language, and no exception removes that class.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official or contracted road service and identifying equipment do not determine the propulsion, seating, or wheel configuration required by the definition.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person rather than a motor vehicle, and the quoted exception also removes electric personal assistive mobility devices from vehicle.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person, not a device qualifying as a motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly requires that the vehicle not be operated upon rails.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"School designation and markings do not determine whether the bus meets the three-wheel limit.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The marked passenger-for-hire contract does not determine propulsion or wheel count and therefore does not settle the motorcycle requirements.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The tour, shuttle, or lengthened-passenger-vehicle contract does not establish or rule out the required wheel configuration.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The drawn-vehicle-or-combination contract does not settle whether the classified whole satisfies the motor-vehicle, driver's-seat, and wheel-limit requirements.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Public transit service and identifying displays do not determine whether the bus meets the three-wheel limit.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A goods-carrying motor vehicle can meet the seating and three-wheel requirements, but its contract does not require them or require astride riding.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 100563,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5278,
+   "input_tokens_details": {
+    "cache_write_tokens": 5275,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5275
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 4679,
+   "output_tokens_details": {
+    "reasoning_tokens": 3624,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 9957,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_aEUe8QG5mBYAY77nicQgYJajZEyQU8SXa5BwbLUVtlWLRAE8fZEd6ul-fjyrz4mX-HEEmgSsiyPGZC0-0p1evRHgifjfIq84CRdjffmZWvhZ9J3DeT7TLsguTekixfDVd2cP2cIInJ0RndL3ac8Lp1LySXAdgnyycKCeBaPswRPZNGP0WYS2sjkO1vdOSjw7RlbB01jxbWmBHVKyHkEZ7r5t1ZNRPqcNsnRiU339jmA6UaDxPPK9D8k_a9LdyuIaZBQeObspkqhauNCKO5v_4cDs6ER5BMY0HJh_qQJh6fUlypONJRlXqvpcQ5zUWgzbmWRclw3JnubwkVXWIBQglF1tXwam-OgsUsMDu0uCkjIj_I2kR4zCLttggM6p-pkE0kgEcjfX1UFTXgaZXHN3eKrgglo36DgFPiCkQ57dcCPcBrA=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.motion.right_turn_through_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.right_turn_through_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.right_turn_through_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"and":[{"rises":{"not":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"le","lhs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"turn_min"}}},{"cmp":"gt","lhs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"u_turn_min"}}}]}]},"contract":"Road user a has made a turn to the right through region r, recognized as it leaves r. The act begins at the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation: its entry into r. The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r. The concept holds at that observation only, and not again until a has entered r again and left it. At that observation the heading change of a since its entry into r, in degrees and positive to the left, integrated from its yaw rate (kin.yaw_rate) with no interval between consecutive observations longer than step, lies in the band from minus u_turn_min exclusive to minus turn_min inclusive: a turn to the right by at least turn_min and by less than u_turn_min, so that a passage whose heading changes too little to be a turn and a reversal of direction both lie outside it. Conduct before the entry is not read. It denotes the change of a's heading between its entry into r and its exit only: it says nothing of the lanes a uses, of its speed, of its class, or of why it turns. Not denoted: a passage through r whose heading change is above minus turn_min, such as one straight through or a turn to the left; a heading change of minus u_turn_min or less, which is a reversal of direction; an observation at which a is still in r. Where the entry was not observed (it lies before the recording, or a's overlap with r was unknown at an observation since), where an interval between consecutive observations since the observation before the entry is longer than step, or where a yaw rate since the entry is missing, it is unknown.","definition":null,"id":"drv.motion.right_turn_through_region","kind":"formula","narrowings":[],"params":[{"name":"step","unit":"second"},{"name":"turn_min","unit":"degree"},{"name":"u_turn_min","unit":"degree"}],"residues":[],"supersedes":null}
+ATOMS	rel_occupies,kin_yaw_rate,kin_time
+READS	rel_occupies,kin_yaw_rate,kin_time
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"rises":{"not":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"le","lhs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"turn_min"}}},{"cmp":"gt","lhs":{"heading_since":"a","max_step":{"param":"step"},"onset":{"args":[{"var":"a"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"u_turn_min"}}}]}]}
+WITNESS	holds	drv.motion.right_turn_through_region@w
+WITNESS	fails	drv.motion.right_turn_through_region@w
+WITNESS	blind	drv.motion.right_turn_through_region@w
+OCC	a,r
+OCC	a
+OCC	a,r
+OCC	a
+OCC	a,r
+INST	drv.motion.right_turn_through_region@w	ok
+TIME	checks	2
+REF	holds	drv.motion.right_turn_through_region@w	scene t=3000: track 1 keeps the heading it had at t=2000, but its yaw rate turns it -30° over the interval (the rate at a scene is held over the interval before it)
+REF	holds	drv.motion.right_turn_through_region@w	scene t=5000: track 1 keeps the heading it had at t=4000, but its yaw rate turns it -30° over the interval (the rate at a scene is held over the interval before it)
+REF	blind	drv.motion.right_turn_through_region@w	scene t=3000: track 1 keeps the heading it had at t=2000, but its yaw rate turns it -30° over the interval (the rate at a scene is held over the interval before it)
+REF	blind	drv.motion.right_turn_through_region@w	scene t=5000: track 1 keeps the heading it had at t=4000, but its yaw rate turns it -30° over the interval (the rate at a scene is held over the interval before it)
+TIME	lint	15
+SCEN	holds	drv.motion.right_turn_through_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.right_turn_through_region@w/holds	18
+SCEN	fails	drv.motion.right_turn_through_region@w	violated	violated	ok
+TIME	scenario:drv.motion.right_turn_through_region@w/fails	17
+SCEN	blind	drv.motion.right_turn_through_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.right_turn_through_region@w/blind	20
+TIME	witnesses	55
+DONE_WITNESSES

@@ -1,0 +1,108 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.time",
+   "kin.yaw_rate",
+   "rel.occupies"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"rises\":{\"not\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"abs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}}},\"rhs\":{\"param\":\"$p1\"}},{\"cmp\":\"le\",\"lhs\":{\"abs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}}},\"rhs\":{\"sub\":[{\"lit\":{\"den\":1,\"num\":360},\"unit\":\"degree\"},{\"param\":\"$p1\"}]}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "rises": {
+      "not": {
+       "args": [
+        {
+         "var": "a"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     }
+    },
+    {
+     "and": [
+      {
+       "cmp": "ge",
+       "lhs": {
+        "abs": {
+         "heading_since": "a",
+         "max_step": {
+          "param": "step"
+         },
+         "onset": {
+          "rises": {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        }
+       },
+       "rhs": {
+        "param": "u_turn_min"
+       }
+      },
+      {
+       "cmp": "le",
+       "lhs": {
+        "abs": {
+         "heading_since": "a",
+         "max_step": {
+          "param": "step"
+         },
+         "onset": {
+          "rises": {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        }
+       },
+       "rhs": {
+        "sub": [
+         {
+          "lit": {
+           "den": 1,
+           "num": 360
+          },
+          "unit": "degree"
+         },
+         {
+          "param": "u_turn_min"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "a201b612650068ecdd6f6ff3",
+  "candidate_digest": "066e10ecf2185b472af212912c1ecde4699b78458fd7de03d494eb3570fb8981"
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-LVMC-11-02-140::taxicab\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Taxicabs must be motor vehicles, whereas the vehicle definition excludes devices moved by human power, as the bicycle contract describes.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The bus contract does not establish the required taxicab licensing, and that licensing does not establish the markings required for coverage by ru.taxicab.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A child under this contract is a pedestrian, not the motor vehicle required by the admitting words.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Commercial mass or commercial licensing does not establish licensing for taxicab service, and the definition does not require admitted vehicles to bear the markings specified by ru.taxicab.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly excludes electric bicycles, while the taxicab definition requires a motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly excludes electric scooters, while the taxicab definition requires a motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation does not settle taxicab licensing, and the admitting words do not guarantee that an admitted emergency vehicle carries the markings required by ru.taxicab.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting vehicle contract does not settle taxicab licensing, and the definition does not require admitted vehicles to have the markings necessary for ru.taxicab coverage.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The moped contract does not establish taxicab licensing, and licensing for taxicab service does not establish the markings required by the proposed covering class.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The motor-vehicle contract does not establish the additional taxicab-licensing requirement, and the definition does not guarantee the markings required for ru.taxicab coverage.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The motorcycle contract does not establish taxicab licensing, and the admitting words do not require admitted motorcycles to carry the markings specified by ru.taxicab.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official or contracted road service does not establish taxicab licensing, and official livery or equipment does not establish the taxicab markings asserted by the coverage claim.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person rather than a motor vehicle, and the vehicle definition additionally excludes electric personal assistive mobility devices.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian with specified assistance, not a motor vehicle admitted by the taxicab definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly requires that the vehicle not be operated upon rails, which rules out the on-track equipment described by this contract.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School-bus designation and markings do not establish taxicab licensing, and the definition does not guarantee that an admitted school bus bears the markings required by ru.taxicab.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract's marked passenger vehicle for hire does not establish proper licensing under State and local law to provide taxicab service, and the words do not exclude that class either.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Tour, shuttle or limousine service does not establish taxicab licensing, and its identifying livery does not guarantee the taxicab markings asserted by the coverage claim.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract includes combinations whose qualification is not settled by the words, and nothing guarantees that every admitted combination satisfies the marked passenger-for-hire contract of ru.taxicab.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public transit service does not establish taxicab licensing, and transit livery or a route display does not guarantee the taxicab markings asserted by the coverage claim.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The goods-carrying motor-vehicle contract does not settle taxicab licensing, and the definition does not establish that every admitted truck is a marked passenger vehicle for hire.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 72548,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5506,
+   "input_tokens_details": {
+    "cache_write_tokens": 5503,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5503
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 3761,
+   "output_tokens_details": {
+    "reasoning_tokens": 2494,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 9267,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_nw8yde-UIPiFEwBljOr5ZRruRBqbC8JdCH4uCo4sAJwMpAkuhK_OjmDwlroyemuu1T5M-N-5rBDy6iK64GRNOUw4UVlspYh4yYjb8EjRhNMBvRiF8K-YzC0LlzXkKb3BBeOa4js_91IdaYq-RaSetdVIZj7bh-r024ODLWuG818-8pAJxg_sqsnkFMFhcMAz5WT_UvRDYcI63zMA3L6pcTV2b1r9IP23qLnvf3arm8-BAU5t0vhN8TSfb7Qt6kJPf4yd9IC1SHz3StEGd9d7FDQuwyxfSYg5eFAKvtq3Yf0PsYDgoizejryFJa01qasCZNrsaW8_NVaf4uyfR3y1-LcMacF5HuIomGimLfSpXLnNrVyxrJfjXsJsSycXu05uYIJbktwuGI8-PEjBKGsF-xQ2aWxOK51EH1UchIqNuwzDbt8=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

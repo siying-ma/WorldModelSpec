@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.moving_against_carrier.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving_against_carrier.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving_against_carrier.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"speed_tol"}}},"contract":"Road user a moves against the designated direction of travel of carrier region r: part of its motion runs opposite to r's designated direction. It is observed as the component of a's velocity (kin.velocity) along r's designated direction (st.lane_direction), the dot product of the velocity with the direction as a formula reads it normalised, being below minus speed_tol: the part of a's motion that runs against r's direction exceeds the speed the source cannot tell from rest. It is a state at one observation: it says nothing of whether a occupies r, of where a's body points, of the gear selected, of how long a has moved so, or of why. Not denoted: a road user at rest; one whose velocity component against r's direction is at or below speed_tol, such as one moving along r's direction or straight across it. Where r carries no designated direction, or a's velocity is unobserved, it is unknown.","definition":null,"id":"drv.motion.moving_against_carrier","kind":"formula","narrowings":[],"params":[{"name":"speed_tol","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_velocity,st_lane_direction
+READS	kin_velocity,st_lane_direction
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"speed_tol"}}}
+WITNESS	holds	drv.motion.moving_against_carrier@w
+WITNESS	fails	drv.motion.moving_against_carrier@w
+WITNESS	blind	drv.motion.moving_against_carrier@w
+OCC	a
+OCC	r
+OCC	a
+OCC	r
+INST	drv.motion.moving_against_carrier@w	ok
+TIME	checks	3
+TIME	lint	8
+SCEN	holds	drv.motion.moving_against_carrier@w	compliant	compliant	ok
+TIME	scenario:drv.motion.moving_against_carrier@w/holds	8
+SCEN	fails	drv.motion.moving_against_carrier@w	violated	violated	ok
+TIME	scenario:drv.motion.moving_against_carrier@w/fails	8
+SCEN	blind	drv.motion.moving_against_carrier@w	unknown	unknown	ok
+TIME	scenario:drv.motion.moving_against_carrier@w/blind	11
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.moving_against_carrier.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving_against_carrier.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving_against_carrier.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.moving_against_carrier@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	32
+DONE

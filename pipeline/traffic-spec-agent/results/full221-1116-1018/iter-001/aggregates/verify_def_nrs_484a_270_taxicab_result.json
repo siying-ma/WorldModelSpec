@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-270::taxicab\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle definition excludes devices moved by human power, preventing the class from satisfying the motor-vehicle requirement.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract's unquantified 'many passengers' establishes no capacity necessarily exceeding six including the driver, and fee-based passenger transport is also unspecified.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A pedestrian who is a child is not a motor vehicle and therefore cannot satisfy the admitting words.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Commercial mass or licensing does not determine the required passenger capacity or use to transport passengers for a fee.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly excludes electric bicycles, so they cannot satisfy the taxicab definition.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly excludes electric scooters, so they cannot satisfy the taxicab definition.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation neither establishes nor rules out the required capacity and fee-based passenger transport.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The fire-fighting vehicle contract does not settle passenger capacity or fee-based passenger transport, and the definition does not categorically exclude that purpose.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The moped contract does not establish all the taxicab requirements, particularly use to transport passengers for a fee, or categorically prevent their satisfaction.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Being a motor vehicle does not settle the additional capacity and fee-based passenger-transport requirements.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motorcycle contract neither establishes fee-based passenger transport nor categorically prevents satisfaction of the taxicab requirements.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official or contracted road service does not determine passenger capacity or whether passengers are transported for a fee.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person rather than a motor vehicle, so the admitting words reach no member.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian rather than a motor vehicle, regardless of the pedestrian's cane, animal or assistance.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition requires a vehicle not operated upon rails, which excludes the on-track equipment described by the contract.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Designation as a bus for schoolchildren supplies no numerical capacity necessarily exceeding six including the driver and does not settle fee-based use.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The marked passenger-for-hire contract supplies no capacity limit ensuring that every member satisfies the statutory definition.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract does not determine whether its lengthened passenger vehicles satisfy the six-person capacity limit, so it does not settle the class as a whole.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Although a merely drawn vehicle fails the self-propulsion requirement, the combination alternative is not categorically excluded or established to satisfy the taxicab requirements.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public transit service supplies no numerical capacity necessarily exceeding six including the driver and does not establish every taxicab requirement.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A goods-carrying design neither establishes nor rules out accommodation within the passenger limit and use to transport passengers for a fee.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 76540,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5124,
+   "input_tokens_details": {
+    "cache_write_tokens": 5121,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5121
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 3471,
+   "output_tokens_details": {
+    "reasoning_tokens": 2372,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 8595,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_p_cKZmZoYnq4ngSJj81zTcZszw-D8cVIH-SzjpRLPHB-Z0pWVuOYdEA9GlxQbNoNHok4gqyjBDzWjl6a4s1vfr7aOesZEKsCA6VDoctMZbgwiGv6Cl6yH72LLoNX-Z3SSVryHME--87RbBBmMoy8pE1v1887lm0o5xBUSLtTWuFvcEKoVVoZB7lkXMZKqy932mjVt-fX9mdIqrCPk9UR00kbYzJ__A2HE0AemLN94gAXuaZbh9-RV9yj6y0Y-dqbF5SJDMoNA7j3MFKpHTWFjXwBF4EYyiOQK-XBozFwwUxAE1FSLwN8Bn2dNIL3LzPhm5r-34jU6VPQJVlpzzFmuKjAc9FTxBm7E4pUOhHkLd8jCI7xy9lE13Gv0iJY39lYNkO-hgusHqqP-P5bbU-e6KZee321cQrUFOQPbmVPmD1ueHc=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

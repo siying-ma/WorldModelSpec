@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.u_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"rises":{"and":[{"and":[{"cmp":"ge","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"u_turn_min"}},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"sub":[{"lit":{"den":1,"num":360},"unit":"degree"},{"param":"u_turn_min"}]}}]},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"yaw_tol"}}]}},"contract":"Road user a has turned \"so as to proceed in the opposite direction\": its heading has reversed, \"whether accomplished by one continuous movement or not\". The magnitude of its heading change over the window behind the observation (prim.heading_change over a window of length window, degrees, positive to the left) lies in the band from u_turn_min to 360 degrees minus u_turn_min, both inclusive, so that a turn short of a reversal and a full loop both lie outside it; a reversal to either hand is denoted, and one made in several movements, with halts or backing between them, is denoted where its integrated heading change lies in the band. The act begins within the window behind the observation at which it is recognized. The act is recognized at the observation at which the magnitude of the heading change over the window behind lies in that band and a's yaw rate (kin.yaw_rate) is at most yaw_tol in magnitude, where this did not hold at the previous observation: the heading has stopped turning. The concept holds at that observation only, and not again until that condition has ceased to hold and then holds again. Conduct before the window behind is not read: a reversal that takes longer than the window is not recognized. It denotes the change of a's heading only: it says nothing of the way on which a turns, of its class, of its speed, or of why it turns. Not denoted: a heading change smaller than u_turn_min, such as a turn to the left or the right; a full loop, whose heading change exceeds 360 degrees minus u_turn_min; a reversal still under way, whose yaw rate exceeds yaw_tol. Where the window is truncated or a yaw rate in it is missing, it is unknown.","definition":"DEF-NRS-484B-077","id":"drv.motion.u_turn","kind":"formula","narrowings":[],"params":[{"name":"window","unit":"second"},{"name":"u_turn_min","unit":"degree"},{"name":"yaw_tol","unit":"degree_per_second"}],"residues":["The class of the road user and the place of the turn are the caller's: the concept denotes the reversal of heading for any road user anywhere, and a law reads the class and the place beside it."],"supersedes":null}
+ATOMS	prim_heading_change,kin_yaw_rate
+READS	prim_heading_change,kin_yaw_rate
+AGGREGATES	
+HARDAGG	
+BODY	{"rises":{"and":[{"and":[{"cmp":"ge","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"u_turn_min"}},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"sub":[{"lit":{"den":1,"num":360},"unit":"degree"},{"param":"u_turn_min"}]}}]},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"yaw_tol"}}]}}
+WITNESS	holds	drv.motion.u_turn@w
+WITNESS	fails	drv.motion.u_turn@w
+WITNESS	blind	drv.motion.u_turn@w
+OCC	a
+OCC	a
+OCC	a
+LITERAL	360/1	TrafficSpec.PUnit'.degree
+INST	drv.motion.u_turn@w	ok
+TIME	checks	3
+TIME	lint	15
+SCEN	holds	drv.motion.u_turn@w	compliant	compliant	ok
+TIME	scenario:drv.motion.u_turn@w/holds	87
+SCEN	fails	drv.motion.u_turn@w	violated	violated	ok
+TIME	scenario:drv.motion.u_turn@w/fails	85
+SCEN	blind	drv.motion.u_turn@w	unknown	unknown	ok
+TIME	scenario:drv.motion.u_turn@w/blind	88
+TIME	witnesses	261
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.u_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.u_turn@w	3	2
+TIME	adequacy_start	6
+TIME	adequacy	773
+DONE

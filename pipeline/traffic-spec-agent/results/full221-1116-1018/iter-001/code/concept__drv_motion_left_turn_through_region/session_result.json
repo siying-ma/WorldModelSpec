@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 95923,
+  "stop_reason": "end_turn",
+  "session_id": "3728b1be-0046-4e9b-8f33-38c4313f3ae4",
+  "total_cost_usd": 0.7550748700000001,
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 52149,
+   "cache_read_input_tokens": 279460,
+   "output_tokens": 10507,
+   "output_tokens_details": {
+    "thinking_tokens": 3883
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 52149,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 792,
+     "cache_read_input_tokens": 54120,
+     "cache_creation_input_tokens": 2497,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2497
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 31432,
+    "outputTokens": 17,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003466870000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 14,
+    "outputTokens": 10507,
+    "cacheReadInputTokens": 279460,
+    "cacheCreationInputTokens": 52149,
+    "webSearchRequests": 0,
+    "costUSD": 0.751608,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3883,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 52149,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 10,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Both files are written, but the gate never checked them. Both runs returned `SCOPE_VIOLATION` because of files the session's own tooling creates, not because of anything in the concept.\n\n**The scope failure:** the tool runtime saves each command's output to a file under `.runtime/tmp/.../tasks/`, and that folder is inside the repository. The gate counts those files as changes outside the concept's files. The second run also flagged a file from another session running at the same time (`drv.motion.right…`). Every gate run makes a new such file, so every run in this session would fail the same way. I stopped after 2 runs and left the other 4 unused. To fix it, the scope check should ignore `.runtime/`, or the runtime's temporary folder should move outside the repository. The harness's own re-run after the session ends should get past this, since no session output files are written then.\n\n**Body** (`library/TrafficSpec/Concepts/motion/left_turn_through_region.lean`):\n- **Exit:** `rises (not (rel_occupies a r))`, so the concept can only hold at the observation where `a` leaves `r`.\n- **Heading change:** `headingSince \"a\" step (rel_occupies a r)`. This counts from the entry, and the language's own unknown rules match the contract's unknown cases exactly.\n- **Band:** the change must be at least `turn_min` and below `u_turn_min`.\n- The contract left nothing open, so there are no narrowings.\n\n**Witnesses** (`library/TrafficSpecWitness/Concepts/motion/left_turn_through_region.lean`):\n- **Setup:** `r` is a 20×20 m intersection, with six scenes 1 s apart. The instance uses `step` = 1 s, `turn_min` = 45° and `u_turn_min` = 135°.\n- **Window:** each scenario is judged only at the exit, t = 4000 ms.\n- **holds:** yaw rate +30°/s, giving +90°, so it holds.\n- **fails:** the mirror image at −30°/s, giving −90°, so it fails.\n- **blind:** no yaw rate, and `kin.yaw_rate` masked, so it is unknown.\n\nI checked these by hand against `Evidence/Builders.lean` and they look right, but that check doesn't replace the gate.\n\nThe full report, with each run and why I stopped, is in `task_result.md` in the working directory.",
+  "ttft_ms": 27289,
+  "type": "result",
+  "duration_ms": 97080,
+  "uuid": "daf49d36-3c96-4a11-a51b-996320b3717f",
+  "ttft_stream_ms": 823,
+  "time_to_request_ms": 312,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 44,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 14,
+   "input_hooks": 3,
+   "conversation_append": 0,
+   "transcript_persist": 25,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 7,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 178,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 7,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 26,
+  "time_to_request_cpu_ms": 285,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 13,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 3,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 5,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 6,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 823,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 31432,
+    "outputTokens": 17,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003466870000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 14,
+    "outputTokens": 10507,
+    "cacheReadInputTokens": 279460,
+    "cacheCreationInputTokens": 52149,
+    "webSearchRequests": 0,
+    "costUSD": 0.751608,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3883,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 52149,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

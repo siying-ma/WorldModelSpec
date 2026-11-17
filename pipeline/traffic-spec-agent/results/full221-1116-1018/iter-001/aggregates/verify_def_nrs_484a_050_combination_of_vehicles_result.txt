@@ -1,0 +1,110 @@
+{
+  "aggregate_id": "DEF-NRS-484A-050::combination_of_vehicles",
+  "classifications": [
+    {
+      "class": "ru.bicycle",
+      "verdict": "supported",
+      "reason": "The human-power exception describes the class contract and prevents its members from counting as the vehicles required for a combination."
+    },
+    {
+      "class": "ru.bus",
+      "verdict": "supported",
+      "reason": "Any bus admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit 'or the combination' branch."
+    },
+    {
+      "class": "ru.child",
+      "verdict": "supported",
+      "reason": "The contract identifies a pedestrian person rather than a transport device, so the vehicle definition does not admit the class."
+    },
+    {
+      "class": "ru.commercial_motor_vehicle",
+      "verdict": "supported",
+      "reason": "Any commercial motor vehicle admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit combination branch."
+    },
+    {
+      "class": "ru.electric_bicycle",
+      "verdict": "supported",
+      "reason": "The vehicle definition expressly excepts electric bicycles, so they cannot supply the vehicles required by the controlling definition."
+    },
+    {
+      "class": "ru.electric_scooter",
+      "verdict": "supported",
+      "reason": "The vehicle definition expressly excepts an electric scooter, excluding the named class from the vehicles required for a combination."
+    },
+    {
+      "class": "ru.emergency_vehicle",
+      "verdict": "supported",
+      "reason": "Any emergency vehicle admitted as the defined coupled combination carries ru.trailer_or_combination through that contract's combination branch."
+    },
+    {
+      "class": "ru.fire_apparatus",
+      "verdict": "supported",
+      "reason": "Any fire apparatus admitted as the defined coupled combination falls within the explicit combination branch of ru.trailer_or_combination."
+    },
+    {
+      "class": "ru.moped",
+      "verdict": "supported",
+      "reason": "Any moped admitted as the defined coupled combination carries ru.trailer_or_combination under its combination branch."
+    },
+    {
+      "class": "ru.motor_vehicle",
+      "verdict": "supported",
+      "reason": "An admitted motor-vehicle road user must itself satisfy the coupled-combination definition and therefore carries ru.trailer_or_combination."
+    },
+    {
+      "class": "ru.motorcycle",
+      "verdict": "supported",
+      "reason": "Any motorcycle admitted as the defined coupled combination falls within ru.trailer_or_combination's explicit combination branch."
+    },
+    {
+      "class": "ru.official_vehicle",
+      "verdict": "supported",
+      "reason": "Any official vehicle admitted as the defined coupled combination carries ru.trailer_or_combination through its combination branch."
+    },
+    {
+      "class": "ru.pedestrian",
+      "verdict": "supported",
+      "reason": "The class denotes a person rather than a device, and the vehicle definition additionally excepts electric personal assistive mobility devices."
+    },
+    {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "verdict": "supported",
+      "reason": "The contract denotes a pedestrian person rather than a device admitted by the vehicle definition."
+    },
+    {
+      "class": "ru.rail_vehicle",
+      "verdict": "supported",
+      "reason": "The exception for devices used exclusively upon stationary rails describes the contract's rail and on-track equipment."
+    },
+    {
+      "class": "ru.school_bus",
+      "verdict": "supported",
+      "reason": "Any school bus admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit combination branch."
+    },
+    {
+      "class": "ru.taxicab",
+      "verdict": "supported",
+      "reason": "Any taxicab admitted as the defined coupled combination falls within the combination branch of ru.trailer_or_combination."
+    },
+    {
+      "class": "ru.tour_bus_or_limousine",
+      "verdict": "supported",
+      "reason": "Any tour bus or limousine admitted as the defined coupled combination carries ru.trailer_or_combination through its combination branch."
+    },
+    {
+      "class": "ru.trailer_or_combination",
+      "verdict": "supported",
+      "reason": "The definition directly admits the coupled combination expressly encompassed by the contract's 'or the combination' branch."
+    },
+    {
+      "class": "ru.transit_bus",
+      "verdict": "supported",
+      "reason": "Any transit bus admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit combination branch."
+    },
+    {
+      "class": "ru.truck",
+      "verdict": "supported",
+      "reason": "Any truck admitted as the defined coupled combination falls within ru.trailer_or_combination's combination branch."
+    }
+  ]
+}

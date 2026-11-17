@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-125::moped\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes human-powered devices, which are expressly excluded from the vehicle category required by the moped definition.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the bus contract nor the admitting words impose a two-wheel minimum, so an admitted member need not satisfy the covering class's two-or-three-wheel requirement.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person, whereas the moped definition admits a kind of vehicle device.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Commercial mass or licensing does not establish two or three wheels, while the admitting words permit fewer wheels than the covering contract requires.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract's bicycle with an assisting motor retains human-powered propulsion, which the vehicle definition excludes independently of the express statutory electric-bicycle exclusion.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The defined electric-scooter exception requires the 100-pound and 20-mph limits, but the class contract requires neither and therefore can describe scooters outside that exception that the moped language admits.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation supplies no two-or-three-wheel restriction, so it does not establish that every admitted member satisfies the quoted ru.moped contract.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting vehicle contract supplies no wheel-count restriction that closes the gap between the definition's maximum of three wheels and the covering contract's requirement of two or three.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The express moped definition admits the jurisdiction-classified, low-power two- or three-wheelers described by this contract.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Excluding separately classified powered two-wheelers does not exclude one-wheelers, which the admitting words can reach but the ru.moped contract does not cover.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every admitted member has two or three wheels under its own contract and satisfies the jurisdiction's moped definition, establishing membership in the proposed covering class.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official service and identifying equipment do not require two or three wheels, so the covering contract does not account for every member the admitting words can reach.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes persons rather than the vehicle devices admitted by the moped definition, including when those persons use wheelchairs or assistive devices.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A pedestrian carrying a cane or receiving guidance remains a person rather than a vehicle device admitted by the definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract's on-track equipment need not be used exclusively upon stationary rails, so the quoted exception does not exclude every member the admitting words could reach.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School-bus designation and markings impose no two-or-three-wheel requirement, leaving the proposed coverage incomplete for members admitted with fewer wheels.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The passenger-for-hire contract imposes no wheel count, whereas the proposed covering class requires two or three wheels and the admitting definition does not.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither branch of this contract establishes the two-or-three-wheel requirement needed to place every admitted member in ru.moped.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The drawn-vehicle or combination contract supplies no two-wheel minimum, so it does not establish complete coverage by the narrower ru.moped contract.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service and identifying displays do not establish two or three wheels, leaving admitted members outside the demonstrated scope of the covering contract.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A goods-carrying body does not establish two or three wheels, so the definition's maximum wheel count cannot prove coverage by ru.moped.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 237366,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 6199,
+   "input_tokens_details": {
+    "cache_write_tokens": 6196,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 6196
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 9657,
+   "output_tokens_details": {
+    "reasoning_tokens": 8437,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 15856,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_dllS5PAVCeCQY28CfEWa-csKW5fayUMvtFUthQeaYSiQe7dPalf_LuXBYHV3Zad-cLYBM-S--penvm1sX6I-9sY-Q_yV42fHZHm6ayTISViaFwDP5E4t4r-y9NjNrsTJLK-1Ra9jyGfxgmsLE1mvTES3nkH1SpzIZD-r5eVX2pW-EBOZ4LtR2q30TCmON4sPMBzYrjr070v23WCZnm3KY5B1-Q7SN0JLwkt7xzFBx5ydWbj7Wq6vy-kYN-E2PQxqNVl7chJwfAFvQU3mNq2_S7kkiqwsszbeDjlGh6hOd6PcJDv7DVxdXMDcEhYvWazgdbzSjFaP0S2eBt49Oi6AiM7GaBo-VsRUmPpJgpeemI3KIPGk6byfwZ5oB-r5bD92Lm9AIs-Lt3OeIKuvPFwZo6i01X4vOI9qckzh9mZTUP6NIbs=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,109 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (fails_wrongly) at t=0 ms: The road user's velocity [-2.4, 14.3] has magnitude 14.5 m/s and absolute cosine exactly 0.6 with carrier direction [20, 21], meeting the inclusive threshold. Micrometre truncation in the direction reader slightly enlarges the normalised vector, causing the body to reject this boundary case. — contract: holds, body: fails; contract: \"a is moving, its speed (kin.speed) above speed_tol, and its velocity (kin.velocity) makes with r's designated direction (st.lane_direction) an angle whose cosine, in absolute value, is at most cos_max\"",
+   "ruling": "dismissed",
+   "why": "The contract states its test as a dot product with \"the normalised direction\", and the atom contract for st.lane_direction defines that reading: the vector is the unit vector times a factor of at least 1, exactly the unit vector only where the scaled length is a whole number of micrometres. For [20, 21] that length is 29/21, which is not a whole number of micrometres, so the read vector is slightly longer than the unit vector. Under that disclosed reading, the dot product at this exact boundary (8.7 against 0.6 × 14.5) slightly exceeds cos_max times the speed, which gives the body's verdict. — \"the absolute value of the dot product of the velocity with the normalised direction is at most cos_max times the speed\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "3ed91a183474c9505964c66a21e17dbd2324e1d07205f3b619e6cfadf8c7659b",
+ "rulings_at": 0,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "dismissed: divergence 1 (fails_wrongly) at t=0 ms: The road user's velocity [-2.4, 14.3] has magnitude 14.5 m/s and absolute cosine exactly 0.6 with carrier direction [20, 21], meeting the inclusive threshold. … — contract: holds, body: fails; contract: \"a is moving, its speed (kin.speed) above speed_tol, and its velocity (kin.velocity) makes with r's designated direction …\" — The contract states its test as a dot product with \"the normalised direction\", and the atom contract for st.lane_direction defines that reading: the vector is the unit vector times a factor of at least 1, exactly the unit vector only where the scaled length is a whole number of micrometres. For [20, 21] that length is 29/21, which is not a whole number of micrometres, so the read vector is slightly longer than the unit vector. Under that disclosed reading, the dot product at this exact boundary (8.7 against 0.6 × 14.5) slightly exceeds cos_max times the speed, which gives the body's verdict. — \"the absolute value of the dot product of the velocity with the normalised direction is at most cos_max times the speed\""
+  ],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "36c9cf0d4728b5911c44",
+   "row": {
+    "key": "concept:drv.motion.moving_across_carrier",
+    "subject": "drv.motion.moving_across_carrier",
+    "iteration": 1,
+    "item": "divergence 1 (fails_wrongly) at t=0 ms: The road user's velocity [-2.4, 14.3] has magnitude 14.5 m/s and absolute cosine exactly 0.6 with carrier direction [20, 21], meeting the inclusive threshold. Micrometre truncation in the direction reader slightly enlarges the normalised vector, causing the body to reject this boundary case. — contract: holds, body: fails; contract: \"a is moving, its speed (kin.speed) above speed_tol, and its velocity (kin.velocity) makes with r's designated direction (st.lane_direction) an angle whose cosine, in absolute value, is at most cos_max\"",
+    "ruling": "dismissed",
+    "reason": "The contract states its test as a dot product with \"the normalised direction\", and the atom contract for st.lane_direction defines that reading: the vector is the unit vector times a factor of at least 1, exactly the unit vector only where the scaled length is a whole number of micrometres. For [20, 21] that length is 29/21, which is not a whole number of micrometres, so the read vector is slightly longer than the unit vector. Under that disclosed reading, the dot product at this exact boundary (8.7 against 0.6 × 14.5) slightly exceeds cos_max times the speed, which gives the body's verdict. — \"the absolute value of the dot product of the velocity with the normalised direction is at most cos_max times the speed\"",
+    "schema": "concept_case/1",
+    "case_id": "5dcad13900b1dc7e10483e931ea88e25c914c033e9f332db2d2981889cd93a0e",
+    "kind": "fails_wrongly",
+    "situation": "The road user's velocity [-2.4, 14.3] has magnitude 14.5 m/s and absolute cosine exactly 0.6 with carrier direction [20, 21], meeting the inclusive threshold. Micrometre truncation in the direction reader slightly enlarges the normalised vector, causing the body to reject this boundary case.",
+    "contract_words": "a is moving, its speed (kin.speed) above speed_tol, and its velocity (kin.velocity) makes with r's designated direction (st.lane_direction) an angle whose cosine, in absolute value, is at most cos_max",
+    "contract_verdict": "holds",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "speed_tol": [
+       0.1,
+       "m/s"
+      ],
+      "cos_max": [
+       0.6,
+       "ratio"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1
+    },
+    "regions": {
+     "r": 2
+    },
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 14.5,
+          "velocity": [
+           -2.4,
+           14.3
+          ]
+         }
+        }
+       ],
+       "structures": [
+        {
+         "id": 2,
+         "kind": "lane",
+         "lane": {
+          "direction": [
+           20,
+           21
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 0,
+    "verdict": "violated",
+    "value": null,
+    "contract_digest": "f6991f5d683e3d60ecba84fdee4383515c1d074bce53a074f02397f99fab1e14",
+    "body_digest": "9ab509bf123ed63eaab689b974d9a120325f4fe0eb75bede4d08f1c822ae8cc7",
+    "obligation": null,
+    "ruling_id": "36c9cf0d4728b5911c44",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

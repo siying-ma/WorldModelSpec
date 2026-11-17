@@ -1,0 +1,54 @@
+{
+ "concept_id": "drv.motion.moving_backward",
+ "kind": "formula",
+ "contract": "Road user a is moving backward: it moves against the direction its body points. It is observed as the component of a's velocity (kin.velocity) along a's heading (kin.heading), the dot product of the velocity with the heading as a formula reads it normalised, being below minus speed_tol: the part of a's motion that runs against its heading exceeds the speed the source cannot tell from rest. It is a state at one observation: it says nothing of the gear selected, of the path a has followed or will follow, of where a is, or of why it moves so. Not denoted: a road user at rest, or one whose velocity component against its heading is at or below speed_tol; a road user moving forward. Where a's velocity or heading is unobserved, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "the speed against the heading at or below which motion is not told from rest: the source's speed resolution"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the component of a's velocity (kin.velocity) along a's heading (kin.heading)",
+   "atoms": [
+    "kin.velocity",
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity is the 'velocity vector' (m/s, world frame) and kin.heading the 'direction the body points' (unit vector, world frame, read normalised); their dot product is the signed speed along the heading, negative when the body moves against the way it points. kin.gear is not read: its contract says it is 'Not a stand-in for: the direction of motion — ... backing is read from kinematics'."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car with heading (1, 0) moves with velocity (-1.5, 0) m/s: the component along its heading is -1.5 m/s, below minus speed_tol; the concept holds."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same car moves with velocity (2.0, 0.1) m/s: the component along its heading is positive; it is moving forward and the concept does not hold."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car's heading is known but the source supplies no velocity at the observation; whether it moves backward is unknown.",
+   "masked": [
+    "kin.velocity"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_113_2",
+  "NRS_484B_113_3"
+ ]
+}

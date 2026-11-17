@@ -1,0 +1,210 @@
+{
+ "node_id": "LVMC_11_18_020",
+ "law_refs": [
+  "LVMC-11-18-020"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "k1",
+   "text": "The City Traffic Engineer is authorized to mark and maintain with yellow paint or road buttons crosswalks approximately twelve feet in width at intersections in the vicinity of schools where in the opinion of the City Traffic Engineer crossing the roadway by schoolchildren is unsafe.",
+   "role": "condition"
+  },
+  {
+   "id": "k2",
+   "text": "The City Traffic Engineer, if necessary, is further authorized to mark and maintain with a distinguishing color or road buttons upon the pavement or by signs erected along the curb in a conspicuous manner, the words \"School-Xing,\" not less than one hundred feet in advance of each crosswalk established",
+   "role": "condition"
+  },
+  {
+   "id": "k3",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "k4",
+   "text": "it shall be unlawful for the operator of any vehicle to drive into a crosswalk",
+   "role": "obligation"
+  },
+  {
+   "id": "k5",
+   "text": "where there is displayed a sign with the words \"School-Xing,\"",
+   "role": "condition"
+  },
+  {
+   "id": "k6",
+   "text": "when there is in the crosswalk",
+   "role": "condition"
+  },
+  {
+   "id": "k7",
+   "text": "upon the side of the roadway on which said vehicle is coming",
+   "role": "condition"
+  },
+  {
+   "id": "k8",
+   "text": "any person",
+   "role": "condition"
+  },
+  {
+   "id": "k9",
+   "text": "attempting to cross the street",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "k4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'the operator of' is read through the vehicle's controlled motion (agency), never as membership. 'drive into a crosswalk' is the observation at which the subject's footprint begins to overlap (rel.occupies rises) a crosswalk cw (st.crosswalk 'marked crossing, or the unmarked prolongation of sidewalks at an intersection'); 'Not a stand-in for' clauses of rel.occupies are none, and st.sidewalk's exclusion of crosswalks is not engaged."
+  },
+  {
+   "span": "k5",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "st.entrance_of",
+    "st.lane_enters",
+    "rel.occupies",
+    "st.travel_region",
+    "st.intersection",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "dev.zone_sign 'a sign that begins or ends a signed zone along the road; kind ∈ {school, school_crossing, ...}': the 'School-Xing' sign is kind school_crossing. It is the sign of that crosswalk: it governs (dev.governs 'the travel regions whose traffic the device controls') the carrier c the subject occupies (rel.occupies), whose entrance into intersection j (st.lane_enters) the crosswalk marks (st.entrance_of 'the carrier whose entrance into an intersection a stop line or a crosswalk marks'). dev.zone_sign's exclusion 'whether the condition holds now' is respected: no condition of the legend is read; dev.governs 'Not a stand-in for: a position' does not apply."
+  },
+  {
+   "span": "k6",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "The person o is in the crosswalk cw the subject drives into: rel.occupies(o, cw) 'a road user's footprint overlaps a lane / region (... crosswalk ...)'."
+  },
+  {
+   "span": "k7",
+   "atoms": [
+    "st.centre_line",
+    "prim.region_lateral_offset",
+    "rel.bearing",
+    "st.on_way",
+    "st.highway",
+    "st.one_way_roadway"
+   ],
+   "derived": [],
+   "justification": "The side of the roadway the subject comes on is its side of the centre line (st.centre_line 'the marking, or the geometric centre, dividing the two directions of a two-way roadway') of the way w the crosswalk lies on (st.on_way(cw, w), st.on_way(cl, w), st.highway). With L = prim.region_lateral_offset(subject, cl) ('the signed lateral offset ... of a structure region from a road user', left positive) and y the lateral component of rel.bearing(subject, o) ('direction of b from a in a's frame'), o is on the subject's side where L > 0 and y < L, or L < 0 and y > L. Where the subject occupies a one-way roadway (st.one_way_roadway 'roadway on which traffic is restricted to one direction'), the whole crosswalk is its side."
+  },
+  {
+   "span": "k8",
+   "atoms": [
+    "ru.pedestrian",
+    "ru.bicycle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'any person' in a crosswalk crossing the street: a person on foot or in a wheelchair (ru.pedestrian 'a person on foot, in a wheelchair, or on a device the jurisdiction treats as on foot'; its exclusion 'a person on a bicycle or scooter' is why the riders are named beside it), or a person riding a bicycle (ru.bicycle), an electric bicycle (ru.electric_bicycle) or an electric scooter (ru.electric_scooter) across it."
+  },
+  {
+   "span": "k9",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "'attempting to cross' is a purpose, read through the conduct it explains: the person's presence in the crosswalk (rel.occupies(o, cw), st.crosswalk), which lies across the street."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "k1",
+   "why": "an authority given to the City Traffic Engineer to mark school crosswalks; it imposes nothing on a road user, and the duty's own words select the crosswalk by the School-Xing sign displayed for it (k5), so the duty is the same whether or not these words are read",
+   "scope": "none"
+  },
+  {
+   "span": "k2",
+   "why": "an authority given to the City Traffic Engineer to mark or sign 'School-Xing' in advance of a crosswalk; the duty's own words read the sign displayed (k5), whoever placed it and at whatever set-back, so the duty is the same whether or not these words are read",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), occupies a carrier c (st.travel_region) with st.lane_enters(c, j) for an intersection j; a zone sign of kind school_crossing (dev.zone_sign) governs c (dev.governs); a crosswalk cw (st.crosswalk) marks c's entrance (st.entrance_of(cw, c)); and some road user o, other than the subject, of class ru.pedestrian, ru.bicycle, ru.electric_bicycle or ru.electric_scooter, occupies cw on the subject's side of the roadway: with cl a centre line (st.centre_line) and cw both lying on one way w (st.on_way, st.highway), L = prim.region_lateral_offset(subject, cl) and y the lateral component of rel.bearing(subject, o), L > 0 and y < L, or L < 0 and y > L; or the subject occupies a one-way roadway (st.one_way_roadway).",
+ "obligation": "The subject's occupancy of cw does not rise at this observation (rel.occupies(subject, cw) does not hold here while it did not hold at the previous observation), for the cw bound in the applicability, re-bound with the same selection (crosswalk marking the entrance of the carrier c the subject occupies, c governed by the school_crossing sign, a person of the named classes in cw on the subject's side).",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "k4",
+   "why": "'the operator of any vehicle' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "k5",
+   "why": "'displayed' is read through the sign's presence governing the subject's approach carrier; the crosswalk is the one recorded as marking that carrier's entrance",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "k9",
+   "why": "'attempting to cross the street' is read through the person's presence in the crosswalk",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A school_crossing sign governs the subject's lane; a child walks in the crosswalk on the subject's half of the roadway; the subject drives into the crosswalk."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but the subject halts short of the crosswalk until the child has left it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No school_crossing sign governs the subject's lane; a pedestrian is in the crosswalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The sign is present but the source does not observe which carriers it governs; the subject drives into an occupied crosswalk.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The pedestrian is in the crosswalk on the far side of the centre line when the subject drives in."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

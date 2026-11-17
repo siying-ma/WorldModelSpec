@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-130::motor_vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a human-powered device, which the vehicle definition expressly excepts.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The bus contract describes a motor vehicle carrying passengers, matching the controlling admitting clause.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person rather than a transport device, so the admitting words do not reach it.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every member admitted as self-propelled and non-rail, after the named exclusions, satisfies at least one of the three quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The controlling definition expressly excludes electric bicycles.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The controlling definition expressly excludes electric scooters.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation alone does not establish propulsion, but every admitted member satisfies one of the three quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The firefighting-vehicle contract permits separately classified powered two-wheelers, which the full ru.motor_vehicle contract excludes despite the omission of that limitation from the quoted basis.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The moped definition supplies engine propulsion and expressly distinguishes mopeds from the electric bicycles and scooters excluded by the controlling definition.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Its contract supplies self-propulsion and non-rail operation while separating the jurisdiction's separately classified powered two-wheelers.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a motor vehicle with additional wheel and riding-position characteristics that do not defeat the admitting clause.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official service alone does not establish propulsion, but every admitted member falls within at least one of the three quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract identifies a person rather than a transport device, and the vehicle definition additionally excepts electric personal assistive mobility devices.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract still identifies a pedestrian person rather than a device admitted by the vehicle definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The on-track equipment described by the contract fails the controlling requirement that a motor vehicle not be operated upon rails.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a bus with a school designation, retaining the motor-vehicle character reached by the admitting clause.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Passenger hire and identifying markings do not preclude separately classified powered two-wheelers, which the sole covering class expressly omits.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The lengthened passenger-vehicle alternative does not preclude separately classified powered two-wheelers, so the truncated ru.motor_vehicle basis does not establish complete coverage.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Any combination admitted as a self-propelled non-rail vehicle necessarily satisfies at least one of the already-proposed included contracts, so uncertainty about other combinations does not establish irresolution.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The public-transit qualification leaves the class a bus whose motor-vehicle contract meets the admitting words.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The truck contract expressly describes a motor vehicle, with its goods-carrying purpose adding no conflicting limitation.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 228608,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5349,
+   "input_tokens_details": {
+    "cache_write_tokens": 5346,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5346
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 8662,
+   "output_tokens_details": {
+    "reasoning_tokens": 7576,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 14011,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_M5MyryV517IKb6Lsfd5nZn1BZzZp-GYkUGB_9dOie4GMyqlyRi-n8SyejWpHQMGgzhpkhnJdfqfo6hA_6sSW_VRrnQfXV60hgK8_Dr5vFihjrHqJTZEpTOiiWR-urDLRbM0e5mJGiM8gSxd7ilS5eYcqQkFwBB90XUr60wHpY0b9PWcSKO1cKl4gBSWE-asmz_hg7PSh3yHWRCvRrAYO0Vx4WQk8hxaJ4ZSkQEtkVrVzEFc3Q-Qlrj-8hpWKHLbmGjqk0kByd08y_xtSF9NXk9QqSnfjnWRB3atPO8dDw1ceBA9-L1FPCZGr-27oWjZQGGjWbuSXArvD2V4L97K890SkidqWzDQP3DX9H1gbr5tkOVMltygQpotSF1QvL6twjF5CmMbYcgHa1xHK4NI1MQSI8pXYY7meOToWSFr35azNTiY=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

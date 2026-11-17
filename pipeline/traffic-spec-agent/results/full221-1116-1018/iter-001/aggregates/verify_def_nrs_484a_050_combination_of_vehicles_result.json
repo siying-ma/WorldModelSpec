@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-050::combination_of_vehicles\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The human-power exception describes the class contract and prevents its members from counting as the vehicles required for a combination.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any bus admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit 'or the combination' branch.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract identifies a pedestrian person rather than a transport device, so the vehicle definition does not admit the class.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any commercial motor vehicle admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit combination branch.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle definition expressly excepts electric bicycles, so they cannot supply the vehicles required by the controlling definition.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle definition expressly excepts an electric scooter, excluding the named class from the vehicles required for a combination.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any emergency vehicle admitted as the defined coupled combination carries ru.trailer_or_combination through that contract's combination branch.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any fire apparatus admitted as the defined coupled combination falls within the explicit combination branch of ru.trailer_or_combination.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any moped admitted as the defined coupled combination carries ru.trailer_or_combination under its combination branch.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"An admitted motor-vehicle road user must itself satisfy the coupled-combination definition and therefore carries ru.trailer_or_combination.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any motorcycle admitted as the defined coupled combination falls within ru.trailer_or_combination's explicit combination branch.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any official vehicle admitted as the defined coupled combination carries ru.trailer_or_combination through its combination branch.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class denotes a person rather than a device, and the vehicle definition additionally excepts electric personal assistive mobility devices.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract denotes a pedestrian person rather than a device admitted by the vehicle definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The exception for devices used exclusively upon stationary rails describes the contract's rail and on-track equipment.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any school bus admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit combination branch.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any taxicab admitted as the defined coupled combination falls within the combination branch of ru.trailer_or_combination.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any tour bus or limousine admitted as the defined coupled combination carries ru.trailer_or_combination through its combination branch.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition directly admits the coupled combination expressly encompassed by the contract's 'or the combination' branch.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any transit bus admitted as the defined coupled combination carries ru.trailer_or_combination under its explicit combination branch.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any truck admitted as the defined coupled combination falls within ru.trailer_or_combination's combination branch.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 162153,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5299,
+   "input_tokens_details": {
+    "cache_write_tokens": 5296,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5296
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 6155,
+   "output_tokens_details": {
+    "reasoning_tokens": 5080,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 11454,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_zeVC2vUgvlUZNXmFbpJ2FzeUU2_xiuS5zT3Ja8di7pKKcbgFktkpdTPg0wWmRjhV8KvnHuW4nP2DGqVQoSDcbV0qSO2h3gIo1HMu0qUoNGySzkBsO6fTXllSkJbvDTO8BalciTkk_jyHNvPJaWUq4bkQK6cHZeprfkElkcHHmJJqNtd7B6BXeXHF63qKoKDym-5LpDxjo5KZ2HRsm9NPjdu_52blKTLNRZR1YcHSDGeaJB_uwMR5A8oh-oSrA6avGxbHbE4g76NCelgSNULGNfFyNn_elZNw-p6pwSJCMawZNfaXGCoEY7VNORCiBX00-Pjk18xzpDK8ToWxL2qA1CeXxDx3xVHVU1x37c9xrj4X1I2p31AdMuq3XBMnYiRHnVMxdErp3g3giUlBKPtpK5g6eZzXxyAzFFiC6BLN5j1ITgM=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,111 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "kin.velocity",
+   "st.lane_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p0\"}},{\"cmp\":\"le\",\"lhs\":{\"abs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"}]}]}},\"rhs\":{\"mul\":[{\"param\":\"$p1\"},{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"}]}}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "gt",
+     "lhs": {
+      "args": [
+       {
+        "var": "a"
+       }
+      ],
+      "measure": "kin_speed"
+     },
+     "rhs": {
+      "param": "speed_tol"
+     }
+    },
+    {
+     "cmp": "le",
+     "lhs": {
+      "abs": {
+       "add": [
+        {
+         "mul": [
+          {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "lit": "x"
+            }
+           ],
+           "measure": "kin_velocity"
+          },
+          {
+           "args": [
+            {
+             "var": "r"
+            },
+            {
+             "lit": "x"
+            }
+           ],
+           "measure": "st_lane_direction"
+          }
+         ]
+        },
+        {
+         "mul": [
+          {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "lit": "y"
+            }
+           ],
+           "measure": "kin_velocity"
+          },
+          {
+           "args": [
+            {
+             "var": "r"
+            },
+            {
+             "lit": "y"
+            }
+           ],
+           "measure": "st_lane_direction"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "rhs": {
+      "mul": [
+       {
+        "param": "cos_max"
+       },
+       {
+        "args": [
+         {
+          "var": "a"
+         }
+        ],
+        "measure": "kin_speed"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "context": "7fac8f13b68be8fd91dd6cb6",
+  "candidate_digest": "5ac421ed02c7ec3f7e7a10a03153a58dfc6407417db95f108c9410a6c3475214"
+ }
+}

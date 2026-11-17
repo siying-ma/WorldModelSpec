@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-LVMC-11-02-083::electric_scooter\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Human propulsion does not rule out an electric motor, but the bicycle contract does not establish the required motor, handlebars or riding design.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Design for carrying many passengers supplies no contractual weight or speed bound that makes the quoted limits exclude every bus.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The admitting words describe a device, whereas the child contract describes a pedestrian person rather than such a device.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The commercial-licensing alternative neither establishes nor conflicts with the required device features, and the contracts guarantee no complete coverage by an included class.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"An assisting electric motor does not establish the full handlebar-and-riding-design description, and no clause excludes electric bicycles as a class.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause matches the class's handlebar-equipped standing-or-seated electric-scooter design, subject to the stated limits, and the exception describes an assistive purpose not specified by this class's contract.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation neither establishes nor conflicts with the required device features, and the contracts do not guarantee that every qualifying member carries an included covering class.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A fire-fighting purpose supplies no contractual weight or speed bound that necessarily violates either quoted limit.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The moped contract permits an electric motor without establishing all required features or violating the quoted limits, and no exception removes mopeds as a class.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Self-propulsion entails neither exceeding the quoted limits nor belonging exclusively to the separately classed powered two-wheelers that the contract excludes.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motorcycle contract supplies neither a necessary conflict with the weight and speed limits nor all the features needed for admission, and no exception names motorcycles.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official road service and identifying equipment neither establish nor conflict with the required device features, and the contracts guarantee no complete coverage by an included class.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The definition admits devices, while the pedestrian contract describes a person on foot or using a device rather than the device itself.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract describes a pedestrian person with specified assistance, not a device admitted by the definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Being on-track does not contractually preclude handlebars, an electric motor or the specified riding design, so the quoted clause establishes no class-wide exclusion.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School-bus designation and markings establish no weight or speed bound that necessarily violates the quoted limits.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Passenger service for hire and identifying markings establish neither a minimum weight above one hundred pounds nor a motor-only maximum speed above twenty miles per hour.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The tour, shuttle and lengthened-passenger-vehicle descriptions provide no contractual weight or speed bound that excludes every member under the quoted limits.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract includes combinations, and the quoted words do not establish that every such combination lacks handlebars, electric propulsion or the required riding design.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service and identifying displays establish no weight or speed bound that necessarily violates the quoted limits.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A body built for carrying goods establishes no contractual minimum weight or motor-only maximum speed incompatible with the quoted limits.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 96589,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 3841,
+   "input_tokens_details": {
+    "cache_write_tokens": 3838,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 3838
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 4288,
+   "output_tokens_details": {
+    "reasoning_tokens": 3105,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 8129,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_-HLKqaBX0i-iUdIUpK0EoCIEsEn9mWHkmRpQs2lUyMGibe-iIkqatL_dUP0jCmmblzv_rJ_wBWfyGJXflNFKcAxxwvCiIpAFUL1jQYQTcNX2Lh_qRJkY6nLi4cUWX6sULenv86o3xXh82Vpoj8aY9pDS1nWgACc-uv2-0pwQWIoMo38REJn4g-csNFYoLbd3sWAHDY6l8lRLfuMYbf4Wr_vDtVKw8DivlqoRMIPKm7hphv6d9WiW6Fd_-dSG3w84SzLDbRJq71QGrIpG-DZTQYzDBQJ5Q41L8wwzcTebR07NsPw24OLs34MVyu84XnNZq2m-NL01lTEr8VWQEJHRSTqJSeGugV_gX4lqTnCtoPDpyZ--whudIPa6DeXI3PLFR3J36TxK9vncU0PHIu1KIIdQHCY0u3Xy_loXFOQX2Rqbki4=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

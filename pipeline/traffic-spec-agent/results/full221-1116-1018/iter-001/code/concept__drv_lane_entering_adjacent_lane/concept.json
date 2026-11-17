@@ -1,0 +1,71 @@
+{
+ "concept_id": "drv.lane.entering_adjacent_lane",
+ "kind": "formula",
+ "contract": "Road user a, occupying lane r1, begins to move into lane r2, the neighbouring lane of the same direction on side s of r1 (s left or right): the event of a's footprint first reaching into r2 from r1. It is observed with a's footprint occupancy (rel.occupies) and the lanes' adjacency (st.lane_adjacency): r2 is r1's neighbour on side s, a's footprint overlaps both r1 and r2 at the observation, and at the previous observation it overlapped r1 and did not overlap r2. The concept holds at that observation only, and not again until a's footprint has ceased to overlap r2 and again comes to overlap it from r1. It says nothing of whether a completes the move, of its signal, of its speed, or of why it moves. Not denoted: a road user that comes into r2 from elsewhere than r1; one that stays within r1; a lane r2 that is not r1's neighbour of the same direction on side s, such as an opposing lane. Where a's overlap with either lane at the observation or at the previous one is unobserved, or the adjacency of the two lanes is not observed, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r1",
+   "sort": "region"
+  },
+  {
+   "name": "r2",
+   "sort": "region"
+  },
+  {
+   "name": "s",
+   "sort": "literal",
+   "values": [
+    "left",
+    "right"
+   ]
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "a's footprint occupancy (rel.occupies)",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'."
+  },
+  {
+   "span": "the lanes' adjacency (st.lane_adjacency)",
+   "atoms": [
+    "st.lane_adjacency"
+   ],
+   "concepts": [],
+   "justification": "st.lane_adjacency: 'left / right neighbouring lane of the same direction'; its exclusion (not the marking between two lanes) does not apply."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "r2 is r1's left neighbour; a overlapped r1 only at the previous observation and overlaps r1 and r2 now; s is left."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a overlaps r1 only at both observations."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "a overlaps r1 and r2 now, but its overlap with r2 at the previous observation is unobserved.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_223_1b"
+ ]
+}

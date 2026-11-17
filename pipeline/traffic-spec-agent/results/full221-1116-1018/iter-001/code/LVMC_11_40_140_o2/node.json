@@ -1,0 +1,209 @@
+{
+ "node_id": "LVMC_11_40_140_o2",
+ "law_refs": [
+  "LVMC-11-40-140"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "The operator of a bicycle, electric bicycle, or electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "within a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "e3",
+   "text": "entering into or emerging from an alley, driveway or building",
+   "role": "trigger"
+  },
+  {
+   "id": "e4",
+   "text": "shall stop such vehicle immediately prior to",
+   "role": "sibling"
+  },
+  {
+   "id": "e5",
+   "text": "driving onto a sidewalk or onto the sidewalk area extending across any alleyway, driveway or building",
+   "role": "condition"
+  },
+  {
+   "id": "e6",
+   "text": "yielding the right-of-way to any pedestrian",
+   "role": "obligation"
+  },
+  {
+   "id": "e7",
+   "text": "as may be necessary to avoid collision",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "Each term is admitted as its aggregate: 'bicycle' DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride'), 'electric bicycle' DEF-LVMC-11-02-082::electric_bicycle ('a device upon which a person may ride ... an electric motor'), 'electric scooter' DEF-LVMC-11-02-083::electric_scooter ('a device with handlebars and an electric motor'); the subject belongs to one of them."
+  },
+  {
+   "span": "e3",
+   "atoms": [
+    "rel.occupies",
+    "st.alley",
+    "st.driveway_or_alley_entrance",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "As in LVMC_11_40_140_o1: rel.occupies 'a road user's footprint overlaps a lane / region'; st.alley 'a narrow way within a block serving the rear of properties'; st.driveway_or_alley_entrance 'private road, alley or driveway meeting the highway'; st.highway 'the entire public way between its boundary lines' (occupying none of it: beyond the property line, where a building stands). Read at the subject's latest entry onto the sidewalk it occupies."
+  },
+  {
+   "span": "e5",
+   "atoms": [
+    "rel.occupies",
+    "st.region_geometry",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "Same atoms as the mapping index for these words. st.sidewalk 'area for pedestrians between roadway and property line'; rel.occupies: the subject's footprint on that sidewalk since its entry; st.region_geometry is claimed with the words as mapped and reads the sidewalk's outline for the occupancy the source derives."
+  },
+  {
+   "span": "e6",
+   "atoms": [
+    "kin.speed",
+    "rel.contact",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'yielding' as in the mapping index: kin.speed 'magnitude of velocity' (the subject proceeds only while it does not create a conflict) and rel.contact 'the bodies of two road users ... touch or overlap (a collision)'; not a stand-in for a near miss, which the standard e7 bounds. 'pedestrian' is admitted as DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'). The right-of-way (DEF-NRS-484A-210) is 'the right ... to proceed ... in preference to another' approaching so as 'to give rise to the danger of a crash'."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "e7",
+   "standard": "as may be necessary to avoid collision",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: while the subject moves, a pedestrian whose centre comes, under constant velocities, within the conflict clearance of the subject's centre within the conflict horizon is a danger of collision the subject must yield to",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "e2",
+   "id": "asm.business_or_residence_district",
+   "meaning": "the place of the road user at the observation lies in a business district or a residence district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a bicycle, electric bicycle or electric scooter. At an observation at which it occupies a sidewalk region s and has occupied s at every observation since its latest entry onto s (rel.occupies(subject, s) since the observation at which it rose), where at that entry asm.business_or_residence_district held and the subject entered into or emerged from an alley, driveway or building (as in LVMC_11_40_140_o1: at the entry or the observation before it occupied an st.alley or st.driveway_or_alley_entrance region; or at the observation before it occupied no st.highway region; or from the entry it occupies s until it occupies no st.highway region).",
+ "obligation": "For every pedestrian p of the scene other than the subject (ru.aggregate=DEF-NRS-484A-165::pedestrian): the subject is not in contact with p (rel.contact), and it is not the case that the subject's speed is above p.halt_speed_tolerance while prim.closest_approach_within(subject, p; p.conflict_horizon) holds with prim.closest_approach_distance(subject, p; p.conflict_horizon) below p.conflict_centre_clearance. A scene with no pedestrian is compliant.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "e1",
+   "why": "'The operator' is read through the device's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "e6",
+   "why": "Yielding is read as not proceeding into a conflict and not colliding: the subject may move where no pedestrian is in conflict with it; where one is, it must be at rest.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "In a declared business district a bicycle emerges from a driveway onto the sidewalk and keeps moving while a pedestrian walking along the sidewalk is on a course whose closest approach falls within the conflict horizon and the clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same bicycle halts on the sidewalk area and waits while the pedestrian passes, then moves on once the closest approach no longer falls within the clearance."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The bicycle rides on the roadway past the driveway and never occupies the sidewalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A bicycle near a driveway with a pedestrian approaching, where the source does not observe which regions the bicycle occupies.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "An electric scooter emerges from an alley across the sidewalk with no pedestrian in the scene: the duty binds the subject alone and is met."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Hydén, The development of a method for traffic safety evaluation: the Swedish Traffic Conflicts Technique (1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design dimensions (AASHTO Green Book design vehicle)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

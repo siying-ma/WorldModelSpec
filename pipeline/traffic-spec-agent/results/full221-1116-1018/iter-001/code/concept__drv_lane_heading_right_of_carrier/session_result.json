@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "duration_api_ms": 65677,
+  "stop_reason": "end_turn",
+  "session_id": "14480827-b9ae-4582-aa0d-87b113648169",
+  "total_cost_usd": 0.67098603,
+  "usage": {
+   "input_tokens": 20,
+   "cache_creation_input_tokens": 46913,
+   "cache_read_input_tokens": 401314,
+   "output_tokens": 7562,
+   "output_tokens_details": {
+    "thinking_tokens": 1123
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 46913,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 710,
+     "cache_read_input_tokens": 49668,
+     "cache_creation_input_tokens": 1713,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1713
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30910,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00341055,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 20,
+    "outputTokens": 7562,
+    "cacheReadInputTokens": 401314,
+    "cacheCreationInputTokens": 46913,
+    "webSearchRequests": 0,
+    "costUSD": 0.66757548,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1123,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46913,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate never judged the concept: both runs returned `SCOPE_VIOLATION`, and the file it flagged wasn't one I wrote. Each time the shell tool runs a command, including the gate itself, it saves the output to a file under `.runtime/tmp/…/tasks/<id>.output` inside the repo. The gate counts that file as a change outside the concept's files. My only allowed command is the gate, so I can't delete these files, and every further run makes a new one. I stopped after 2 of the 6 runs.\n\n**Concept body:** with h as a's heading and d as r's lane direction, both read normalised, the body is three conditions joined by \"and\":\n- d · h > 0\n- d_x·h_y − d_y·h_x < −sin_tol\n- `kin_speed a` > speed_tol\n\nIt uses only the three claimed atoms, the formals and the two parameters. The only number in it is zero. The contract left no choices open, so I declared no narrowings.\n\n**Witnesses:**\n- **Setup:** an east-pointing lane 100 (x 0–100 m, y 0–4 m), with motor vehicle 1 inside it at 10 m/s. The instance sets sin_tol = 1/10 and speed_tol = 1 m/s.\n- **holds:** heading (4/5, −3/5), so the cross product is −3/5, below −1/10. Expected: holds.\n- **fails:** heading east, so the cross product is 0. Expected: fails.\n- **blind:** the holds scene with `st.lane_direction` masked. Expected: unknown.\n\nThese are untested, since the gate stopped at the scope check.\n\n**Needed in the harness:** the scope check should ignore the shell tool's `.runtime/tmp` directory, or that directory should move outside the repo. Otherwise the harness's own gate run after this session will fail the same way.\n\nFiles are in the working directory:\n- `task_result.md`\n- `library/TrafficSpec/Concepts/lane/heading_right_of_carrier.lean`\n- `library/TrafficSpecWitness/Concepts/lane/heading_right_of_carrier.lean`",
+  "ttft_ms": 2124,
+  "type": "result",
+  "duration_ms": 66896,
+  "uuid": "9d18b46e-f7e1-4c68-b1e9-97402fdc782a",
+  "ttft_stream_ms": 858,
+  "time_to_request_ms": 318,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 41,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 13,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 39,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 178,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 19,
+  "time_to_request_cpu_ms": 281,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 3,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 858,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30910,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00341055,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 20,
+    "outputTokens": 7562,
+    "cacheReadInputTokens": 401314,
+    "cacheCreationInputTokens": 46913,
+    "webSearchRequests": 0,
+    "costUSD": 0.66757548,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1123,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46913,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

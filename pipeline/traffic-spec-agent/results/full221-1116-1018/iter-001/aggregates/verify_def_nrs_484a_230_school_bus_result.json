@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-230::school_bus\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle definition excludes devices moved by human power, so the admitting motor-vehicle requirement reaches no member of this class.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The bus contract does not establish or rule out the required passenger capacity, regular school transportation, ownership or compensation conditions.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A child pedestrian is a person rather than a motor vehicle, so the admitting words do not reach this class.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Commercial mass or licensing establishes neither the school-bus admission conditions nor the jurisdictional and operational conditions of the commercial-vehicle exception.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Electric bicycles are expressly excluded from motor vehicles, which the school-bus definition requires.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Electric scooters are expressly excluded from motor vehicles, which the school-bus definition requires.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation neither establishes nor rules out the capacity and school-transport conditions, and the posted words do not categorically exclude this class.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The fire-fighting vehicle contract neither establishes nor rules out the capacity and school-transport conditions, and no categorical exception names it.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the moped contract nor its posted definition precludes actual use to carry more than 10 passengers, while neither establishes the remaining admission conditions.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class contract does not establish the additional school-bus conditions, and the admitting words do not require qualifying members to bear school-bus markings.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The wheel and riding-position restrictions do not preclude actual use to carry more than 10 passengers, while the contract does not establish the remaining admission conditions.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official or contracted road service does not establish or rule out the required capacity, ownership or control, and regular school transportation.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A pedestrian is a person rather than a motor vehicle, so the admitting words do not reach this class.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian rather than a motor vehicle, so the admitting words do not reach this class.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motor-vehicle definition expressly requires that the vehicle not be operated upon rails.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Designation and markings for carrying school children do not establish the specified capacity, regular operation, ownership or compensation conditions, or freedom from the exceptions.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class contract fixes neither passenger capacity nor the school-transport and contractual conditions needed to determine admission or application of the passenger-car exception.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract establishes neither the school-transport admission conditions nor the regulatory jurisdiction and operation required by the carrier exception.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Although a drawn vehicle does not satisfy self-propulsion, the contract also includes combinations whose satisfaction of the admission conditions is not determined.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Public transit service does not determine whether the required school-transport conditions or the carrier exception apply.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A goods-carrying body neither rules out actual use to carry more than 10 passengers nor establishes the remaining school-bus admission conditions.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 71227,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5947,
+   "input_tokens_details": {
+    "cache_write_tokens": 5944,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5944
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 3181,
+   "output_tokens_details": {
+    "reasoning_tokens": 2058,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 9128,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_S7y4jUcdpMuu-NBGcshnKI18-ucJxg066XJZ6qQIkClKBfVYWpVHykpPvmg35aBGMZPdH8vAsT8viBVGu2Ghc2hR3jn_awLNECbiad4ACdt2Wo70uks7828Ik1Y-o7CbtPh22TeZp36fIRZPcaIRqctiLu-TeTu9tBzHHaLVxjrF-eCnI1CMmqPIbrZdntGoFYj9o2ymoAW56VdOKGabcZPlTOuW3zpU294nRXbx2xXNYGSthPZ9sNCI7byknaFtoINXkYfn6XJvFoK-_1rdagUEEY7Ppqv_jhIaQCFCFY5H8nomaJvatST3MHAy5JbMRI05ZiPxQFLxL65y8S5sjvBgBi8bE7p7SJcvDA9ZxdofXti3DBqY67ZHFc9YCDtrIE7jFSrXzwHL9r-3AdirHgSrLTz_NiQGZ6iHLmdHeWG2nUM=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

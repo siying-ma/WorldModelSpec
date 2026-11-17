@@ -1,0 +1,46 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8568b0d0a79e4a909ac8901c36078b26",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-020::authorized_emergency_vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class contract describes human-powered devices, which the vehicle definition expressly excepts.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The words do not establish that every bus satisfying the legal-permission requirement belongs to a jurisdiction-designated emergency class, so complete coverage is not established.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person, whereas the admitting words require a transport device.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Permission to depart from traffic laws does not expressly entail emergency-class designation for a qualifying commercial motor vehicle.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Motor assistance and a jurisdictional class attribute do not expressly guarantee the statutory equipment, power and assistance limits, so the electric-bicycle exception does not establish exclusion of the entire contractual class.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract does not require the statutory weight and speed limits, leaving scooters outside the named exception without a class-level decision under the authorization requirement.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The functional requirement of legal permission to depart from traffic laws is not stated to be equivalent to membership in a jurisdiction-designated emergency class.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The quoted contract expressly makes fire apparatus a sub-kind of ru.emergency_vehicle, which is proposed included, so every admitted fire apparatus necessarily carries the covering class.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the authorization wording nor the moped contract guarantees that every admitted moped carries ru.emergency_vehicle.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The words impose legal permission but do not establish that a motor vehicle possessing that permission must belong to a designated emergency class.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The supplied words do not make emergency-class designation a necessary consequence of a motorcycle satisfying the authorization requirement.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official-service membership expressly is not a stand-in for emergency-vehicle membership, and the definition supplies no implication from legal permission to that designation.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person rather than the wheelchair or other device carrying that person, while the admitting words require a device.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person, not a transport device within the vehicle definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract's on-track equipment is not expressly restricted to exclusive use upon stationary rails, so the exception does not establish exclusion of the whole class.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither school-bus designation nor the quoted legal-permission requirement guarantees membership in ru.emergency_vehicle.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The definition does not establish that a taxicab satisfying its permission requirement must carry an emergency-class designation.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contracts and quoted definition provide no necessary link between an admitted tour bus or limousine and ru.emergency_vehicle.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The words do not require an admitted drawn vehicle or combination to belong to a jurisdiction-designated emergency class.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Transit-service membership and legal permission to depart from traffic laws do not establish the emergency-class membership needed for complete coverage.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The quoted permission requirement does not establish that every qualifying goods-carrying motor vehicle carries ru.emergency_vehicle.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 185764,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5219,
+   "input_tokens_details": {
+    "cache_write_tokens": 5216,
+    "cached_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 5216
+    },
+    "audio_tokens": null,
+    "cached_tokens_details": null,
+    "image_tokens": null,
+    "text_tokens": null,
+    "video_tokens": null
+   },
+   "output_tokens": 8357,
+   "output_tokens_details": {
+    "reasoning_tokens": 7214,
+    "audio_tokens": null,
+    "text_tokens": null
+   },
+   "total_tokens": 13576,
+   "cost": null
+  },
+  "vendor": "openai",
+  "model": "openai/openai/gpt-6.1-sol",
+  "response_id": "resp_pHgYWjpMGwNb6ABHndO1dfUrP7xVqR5sqXm9airLQfLucDNLNApCfu0c8yZDN0-S5Bs2aOUSRHrA3S6VaR0e5Y-a9Dy0BWtxGyP_vkIlMVvACD_GC5xIYOkBxdT0EmPGLpEzqezymcM0Sz7e8E-ctH5wY3r95NZ35y8tVXzTdeWNEXNdIfA6zqv7WCFe9NwfmifLGCeeZYBcjUwSvhnMpeyfik1Ya5XGYysNfDBCwqoa33VWfkajAzxgVXIM2hqMRnay4ZrnLsMvjbcLi94SpvT-yKSoLH6B9uMjKhuIFyIqIei7Zlhj-83XCFE2XZecF17dkik5i6G8c6XOokjPgvFWcJGAg7stzYd5sp-nsNMFogwpml9d5uxQt4H7rZHEelKrXZUzlRGcD1f9tLt5vRRMmbasL_yu0zLX29_egVv31WQ=",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,291 @@
+{
+ "digest": "0a4e79e6caa954a0547952702a728bc7a81da889aaebf10f2a844b43bbeff56e",
+ "answer": {
+  "selection": [
+   {
+    "definition": "DEF-NRS-484B-018",
+    "term": "electric scooter",
+    "representation": "aggregate",
+    "target": "DEF-NRS-484B-018::electric_scooter",
+    "quote": "“Electric scooter” means a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position and propelled by its electric motor or by propulsion provided by the rider.",
+    "reason": "The definition denotes a set of ridden devices, which are tracked road users whose eligibility can be classified by the ru.* classes."
+   }
+  ],
+  "aggregates": [
+   {
+    "aggregate_id": "DEF-NRS-484B-018::electric_scooter",
+    "term": "electric scooter",
+    "definition": "DEF-NRS-484B-018",
+    "classifications": [
+     {
+      "class": "ru.bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "except: (1) Devices moved by human power or used exclusively upon stationary rails"
+       },
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor"
+       }
+      ],
+      "reason": "The required term “vehicle” excepts devices moved by human power, which is this class's contract, and the definition also requires an electric motor."
+     },
+     {
+      "class": "ru.bus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must not weigh more than 100 pounds without a rider"
+       }
+      ],
+      "reason": "A motor vehicle designed to carry many passengers cannot meet the 100-pound limit the definition imposes."
+     },
+     {
+      "class": "ru.child",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       },
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "a person in a manual or motorized wheelchair"
+       }
+      ],
+      "reason": "A child pedestrian may be in a motorized wheelchair, which no posted exception removes from “vehicle” and which the scooter words neither clearly admit nor exclude."
+     },
+     {
+      "class": "ru.commercial_motor_vehicle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must not weigh more than 100 pounds without a rider"
+       }
+      ],
+      "reason": "A vehicle over the commercial mass class cannot meet the 100-pound limit."
+     },
+     {
+      "class": "ru.electric_bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(2) Electric bicycles"
+       },
+       {
+        "definition": "DEF-NRS-484B-017",
+        "words": "The term does not include a moped or an electric scooter."
+       }
+      ],
+      "reason": "The required term “vehicle” expressly excepts electric bicycles, and the electric-bicycle definition makes the two terms disjoint."
+     },
+     {
+      "class": "ru.electric_scooter",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       },
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "(1) Must not weigh more than 100 pounds without a rider; and (2) Must have a maximum speed of not more than 20 miles per hour when powered solely by its electric motor"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(4) An electric scooter"
+       }
+      ],
+      "reason": "The admitting words describe this class, but the nested definition of “vehicle” expressly excepts an electric scooter (which read literally would leave the term empty), and in any case the class contract does not carry the 100-pound and 20-mph limits, so the words do not decide every member."
+     },
+     {
+      "class": "ru.emergency_vehicle",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       }
+      ],
+      "reason": "The contract fixes no size, motor or form, so a light handlebar electric device of an emergency kind is neither admitted nor excluded by the words."
+     },
+     {
+      "class": "ru.fire_apparatus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must not weigh more than 100 pounds without a rider"
+       }
+      ],
+      "reason": "A fire-fighting vehicle cannot meet the 100-pound limit."
+     },
+     {
+      "class": "ru.moped",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "The term does not include an electric bicycle or an electric scooter."
+       }
+      ],
+      "reason": "The posted moped definition makes moped and electric scooter disjoint, and this class is the moped as the jurisdiction classes it."
+     },
+     {
+      "class": "ru.motor_vehicle",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       }
+      ],
+      "reason": "The contract covers any self-propelled non-rail vehicle without size or speed bounds, and the definition's words neither admit nor exclude a light handlebar electric member of it."
+     },
+     {
+      "class": "ru.motorcycle",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "designed to be ridden on in an upright or seated position"
+       },
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must have a maximum speed of not more than 20 miles per hour when powered solely by its electric motor"
+       }
+      ],
+      "reason": "A light electric two-wheeler ridden astride with handlebars within the weight and speed limits is neither admitted nor excluded by any posted words, as no posted motorcycle definition disclaims electric scooters."
+     },
+     {
+      "class": "ru.official_vehicle",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       }
+      ],
+      "reason": "The contract fixes no size or form, so a light handlebar electric device in official service is neither admitted nor excluded by the words."
+     },
+     {
+      "class": "ru.pedestrian",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(1) Devices moved by human power"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(3) Electric personal assistive mobility devices"
+       }
+      ],
+      "reason": "Persons afoot, in manual wheelchairs and on such mobility devices fall outside “vehicle”, but a motorized wheelchair is excepted by no posted words and the scooter words do not decide it."
+     },
+     {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "a person in a manual or motorized wheelchair"
+       },
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       }
+      ],
+      "reason": "Such a pedestrian may be in a motorized wheelchair, which no posted words except from “vehicle” or decide against the scooter words."
+     },
+     {
+      "class": "ru.rail_vehicle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "Devices moved by human power or used exclusively upon stationary rails"
+       }
+      ],
+      "reason": "The required term “vehicle” excepts devices used exclusively upon stationary rails."
+     },
+     {
+      "class": "ru.school_bus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must not weigh more than 100 pounds without a rider"
+       }
+      ],
+      "reason": "A bus for carrying school children cannot meet the 100-pound limit."
+     },
+     {
+      "class": "ru.taxicab",
+      "status": "unresolved",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       }
+      ],
+      "reason": "The contract fixes no size or form, so a marked passenger device for hire is neither admitted nor excluded by the words."
+     },
+     {
+      "class": "ru.tour_bus_or_limousine",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must not weigh more than 100 pounds without a rider"
+       }
+      ],
+      "reason": "A tour or shuttle bus or a lengthened passenger vehicle cannot meet the 100-pound limit."
+     },
+     {
+      "class": "ru.trailer_or_combination",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "propelled by its electric motor or by propulsion provided by the rider"
+       }
+      ],
+      "reason": "A trailer is drawn by another vehicle rather than propelled by its own motor or rider, and a combination is several vehicles, not the single ridden device the words admit."
+     },
+     {
+      "class": "ru.transit_bus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must not weigh more than 100 pounds without a rider"
+       }
+      ],
+      "reason": "A bus in public transit service cannot meet the 100-pound limit."
+     },
+     {
+      "class": "ru.truck",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "Must not weigh more than 100 pounds without a rider"
+       }
+      ],
+      "reason": "A motor vehicle with a body built for carrying goods cannot meet the 100-pound limit."
+     }
+    ]
+   }
+  ]
+ }
+}

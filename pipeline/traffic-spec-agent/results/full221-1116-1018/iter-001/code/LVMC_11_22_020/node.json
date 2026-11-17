@@ -1,0 +1,173 @@
+{
+ "node_id": "LVMC_11_22_020",
+ "law_refs": [
+  "LVMC-11-22-020"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It is unlawful for any person to drive or operate",
+   "role": "obligation"
+  },
+  {
+   "id": "s2",
+   "text": "a vehicle of any kind or character",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "in a careless or imprudent manner",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "on any highway",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "in the City",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'drive or operate' names who controls the vehicle, which no atom observes; per the ontology's section on what is not an atom it is read through the vehicle's controlled motion, 'a vehicle moving on the road is taken to be driven'. kin.speed, 'magnitude of velocity', tells the moving vehicle (speed above p.halt_speed_tolerance) from one at rest; it is used for motion, not as a stand-in for acceleration or a manoeuvre. 'any person' is the one who drives: the duty binds the vehicle's conduct whoever controls it."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a defined term of this law with the admitted aggregate DEF-NRS-484A-320::vehicle: '“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exceptions (human-powered devices, electric bicycles, EPAMDs, electric scooters) made by the reading's classification. 'of any kind or character' adds no restriction and removes none beyond the definition; the aggregate is one atom and is not expanded."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "Same words and meaning as the index's 'on a highway' -> rel.occupies, st.highway. st.highway: 'the entire public way between its boundary lines, including sidewalks and shoulders', which is the defined 'entire width between the boundary lines of every way dedicated to a public authority'; it is not the roadway, and the words do not narrow to the roadway. rel.occupies: 'a road user's footprint overlaps a lane / region' anchors the subject on that highway."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "careless or imprudent manner",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.contact"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: driving is read as careless or imprudent where, while the subject moves, it collides with another road user (rel.contact) or another road user's centre and the subject's, under constant velocities, approach within p.conflict_horizon to a centre distance below p.conflict_centre_clearance (a critical conflict). Care is a state of mind and the whole duty is this standard, so the rule is a surrogate.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "s5",
+   "id": "asm.within_city_limits",
+   "meaning": "the place of the road user at the observation lies within the territorial limits of the incorporated city whose ordinances the reading applies, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of the vehicle aggregate DEF-NRS-484A-320::vehicle, its footprint occupies a highway region (st.highway), asm.within_city_limits holds at the observation, and the subject is moving (kin.speed above p.halt_speed_tolerance).",
+ "obligation": "No other road user u of the scene (any class) is in contact with the subject (rel.contact), and no other road user u is such that, under constant velocities, the subject's and u's centres approach within p.conflict_horizon (prim.closest_approach_within) to a closest-approach centre distance below p.conflict_centre_clearance (prim.closest_approach_distance). Surrogate: the verdict is evidence of carelessness, not a legal conclusion.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'drive or operate' is read through the vehicle's controlled motion: a moving vehicle is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'careless or imprudent' is read only through a collision or a critical conflict with another road user; careless conduct that produces neither (inattention, erratic lane keeping with no one near, harsh braking) is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject car moves at 15 m/s on a highway inside the city (asm.within_city_limits declared true) toward a car halted ahead in its lane; at 2 s from the closest approach the projected centre distance is 1 m, and it does not brake."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject car moves at 12 m/s alone on a city highway; no other road user is in the scene, so no contact and no conflict exist."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car moves in a private parking lot that is no highway region; it occupies no st.highway."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car moves on a city street close behind a slower car with a projected conflict, but the source does not observe region occupancy, so whether it is on a highway is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of road-user tracking in recorded and simulated traces"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique (Swedish TCT, Hydén 1987): time-to-collision thresholds of 1.5 to 3 s"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design vehicle dimensions (about 5.8 m by 2.1 m)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}
