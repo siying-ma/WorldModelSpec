@@ -1,0 +1,293 @@
+{
+ "node_id": "NRS_484B_270_2b_o2",
+ "law_refs": [
+  "NRS-484B-270-2b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "When overtaking or passing",
+   "role": "trigger"
+  },
+  {
+   "id": "b2",
+   "text": "a bicycle, an electric bicycle or an electric scooter",
+   "role": "trigger"
+  },
+  {
+   "id": "b3",
+   "text": "proceeding in the same direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "b4",
+   "text": "the driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "b5",
+   "text": "shall exercise due care and:",
+   "role": "sibling"
+  },
+  {
+   "id": "b6",
+   "text": "If there is only one lane for traffic proceeding in the same direction,",
+   "role": "condition"
+  },
+  {
+   "id": "b7",
+   "text": "pass to the left of the bicycle, electric bicycle or electric scooter",
+   "role": "obligation"
+  },
+  {
+   "id": "b8",
+   "text": "at a safe distance, which must be not less than 3 feet between any portion of the vehicle and the bicycle, electric bicycle or electric scooter,",
+   "role": "standard"
+  },
+  {
+   "id": "b9",
+   "text": "and shall not move again to the right side of the highway",
+   "role": "sibling"
+  },
+  {
+   "id": "b10",
+   "text": "until the vehicle is safely clear of the overtaken bicycle, electric bicycle or electric scooter.",
+   "role": "sibling"
+  },
+  {
+   "id": "b11",
+   "text": "Except as otherwise provided in NRS 484B.213 and 484B.217 [NRS-484B-213-1, NRS-484B-213-2a, NRS-484B-213-2b, NRS-484B-213-2c, NRS-484B-217-2],",
+   "role": "reference"
+  },
+  {
+   "id": "b12",
+   "text": "when passing to the left of a bicycle, electric bicycle or electric scooter at a safe distance of not less than 3 feet between any portion of the vehicle and the bicycle, electric bicycle or electric scooter, this paragraph authorizes the driver, if it is safe, to pass: (1) To the left of the center of the highway. (2) In a no-passing zone.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b1",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'overtaking or passing' a road user proceeding the same way is drv.interaction.overtake_pass(subject, r): 'a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'; it denotes the relative motion only, the side being read by b7. The pass is under way while the bodies are side by side (rel.longitudinal_overlap at or above zero; a projection, not a contact or a distance), within the window behind the pass's recognition."
+  },
+  {
+   "span": "b2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'a bicycle' is DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride'), 'an electric bicycle' DEF-NRS-484B-017::electric_bicycle, 'an electric scooter' DEF-NRS-484B-018::electric_scooter ('a vehicle with handlebars and an electric motor that is designed to be ridden on'); each admitted aggregate claimed whole."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "rel.same_direction",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'proceeding' is the overtaken road user moving (kin.speed above the halt tolerance); 'in the same direction' is rel.same_direction ('headings aligned') between the subject and it."
+  },
+  {
+   "span": "b4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'a motor vehicle' is DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'). 'the driver' is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "'only one lane for traffic proceeding in the same direction' is the count of lanes in the direction of a lane (st.lane) the overtaken rider occupies (rel.occupies) being the stated one (st.lane_adjacency, 'the count of lanes in that direction'; not the marking between lanes). 'traffic' names the users of the lane; no membership is read."
+  },
+  {
+   "span": "b7",
+   "atoms": [
+    "rel.bearing",
+    "rel.longitudinal_overlap",
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'pass to the left of the bicycle, electric bicycle or electric scooter' (the overtaken road user of b2, its aggregates claimed again for these words): at every observation of the pass at which the two are side by side (rel.longitudinal_overlap at or above zero), the rider lies on the subject's right: the lateral component of its bearing in the subject's frame (rel.bearing, 'direction of b from a in a's frame (for \"on the right of\" ...)') is negative."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "b8",
+   "standard": "at a safe distance, which must be not less than 3 feet between any portion of the vehicle and the bicycle",
+   "concepts": [
+    "rel.surface_gap"
+   ],
+   "params": [
+    "p.bicycle_pass_safe_gap"
+   ],
+   "convention": "lateral passing clearance: the distance between the nearest points of the two bodies (rel.surface_gap, 'distance between the nearest points of two bodies', which is the distance between any portion of the vehicle and the rider's device) is at least the larger of the stated 3 feet and the bicyclist operating-space clearance the reading sets, at every observation at which the two are side by side",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_2a",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_2b",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_2c",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_217_2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  }
+ ],
+ "residues": [
+  {
+   "span": "b12",
+   "why": "the authorization lets a driver passing a rider at the stated clearance pass left of the center or in a no-passing zone, conduct other rules (NRS 484B.213, 484B.217) forbid; it relaxes those rules and leaves the duty to pass on the left at a safe distance unchanged",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-130::motor_vehicle. At the observation, drv.interaction.overtake_pass(subject, r) rises, with window p.overtake_window and same_dir_cos p.overtake_same_direction_cos, for some road user r, not the subject, a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, which at some observation of that window was moving (kin.speed above p.halt_speed_tolerance) with its heading aligned with the subject's (rel.same_direction, p.overtake_same_direction_cos); and at some observation of that window at which the two were side by side (rel.longitudinal_overlap at or above zero), r occupied a st.lane whose count of lanes in its direction (st.lane_adjacency count) is the literal one.",
+ "obligation": "For every such r (re-bound with its whole selection): at every observation of the window behind of length p.overtake_window at which the subject and r are side by side (rel.longitudinal_overlap at or above zero), r lies on the subject's right (rel.bearing from the subject, lateral component negative) and the gap between their bodies (rel.surface_gap) is at least the larger of the literal 3 ft and p.bicycle_pass_safe_gap.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.halt_speed_tolerance",
+  "p.bicycle_pass_safe_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "b4",
+   "why": "'the driver' of a motor vehicle is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b8",
+   "why": "'a safe distance' is read as one lateral clearance the reading sets, never below the stated 3 feet; the clearance does not grow with the subject's speed",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Road with one lane in the subject's direction; a bicycle rides in it. The subject car overtakes the bicycle on its left with a body-to-body gap below 3 feet while side by side."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same pass, the subject car keeping a gap above both 3 feet and the safe-gap clearance while side by side, the bicycle on its right."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car overtakes another car on a one-lane road; no bicycle, electric bicycle or electric scooter is in the scene. The duty binds the subject alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe the gap between bodies.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject car overtakes an electric scooter on the scooter's right, with a wide gap: while side by side the scooter lies on the subject's left."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The road has two lanes in the subject's direction; the subject passes a bicycle."
+  }
+ ],
+ "literals": [
+  {
+   "span": "b6",
+   "text": "one",
+   "value": 1,
+   "unit": "count"
+  },
+  {
+   "span": "b8",
+   "text": "3 feet",
+   "value": 3,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "NRS_484B_213_1": "b43650250eba37f8cc8111b748ea7fcea5f58cef4346c0ab29cf5ea3b9138ba8",
+  "NRS_484B_213_2a": "00e8ee383ecb3afe034de960c1b57acbdb597dffacaf09c66a6ef5d7daadbc53",
+  "NRS_484B_213_2b": "9285adfb21c2aeab68f58a2ab797b2f96b227256a5bceb8c7bfa6a6c47953398",
+  "NRS_484B_213_2c": "0035d2544bb42d2ad6302a5f6f7a07606513c991e54d4cd3015e3340ce4cf5cf",
+  "NRS_484B_217_2": "23f721897da9ef9047a0e759beb58a1ef7b111f13211b17875d68c402f5aab54"
+ }
+}

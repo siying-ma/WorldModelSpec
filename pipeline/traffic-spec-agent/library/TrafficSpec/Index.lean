@@ -90,6 +90,8 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_267_2b
 import TrafficSpec.Rules.NRS_484B.NRS_484B_267_2e
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2a_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2a_o2
+import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2b_o1
+import TrafficSpec.Rules.NRS_484B.NRS_484B_270_2b_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_5a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_7a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_7b
@@ -293,6 +295,8 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_267_2e.rule,
   TrafficSpec.Rules.NRS_484B_270_2a_o1.rule,
   TrafficSpec.Rules.NRS_484B_270_2a_o2.rule,
+  TrafficSpec.Rules.NRS_484B_270_2b_o1.rule,
+  TrafficSpec.Rules.NRS_484B_270_2b_o2.rule,
   TrafficSpec.Rules.NRS_484B_270_5a.rule,
   TrafficSpec.Rules.NRS_484B_270_7a.rule,
   TrafficSpec.Rules.NRS_484B_270_7b.rule,

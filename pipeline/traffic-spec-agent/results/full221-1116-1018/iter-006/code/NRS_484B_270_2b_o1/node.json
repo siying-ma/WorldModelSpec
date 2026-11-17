@@ -1,0 +1,255 @@
+{
+ "node_id": "NRS_484B_270_2b_o1",
+ "law_refs": [
+  "NRS-484B-270-2b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "When overtaking or passing",
+   "role": "trigger"
+  },
+  {
+   "id": "b2",
+   "text": "a bicycle, an electric bicycle or an electric scooter",
+   "role": "trigger"
+  },
+  {
+   "id": "b3",
+   "text": "proceeding in the same direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "b4",
+   "text": "the driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "b5",
+   "text": "shall exercise due care and:",
+   "role": "obligation"
+  },
+  {
+   "id": "b6",
+   "text": "If there is only one lane for traffic proceeding in the same direction,",
+   "role": "sibling"
+  },
+  {
+   "id": "b7",
+   "text": "pass to the left of the bicycle, electric bicycle or electric scooter",
+   "role": "sibling"
+  },
+  {
+   "id": "b8",
+   "text": "at a safe distance, which must be not less than 3 feet between any portion of the vehicle and the bicycle, electric bicycle or electric scooter,",
+   "role": "sibling"
+  },
+  {
+   "id": "b9",
+   "text": "and shall not move again to the right side of the highway",
+   "role": "sibling"
+  },
+  {
+   "id": "b10",
+   "text": "until the vehicle is safely clear of the overtaken bicycle, electric bicycle or electric scooter.",
+   "role": "sibling"
+  },
+  {
+   "id": "b11",
+   "text": "Except as otherwise provided in NRS 484B.213 and 484B.217 [NRS-484B-213-1, NRS-484B-213-2a, NRS-484B-213-2b, NRS-484B-213-2c, NRS-484B-217-2],",
+   "role": "reference"
+  },
+  {
+   "id": "b12",
+   "text": "when passing to the left of a bicycle, electric bicycle or electric scooter at a safe distance of not less than 3 feet between any portion of the vehicle and the bicycle, electric bicycle or electric scooter, this paragraph authorizes the driver, if it is safe, to pass: (1) To the left of the center of the highway. (2) In a no-passing zone.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b1",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'overtaking or passing' a road user proceeding the same way is drv.interaction.overtake_pass(subject, r): 'a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'; it denotes the relative motion only. The pass is under way while the bodies are side by side (rel.longitudinal_overlap at or above zero; a projection, not a contact or a distance), within the window behind the pass's recognition."
+  },
+  {
+   "span": "b2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'a bicycle' is DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride'), 'an electric bicycle' DEF-NRS-484B-017::electric_bicycle, 'an electric scooter' DEF-NRS-484B-018::electric_scooter ('a vehicle with handlebars and an electric motor that is designed to be ridden on'); each admitted aggregate claimed whole, as the index maps 'a bicycle, an electric bicycle or an electric scooter'."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "rel.same_direction",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'proceeding' is the overtaken road user moving (kin.speed above the halt tolerance); 'in the same direction' is rel.same_direction ('headings aligned') between the subject and it, as the index maps 'proceeding in the same direction,'."
+  },
+  {
+   "span": "b4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'a motor vehicle' is DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'). 'the driver' is read through the vehicle's controlled motion."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "b5",
+   "standard": "shall exercise due care",
+   "concepts": [
+    "rel.contact",
+    "kin.accel_longitudinal",
+    "rel.longitudinal_overlap"
+   ],
+   "params": [
+    "p.rider_evasive_decel"
+   ],
+   "convention": "traffic-conflict technique: the pass is made with due care where the subject's body never touches the overtaken rider's (rel.contact) and the rider is never made to brake harder than an evasive deceleration (kin.accel_longitudinal below its negative) while the two are side by side (rel.longitudinal_overlap at or above zero); care is a state of mind, read only through this outcome",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_2a",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_2b",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_213_2c",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  },
+  {
+   "span": "b11",
+   "rule": "NRS_484B_217_2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "unless",
+   "scopes": "b12"
+  }
+ ],
+ "residues": [
+  {
+   "span": "b12",
+   "why": "the authorization lets a driver passing a rider at the stated clearance pass left of the center or in a no-passing zone, conduct other rules (NRS 484B.213, 484B.217) forbid; it relaxes those rules and leaves the duties of this paragraph unchanged: the duty of care is the same whether or not the authorization holds",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-130::motor_vehicle. At the observation, drv.interaction.overtake_pass(subject, r) rises, with window p.overtake_window and same_dir_cos p.overtake_same_direction_cos, for some road user r, not the subject, a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, which at some observation of the window behind of length p.overtake_window was moving (kin.speed above p.halt_speed_tolerance) with its heading aligned with the subject's (rel.same_direction, p.overtake_same_direction_cos). The authorization (b12), suspended where NRS_484B_213_1, NRS_484B_213_2a, NRS_484B_213_2b, NRS_484B_213_2c or NRS_484B_217_2 applies, does not change this duty.",
+ "obligation": "Surrogate. For every such r (re-bound with its whole selection): at every observation of the window behind of length p.overtake_window, the subject is not in contact with r (rel.contact), and wherever the two are side by side (rel.longitudinal_overlap at or above zero) r's longitudinal acceleration (kin.accel_longitudinal) is not below the negative of p.rider_evasive_decel.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.halt_speed_tolerance",
+  "p.rider_evasive_decel"
+ ],
+ "narrowings": [
+  {
+   "span": "b4",
+   "why": "'the driver' of a motor vehicle is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b5",
+   "why": "'due care' is read only through the pass's outcome for the rider: no contact and no evasive braking while side by side; the rule is a surrogate",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a road with one lane in the subject's direction, a bicycle is ridden ahead of the subject car; the subject car overtakes it and its mirror touches the bicyclist while side by side."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same pass, made without contact; the bicyclist keeps its speed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car overtakes another car; no bicycle, electric bicycle or electric scooter is in the scene. The duty binds the subject alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in permit, but the source does not observe contact between bodies.",
+   "masked": [
+    "rel.contact"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject car overtakes an electric bicycle without touching it, but while they are side by side the rider brakes harder than the evasive deceleration."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "NRS_484B_213_1": "b43650250eba37f8cc8111b748ea7fcea5f58cef4346c0ab29cf5ea3b9138ba8",
+  "NRS_484B_213_2a": "00e8ee383ecb3afe034de960c1b57acbdb597dffacaf09c66a6ef5d7daadbc53",
+  "NRS_484B_213_2b": "9285adfb21c2aeab68f58a2ab797b2f96b227256a5bceb8c7bfa6a6c47953398",
+  "NRS_484B_213_2c": "0035d2544bb42d2ad6302a5f6f7a07606513c991e54d4cd3015e3340ce4cf5cf",
+  "NRS_484B_217_2": "23f721897da9ef9047a0e759beb58a1ef7b111f13211b17875d68c402f5aab54"
+ }
+}

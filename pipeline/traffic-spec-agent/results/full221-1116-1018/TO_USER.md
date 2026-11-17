@@ -904,6 +904,8 @@ _Observed during iteration 4: these items record what the run reported then, not
 
 ## Iteration 5
 
+_Observed during iteration 5: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - parameter `p.pedestrian_clearing_speed_min` = 0.5 m/s proposed by `NRS_484B_283_1d4_o2` (the speed below which a pedestrian still on the roadway counts as lingering rath); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
 - `NRS-484B-283-1d3` span r composes accepted `NRS_484B_287_1c` (as: exception) — both rules can flag the same episode
 - `NRS-484B-283-1d3` span r composes accepted `NRS_484B_287_1d` (as: exception) — both rules can flag the same episode
@@ -979,3 +981,16 @@ _Observed during iteration 4: these items record what the run reported then, not
 - `NRS-484B-283-1d3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-283-1d4`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-777-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 6
+
+- planner's note for the operator (iteration 6, `iter-006/plan`, note 1, section 15e56e4aa41f1191; a report, it decides nothing): Nothing new. The `pin_mismatch` was a consequence of the iteration-5 repair of `NRS_484B_217_2`. Re-planning against the current record resolves it.
+- parameter `p.ped_traffic_signal_facing_cos` = 0.87 ratio proposed by `NRS_484B_307_2b` (cosine of the largest angle (about thirty degrees) between a pedestrian's headin); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.ped_traffic_signal_facing_reach` = 60.0 m proposed by `NRS_484B_307_2b` (the largest distance from a pedestrian to a vehicular signal head at which the h); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- `NRS-484B-270-2b` (NRS_484B_270_2b_o1) reads "the driver of a motor vehicle" (agency) through conduct: 'the driver' of a motor vehicle is read through the vehicle's controlled motion
+- `NRS-484B-270-2b` span b11 composes accepted `NRS_484B_213_1` (as: unless) — both rules can flag the same episode
+- `NRS-484B-270-2b` span b11 composes accepted `NRS_484B_213_2a` (as: unless) — both rules can flag the same episode
+- `NRS-484B-270-2b` span b11 composes accepted `NRS_484B_213_2b` (as: unless) — both rules can flag the same episode
+- `NRS-484B-270-2b` span b11 composes accepted `NRS_484B_213_2c` (as: unless) — both rules can flag the same episode
+- `NRS-484B-270-2b` span b11 composes accepted `NRS_484B_217_2` (as: unless) — both rules can flag the same episode
+- `NRS-484B-270-2b` (NRS_484B_270_2b_o2) reads "the driver of a motor vehicle" (agency) through conduct: 'the driver' of a motor vehicle is read through the vehicle's controlled motion

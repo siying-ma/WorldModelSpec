@@ -1,0 +1,384 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "r"
+         },
+         {
+          "var": "subject"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "or": [
+          {
+           "args": [
+            {
+             "var": "r"
+            },
+            {
+             "lit": "DEF-NRS-484A-025::bicycle"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          },
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "r"
+              },
+              {
+               "lit": "DEF-NRS-484B-017::electric_bicycle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "r"
+              },
+              {
+               "lit": "DEF-NRS-484B-018::electric_scooter"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "rises": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "derived": "drv_interaction_overtake_pass",
+            "params": [
+             {
+              "param": "p.overtake_window"
+             },
+             {
+              "param": "p.overtake_same_direction_cos"
+             }
+            ]
+           }
+          },
+          {
+           "not": {
+            "body": {
+             "not": {
+              "and": [
+               {
+                "cmp": "gt",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "measure": "kin_speed"
+                },
+                "rhs": {
+                 "param": "p.halt_speed_tolerance"
+                }
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_same_direction",
+                "params": [
+                 {
+                  "param": "p.overtake_same_direction_cos"
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            "holds_for": "time",
+            "length": {
+             "param": "p.overtake_window"
+            },
+            "subject": "subject"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_270_2b_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-270-2b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "r"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "r"
+              },
+              {
+               "lit": "DEF-NRS-484A-025::bicycle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "r"
+                },
+                {
+                 "lit": "DEF-NRS-484B-017::electric_bicycle"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "r"
+                },
+                {
+                 "lit": "DEF-NRS-484B-018::electric_scooter"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "rises": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "derived": "drv_interaction_overtake_pass",
+              "params": [
+               {
+                "param": "p.overtake_window"
+               },
+               {
+                "param": "p.overtake_same_direction_cos"
+               }
+              ]
+             }
+            },
+            {
+             "not": {
+              "body": {
+               "not": {
+                "and": [
+                 {
+                  "cmp": "gt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "measure": "kin_speed"
+                  },
+                  "rhs": {
+                   "param": "p.halt_speed_tolerance"
+                  }
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "r"
+                   }
+                  ],
+                  "atom": "rel_same_direction",
+                  "params": [
+                   {
+                    "param": "p.overtake_same_direction_cos"
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "holds_for": "time",
+              "length": {
+               "param": "p.overtake_window"
+              },
+              "subject": "subject"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_contact",
+           "params": []
+          }
+         },
+         {
+          "implies": [
+           {
+            "cmp": "ge",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "measure": "rel_longitudinal_overlap"
+            },
+            "rhs": {
+             "lit": {
+              "den": 1,
+              "num": 0
+             },
+             "unit": "metre"
+            }
+           },
+           {
+            "cmp": "ge",
+            "lhs": {
+             "args": [
+              {
+               "var": "r"
+              }
+             ],
+             "measure": "kin_accel_longitudinal"
+            },
+            "rhs": {
+             "neg": {
+              "param": "p.rider_evasive_decel"
+             }
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "holds_for": "time",
+       "length": {
+        "param": "p.overtake_window"
+       },
+       "subject": "subject"
+      }
+     ]
+    },
+    "forall_user": "r"
+   },
+   "residues": [
+    "the authorization lets a driver passing a rider at the stated clearance pass left of the center or in a no-passing zone, conduct other rules (NRS 484B.213, 484B.217) forbid; it relaxes those rules and leaves the duties of this paragraph unchanged: the duty of care is the same whether or not the authorization holds"
+   ],
+   "surrogate": true
+  },
+  "context": "6527a3ef4baab91322741790",
+  "candidate_digest": "2e9141e7654d700b5b394afcd8e9d974894eb1f2430a130dca117bb24f7e77f1"
+ }
+}

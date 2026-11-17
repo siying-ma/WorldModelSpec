@@ -1,0 +1,79 @@
+'TrafficSpec.Rules.NRS_484B_307_9c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_9c.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_307_9c","intentions":[],"laws":["NRS-484B-307-9c"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"and":[{"args":[{"var":"h"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"h"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},{"not":{"args":[{"var":"h"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"cmp":"le","lhs":{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"mul":[{"param":"p.ped_traffic_signal_facing_reach"},{"param":"p.ped_traffic_signal_facing_reach"}]}},{"and":[{"cmp":"ge","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"}]}]},"rhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}},{"cmp":"ge","lhs":{"mul":[{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]},"rhs":{"mul":[{"mul":[{"param":"p.ped_traffic_signal_facing_cos"},{"param":"p.ped_traffic_signal_facing_cos"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]}}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"h"},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d1"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d2"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d3_o1"}},{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d4_o1"}}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_307_9c","intentions":[],"laws":["NRS-484B-307-9c"],"narrowings":[],"obligation":{"not":{"rises":{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"}}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"and":[{"args":[{"var":"h"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"h"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"h"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},{"not":{"args":[{"var":"h"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"cmp":"le","lhs":{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"mul":[{"param":"p.ped_traffic_signal_facing_reach"},{"param":"p.ped_traffic_signal_facing_reach"}]}},{"and":[{"cmp":"ge","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"}]}]},"rhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}},{"cmp":"ge","lhs":{"mul":[{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]},"rhs":{"mul":[{"mul":[{"param":"p.ped_traffic_signal_facing_cos"},{"param":"p.ped_traffic_signal_facing_cos"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"x"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]},{"sub":[{"args":[{"var":"h"},{"lit":"y"}],"measure":"dev_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]}]}}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"h"},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d1"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d2"}},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d3_o1"}},{"not":{"map":{"subject":"subject"},"rule_applies":"NRS_484B_283_1d4_o1"}}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_307_9c","intentions":[],"laws":["NRS-484B-307-9c"],"narrowings":[],"obligation":{"not":{"rises":{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"}}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,dev_traffic_signal,dev_traffic_signal_shows,dev_position,kin_position,kin_heading,st_roadway,rel_occupies
+COMPOSES	NRS_484B_283_1d1,NRS_484B_283_1d2,NRS_484B_283_1d3_o1,NRS_484B_283_1d4_o1
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.position
+MANIFEST	branch_1	
+OCC	subject
+OCC	?h
+OCC	h
+OCC	h
+OCC	h
+OCC	h
+OCC	h
+OCC	h
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	h
+OCC	subject
+OCC	$,subject
+OCC	$,subject
+OCC	$,subject
+OCC	$,subject
+OCC	?r
+OCC	subject,r
+TIME	occurrences	1
+TIME	checks	230
+REF	branch_1	scene t=0: device 101 governs structure 13 (crosswalk); a device governs the travel regions whose traffic it controls (a lane, reserved lane, turn lane, centre turn lane, bicycle lane or path, roadway, one-way roadway or shoulder) or an intersection
+TIME	lint	54
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	258
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	244
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	213
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	256
+SCEN	branch_1	not_applicable	?	branch_1: expected not_applicable, got violated []
+TIME	scenario:branch_1	262
+TIME	witnesses	1233
+DONE_WITNESSES

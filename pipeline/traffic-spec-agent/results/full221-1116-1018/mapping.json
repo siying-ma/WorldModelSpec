@@ -176,7 +176,7 @@
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_270_2a_o2",
+  "node": "NRS_484B_270_2b_o2",
   "role": "trigger"
  },
  "a bicycle, an electric bicycle or an electric scooter.": {
@@ -2111,6 +2111,15 @@
   "node": "NRS_484B_270_2a_o2",
   "role": "condition"
  },
+ "if there is only one lane for traffic proceeding in the same direction,": {
+  "atoms": [
+   "rel.occupies",
+   "st.lane",
+   "st.lane_adjacency"
+  ],
+  "node": "NRS_484B_270_2b_o2",
+  "role": "condition"
+ },
  "in a bus stop,": {
   "atoms": [
    "rel.occupies",
@@ -3446,6 +3455,17 @@
   "node": "LVMC_11_52_060",
   "role": "subject"
  },
+ "pass to the left of the bicycle, electric bicycle or electric scooter": {
+  "atoms": [
+   "rel.bearing",
+   "rel.longitudinal_overlap",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ],
+  "node": "NRS_484B_270_2b_o2",
+  "role": "obligation"
+ },
  "passing around a rotary traffic island": {
   "atoms": [
    "rel.occupies",
@@ -3521,7 +3541,7 @@
    "kin.speed",
    "rel.same_direction"
   ],
-  "node": "NRS_484B_270_2a_o2",
+  "node": "NRS_484B_270_2b_o2",
   "role": "trigger"
  },
  "project into the street more than fifteen feet measured on a line at right angles to the curb.": {
@@ -4270,7 +4290,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
   ],
-  "node": "NRS_484B_270_5a",
+  "node": "NRS_484B_270_2b_o2",
   "role": "subject"
  },
  "the driver of a vehicle": {
@@ -5316,7 +5336,7 @@
    "drv.interaction.overtake_pass",
    "rel.longitudinal_overlap"
   ],
-  "node": "NRS_484B_270_2a_o2",
+  "node": "NRS_484B_270_2b_o2",
   "role": "trigger"
  },
  "when passing a standing vehicle or one proceeding in the same direction.": {

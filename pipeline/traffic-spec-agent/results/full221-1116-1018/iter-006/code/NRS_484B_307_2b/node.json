@@ -1,0 +1,241 @@
+{
+ "node_id": "NRS_484B_307_2b",
+ "law_refs": [
+  "NRS-484B-307-2b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "When the signal is circular green alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Pedestrians",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "facing such a signal",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "may proceed across the highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "within any marked or unmarked crosswalk,",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "unless directed otherwise by another device as provided in NRS 484B.283 [NRS-484B-283-1d1, NRS-484B-283-1d2, NRS-484B-283-1d3, NRS-484B-283-1d4].",
+   "role": "reference"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "'the signal is circular green alone' is dev.traffic_signal ('a signal head; state ∈ {circular_green, ...}; several states may be displayed at once') displaying circular_green and no other state."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Pedestrians' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'), 'membership of a legal aggregate'."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.position",
+    "kin.position",
+    "kin.heading"
+   ],
+   "derived": [],
+   "justification": "As the index maps 'pedestrians facing the signal' (NRS_484B_283_1d1): facing is read from the head's location (dev.position 'location of the device head / sign face'; not a stand-in for a stop line or crossing, none is read) and the pedestrian's kin.position and kin.heading ('direction the body points'): the head lies within p.ped_traffic_signal_facing_reach of the pedestrian and within the angle whose cosine is p.ped_traffic_signal_facing_cos of its heading (compared on squares: the dot product of the vector to the head with the heading is positive and its square at least that cosine squared times the vector's squared length). No atom carries the orientation of a signal face; the head ahead of the pedestrian within that angle is the head it faces."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.roadway"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "As the index maps 'crossing a roadway' (LVMC_11_30_060_A): proceeding across the highway is the pedestrian occupying (rel.occupies) a lane (st.lane 'a longitudinal strip of roadway for one line of vehicles') of a roadway (st.roadway 'the part of a highway improved for vehicular traffic') while drv.motion.moving_across_carrier ('a moves across the designated direction of travel of carrier region r') holds for that lane: the crossing of the highway is observed where it traverses the highway's lanes of travel. The lane is not read as a half of the roadway; st.roadway is not a stand-in for a sidewalk, which the crossing does not use."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "'within any marked or unmarked crosswalk' is the pedestrian's footprint overlapping a st.crosswalk ('marked crossing, or the unmarked prolongation of sidewalks at an intersection; marked attribute'), which carries both limbs of DEF-NRS-484A-065; rel.occupies 'a road user's footprint overlaps a lane / region'."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s6",
+   "rule": "NRS_484B_283_1d1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s6",
+   "rule": "NRS_484B_283_1d2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s6",
+   "rule": "NRS_484B_283_1d3_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s6",
+   "rule": "NRS_484B_283_1d3_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s6",
+   "rule": "NRS_484B_283_1d4_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s6",
+   "rule": "NRS_484B_283_1d4_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "Some traffic signal d (dev.traffic_signal) displays circular_green and no other state; the subject, a pedestrian, faces d: d's head (dev.position) lies within p.ped_traffic_signal_facing_reach of the subject's kin.position and within the angle whose cosine is p.ped_traffic_signal_facing_cos of its kin.heading; and the subject proceeds across the highway: it occupies a lane l of a roadway (rel.occupies, st.lane, st.roadway) and drv.motion.moving_across_carrier(subject, l; p.halt_speed_tolerance, p.crossing_motion_cos) holds. Not where any of NRS_484B_283_1d1, NRS_484B_283_1d2, NRS_484B_283_1d3_o1, NRS_484B_283_1d3_o2, NRS_484B_283_1d4_o1 or NRS_484B_283_1d4_o2 applies to the subject (exception compositions: another device directs the pedestrian as NRS 484B.283 provides).",
+ "obligation": "The subject occupies a crosswalk (rel.occupies(subject, x) for some x of kind st.crosswalk, marked or unmarked): the crossing it makes under the circular green is within the scope of the permission the words grant.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos",
+  "p.ped_traffic_signal_facing_cos",
+  "p.ped_traffic_signal_facing_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "The words grant a permission and impose no duty of their own. The permission is read as its scope: a crossing of the highway by a pedestrian facing a circular green alone is within it where the pedestrian is within a marked or unmarked crosswalk; a crossing outside every crosswalk is outside the permission and is reported as a violation of this rule. Whether that crossing is also forbidden is decided by the rules on crossing elsewhere (NRS 484B.287).",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian (ru.aggregate pedestrian) crosses a st.lane of a st.roadway at 1.3 m/s perpendicular to its designated direction (drv.motion.moving_across_carrier holds), 30 m from any st.crosswalk, facing a dev.traffic_signal head 25 m ahead (dev.position within the facing angle) that displays circular_green alone; no pedestrian signal governs; no other road user is in the scene."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same pedestrian makes the same crossing within a marked crosswalk (rel.occupies st.crosswalk)."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The signal the pedestrian faces displays circular_red."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The pedestrian crosses outside a crosswalk while a signal displays circular_green alone, but the positions of the signal heads are not observed: whether it faces the signal cannot be read.",
+   "masked": [
+    "dev.position"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A dev.pedestrian_signal governing the crossing displays dont_walk_steady, so NRS_484B_283_1d4_o1 applies to the pedestrian: another device directs it, and this rule does not apply."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of tracked-object kinematics in driving datasets and simulators"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "pedestrian trajectory heading variability reported in crossing-behaviour studies"
+  },
+  {
+   "name": "p.ped_traffic_signal_facing_cos",
+   "unit": "ratio",
+   "value": 0.87,
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a vehicular signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "MUTCD signal head placement (Part 4D) and pedestrian heading variability"
+  },
+  {
+   "name": "p.ped_traffic_signal_facing_reach",
+   "unit": "m",
+   "value": 60.0,
+   "convention": "the largest distance from a pedestrian to a vehicular signal head at which the head counts as one the pedestrian faces across the intersection: a wide urban intersection (about 40 m) plus the set-back of a far-side head beyond the far crosswalk",
+   "source": "MUTCD far-side signal head placement (Part 4D) and urban intersection widths"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "NRS_484B_283_1d1": "b6069a6fe3f532ef3be7cb566e12e6d5854348464d3ce7b781555a44a62652df",
+  "NRS_484B_283_1d2": "5d9f34769ca9aea6c016413ce2707bc864652b9e8b14257c6cbf598d40ea3e4e",
+  "NRS_484B_283_1d3_o1": "b8ecc8147cf0f02f787f02e970cbd4d146855788c6bece4ac5e00e7da12614d8",
+  "NRS_484B_283_1d3_o2": "8222588abf2cb99450a7b3533234d9b6f44a9843403d41320c634673d1f7be39",
+  "NRS_484B_283_1d4_o1": "8d0325b0e0a07bfcee5a0a43099aa77d03db7af452b0ad79ecfdbe57d77ebee5",
+  "NRS_484B_283_1d4_o2": "0a057b83839d4cc50f11bd48a01aa3caba54a57c8fe0ac2712c9bad01903a85f"
+ }
+}
