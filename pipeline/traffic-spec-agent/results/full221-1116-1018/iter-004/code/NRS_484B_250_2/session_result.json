@@ -1,0 +1,247 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8d97eaefe9e14dc3a3c5b37b5a4fcd71",
+ "result": {
+  "duration_api_ms": 744906,
+  "stop_reason": "end_turn",
+  "session_id": "ac53ffc1-9938-4de4-b5e2-458cd05473f3",
+  "total_cost_usd": 4.406163190000001,
+  "usage": {
+   "input_tokens": 44,
+   "cache_creation_input_tokens": 218240,
+   "cache_read_input_tokens": 3460267,
+   "output_tokens": 78146,
+   "output_tokens_details": {
+    "thinking_tokens": 56250
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 218240,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1085,
+     "cache_read_input_tokens": 220165,
+     "cache_creation_input_tokens": 2543,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2543
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 45200,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004986849999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 44,
+    "outputTokens": 78146,
+    "cacheReadInputTokens": 3460267,
+    "cacheCreationInputTokens": 218240,
+    "webSearchRequests": 0,
+    "costUSD": 4.401176340000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 56250,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 218240,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_017et191DB2Do1Fwvz2Q1pwY",
+    "tool_input": {
+     "command": "python -m harness gate --help 2>&1 | head -0",
+     "description": "(skip)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 32,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "NRS_484B_250_2 passes the gate (OK on run 4 of 6, 14 witnesses). The rule follows the node's mapping with no narrowings declared, and `task_result.md` is written.\n\n**What the rule does**\n- **When it applies:** the subject vehicle has arrived at an intersection X through a lane that enters X. Arrival means its body first comes within the stop-point tolerance of X. It has stayed on that lane or in X since. X is not controlled by a signal, stop sign or yield sign, and neither subsection-4 rule (NRS_484B_250_4_o1/_o2) applies.\n- **The duty:** for every other vehicle v on the subject's right, the subject must not touch v. It also must not move while their centres are projected to come within the conflict clearance inside the conflict horizon. v counts only if:\n  - it arrived from a different highway, no more than the same-time window apart;\n  - it was on the subject's right at the later of the two arrivals;\n  - it has stayed on its lane or in X since arriving.\n- **Excepted pair:** the duty is lifted for v when the two approach lanes run in opposite directions and either vehicle declares a left turn at X, or v has turned left into X by at least the turn minimum but less than the U-turn minimum.\n\n**Gate runs**\n1. **WITNESS_FAIL:** the highway regions had no outline, which the gate rejects when occupancy is observed. I gave them rectangles.\n2. **WITNESS_FAIL:** only `branch_9` failed, because v's yaw rate turned it while its heading vector stayed fixed. v's heading now actually turns 6° per 50 ms step.\n3. **VACUOUS:** the \"X is controlled\" check repeated in the obligation never changed a verdict. With one intersection, a controlled X already stops the rule applying. I added `branch_10`, which has two intersection records over the same square, one controlled by a yield sign on v's lane. That check is now the only thing keeping that scene compliant.\n4. **OK.**\n\n**Witnesses added beyond the plan:**\n- `branch_4`: a traffic signal governs X itself, so the rule does not apply.\n- `branch_5`: a stop sign governs the subject's lane, so the rule does not apply.\n- `branch_6`: violated by contact alone.\n- `branch_7`, `branch_8`: either vehicle declares a left turn, so the pair is excepted.\n- `branch_9`: v turns left in X, sampled at 20 Hz.\n- `branch_10`: the two-intersection scene above.\n\n**Two things for the plan:**\n- **The left-turn exception rarely matters.** It only changes anything when v is also on the subject's right. With opposed approaches in right-hand traffic, an oncoming vehicle is normally on the left. So `branch_7`–`branch_9` use an artificial layout with v's westbound lane south of the subject's line.\n- **Subsection 4 is unchecked.** I couldn't read NRS_484B_250_4_o1/_o2. They didn't apply in any witness, so none of the witnesses exercises them.\n\nEarly on I mistakenly ran one shell command other than the gate. It was denied and nothing ran.",
+  "ttft_ms": 66977,
+  "type": "result",
+  "duration_ms": 1019872,
+  "uuid": "34e8f163-b49f-4ea3-aa3e-ca848e3bed2a",
+  "ttft_stream_ms": 1374,
+  "time_to_request_ms": 342,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 37,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "transcript_persist": 42,
+   "tool_pool_refresh": 1,
+   "init_message": 3,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 205,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 13,
+  "time_to_request_cpu_ms": 295,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1375,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 45200,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004986849999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 44,
+    "outputTokens": 78146,
+    "cacheReadInputTokens": 3460267,
+    "cacheCreationInputTokens": 218240,
+    "webSearchRequests": 0,
+    "costUSD": 4.401176340000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 56250,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 218240,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

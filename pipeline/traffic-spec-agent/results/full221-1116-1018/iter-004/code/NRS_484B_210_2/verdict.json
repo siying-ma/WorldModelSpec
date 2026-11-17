@@ -1,0 +1,553 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "b"
+         },
+         {
+          "var": "subject"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "b"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "b"
+          }
+         ],
+         "derived": "drv_interaction_overtake_pass_on_right",
+         "params": [
+          {
+           "param": "p.overtake_window"
+          },
+          {
+           "param": "p.overtake_same_direction_cos"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "b"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_210_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-210-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "b"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "b"
+            },
+            {
+             "lit": "DEF-NRS-484A-320::vehicle"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "b"
+            }
+           ],
+           "derived": "drv_interaction_overtake_pass_on_right",
+           "params": [
+            {
+             "param": "p.overtake_window"
+            },
+            {
+             "param": "p.overtake_same_direction_cos"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "b"
+                },
+                {
+                 "lit": "ahead"
+                }
+               ],
+               "atom": "rel_bearing",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "cmp": "lt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "b"
+                   }
+                  ],
+                  "measure": "rel_longitudinal_overlap"
+                 },
+                 "rhs": {
+                  "lit": {
+                   "den": 1,
+                   "num": 0
+                  },
+                  "unit": "metre"
+                 }
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "b"
+                  }
+                 ],
+                 "atom": "rel_same_direction",
+                 "params": [
+                  {
+                   "param": "p.overtake_same_direction_cos"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "since": [
+               {
+                "not": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "b"
+                    },
+                    {
+                     "lit": "ahead"
+                    }
+                   ],
+                   "atom": "rel_bearing",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "cmp": "lt",
+                     "lhs": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "b"
+                       }
+                      ],
+                      "measure": "rel_longitudinal_overlap"
+                     },
+                     "rhs": {
+                      "lit": {
+                       "den": 1,
+                       "num": 0
+                      },
+                      "unit": "metre"
+                     }
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "b"
+                      }
+                     ],
+                     "atom": "rel_same_direction",
+                     "params": [
+                      {
+                       "param": "p.overtake_same_direction_cos"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "b"
+                   },
+                   {
+                    "lit": "ahead"
+                   }
+                  ],
+                  "atom": "rel_bearing",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "cmp": "lt",
+                    "lhs": {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "b"
+                      }
+                     ],
+                     "measure": "rel_longitudinal_overlap"
+                    },
+                    "rhs": {
+                     "lit": {
+                      "den": 1,
+                      "num": 0
+                     },
+                     "unit": "metre"
+                    }
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "atom": "rel_same_direction",
+                    "params": [
+                     {
+                      "param": "p.overtake_same_direction_cos"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "cmp": "gt",
+              "lhs": {
+               "add": [
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  }
+                 ]
+                },
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  }
+                 ]
+                }
+               ]
+              },
+              "rhs": {
+               "add": [
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "b"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  }
+                 ]
+                },
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "b"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "kin_velocity"
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "body": {
+           "implies": [
+            {
+             "not": {
+              "same": [
+               {
+                "var": "u"
+               },
+               {
+                "var": "subject"
+               }
+              ]
+             }
+            },
+            {
+             "and": [
+              {
+               "not": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "u"
+                 }
+                ],
+                "atom": "rel_contact",
+                "params": []
+               }
+              },
+              {
+               "not": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "u"
+                   }
+                  ],
+                  "derived": "prim_closest_approach_within",
+                  "params": [
+                   {
+                    "param": "p.conflict_horizon"
+                   }
+                  ]
+                 },
+                 {
+                  "cmp": "lt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "u"
+                    }
+                   ],
+                   "params": [
+                    {
+                     "param": "p.conflict_horizon"
+                    }
+                   ],
+                   "quantity": "prim_closest_approach_distance"
+                  },
+                  "rhs": {
+                   "param": "p.conflict_centre_clearance"
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          },
+          "forall_user": "u"
+         }
+        ]
+       },
+       "holds_for": "time",
+       "length": {
+        "param": "p.overtake_window"
+       },
+       "subject": "subject"
+      }
+     ]
+    },
+    "forall_user": "b"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "4651d457d2bcfac005530674",
+  "candidate_digest": "f58a8a260ba4c347da79e2f436c087349c68f29a90f48c1f3f7e8b3fdd89e26c"
+ }
+}

@@ -1,145 +1,63 @@
-# Feedback from iteration 3
+# Feedback from iteration 4
 
 concept `drv.motion.right_turn`: not repaired, no node uses it
-`NRS_484B_267_1b_o2`: the repair session withdrew it — the vocabulary lacks atom `a formula-surface reading of the facing attribute of sig.warning_lamp (e.g. sig_warning_lamp [x, colour, mode, facing], or a selector sig_warning_lamp_facing [x, facing]). Span u4, together with the words that the definition reference u5 borrows from DEF-NRS-484A-480-3 ('at least one flashing red warning lamp visible from the front'), is a condition on when the duty arises. It decides which road users the duty concerns and when it arises: the approaching authorized emergency vehicle or regulatory-agency vehicle triggers the duty only while it shows a flashing red lamp that is visible from the front. The ontology's contract gives sig.warning_lamp a facing attribute in {front, rear, side}, but Core's evaluator only reads the atom by colour and mode, so the rule can only state 'a red flashing warning lamp lit, in any facing'. That fact is weaker than the condition, because a vehicle that shows a flashing red lamp only to the rear or side would also trigger the duty. Rule 3 says a condition is never narrowed or weakened, and no other atom carries the lamp's facing, so the span is withdrawn until Core exposes the facing selector. Once it does, the record as planned (colour red, mode flashing, facing front) codes as is: the coder's run 2 passed the gate with every other element written.` for span u4; gap G79 filed, law blocked
-`NRS_484B_267_1c`: the repair session withdrew it — the vocabulary lacks atom `a formula form of sig.warning_lamp that reads the lamp's facing: sig_warning_lamp [track, colour, mode, facing] (facing ∈ {front, rear, side}, as the atom's contract already lists). The condition u4, with the words it borrows from u5 (DEF-NRS-484A-480-3: 'at least one flashing red warning lamp visible from the front'), holds only when the approaching vehicle is making use of a flashing red warning lamp facing front. Core's evaluator reads sig_warning_lamp only as [track, colour] or [track, colour, mode], so 'visible from the front' cannot be written. Writing a lit red flashing lamp of any facing is a weaker fact on a condition span. It would trigger the duty for a vehicle showing only rear- or side-facing red flashers as it closes from behind, a vehicle the law does not cover. So the missing form decides whether the duty to stop arises at all, and toward which approaching road users it is owed. Red and flashing are carried; only the facing lacks a form.` for span u4; gap G80 filed, law blocked
-`NRS_484B_267_2d`: the repair session withdrew it — the vocabulary lacks atom `A formula-readable facing of a lit warning lamp: sig.warning_lamp read with colour, mode and facing ([x, colour, mode, facing], facing in {front, rear, side}), so that a rule can state that the approached vehicle shows a lit red warning lamp, mode flashing, facing front. This is the trigger s3 carries with the words s4 borrows from DEF-NRS-484A-480-3, 'at least one flashing red warning lamp visible from the front'. The atom's contract lists the facing attribute, but its formula surface takes only [x, colour] or [x, colour, mode]: atomArgSorts admits at most two literal positions for sig_*. So no formula can read the facing. Without it, the trigger can only be written as 'a red flashing lamp', which is weaker than the words. A vehicle whose only red flashing lamp faces the rear or the side would then engage the duty. That would widen when the duty arises, and rule 3 forbids narrowing or weakening a trigger. The distinction this decides is which road users the duty concerns: whether the approached vehicle is making use of lights that meet NRS 484A.480(3), so that drivers must not drive abreast of it or overtake it. 'Visible from the front' describes the lamp's orientation on the approached vehicle. It is not the subject's line of sight: the subject usually approaches from behind, where a front-facing lamp is not in its view. So the words cannot be re-mapped to an existing readable atom.` for span s3; gap G81 filed, law blocked
-`NRS_484B_203_1_o1`: revised by a repair session; coded again this iteration
-`LVMC_11_43_010_A`: revised by a repair session; coded again this iteration
-`LVMC_11_60_040`: the repair session withdrew it — the vocabulary lacks atom `An observable road-user class for the admitted aggregate DEF-LVMC-11-02-140::taxicab ('a motor vehicle which is properly licensed under State and local law to provide taxicab service for a charge or fee') that the run's reading can classify as included. Right now the reading lists no included class under that id and marks ru.taxicab as unresolved. So ru.aggregate=DEF-LVMC-11-02-140::taxicab can never be true: it is unknown for every taxicab and false for everything else. The s1 binder class, and the same aggregate on s5, therefore never let the duty be judged. The span decides which road users the duty concerns: the taxicab whose standing outside a taxicab stand is forbidden. One of two things is needed. Either a class atom whose contract carries the licence to provide taxicab service, or an operator decision that this licensing status is read through the taxicab's markings (an observable_reading of category status, under which ru.taxicab is classified as included in DEF-LVMC-11-02-140::taxicab). In both cases the rule, mappings and witnesses written for this node need no further change.` for span s1; gap G82 filed, law blocked
-`LVMC_11_43_010_C1`: revised by a repair session; coded again this iteration
-`NRS_484B_270_7b`: revised by a repair session; coded again this iteration
-`LVMC_11_60_030_A4`: the repair session withdrew it — the vocabulary lacks atom `An observable class or attribute that carries what DEF-NRS-484A-030 makes a bus: a vehicle 'owned by the State, a political subdivision or a private school or nursery, designed for carrying more than 10 passengers and used for the transportation of persons', or a vehicle 'other than a taxicab, designed and used for the transportation of persons for compensation'. Without it the run's reading cannot include any road-user class under DEF-NRS-484A-030::bus. It now records 'included (none)', with ru.bus, ru.transit_bus, ru.school_bus and ru.tour_bus_or_limousine all unresolved. So the subject's binder class (c1) is never decided true, and the duty is reported only as not_applicable or unknown, never compliant or violated. The exception span c2 (DEF-LVMC-11-02-150::tour_bus) has the same defect. That definition covers a motor vehicle 'other than a limousine ... designed, maintained and used to transport more than six persons ... to or from hotels, motels, casinos, cultural or athletic events or other tourist attractions'. No class atom carries that service apart from limousines, so the reading leaves every class unresolved and no bus is decidedly not a tour bus. The gap decides which road users the duty concerns. Mapping c1 and c2 to ru.bus or ru.transit_bus instead would expand an admitted aggregate into a class list, which rule 4 and the ru.aggregate contract forbid. The operator may instead review the run's reading: whether ru.transit_bus and ru.school_bus are included under DEF-NRS-484A-030::bus ('owned by ... a political subdivision', 'used for the transportation of persons for compensation'), and whether ru.transit_bus is excluded or covered under DEF-LVMC-11-02-150::tour_bus. The record is otherwise faithful. The coder's rule and witnesses (forbid, permit, idle, blind, branch_1, branch_2) are expected to pass once these classes are decided.` for span c1; gap G83 filed, law blocked
-`LVMC_11_40_180_C_o1`: revised by a repair session; coded again this iteration
-`LVMC_11_40_180_A`: revised by a repair session; coded again this iteration
-`LVMC_11_52_030_B`: revised by a repair session; coded again this iteration
-`LVMC_11_43_010_B_o1`: revised by a repair session; coded again this iteration
-`NRS_484B_785_1a`: revised by a repair session; coded again this iteration
-`LVMC_11_30_060_A`: revised by a repair session; coded again this iteration
-`LVMC_11_52_030_A`: revised by a repair session; coded again this iteration
-`NRS_484B_450_1l`: revised by a repair session; coded again this iteration
-`NRS_484B_363_4`: revised by a repair session; coded again this iteration
-`NRS_484B_267_2c`: the repair session withdrew it — the vocabulary lacks atom `an atom form of sig.warning_lamp that reads the lamp's facing (road user, colour, mode, facing ∈ {front, rear, side}), so that a trigger can state the words s3 borrows through s4 from DEF-NRS-484A-480-3, 'at least one flashing red warning lamp visible from the front': a lit red lamp, mode flashing, facing front. The surface reads sig_warning_lamp only as [x, colour] or [x, colour, mode], and no accessor reads WarningLamp.facing, so the trigger can only require a red flashing lamp of any facing. That would apply the duty to a vehicle that shows only rear-facing or side-facing red flashing lamps, which the borrowed words exclude. The words decide which lit vehicles trigger the duty, that is, the road users it concerns. Dropping the facing would weaken a trigger span, and re-quoting the source's permissive 'may display ... to the front, sides or rear' clause would replace the requirements the words name with a permission. Neither is a faithful re-mapping.` for span s3; gap G84 filed, law blocked
-`NRS_484B_260`: revised by a repair session; coded again this iteration
-`NRS_484B_263_o1`: revised by a repair session; coded again this iteration
-`NRS_484B_267_1a`: the repair session withdrew it — the vocabulary lacks atom `A Boolean surface form of sig.warning_lamp that reads the lamp's facing attribute together with its colour and mode, e.g. sig_warning_lamp [x, colour, mode, facing], true where road user x shows a lit warning lamp of that colour, mode and facing. The ontology's contract for sig.warning_lamp lists facing ∈ {front, rear, side}, but the formula language only reads colour, or colour and mode (Atoms.lean sig_warning_lamp_shows). Span u4 ('making use of flashing lights meeting the requirements of') borrows from u5 (DEF-NRS-484A-480-3) the words 'at least one flashing red warning lamp visible from the front'. So the condition needs a lit warning lamp that is red, flashing and facing front. Without facing, the rule would treat a vehicle showing only side or rear red flashing lamps as making use of the required lights. That widens a condition span and changes which approaching vehicles the duty concerns, i.e. the road users it concerns and when it arises. A condition is never narrowed or widened, so the span cannot be carried and is not dropped.` for span u4; gap G85 filed, law blocked
-`NRS_484D_400_5`: the repair session withdrew it — the vocabulary lacks atom `A road-user class that decides membership of 'an authorized emergency vehicle' (DEF-NRS-484A-020::authorized_emergency_vehicle: 'a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'). The run's reading admits this aggregate but classifies every road-user class under it as unresolved, ru.emergency_vehicle, ru.fire_apparatus and ru.motor_vehicle included, and none as included. Under ru.aggregate membership is then never true, and it is unknown for every vehicle. The siren duty (s3) and its exception (s4, s5) are therefore never decided for any road user. No faithful record can reach a violated or compliant verdict, and a private car is never decidedly outside the subject class. The span needs either an observable class that carries the authorization (a vehicle bearing the designation and equipment of an authorized emergency vehicle) or the reading's classification of the definition's members, for example ru.emergency_vehicle and ru.fire_apparatus as included and ru.motor_vehicle as covered or excluded. This decides the road users the duty concerns: which vehicles may not use a siren except in response or pursuit.` for span s1; gap G86 filed, law blocked
-`NRS_484B_267_2f_o2`: the repair session withdrew it; the law is returned to the planner
-`NRS_484B_307_9b`: the repair session withdrew it — the vocabulary lacks operator `A way to write the text's figure 'two' in '(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device' as a typed count literal that the formula language carries and the gate's literal check reads. Each complete cycle is a rise of the governing head's display, and the count runs from the start of the subject's run at rest at the place. The only operator that counts rising edges is Formula.count, and its bound is a bare Nat. Formula.literals never reports it, so a faithful rule, `count (circular_red ∧ green_arrow) (complete_halt) ge 2`, shows no literal, and the gate refuses it as BARE_LITERAL against the declared literal (s6, 2, count). Two fixes would close the gap: Formula.count could take its bound as a Term (a Term.lit in unit count), or Formula.literals and the gate's literal collection could report count's bound as (n, count). The distinction this decides for the driving task: the minimum wait at the red with the green turn arrow before the subject may proceed against it. That wait is how long the act requires, and it separates a lawful proceed after a detector failure (two cycles) from running the red after one. The record itself is faithful. A diagnostic gate run passed all 28 witnesses (OK) once the literal check was satisfied. The only way to pass now would be to add a made-up tautological Term.lit 2 count conjunct, or to drop the figure the law states from the record's literals, and the rules forbid both.` for span s6; gap G87 filed, law blocked
-`NRS_486_341`: revised by a repair session; coded again this iteration
-`NRS_484B_560_3_o2`: revised by a repair session; coded again this iteration
-`NRS_486_351_2`: revised by a repair session; coded again this iteration
-`NRS_484B_517`: revised by a repair session; coded again this iteration
-`LVMC_11_52_300`: revised by a repair session; coded again this iteration
-`NRS_484B_263_o2`: revised by a repair session; coded again this iteration
-`NRS_484B_307_8d`: revised by a repair session; coded again this iteration
-`NRS_484B_223_4a`: revised by a repair session; coded again this iteration
-`NRS_484B_208_1`: revised by a repair session; coded again this iteration
-`NRS_484B_587_2b`: revised by a repair session; coded again this iteration
-`NRS_484B_587_2a`: revised by a repair session; coded again this iteration
-concept `drv.interaction.overtake_pass_on_right`: re-proposed by a repair session
-`NRS-484B-307-8a`: a held node no longer validates beside the current plan; returned to the planner, no attempt counted
-concept `drv.lane.heading_left_of_carrier`: gate OK — 3 witnesses, 3 names, reads 3 atom(s)
-concept `drv.interaction.overtake_pass_on_right`: gate OK — 3 witnesses, 6 names, reads 6 atom(s)
-concept `drv.interaction.overtake_pass_on_right`: accepted; the review's notes are recorded on it — Tested a one-second right-side pass with window = 2 s and a recording beginning at its aligned-ahead onset. The body holds at recognition despite the shorter recording, agreeing with the contract …
-`NRS_484B_217_2`: not coded — `NRS_484B_217_2` composes or calls `NRS_484B_413_2` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_257_2_o1`: not coded — `NRS_484B_257_2_o1` composes or calls `NRS_484B_257_1_o1` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_267_2a`: not coded — `NRS_484B_267_2a` composes or calls `NRS_484B_600_1a` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_270_2b_o1`: not coded — `NRS_484B_270_2b_o1` composes or calls `NRS_484B_213_2c` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_270_2b_o2`: not coded — `NRS_484B_270_2b_o2` composes or calls `NRS_484B_213_2c` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_270_2b_o3`: not coded — `NRS_484B_270_2b_o3` composes or calls `NRS_484B_213_2c` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1a`: not coded — `NRS_484B_283_1a` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1b`: not coded — `NRS_484B_283_1b` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1d1`: not coded — `NRS_484B_283_1d1` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1d2`: not coded — `NRS_484B_283_1d2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1d3_o1`: not coded — `NRS_484B_283_1d3_o1` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1d3_o2`: not coded — `NRS_484B_283_1d3_o2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1d4_o1`: not coded — `NRS_484B_283_1d4_o1` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_283_1d4_o2`: not coded — `NRS_484B_283_1d4_o2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_777_1_o1`: not coded — `NRS_484B_777_1_o1` composes or calls `NRS_484B_785_1a` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_250_2` proposed `p.same_time_arrival_window` = 2.0 s: the largest difference between the times two vehicles reach an intersection's edge at which they count as arriving at ap
-`NRS_484B_287_1e` proposed `p.ped_signal_facing_cos` = 0.87 ratio: cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a pe
-`NRS_484B_287_1e` proposed `p.ped_signal_facing_reach` = 40.0 m: the largest distance from a pedestrian to a pedestrian signal head at which the head counts as the one across the crossi
-`NRS_484B_785_1a`: gate OK — 4 witnesses, 5 names, composes nothing
-`LVMC_11_40_180_A`: gate OK — 6 witnesses, 4 names, composes nothing
-`LVMC_11_43_010_A`: gate OK — 4 witnesses, 5 names, composes nothing
-`NRS_484B_287_1d`: gate OK — 5 witnesses, 8 names, composes LVMC_11_30_140_B_o1,LVMC_11_30_140_B_o2
-`NRS_484B_203_1_o1`: gate OK — 5 witnesses, 7 names, composes nothing
-`LVMC_11_40_180_C_o1`: gate WITNESS_FAIL — branch_3: expected not_applicable, got unknown for [aggregate_unresolved:DEF-LVMC-11-02-082::electric_bicycle, aggregate_unresolved:DEF-LVMC-11-02-083::electric_scooter]
-`NRS_484B_413_2`: gate OK — 8 witnesses, 8 names, composes nothing
-`NRS_484B_287_1e`: gate UNANCHORED_VARIABLE — in the formula, the quantified variable `d` shares no atom with a binder, nor with a variable that does: the region, device or user it ranges over is any in the scene, not the subject's — tie it in the formula through `rel_occupies`, `st_region_geometry_distance`, `dev_governs` or a relation to a binder (the record's claims are already checked)
-`NRS_484B_287_1e`: gate UNANCHORED_VARIABLE — sent to a node repair session; no attempt counted
-`LVMC_11_43_010_C1`: gate OK — 6 witnesses, 7 names, composes nothing
-`LVMC_11_43_010_B_o1`: gate OK — 8 witnesses, 6 names, composes nothing
-`NRS_486_341`: gate OK — 6 witnesses, 5 names, composes nothing
-`NRS_484B_210_3`: gate OK — 9 witnesses, 12 names, composes nothing
-`LVMC_11_52_030_B`: gate VACUOUS — applicability leaf 2: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-LVMC-11-02-070::commercial_vehicle"] (one of 2 literal variants of this atom; none exercised)
-`NRS_484B_210_2`: gate WITNESS_FAIL — blind: expected unknown, got compliant; the manifest masks rel.bearing
-`NRS_484B_210_2`: gate WITNESS_FAIL — sent to a node repair session; no attempt counted
-`NRS_484B_263_o1`: gate OK — 6 witnesses, 8 names, composes nothing
-`NRS_484B_260`: gate OK — 6 witnesses, 13 names, composes nothing
-`NRS_484B_287_1c`: gate WITNESS_FAIL — branch_2: expected not_applicable, got unknown for [window_truncated:since]
-`NRS_484B_287_1c`: gate WITNESS_FAIL — sent to a node repair session; no attempt counted
-`NRS_484B_270_7b`: gate OK — 8 witnesses, 10 names, composes nothing
-`LVMC_11_30_060_A`: gate OK — 10 witnesses, 13 names, composes nothing
-`NRS_486_351_2`: gate OK — 8 witnesses, 5 names, composes nothing
-`NRS_484B_450_1l`: gate OK — 19 witnesses, 24 names, composes nothing
-`LVMC_11_52_300`: gate WITNESS_FAIL — forbid: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]; permit: expected compliant, got unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]; blind: unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle], not for an atom the manifest masks; the manifest masks env.civil_time; branch_1: expected compliant, got unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]
-`NRS_484B_223_4a`: gate OK — 7 witnesses, 9 names, composes nothing
-`NRS_484B_263_o2`: gate OK — 5 witnesses, 9 names, composes nothing
-`NRS_484B_560_3_o2`: gate OK — 10 witnesses, 20 names, composes nothing
-`NRS_484B_250_1`: gate OK — 9 witnesses, 18 names, composes NRS_484B_250_4_o1,NRS_484B_250_4_o2
-`LVMC_11_52_030_A`: gate VACUOUS — applicability leaf 2: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-LVMC-11-02-150::tour_bus"] (one of 4 literal variants of this atom; none exercised)
-`NRS_484B_250_2`: gate WITNESS_FAIL — blind: expected unknown, got violated; the manifest masks rel.bearing
-`NRS_484B_250_2`: gate WITNESS_FAIL — sent to a node repair session; no attempt counted
-`NRS_484B_587_2a`: gate VACUOUS — obligation leaf 2: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-NRS-484A-020::authorized_emergency_vehicle"] (one of 2 literal variants of this atom; none exercised)
-`NRS_484B_587_2b`: gate OK — 15 witnesses, 22 names, composes nothing
-`NRS_484B_517`: gate OK — 15 witnesses, 24 names, composes nothing; narrowings declared by the coder: 2
-`NRS_484B_363_4`: gate WITNESS_FAIL — blind: unknown for [absent_atom:rel_longitudinal_overlap, window_truncated:since, absent_atom:rel_bearing, window_truncated:until], not for an atom the manifest masks; the manifest masks kin.position
-`NRS_484B_307_8d`: gate BARE_LITERAL — formula literals [] ≠ the node's declared literals [('2', 'count')]; a figure the law states is declared on its span, any other magnitude belongs in the reading
-`NRS_484B_208_1`: gate OK — 23 witnesses, 42 names, composes nothing
-dependency context changed and rechecked: `drv.lane.heading_left_of_carrier`
-dependency context changed and rechecked: `drv.interaction.overtake_pass_on_right`
-`NRS-484B-287-1d` span s1 composes accepted `LVMC_11_30_140_B_o1` (as: exception)
-`NRS-484B-287-1d` span s1 composes accepted `LVMC_11_30_140_B_o2` (as: exception)
-`NRS-484B-250-1` span g composes accepted `NRS_484B_250_4_o1` (as: exception)
-`NRS-484B-250-1` span g composes accepted `NRS_484B_250_4_o2` (as: exception)
-`NRS-484B-587-2b` span e8 borrows from `NRS-484B-210-1` the words “(c) A traffic incident management vehicle; (d) A tow car; (e) A coroner vehicle;”
-`NRS-484B-208-1` span k13b borrows from `DEF-NRS-484A-460-2` the words “(a) A vehicle that is transporting more than one person; (b) A motorcycle, regardless of the number of passengers; (c) A bus, regardless of the number of passengers; and (d) Any other vehicle designated by regulation.”
+`NRS_484B_250_2`: revised by a repair session; coded again this iteration
+`NRS_484B_210_2`: revised by a repair session; coded again this iteration
+`NRS_484B_287_1c`: revised by a repair session; coded again this iteration
+`NRS_484B_287_1e`: revised by a repair session; coded again this iteration
+`NRS-484B-307-9a` names ['NRS-484B-307-9b'], not yet accepted; not planned this iteration, no attempt counted
+`NRS_484B_283_1d1`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_283_1d2`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_283_1d3_o1`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_283_1d3_o2`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_283_1d4_o1`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_283_1d4_o2`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_307_2b`: not coded, composes or calls `NRS_484B_283_1d1` (unpublished), `NRS_484B_283_1d2` (unpublished), `NRS_484B_283_1d3_o1` (unpublished), `NRS_484B_283_1d3_o2` (unpublished), `NRS_484B_283_1d4_o1` (unpublished), `NRS_484B_283_1d4_o2` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_307_4b`: not coded, composes or calls `NRS_484B_283_1d1` (unpublished), `NRS_484B_283_1d2` (unpublished), `NRS_484B_283_1d3_o2` (unpublished), `NRS_484B_283_1d4_o2` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_307_8b`: not coded, composes or calls `NRS_484B_283_1d1` (unpublished), `NRS_484B_283_1d2` (unpublished), `NRS_484B_283_1d3_o2` (unpublished), `NRS_484B_283_1d4_o2` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_307_9c`: not coded, composes or calls `NRS_484B_283_1d1` (unpublished), `NRS_484B_283_1d2` (unpublished), `NRS_484B_283_1d3_o1` (unpublished), `NRS_484B_283_1d4_o1` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_270_2b_o1`: not coded, composes or calls `NRS_484B_217_2` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_270_2b_o2`: not coded, composes or calls `NRS_484B_217_2` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_270_2b_o3`: not coded, composes or calls `NRS_484B_217_2` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_283_1a`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_283_1b`: not coded, composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building; kept for the next iteration, no attempt counted
+`NRS_484B_307_8a_o2`: composes ['NRS_484B_307_8d'], whose law(s) wait for the operator (`NRS-484B-307-8d` planned): the composition stands, and this law waits on ['G93']; no attempt counted
+`NRS_484B_217_2` proposed `p.vehicle_turn_window` = 10.0 s: the longest duration of a turn by a motor vehicle at a junction or into or out of a driveway, from the start of its head
+`LVMC_11_40_180_C_o1`: gate OK — 7 witnesses, 7 names, composes nothing
+`NRS_484B_287_1e`: gate OK — 8 witnesses, 15 names, composes LVMC_11_30_140_B_o1,LVMC_11_30_140_B_o2
+`NRS_484B_210_2`: gate OK — 4 witnesses, 10 names, composes nothing
+`NRS_484B_777_1_o1`: gate UNANCHORED_VARIABLE — in the formula, the quantified variable `i` shares no atom with a binder, nor with a variable that does: the region, device or user it ranges over is any in the scene, not the subject's — tie it in the formula through `rel_occupies`, `st_region_geometry_distance`, `dev_governs` or a relation to a binder (the record's claims are already checked); in the formula, the quantified variable `d` shares no atom with a binder, nor with a variable that does: the region, device or user it ranges over is any in the scene, not the subject's — tie it in the formula through `rel_occupies`, `st_region_geometry_distance`, `dev_governs` or a relation to a binder (the record's claims are already checked)
+`NRS_484B_777_1_o1`: gate UNANCHORED_VARIABLE — sent to a node repair session; no attempt counted
+`NRS_484B_217_2`: gate WITNESS_FAIL — branch_4: expected violated, got compliant
+`NRS_484B_217_2`: gate WITNESS_FAIL — sent to a node repair session; no attempt counted
+`NRS_484B_287_1c`: gate OK — 9 witnesses, 16 names, composes LVMC_11_30_140_B_o1,LVMC_11_30_140_B_o2
+`NRS_484B_250_2`: gate OK — 14 witnesses, 20 names, composes NRS_484B_250_4_o1,NRS_484B_250_4_o2
+`NRS_484B_257_2_o1`: gate OK — 14 witnesses, 19 names, composes NRS_484B_257_1_o1
+`NRS_484B_363_4`: gate OK — 20 witnesses, 17 names, composes nothing
+`NRS-484B-287-1e` span s1 composes accepted `LVMC_11_30_140_B_o1` (as: exception)
+`NRS-484B-287-1e` span s1 composes accepted `LVMC_11_30_140_B_o2` (as: exception)
+`NRS-484B-287-1c` span v1 composes accepted `LVMC_11_30_140_B_o1` (as: exception)
+`NRS-484B-287-1c` span v1 composes accepted `LVMC_11_30_140_B_o2` (as: exception)
+`NRS-484B-250-2` span i composes accepted `NRS_484B_250_4_o1` (as: exception)
+`NRS-484B-250-2` span i composes accepted `NRS_484B_250_4_o2` (as: exception)
+`NRS-484B-257-2` span f composes accepted `NRS_484B_257_1_o1` (as: compliance)
+`LVMC-11-52-030-A`: ['LVMC_11_52_030_A'] carry gap(s) ['G88'], filed; not coded, law blocked
+`LVMC-11-52-030-B`: ['LVMC_11_52_030_B'] carry gap(s) ['G89', 'G90'], filed; not coded, law blocked
+`LVMC-11-52-300`: ['LVMC_11_52_300'] carry gap(s) ['G91'], filed; not coded, law blocked
+`NRS-484B-267-2a`: ['NRS_484B_267_2a'] carry gap(s) ['G92'], filed; not coded, law blocked
+`NRS-484B-307-8d`: ['NRS_484B_307_8d'] carry gap(s) ['G93'], filed; not coded, law blocked
+`NRS-484B-587-2a`: ['NRS_484B_587_2a'] carry gap(s) ['G94', 'G95'], filed; not coded, law blocked
 
 ## Laws by state
 
-- blocked: 54
+- blocked: 61
 - failed: 1
-- planned: 146
-- returned: 20
+- planned: 158
+- returned: 1
 
 ## Returned laws and why
 
-- `NRS-484B-217-2` (attempt 0): `NRS_484B_217_2` composes or calls `NRS_484B_413_2` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-257-2` (attempt 0): `NRS_484B_257_2_o1` composes or calls `NRS_484B_257_1_o1` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted — accepted already and not to be re-planned: NRS_484B_257_2_o2
-- `NRS-484B-267-2a` (attempt 0): `NRS_484B_267_2a` composes or calls `NRS_484B_600_1a` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-270-2b` (attempt 0): `NRS_484B_270_2b_o3` composes or calls `NRS_484B_213_2c` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-283-1a` (attempt 0): `NRS_484B_283_1a` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-283-1b` (attempt 0): `NRS_484B_283_1b` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-283-1d1` (attempt 0): `NRS_484B_283_1d1` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-283-1d2` (attempt 0): `NRS_484B_283_1d2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-283-1d3` (attempt 0): `NRS_484B_283_1d3_o2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-283-1d4` (attempt 0): `NRS_484B_283_1d4_o2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-- `NRS-484B-307-8a` (attempt 0): NRS_484B_307_8a_o2: span s7 `After complying with the requirement to stop,` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as condition, and the role of words is fixed with the segmentation once a node of the law is accepted; NRS_484B_307_8a_o2: span s8 `vehicular traffic facing such a signal and situated on the e` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as subject, and the role of words is fixed with the segmentation once a node of the law is accepted; NRS_484B_307_8a_o2: span s9 `may proceed into the intersection` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as condition, and the role of words is fixed with the segmentation once a node of the law is accepted; NRS_484B_307_8a_o2: span s11 `only when the intersecting highway is two-directional or one` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as condition, and the role of words is fixed with the segmentation once a node of the law is accepted; NRS_484B_307_8a_o2: span s12 `or vehicular traffic facing such a signal and situated on th` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as subject, and the role of words is fixed with the segmentation once a node of the law is accepted; NRS_484B_307_8a_o2: span s13 `may proceed into the intersection` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as condition, and the role of words is fixed with the segmentation once a node of the law is accepted — accepted already and not to be re-planned: NRS_484B_307_8a_o1, NRS_484B_307_8a_o3
-- `NRS-484B-307-8d` (attempt 1): gate BARE_LITERAL; formula literals [] ≠ the node's declared literals [('2', 'count')]; a figure the law states is declared on its span, any other magnitude belongs in the reading
 - `NRS-484B-307-9a` (attempt 1): NRS_484B_307_9a_o1: the normative reference “Except as otherwise provided in paragraph (b) [NRS-484B-307-9b]” names NRS-484B-307-9b, and no composition of a usable node on its span s2 composes a node of NRS-484B-307-9b: each law the reference names is composed (how they combine is stated by the compositions' kinds), even one not yet accepted; NRS_484B_307_9a_o2: the normative reference “Except as otherwise provided in paragraph (b) [NRS-484B-307-9b]” names NRS-484B-307-9b, and no composition of a usable node on its span s2 composes a node of NRS-484B-307-9b: each law the reference names is composed (how they combine is stated by the compositions' kinds), even one not yet accepted; composes ['NRS_484B_307_9b'], whose law waits for the operator: that composition stands, and the law waits for it once the defects above are fixed
-- `NRS-484B-363-4` (attempt 1): gate WITNESS_FAIL; blind: unknown for [absent_atom:rel_longitudinal_overlap, window_truncated:since, absent_atom:rel_bearing, window_truncated:until], not for an atom the manifest masks; the manifest masks kin.position
-- `NRS-484B-587-2a` (attempt 1): gate VACUOUS; obligation leaf 2: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-NRS-484A-020::authorized_emergency_vehicle"] (one of 2 literal variants of this atom; none exercised)
-- `NRS-484B-777-1` (attempt 0): `NRS_484B_777_1_o1` composes or calls `NRS_484B_785_1a` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted — accepted already and not to be re-planned: NRS_484B_777_1_o2
-- `LVMC-11-40-180-C` (attempt 1): gate WITNESS_FAIL; branch_3: expected not_applicable, got unknown for [aggregate_unresolved:DEF-LVMC-11-02-082::electric_bicycle, aggregate_unresolved:DEF-LVMC-11-02-083::electric_scooter] — accepted already and not to be re-planned: LVMC_11_40_180_C_o2
-- `LVMC-11-52-030-A` (attempt 1): gate VACUOUS; applicability leaf 2: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-LVMC-11-02-150::tour_bus"] (one of 4 literal variants of this atom; none exercised)
-- `LVMC-11-52-030-B` (attempt 1): gate VACUOUS; applicability leaf 2: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-LVMC-11-02-070::commercial_vehicle"] (one of 2 literal variants of this atom; none exercised)
-- `LVMC-11-52-300` (attempt 1): gate WITNESS_FAIL; forbid: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]; permit: expected compliant, got unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]; blind: unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle], not for an atom the manifest masks; the manifest masks env.civil_time; branch_1: expected compliant, got unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]
-
-## Laws closed as failed this iteration (reopen with `python -m harness reopen`)
-
-- `NRS-484B-267-2f`: attempt budget (2) spent; gate WITNESS_FAIL; forbid: expected violated, got compliant; node repair of `NRS_484B_267_2f_o2`: the session withdrew the record as a plan defect (the text needs another cut) — The node's whole duty (s11 'proceed' + s11r 'as required pursuant to NRS 484B.607 [NRS-484B-607-1a..1d]') is a compliance reference to rules this run does not plan: no NRS_484B_607 node exists, accepted or planned, and the harness supplies no text for it. So the record has no obligation formula. Its own prose says the obligation is 'Not expressible', yet its forbid/permit scenarios assume content from NRS 484B.607 (slowing, moving to a lane not adjacent). Those scenarios cannot be met without making up that law's duty, and 'keeps moving' would be a weaker duty the words do not state. Writing s11r as a residue leaves nothing to code. What the planner must do: bring NRS 484B.607 (lines 1a to 1d) into the run's plan so that s11r becomes a 'compliance' composition of those nodes, with subject mapped to subject, the way sibling NRS_484B_267_2f_o1 composes subsection 1. Until then this node is not planned. Noted for the same re-plan: the s3/s4 borrowed words 'flashing red warning lamp visible from the front' need the lamp's facing. The formula atom sig_warning_lamp reads only colour and mode (the same UNEXPRESSED that NRS_484B_267_1a, 1b_o2 and 1c returned). The planner should file that as an operator gap on the trigger span, not narrow it.
 
 ## Concepts by state
 
@@ -152,24 +70,29 @@ dependency context changed and rechecked: `drv.interaction.overtake_pass_on_righ
 
 ## Nodes held for a later iteration, and why (no attempt counted)
 
+- `NRS_484B_283_1d1` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
+- `NRS_484B_283_1d2` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
+- `NRS_484B_283_1d3_o1` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
+- `NRS_484B_283_1d3_o2` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
+- `NRS_484B_283_1d4_o1` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
+- `NRS_484B_283_1d4_o2` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
 - `NRS_484B_307_2b` waits on `NRS_484B_283_1d1`, `NRS_484B_283_1d2`, `NRS_484B_283_1d3_o1`, `NRS_484B_283_1d3_o2`, `NRS_484B_283_1d4_o1`, `NRS_484B_283_1d4_o2`
 - `NRS_484B_307_4b` waits on `NRS_484B_283_1d1`, `NRS_484B_283_1d2`, `NRS_484B_283_1d3_o2`, `NRS_484B_283_1d4_o2`
 - `NRS_484B_307_8b` waits on `NRS_484B_283_1d1`, `NRS_484B_283_1d2`, `NRS_484B_283_1d3_o2`, `NRS_484B_283_1d4_o2`
 - `NRS_484B_307_9c` waits on `NRS_484B_283_1d1`, `NRS_484B_283_1d2`, `NRS_484B_283_1d3_o1`, `NRS_484B_283_1d4_o1`
-
-## Readings the coding sessions narrowed (span, and what the formulas state more narrowly than its words)
-
-- `NRS_484B_517` s1: 'a traffic signal displaying a red or yellow indication': read as the steady red and yellow indications, circular and arrow (circular_red, circular_yellow, red_arrow(dir), yellow_arrow(dir)), with the record's flashing_red; flashing_yellow and flashing_yellow_arrow, which let traffic proceed with caution, are not taken as an indication a halt complies with
-- `NRS_484B_517` s1: 'a railway signal or gate with ... gate not up': read as a gate in the state lowering, down or raising; the state none (the device has no gate) is not a gate that is not up
+- `NRS_484B_270_2b_o1` waits on `NRS_484B_217_2`
+- `NRS_484B_270_2b_o2` waits on `NRS_484B_217_2`
+- `NRS_484B_270_2b_o3` waits on `NRS_484B_217_2`
+- `NRS_484B_283_1a` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
+- `NRS_484B_283_1b` held: composes or calls `NRS_484B_287_1c` (unpublished), `NRS_484B_287_1e` (unpublished), not usable for building
 
 ## Gaps filed this iteration
 
-- G79 (atom) on `making use of flashing lights meeting the requirements of` — NRS-484B-267-1b
-- G80 (atom) on `making use of flashing lights meeting the requirements of` — NRS-484B-267-1c
-- G81 (atom) on `and making use of flashing lights meeting the requirements of` — NRS-484B-267-2d
-- G82 (atom) on `The operator of a taxicab` — LVMC-11-60-040
-- G83 (atom) on `The operator of a bus,` — LVMC-11-60-030-A4
-- G84 (atom) on `and making use of flashing lights meeting the requirements of` — NRS-484B-267-2c
-- G85 (atom) on `making use of flashing lights meeting the requirements of` — NRS-484B-267-1a
-- G86 (atom) on `An authorized emergency vehicle` — NRS-484D-400-5
-- G87 (operator) on `(1) The person stops before entering the crosswalk on the nearest side of the in` — NRS-484B-307-9b
+- G88 (atom) on `(2) When the location is accompanied by signage which indicates that parking is ` — LVMC-11-52-030-A
+- G89 (atom) on `(1) Commercial vehicles to stop, stand or park for the purpose of loading or unl` — LVMC-11-52-030-B
+- G90 (atom) on `(2) Taxicabs to stop, stand, park for the purpose of loading, unloading or waiti` — LVMC-11-52-030-B
+- G91 (atom) on `Except for a motor vehicle,` — LVMC-11-52-300
+- G92 (operator) on `and making use of flashing lights meeting the requirements of` — NRS-484B-267-2a
+- G93 (operator) on `(1) The person waits for two complete cycles of the lights or lighted arrows of ` — NRS-484B-307-8d
+- G94 (atom) on `(a) An authorized emergency vehicle described in NRS 484A.480;` — NRS-484B-587-2a
+- G95 (atom) on `(d) A tow car;` — NRS-484B-587-2a

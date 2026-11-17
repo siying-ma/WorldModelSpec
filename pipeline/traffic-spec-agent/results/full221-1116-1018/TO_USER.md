@@ -766,6 +766,8 @@ _Observed during iteration 2: these items record what the run reported then, not
 
 ## Iteration 3
 
+_Observed during iteration 3: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - gap G79 filed for `NRS-484B-267-1b` by a node repair session; decide with `python -m harness gap decide G79 ...`
 - gap G80 filed for `NRS-484B-267-1c` by a node repair session; decide with `python -m harness gap decide G80 ...`
 - gap G81 filed for `NRS-484B-267-2d` by a node repair session; decide with `python -m harness gap decide G81 ...`
@@ -855,3 +857,45 @@ _Observed during iteration 2: these items record what the run reported then, not
 - `LVMC-11-43-010-B`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `LVMC-11-43-010-C1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-267-2f` closed as failed: attempt budget (2) spent; gate WITNESS_FAIL; forbid: expected violated, got compliant (python -m harness reopen full221-1116-1018 --laws NRS-484B-267-2f)
+
+## Iteration 4
+
+- planner's note for the operator (iteration 4, `iter-004/plan/batch-01`, note 1, section 85c1b919912e69ae; a report, it decides nothing): **Unresolved aggregates block four records** (`LVMC_11_52_030_A` s9, `LVMC_11_52_030_B` s4/s6, `LVMC_11_52_300` s1). In each case the run's reading leaves every candidate class unresolved, so the membership leaf can never be decided. Two ways to unblock them:
+  - a reading review: classify `ru.taxicab` as included under `DEF-LVMC-11-02-140::taxicab` by its markings (status), as G82 also asks;
+  - the new class atoms the gaps propose.
+- planner's note for the operator (iteration 4, `iter-004/plan/batch-01`, note 2, section 85c1b919912e69ae; a report, it decides nothing): **`LVMC_11_52_030_A` s11** (`DEF-LVMC-11-02-120::rtc_bus`) may hit the same vacuity once s9 is resolved, if the reading leaves `ru.transit_bus` unresolved there. The gate named only the tour-bus leaf, so I filed no gap on s11. Please check that classification together with s9.
+- planner's note for the operator (iteration 4, `iter-004/plan/batch-01`, note 3, section 85c1b919912e69ae; a report, it decides nothing): **`NRS_484B_267_2a`** also claims `DEF-NRS-484A-020::authorized_emergency_vehicle`. G86 reports that every class is unresolved under that aggregate. Here the approached vehicle may also be a regulatory-agency official vehicle, so the duty can still be decided. However, an ambulance will read unknown until G86 is resolved.
+- planner's note for the operator (iteration 4, `iter-004/plan/batch-02`, note 1, section 28cca9c04eae193e; a report, it decides nothing): **G87 needs a decision.** It now blocks both NRS-484B-307-9b and NRS-484B-307-8d (the operator gap on s7 here). Either fix closes both: let `Formula.count` take a Term bound in unit count, or have the literal collection report its Nat bound as `(n, count)`.
+- planner's note for the operator (iteration 4, `iter-004/plan/batch-02`, note 2, section 28cca9c04eae193e; a report, it decides nothing): **The (8)(d) exception in `o2` is narrower than the law.** `NRS_484B_307_8d`'s applicability, like the accepted `o3`'s, starts at the rider's entry into the intersection. So `o2`'s exception for paragraph (d) does not cover a rider who has waited two cycles and is crossing the near crosswalk on the way in; until the rider reaches the intersection, `o2` may report that crossing as a violation. Widening both yield nodes to an event of "entered the crosswalk marking the approach, or the intersection" would close this. That needs `o3` to be re-opened, and `o3` is accepted, so it was not done here.
+- planner's note for the operator (iteration 4, `iter-004/plan/batch-03`, note 1, section 5b4a63492956e10d; a report, it decides nothing): **DEF-NRS-484A-020::authorized_emergency_vehicle (G86, and the new gap on NRS-484B-587-2a e12).** The reading includes no class. Every rule that lists authorized emergency vehicles as an exception or a subject is therefore vacuous on that leaf. A reading decision, such as `ru.emergency_vehicle` and `ru.fire_apparatus` included and the other classes excluded, would unblock this and the other affected laws together.
+- planner's note for the operator (iteration 4, `iter-004/plan/batch-03`, note 2, section 5b4a63492956e10d; a report, it decides nothing): **DEF-NRS-484A-280::tow_car (new gap on NRS-484B-587-2a e15).** The gate evidence shows no included class. Including `ru.official_vehicle` of kind tow, and excluding the bus classes, would decide it.
+- parameter `p.vehicle_turn_window` = 10.0 s proposed by `NRS_484B_217_2` (the longest duration of a turn by a motor vehicle at a junction or into or out o); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- `LVMC-11-40-180-C` (LVMC_11_40_180_C_o1) reads "Whenever any person is riding a bicycle, electric bicycle, or electric scooter upon a sidewalk" (agency) through conduct: 'any person is riding' is read through the device's controlled motion: a device moving on the sidewalk is read as ridden.
+- `NRS-484B-287-1e` (NRS_484B_287_1e) reads "shall cross only in accordance with the official traffic-control devices pertaining to such crossing movements." (status) through conduct: 'official' is read through the presence of the signal head in the scene.
+- `NRS-484B-287-1e` span s1 composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-287-1e` span s1 composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-210-2` (NRS_484B_210_2) reads "The driver of a vehicle" (agency) through conduct: 'The driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever controls it.
+- `NRS-484B-287-1c` (NRS_484B_287_1c) reads "at which official traffic-control devices are in operation" (status) through conduct: 'official' is the devices' legal status, read through the presence of the signal heads.
+- `NRS-484B-287-1c` span v1 composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-287-1c` span v1 composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-250-2` (NRS_484B_250_2) reads "this section does not apply at intersections controlled by official traffic-control devices" (status) through conduct: 'official' is a legal status; the device present and governing is its evidence.
+- `NRS-484B-250-2` (NRS_484B_250_2) reads "the driver of the vehicle on the left" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion, whoever or whatever controls it.
+- `NRS-484B-250-2` span i composes accepted `NRS_484B_250_4_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-250-2` span i composes accepted `NRS_484B_250_4_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-257-2` (NRS_484B_257_2_o1) reads "The driver of a vehicle" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion, whoever or whatever controls it.
+- `NRS-484B-257-2` span f composes accepted `NRS_484B_257_1_o1` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-363-4` (NRS_484B_363_4) reads "The driver of a vehicle" (agency) through conduct: 'driver' and 'overtake' are read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever controls it.
+- `NRS-484B-363-4` (NRS_484B_363_4) reads "in an area designated as a school zone or school crossing zone" (status) through conduct: 'designated' is the legal status of the zone: the zone sign governing the subject's region is the evidence.
+- gap(s) G88 filed for `LVMC-11-52-030-A`: its plan carries them; decide with `python -m harness gap decide <id> --state ... --decision ...`
+- gap(s) G89, G90 filed for `LVMC-11-52-030-B`: its plan carries them; decide with `python -m harness gap decide <id> --state ... --decision ...`
+- gap(s) G91 filed for `LVMC-11-52-300`: its plan carries them; decide with `python -m harness gap decide <id> --state ... --decision ...`
+- gap(s) G92 filed for `NRS-484B-267-2a`: its plan carries them; decide with `python -m harness gap decide <id> --state ... --decision ...`
+- gap(s) G93 filed for `NRS-484B-307-8d`: its plan carries them; decide with `python -m harness gap decide <id> --state ... --decision ...`
+- gap(s) G94, G95 filed for `NRS-484B-587-2a`: its plan carries them; decide with `python -m harness gap decide <id> --state ... --decision ...`
+- `NRS-484B-210-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-250-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-257-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-287-1c`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-287-1e`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-363-4`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `LVMC-11-40-180-C`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

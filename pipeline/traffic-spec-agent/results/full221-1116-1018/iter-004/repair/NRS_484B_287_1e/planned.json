@@ -1,0 +1,200 @@
+{
+ "node_id": "NRS_484B_287_1e",
+ "law_refs": [
+  "NRS-484B-287-1e"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except as provided in NRS 484B.290 [LVMC-11-30-140-B]:",
+   "role": "reference"
+  },
+  {
+   "id": "s2",
+   "text": "When authorized to cross diagonally,",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "pedestrians",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "shall cross only in accordance with the official traffic-control devices pertaining to such crossing movements.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk",
+    "st.intersection",
+    "st.lane",
+    "st.lane_enters"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "'cross diagonally' is read as in NRS_484B_287_1d: the pedestrian's footprint overlaps an intersection (st.intersection, 'the region where two roadways meet'; rel.occupies 'a road user's footprint overlaps a lane / region') and its velocity is oblique to every lane that runs into it (st.lane_enters, kind st.lane), read through drv.motion.moving_across_carrier at the along/across tolerance and the right-angle tolerance. 'authorized' by official traffic-control devices (DEF-NRS-484A-145: every 'sign, signal, marking and device') is read through the marking that indicates the crossing: a marked crosswalk (st.crosswalk, 'marked crossing'; DEF-NRS-484A-065 (2) 'distinctly indicated for pedestrian crossing by lines or other markings') under the pedestrian's footprint. The crossing begins where the footprint comes to overlap the intersection."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrians' (DEF-NRS-484A-165: 'a person afoot, a person in a manual or motorized wheelchair ...') is the admitted aggregate DEF-NRS-484A-165::pedestrian."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "dev.pedestrian_signal",
+    "dev.position",
+    "kin.position",
+    "kin.heading"
+   ],
+   "derived": [],
+   "justification": "The devices 'pertaining to such crossing movements' that regulate a pedestrian's crossing are pedestrian signal heads (dev.pedestrian_signal: 'a pedestrian head; state ∈ {walk, dont_walk_flashing, dont_walk_steady, dark}; countdown attribute when a timer is displayed'). The head pertaining to the pedestrian's diagonal movement is the one the pedestrian faces across the crossing: its position (dev.position, 'location of the device head / sign face') lies ahead of the pedestrian's position (kin.position) along its heading (kin.heading, 'direction the body points') within a cone and a reach. dev.position is used as the head's location, not as a stop line or crossing, which its 'Not a stand-in for' clause excludes. 'in accordance with' is read through the indication shown when the crossing begins: walk, or a flashing indication with a countdown, accords; a steady don't-walk or a flashing one without countdown does not."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s1",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s1",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian) beginning an authorized diagonal crossing: at this observation its footprint comes to overlap an intersection x (rel.occupies, st.intersection) that it did not overlap at the previous observation, its footprint overlaps a marked crosswalk (st.crosswalk, marked), and it moves diagonally across x: for every lane l with st.lane_enters(l, x) (at least one exists), drv_motion_moving_across_carrier(subject, l) holds with (p.halt_speed_tolerance, p.crossing_motion_cos) and does not hold with (p.halt_speed_tolerance, p.right_angle_crossing_cos). The duty does not apply where LVMC_11_30_140_B_o1 or LVMC_11_30_140_B_o2 is engaged for the subject.",
+ "obligation": "For every pedestrian signal head d (dev.pedestrian_signal) that the subject faces at this observation, d shows neither dont_walk_steady nor dont_walk_flashing without its countdown attribute. The subject faces d where, with Δ the vector from the subject's kin.position to d's dev.position and h the subject's kin.heading: h·Δ > 0, (h·Δ)² ≥ p.ped_signal_facing_cos² · (Δx² + Δy²), and Δx² + Δy² ≤ p.ped_signal_facing_reach². Where no head is faced, compliant.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos",
+  "p.right_angle_crossing_cos",
+  "p.ped_signal_facing_cos",
+  "p.ped_signal_facing_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "'official' is read through the presence of the signal head in the scene.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "'cross only in accordance with the devices' is read at the start of the diagonal crossing (the entry into the intersection) through the indication of the pedestrian signal heads the pedestrian faces: a steady don't-walk, or a flashing don't-walk with no countdown, forbids starting; conduct later in the crossing is not read, and devices other than pedestrian signal heads are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "At an intersection with a marked diagonal crosswalk, a pedestrian steps from the corner into the intersection walking north-east inside the marking while the pedestrian head ahead of it, 25 m away within the facing cone, shows dont_walk_steady."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same entry, while the faced head shows walk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The pedestrian enters the intersection walking east, at right angles to the north-south lanes: no diagonal crossing begins."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same entry as forbid, but the state of the faced pedestrian head is not observed.",
+   "masked": [
+    "dev.pedestrian_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Same entry while the faced head shows dont_walk_flashing with its countdown displayed."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Same entry while the faced head shows dont_walk_flashing without a countdown."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "pedestrian trajectory heading variability in naturalistic crossing studies"
+  },
+  {
+   "name": "p.right_angle_crossing_cos",
+   "unit": "ratio",
+   "value": 0.26,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the motion counts as at right angles to the curb: within about 15 degrees of perpendicular",
+   "source": "pedestrian trajectory heading variability in naturalistic crossing studies"
+  },
+  {
+   "name": "p.ped_signal_facing_cos",
+   "unit": "ratio",
+   "value": 0.87,
+   "convention": "cosine of the largest angle (about thirty degrees) between a pedestrian's heading and the line from its position to a pedestrian signal head at which the pedestrian counts as facing that head: the lateral offset of a far-side head from the crossing's line plus a pedestrian's heading wander",
+   "source": "MUTCD section 4E.08 (pedestrian signal heads placed at the far end of the crossing, in the pedestrian's line of sight)"
+  },
+  {
+   "name": "p.ped_signal_facing_reach",
+   "unit": "m",
+   "value": 40.0,
+   "convention": "the largest distance from a pedestrian to a pedestrian signal head at which the head counts as the one across the crossing the pedestrian faces: a wide urban crossing (six lanes and a median, about 30 m) plus the head's set-back behind the far curb",
+   "source": "MUTCD section 4E.08; AASHTO Green Book urban cross-section widths"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1"
+ }
+}

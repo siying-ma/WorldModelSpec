@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8d97eaefe9e14dc3a3c5b37b5a4fcd71",
+ "result": {
+  "duration_api_ms": 50318,
+  "stop_reason": "end_turn",
+  "session_id": "4640e6a8-6754-47cb-a1cd-4a1d8eb0a06b",
+  "total_cost_usd": 0.8637206600000001,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 80934,
+   "cache_read_input_tokens": 80457,
+   "output_tokens": 5708,
+   "output_tokens_details": {
+    "thinking_tokens": 1327
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 80934,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 893,
+     "cache_read_input_tokens": 78203,
+     "cache_creation_input_tokens": 4985,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4985
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 74442,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00820732,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5708,
+    "cacheReadInputTokens": 80457,
+    "cacheCreationInputTokens": 80934,
+    "webSearchRequests": 0,
+    "costUSD": 0.8555133400000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1327,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 80934,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've written the revised record to `record.jsonl`; it hasn't been through the gate yet. The gate refused the old one because the signal-head variable `d` wasn't tied to the pedestrian through any shared atom. Comparing the head's position with the pedestrian's position and heading doesn't count as a tie.\n\n**What changed (span `s4`):**\n- **The tie:** span `s4` now uses `dev.governs`. A head pertains to the crossing when it governs the intersection the pedestrian enters. I tied it to the intersection rather than the crosswalk because the `dev.governs` contract only allows travel regions, and a crosswalk isn't one.\n- **Same intersection in the obligation:** the obligation selects that intersection again using every condition from the applicability. These are: the pedestrian's footprint starts to overlap it at this observation, at least one lane enters it, and the pedestrian crosses every entering lane obliquely.\n- **Atoms claimed:** span `s4` now also claims `dev.governs`, `rel.occupies`, `st.intersection`, `st.lane`, `st.lane_enters` and `drv.motion.moving_across_carrier`.\n- **Facing check kept:** the position/heading comparison stays, now only to pick, among the heads governing the intersection, the one across the diagonal crossing.\n- **New disclosed reading:** \"devices pertaining to such crossing movements\" is read as the pedestrian heads that govern the entered intersection and that the pedestrian faces.\n\n**New scenarios:**\n- `branch_3` (compliant): no pedestrian head in the scene. The rules require a decided case with none of the quantified party present.\n- `branch_4` (compliant): the faced head shows a steady don't-walk but governs a different intersection. It differs from `forbid` only in that tie.\n\n**Other edits:**\n- **Parameter proposals:** I removed the old ones. `p.ped_signal_facing_cos` and `p.ped_signal_facing_reach` are now in the catalogue and are named as they are there.\n- **Unknown verdicts:** where it isn't observed whether a faced head governs the intersection, and that head shows a forbidding indication, the verdict is unknown.\n\n**Risk:** the gate may still reject this, because the `dev.governs` contract describes control of an intersection as \"control of the junction itself\". Whether a pedestrian head governs the junction is my reading, not something the contract says outright. The coder's witnesses will also need to record which intersection the head governs; they currently don't.",
+  "ttft_ms": 14116,
+  "type": "result",
+  "duration_ms": 49478,
+  "uuid": "92c50d5f-2121-477d-ac54-a5b0c3e6f825",
+  "ttft_stream_ms": 1544,
+  "time_to_request_ms": 322,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 22,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 11,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "transcript_persist": 56,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 171,
+   "query_setup": 1,
+   "model_gates": 1,
+   "tool_schema_build": 6,
+   "message_normalization": 2,
+   "client_creation": 12,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 31,
+  "time_to_request_cpu_ms": 353,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1545,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 74442,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00820732,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5708,
+    "cacheReadInputTokens": 80457,
+    "cacheCreationInputTokens": 80934,
+    "webSearchRequests": 0,
+    "costUSD": 0.8555133400000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1327,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 80934,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

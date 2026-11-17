@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "8d97eaefe9e14dc3a3c5b37b5a4fcd71",
+ "result": {
+  "duration_api_ms": 738653,
+  "stop_reason": "end_turn",
+  "session_id": "b3515afc-d34a-440e-a4b3-ab96bb130ccf",
+  "total_cost_usd": 4.40337865,
+  "usage": {
+   "input_tokens": 66,
+   "cache_creation_input_tokens": 201710,
+   "cache_read_input_tokens": 4917085,
+   "output_tokens": 70040,
+   "output_tokens_details": {
+    "thinking_tokens": 47415
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 201710,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1055,
+     "cache_read_input_tokens": 203466,
+     "cache_creation_input_tokens": 2712,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2712
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 48960,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005401550000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 66,
+    "outputTokens": 70040,
+    "cacheReadInputTokens": 4917085,
+    "cacheCreationInputTokens": 201710,
+    "webSearchRequests": 0,
+    "costUSD": 4.397977099999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 47415,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 201710,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 41,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the last of the 6 runs: all 20 witnesses passed. I wasted two of those runs myself, once by running the gate on the untouched skeleton and once with a stray placeholder command.\n\n**The rule** (`NRS_484B_363_4.lean`):\n- **Who it covers:** the subject is a vehicle (`ru_aggregate`). For every other vehicle `b`, the act is `drv_interaction_overtake_pass(subject, b)`, and `b` counts as \"traveling\" if its speed is above the halt tolerance at some moment of the pass.\n- **When the pass is under way:** the pass runs from just after the last moment `b` was ahead with headings aligned, through the moving subject drawing alongside, up to the moment `b` comes to be behind (the recognition). It stops there. The \"some moment\" and \"throughout\" readings follow the required `holdsFor` patterns.\n- **School zone (s3):** at some moment of the pass, the subject occupies a travel region governed by a school or school_crossing zone sign that is not an end sign.\n- **Exceptions:** each of (a)–(d) must hold throughout the pass to excuse it, and each is negated in the applicability:\n  - (a) not a school day;\n  - (b) inside the half-hour margin outside school hours;\n  - (c) an operational beacon, pupils in class, and no operational beacon flashing;\n  - (d) no operational beacon, and the sign's conditions don't hold.\n- **Obligation:** for every such `b`, no recognized pass. The full selection of `b` is written again in the obligation, as rule 3c requires.\n\n**Choices the node left open** (recorded in the rule header and `task_result.md`):\n- **The pass starts one observation late.** The language can only look backward, so it can't mark the last \"ahead with headings aligned\" observation itself; that needs the next one. Counting the whole approach instead would read observations from before the pass began. The occasion witnesses switch conditions so they give the same verdict under either boundary.\n- **\"With no other vehicle in the scene the duty is met\"** is a second branch of the applicability. I kept the school-zone requirement in it, so the trigger still decides when the rule engages.\n- **\"The subject moves\" is part of the pass.** This comes from the record's justification, and it is also what lets `blind` be unknown only because of the masked overlap.\n\n**Witnesses:**\n- **Three added beyond the plan:**\n  - `branch_4`, compliant: the subject is the only vehicle, with a pedestrian beside the road.\n  - `branch_5`, violated: a working beacon but the pupils are not in class.\n  - `branch_6`, violated: the beacon governs only the adjacent lane.\n  The last two were needed because the gate flagged two leaves in the obligation's copy of exception (c) as untested.\n- **`blind` departs slightly from its narrative.** Core recomputes the overlap from the vehicle outlines even when the manifest masks it. So in `blind` the other vehicle's extent, and therefore its occupancy, is not reported. The subject stays fully observed, and the rule never reads the other vehicle's occupancy.\n\nNo defect in the node or in the concept came up.",
+  "ttft_ms": 146203,
+  "type": "result",
+  "duration_ms": 1724895,
+  "uuid": "45c6b660-0704-41f2-9a7c-aa57a01084e0",
+  "ttft_stream_ms": 1733,
+  "time_to_request_ms": 365,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 55,
+   "resume_other": 1,
+   "process_user_input": 4,
+   "input_attachments": 12,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 28,
+   "tool_pool_refresh": 3,
+   "init_message": 3,
+   "init_frame_send": 8,
+   "engine_pickup": 9,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 209,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 37,
+  "time_to_request_cpu_ms": 351,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 11,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1733,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 48960,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005401550000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 66,
+    "outputTokens": 70040,
+    "cacheReadInputTokens": 4917085,
+    "cacheCreationInputTokens": 201710,
+    "webSearchRequests": 0,
+    "costUSD": 4.397977099999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 47415,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 201710,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

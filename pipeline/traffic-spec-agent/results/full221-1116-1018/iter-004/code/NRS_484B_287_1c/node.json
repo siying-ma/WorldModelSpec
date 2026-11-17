@@ -1,0 +1,202 @@
+{
+ "node_id": "NRS_484B_287_1c",
+ "law_refs": [
+  "NRS-484B-287-1c"
+ ],
+ "segmentation": [
+  {
+   "id": "v1",
+   "text": "Except as provided in NRS 484B.290 [LVMC-11-30-140-B]:",
+   "role": "reference"
+  },
+  {
+   "id": "v2",
+   "text": "Between adjacent intersections",
+   "role": "condition"
+  },
+  {
+   "id": "v3",
+   "text": "at which official traffic-control devices are in operation",
+   "role": "condition"
+  },
+  {
+   "id": "v4",
+   "text": "pedestrians",
+   "role": "subject"
+  },
+  {
+   "id": "v5",
+   "text": "shall not cross at any place",
+   "role": "obligation"
+  },
+  {
+   "id": "v6",
+   "text": "except in a marked crosswalk.",
+   "role": "exception"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "elements": [
+  {
+   "span": "v2",
+   "atoms": [
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.intersection",
+    "st.lane",
+    "st.lane_connectivity",
+    "st.crosswalk",
+    "st.entrance_of"
+   ],
+   "derived": [],
+   "justification": "'Intersection' (DEF-NRS-484A-105, 'The area embraced within the prolongation or connection of the lateral curb lines ... of the roadways of two highways which join one another') is st.intersection, 'the region where two roadways meet', alley junctions excluded as the definition's (3) excludes them. 'Adjacent intersections' are two intersections with none between them along the way; the pedestrian is between them where its footprint overlaps (rel.occupies) a travel region c (st.travel_region) recorded as a directed approach to one of them, i1: st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end', the carrier being 'the stretch one direction of travel uses to reach one junction' — so nothing lies between c's stretch and i1 — and the other, i2 ≠ i1, is reached either through a second carrier the pedestrian also occupies that enters i2 (the opposing direction of a two-way way), or, where c is a lane (st.lane), through a lane that enters i2 and leads into c, directly or through one lane between (st.lane_connectivity, 'which lane a lane leads into'). The relation atoms tie both intersections to the pedestrian's own carriers; no distance stands for belonging. A pedestrian at either intersection is not between them: its footprint overlaps neither i1 nor i2, nor a crosswalk (st.crosswalk) recorded as marking the entrance of a carrier it occupies (st.entrance_of, 'the carrier whose entrance into an intersection a stop line or a crosswalk marks'). st.lane_enters is 'Not a stand-in for: ... the region a device governs', which v3 reads separately."
+  },
+  {
+   "span": "v3",
+   "atoms": [
+    "dev.governs",
+    "dev.traffic_signal",
+    "dev.inoperative",
+    "st.lane_enters"
+   ],
+   "derived": [],
+   "justification": "'Official traffic-control device' (DEF-NRS-484A-145, 'every sign, signal, marking and device ... placed or erected by a public authority or railroad for the purpose of regulating, warning or guiding traffic'). The law's own words 'are in operation' qualify the devices and limit which members the duty reads: a device in operation is one that operates, displaying indications, so they leave out signs and markings, which are posted or painted but do not operate, and signal heads that are not operating — covered, dark, or inoperative. The members read are signal heads: dev.traffic_signal ('a signal head; state ∈ {...}; uncovered attribute for an installed head whose faces are not covered') with its uncovered attribute true and a state other than dark, and not dev.inoperative ('a signal head installed and uncovered but showing no valid indication'). The device is at the intersection where it governs it, dev.governs 'an intersection, read as control of the junction itself', or governs a carrier recorded as entering it (st.lane_enters), as the st.lane_enters contract directs: 'which intersection a device controls is read through both, or directly where the device governs the intersection'; dev.governs is 'Not a stand-in for: a position'. 'Official' is the device's legal status, read through its presence (observable_reading, status). Each of i1 and i2 must have such a device."
+  },
+  {
+   "span": "v4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Pedestrians' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'), claimed as ru.aggregate as the index maps 'No pedestrian'."
+  },
+  {
+   "span": "v5",
+   "atoms": [
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "To cross is to move across the way: drv.motion.moving_across_carrier, 'Road user a moves across the designated direction of travel of carrier region r', with r the carrier c the pedestrian's footprint overlaps (rel.occupies, st.travel_region), as the index maps 'crossing a roadway' for LVMC_11_30_060_A. The concept 'says nothing of whether a occupies r', which rel.occupies supplies; a pedestrian at rest or walking along the carrier is not crossing, as the concept excludes."
+  },
+  {
+   "span": "v6",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "'a marked crosswalk' is st.crosswalk with its marked attribute true ('marked crossing, or the unmarked prolongation of sidewalks at an intersection; marked attribute'), DEF-NRS-484A-065 (2) 'Any portion of a highway at an intersection or elsewhere distinctly indicated for pedestrian crossing by lines or other markings on the surface'; 'in' it is rel.occupies of that crosswalk by the pedestrian, as the index maps 'except in a crosswalk'."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "v1",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "v1",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-165::pedestrian; neither LVMC_11_30_140_B_o1 nor LVMC_11_30_140_B_o2 applies to it (ruleApplies, subject mapped to subject; o1 applies at an observation at which, for some other road user of class ru.pedestrian_with_white_cane_or_guide_animal, contact with the subject begins there, or their centre distance comes there to be at most p.blind_person_approach_reach having been above it at the previous observation while the subject is not at rest; o2 applies while the subject proceeds after having halted since such an event); and at the observation it is between adjacent controlled intersections: its footprint overlaps a travel region c (rel.occupies) recorded as entering an intersection i1 (st.lane_enters), and an intersection i2 other than i1 is found either because its footprint also overlaps a travel region recorded as entering i2, or because c is a lane and a lane that enters i2 leads into c (st.lane_connectivity) directly or through one lane between; each of i1 and i2 has a device in operation — a dev.traffic_signal that is uncovered, whose state is not dark and that is not dev.inoperative — that governs it (dev.governs) or governs a travel region recorded as entering it; and its footprint overlaps neither i1 nor i2 nor a crosswalk recorded as marking the entrance of a carrier it occupies (st.entrance_of); and it is moving across c (drv.motion.moving_across_carrier(subject, c) with p.halt_speed_tolerance and p.crossing_motion_cos).",
+ "obligation": "At that observation the subject's footprint overlaps a crosswalk (st.crosswalk) whose marked attribute is true (rel.occupies). Otherwise violated; where the crosswalk's occupancy or its marking is unobserved, unknown.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "v3",
+   "why": "'official' is the devices' legal status, read through the presence of the signal heads.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Mid-block between two intersections each governed by an operating traffic signal, a pedestrian walks across both directional carriers of the roadway, outside any crosswalk."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Between the same two signalized intersections, a pedestrian walks across the roadway within a marked mid-block crosswalk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian walks across a roadway mid-block between two intersections controlled only by stop signs, with no signal head at either."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian crosses mid-block outside any crosswalk between two intersections with signal heads; which regions the signal heads govern is not observed on this source.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian crosses at the unmarked crosswalk recorded as marking the entrance of the approach into a signalized intersection: it is at the intersection, not between."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian who is not blind walks across the roadway mid-block, outside any crosswalk, between two signalized intersections, toward a person carrying a white cane (class ru.pedestrian_with_white_cane_or_guide_animal) who at the first observations stands farther than p.blind_person_approach_reach (centre to centre) from it; the judged observation is the first at which the walking pedestrian's centre distance to the cane user is at most that reach, having been above it at the previous observation, so the approach event of LVMC_11_30_140_B_o1 occurs there inside the recording and o1 applies to it at that observation."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "pedestrian crossing-path geometry"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1"
+ }
+}

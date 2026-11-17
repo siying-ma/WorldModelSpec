@@ -1,0 +1,273 @@
+{
+ "node_id": "NRS_484B_257_2_o1",
+ "law_refs": [
+  "NRS-484B-257-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a",
+   "text": "Except when traffic is being controlled by a police officer",
+   "role": "exception"
+  },
+  {
+   "id": "b",
+   "text": "or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "c",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "d",
+   "text": "shall stop in obedience to a stop sign or yield in compliance with a yield sign,",
+   "role": "obligation"
+  },
+  {
+   "id": "f",
+   "text": "in compliance with the manner prescribed in subsection 1 [NRS-484B-257-1],",
+   "role": "reference"
+  },
+  {
+   "id": "g",
+   "text": "prior to entering an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "h",
+   "text": "if a stop sign or a yield sign is erected at one or more entrances thereto",
+   "role": "condition"
+  },
+  {
+   "id": "i",
+   "text": "although not a part of a through highway",
+   "role": "condition"
+  },
+  {
+   "id": "j",
+   "text": "and shall proceed cautiously,",
+   "role": "sibling"
+  },
+  {
+   "id": "k",
+   "text": "yielding",
+   "role": "sibling"
+  },
+  {
+   "id": "l",
+   "text": "to vehicles not so obligated to stop or yield",
+   "role": "sibling"
+  },
+  {
+   "id": "m",
+   "text": "and which are within the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "n",
+   "text": "or approaching so closely as to constitute an immediate hazard",
+   "role": "sibling"
+  },
+  {
+   "id": "o",
+   "text": "during the time such driver is moving across or within the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.governs",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Traffic' is the admitted aggregate DEF-NRS-484A-285::traffic, of which the subject is a member; 'being controlled by a police officer' is dev.human_direction of role police_officer ('a person directing traffic') governing (dev.governs) the subject's approach carrier c or X (st.travel_region), read at the subject's entry."
+  },
+  {
+   "span": "b",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "dev.inoperative"
+   ],
+   "derived": [],
+   "justification": "A dev.traffic_signal governing c or X (dev.governs) that is not dev.inoperative ('installed and uncovered but showing no valid indication'), read at the subject's entry."
+  },
+  {
+   "span": "c",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Same mapping as 'The driver of a vehicle' in the index: the admitted aggregate DEF-NRS-484A-320::vehicle; 'driver' is the vehicle's controlled motion."
+  },
+  {
+   "span": "d",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "kin.speed",
+    "st.stop_line",
+    "st.crosswalk",
+    "st.entrance_of",
+    "prim.region_offset_along",
+    "st.lane_direction",
+    "st.region_geometry",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' is DEF-NRS-484A-255, 'complete cessation from movement' (drv.motion.complete_halt); 'in obedience to a stop sign' ties the halt to a dev.stop_sign ('regulatory sign requiring a full halt') governing (dev.governs) the subject's approach carrier c or X. 'Yield in compliance with a yield sign' (dev.yield_sign, 'regulatory sign requiring yielding without a mandatory halt'), in the manner subsection 1 prescribes ('in the event of a yield sign, slowed or stopped'), is the subject's kin.speed within the place's stopping zone at or below the speed from which it still halts at the place (p.yield_line_speed_max), a halt included. The act is owed at the place that manner names, which the act's own atoms read: the st.stop_line marking c (st.entrance_of), else the st.crosswalk marking c, else c's entrance end, the side along c's direction (st.lane_direction) given by prim.region_offset_along, the body-to-mark distance by st.region_geometry, the subject on c by rel.occupies."
+  },
+  {
+   "span": "g",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Prior to entering an intersection': the act is owed before the subject's entry into X - the observation at which its footprint comes to overlap X (rel.occupies), having occupied at the previous observation a carrier c entering X (st.lane_enters, st.travel_region)."
+  },
+  {
+   "span": "h",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'A stop sign or a yield sign is erected at one or more entrances thereto': a dev.stop_sign or dev.yield_sign governs (dev.governs) an approach carrier of X (st.lane_enters) or X; the sign the subject obeys is the one governing its own entrance c, which it occupies (rel.occupies)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "f",
+   "rule": "NRS_484B_257_1_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "compliance"
+  }
+ ],
+ "residues": [
+  {
+   "span": "i",
+   "why": "'although' is concessive: the duty reaches signed entrances whether or not the intersection is part of a through highway, and the stop or yield owed at a signed entrance is the same in both cases (subsection 1 states the same act where it is part of one); the words withhold the duty nowhere.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At the subject's entry into an intersection X: the observation at which its footprint overlaps X and did not at the previous observation, where at that previous observation it occupied a carrier c with st.lane_enters(c, X); where at the entry observation a stop sign or a yield sign governs c or X (dev.governs); except where at that observation a police officer's direction (dev.human_direction of role police_officer) governs c or X, or a traffic signal that is not inoperative governs c or X.",
+ "obligation": "NRS_484B_257_1_o1 (binder subject to subject) is complied with at the entry - the manner subsection 1 prescribes - and the act it states is found on the approach: where a stop sign governs c or X, a complete halt (drv.motion.complete_halt, speed_tol p.halt_speed_tolerance); where only a yield sign does, an observation at which kin.speed is at or below p.yield_line_speed_max (a halt included); in either case while occupying c within the stopping zone of the place for c, in subsection 1's order: (1) a stop line marking c's entrance (st.entrance_of), the line ahead of or at the reference point along c's direction (prim.region_offset_along at or above zero), the body within p.stop_point_tolerance of it; (2) where no stop line marks c (entrance lists observed and excluding c), the crosswalk marking c's entrance ahead, not overlapped, the body within p.stop_point_tolerance of it; (3) where neither marks c, the footprint outside X and the body within p.stop_point_tolerance of X. History bound: the search runs back from the entry and ends at the approach start - the last observation before the entry at which the subject, on a carrier the place marks, is outside the place's stopping zone upstream (off the mark, short of it along c's direction and farther than p.stop_point_tolerance; where several marks of that kind mark c, outside and short of each) - or at the subject's previous entry into X, whichever is later. Act found: compliant; either end reached without it: violated; neither end reached (the recording begins inside the zone): unknown. Each entry owes its own act; only an observed exit from the zone upstream begins a new approach. The entry is unknown where the previous observation does not show the subject on a mapped carrier; where a mark's association with c is unobserved and the verdict turns on it, unknown. No bound is taken from the recording's start, a first observation or a cumulative distance.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance",
+  "p.yield_line_speed_max"
+ ],
+ "narrowings": [
+  {
+   "span": "c",
+   "why": "'the driver' is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A dev.stop_sign governs carrier c entering X; a st.stop_line marks c; no officer or operating signal. The subject passes the line and enters X with kin.speed well above p.halt_speed_tolerance, never halting since it was upstream of the line's stopping zone."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; the subject halts on c with the line just ahead within p.stop_point_tolerance, then enters X."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No stop or yield sign governs c or X; the subject enters X without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Stop sign governing c; kin.speed is absent, so whether the subject halted is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "Stop sign governing c; the recording begins with the subject already within p.stop_point_tolerance of the stop line, moving slowly; no halt is recorded before its entry into X.",
+   "boundary": "the approach start: the subject's last observation outside the stop line's stopping zone upstream on c lies before the recording"
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Only a dev.yield_sign governs c; no stop line or crosswalk marks c; the subject reaches X's edge at kin.speed at or below p.yield_line_speed_max and enters."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A stop sign governs c, but an operating dev.traffic_signal (circular_red) also governs c at the subject's entry."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channels"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "MUTCD stop line placement in advance of a crosswalk"
+  },
+  {
+   "name": "p.yield_line_speed_max",
+   "unit": "m/s",
+   "value": 4.2,
+   "convention": "the speed at or below which a vehicle at the place of a yield sign counts as having slowed: the speed from which a passenger car can still halt within the stop-point tolerance at a comfortable deceleration of about 4.5 m/s^2",
+   "source": "AASHTO comfortable deceleration rate of the stopping sight distance model"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "NRS_484B_257_1_o1": "31688991eea667d16363e62e629f6b1bb11563ad04609f3b1358559fde66d854"
+ }
+}

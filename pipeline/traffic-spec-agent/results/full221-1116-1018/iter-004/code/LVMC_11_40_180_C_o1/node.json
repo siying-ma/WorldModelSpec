@@ -1,0 +1,198 @@
+{
+ "node_id": "LVMC_11_40_180_C_o1",
+ "law_refs": [
+  "LVMC-11-40-180-C"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "Whenever any person is riding a bicycle, electric bicycle, or electric scooter upon a sidewalk",
+   "role": "trigger"
+  },
+  {
+   "id": "c2",
+   "text": "such person shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "c3",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "c4",
+   "text": "to any pedestrian",
+   "role": "condition"
+  },
+  {
+   "id": "c5",
+   "text": "and shall give audible signal",
+   "role": "sibling"
+  },
+  {
+   "id": "c6",
+   "text": "before overtaking and passing",
+   "role": "sibling"
+  },
+  {
+   "id": "c7",
+   "text": "such pedestrian",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter",
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "The three terms are admitted aggregates (DEF-NRS-484A-025::bicycle 'a device propelled by human power upon which a person may ride'; DEF-LVMC-11-02-082::electric_bicycle 'a device upon which a person may ride ... an electric motor which produces not more than seven hundred fifty watts'; DEF-LVMC-11-02-083::electric_scooter 'a device with handlebars and an electric motor ... must not weigh more than one hundred pounds ... maximum speed of not more than twenty miles per hour'), carried as aggregates and never expanded; which classes each includes is the run's reading, and where the reading leaves a class unresolved membership is unknown, which is the rule's faithful verdict, not a defect. 'riding' is read through controlled motion: the device is not at rest (drv.motion.complete_halt false; its contract 'observed as its speed (kin.speed) at or below a tolerance'). 'upon a sidewalk': st.sidewalk 'area for pedestrians between roadway and property line', anchored by rel.occupies ('a road user's footprint overlaps a lane / region (... sidewalk ...)'); st.sidewalk's exclusion (a crosswalk) does not apply: the words name the sidewalk."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "'shall yield' as in the mapping index: kin.speed 'magnitude of velocity' (the subject does not proceed into a conflict; read through the closest-approach primitives, which compute from velocities) and rel.contact 'the bodies of two road users ... touch or overlap (a collision)'; rel.contact's exclusion (a near miss) is respected: the near miss is the operationalization's closest-approach bound."
+  },
+  {
+   "span": "c4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is admitted as DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair ...'); same mapping as the index's 'to any pedestrian'."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "c3",
+   "standard": "the right-of-way: preference over another approaching 'under such circumstances of direction, speed and proximity as to give rise to the danger of a crash' (DEF-NRS-484A-210)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: a pedestrian whose centre comes, under constant velocities, within the conflict clearance of the moving subject's centre within the conflict horizon is approaching so as to give rise to the danger of a crash",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a bicycle, electric bicycle or electric scooter (membership of the three admitted aggregates, as the run's reading classifies them) that occupies an st.sidewalk region (rel.occupies) and is not at rest (not drv.motion.complete_halt(subject; p.halt_speed_tolerance)).",
+ "obligation": "For every pedestrian p of the scene other than the subject (ru.aggregate=DEF-NRS-484A-165::pedestrian): the subject is not in contact with p (rel.contact), and it is not the case that prim.closest_approach_within(subject, p; p.conflict_horizon) holds with prim.closest_approach_distance(subject, p; p.conflict_horizon) below p.conflict_centre_clearance. A scene with no pedestrian is compliant.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "c1",
+   "why": "'any person is riding' is read through the device's controlled motion: a device moving on the sidewalk is read as ridden.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c2",
+   "why": "Yielding is read as not proceeding into a conflict and not colliding: while riding, the subject keeps every pedestrian outside the conflict bound.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A bicycle (ru.bicycle) rides along the sidewalk toward a pedestrian walking toward it; their closest approach falls within the conflict horizon and below the clearance, and the bicycle keeps riding."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A bicycle (ru.bicycle) rides along the sidewalk; a pedestrian on it walks away on a diverging course whose closest approach stays above the clearance."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle (ru.bicycle) rides on the roadway beside the sidewalk where pedestrians walk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A bicycle moves near a pedestrian, and the source does not observe which regions the bicycle occupies.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A bicycle (ru.bicycle) rides along an empty sidewalk with no pedestrian in the scene: the duty binds the subject alone and is met."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "An electric bicycle (ru.electric_bicycle) rides along the sidewalk toward a pedestrian walking toward it; their closest approach falls within the conflict horizon and below the clearance."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Hyden, The development of a method for traffic safety evaluation: the Swedish Traffic Conflicts Technique (1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design dimensions (AASHTO Green Book design vehicle)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}
