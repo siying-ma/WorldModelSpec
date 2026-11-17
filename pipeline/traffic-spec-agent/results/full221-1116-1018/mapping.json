@@ -1854,17 +1854,12 @@
  },
  "facing such a signal": {
   "atoms": [
-   "dev.governs",
    "dev.position",
    "kin.heading",
-   "kin.position",
-   "st.intersection",
-   "st.lane_enters",
-   "st.region_geometry",
-   "st.travel_region"
+   "kin.position"
   ],
-  "node": "NRS_484B_307_9c",
-  "role": "trigger"
+  "node": "NRS_484B_307_4b",
+  "role": "condition"
  },
  "for a distance of one hundred feet along all such streets or highways": {
   "atoms": [
@@ -3523,7 +3518,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
   ],
-  "node": "NRS_484B_307_9c",
+  "node": "NRS_484B_307_4b",
   "role": "subject"
  },
  "pedestrians facing the signal": {
@@ -3828,6 +3823,20 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_217_2",
+  "role": "obligation"
+ },
+ "shall not enter the highway": {
+  "atoms": [
+   "dev.governs",
+   "rel.occupies",
+   "st.highway",
+   "st.intersection",
+   "st.lane_enters",
+   "st.on_way",
+   "st.roadway",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_4b",
   "role": "obligation"
  },
  "shall not enter the highway,": {
@@ -4958,6 +4967,21 @@
   "node": "NRS_484B_507_1",
   "role": "exception"
  },
+ "until permitted to proceed by another device": {
+  "atoms": [
+   "dev.governs",
+   "dev.pedestrian_signal",
+   "dev.position",
+   "kin.heading",
+   "kin.position",
+   "rel.occupies",
+   "st.lane",
+   "st.on_way",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_307_4b",
+  "role": "exception"
+ },
  "until such signal has stopped, raised, or been removed, or the flagman or person stationed at such pedestrian lane has given a signal to go, or has left the locality.": {
   "atoms": [
    "dev.crossing_warning_signal",
@@ -5684,7 +5708,7 @@
   "atoms": [
    "dev.traffic_signal"
   ],
-  "node": "NRS_484B_307_4a_o2",
+  "node": "NRS_484B_307_4b",
   "role": "trigger"
  },
  "where the signal is a steady red signal alone:": {

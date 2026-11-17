@@ -999,6 +999,8 @@ _Observed during iteration 6: these items record what the run reported then, not
 
 ## Iteration 7
 
+_Observed during iteration 7: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - gap G96 filed for `NRS-484B-307-8b` by a node repair session; decide with `python -m harness gap decide G96 ...`
 - planner's note for the operator (iteration 7, `iter-007/plan`, note 1, section c44cb8fb5d89f231; a report, it decides nothing): `NRS_484B_283_1d1` states only the drivers' duty, and its binder is a vehicle. A reference that grants a *pedestrian* permission from 283(1)(d)(1) cannot engage through it. The permission is therefore carried by elements on 9c's exception span. A pedestrian-subject node for 283(1)(d)(1)'s permission, if one is ever planned, would let the composition carry it.
 - `NRS-484B-270-2b` (NRS_484B_270_2b_o3) reads "the driver of a motor vehicle" (agency) through conduct: 'the driver' of a motor vehicle is read through the vehicle's controlled motion
@@ -1020,3 +1022,15 @@ _Observed during iteration 6: these items record what the run reported then, not
 - `NRS-484B-270-2b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-307-2b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-307-9c`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 8
+
+- planner's note for the operator (iteration 8, `iter-008/plan`, note 1, section 845684d768be4f40; a report, it decides nothing): The composition `NRS_484B_283_1d1` as `exception` (required: the validator demands an execution composition for every law that s6 names) is **inert** for this node. Its subject binder's class is vehicle, and this node's subject is a pedestrian. The permission that 1d1's words grant pedestrians is read directly from the device in s5. The same holds for NRS_484B_307_9c and NRS_484B_307_2b, which compose 1d1 the same way. Two possible fixes, either of which would let the composition carry the permission itself:
+  - a pedestrian-side node of NRS-484B-283-1d1 (the permission to proceed), or
+  - a composition form that maps a composed rule's quantified party (its pedestrian `p`) to this node's subject.
+- planner's note for the operator (iteration 8, `iter-008/plan`, note 2, section 845684d768be4f40; a report, it decides nothing): The `NRS_484B_283_1d2` exception is engaged only at the observation where its countdown ends. It cannot excuse an entry made during the countdown, so that permission is also read in s5.
+- `NRS-484B-307-4b` span s6 composes accepted `NRS_484B_283_1d1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-4b` span s6 composes accepted `NRS_484B_283_1d2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-4b` span s6 composes accepted `NRS_484B_283_1d3_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-4b` span s6 composes accepted `NRS_484B_283_1d4_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-4b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
