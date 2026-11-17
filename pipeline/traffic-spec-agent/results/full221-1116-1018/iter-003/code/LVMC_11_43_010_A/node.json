@@ -1,0 +1,138 @@
+{
+ "node_id": "LVMC_11_43_010_A",
+ "law_refs": [
+  "LVMC-11-43-010-A"
+ ],
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "The following regulations pertain to",
+   "role": "boilerplate"
+  },
+  {
+   "id": "a2",
+   "text": "the operation of vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "a3",
+   "text": "within a roundabout",
+   "role": "trigger"
+  },
+  {
+   "id": "a4",
+   "text": "All vehicular travel",
+   "role": "subject"
+  },
+  {
+   "id": "a5",
+   "text": "shall be in a counterclockwise direction",
+   "role": "obligation"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "elements": [
+  {
+   "span": "a2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is admitted as DEF-NRS-484A-320::vehicle: 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exceptions ('(1) Devices moved by human power or used exclusively upon stationary rails; (2) Electric bicycles; (3) Electric personal assistive mobility devices ...; and (4) An electric scooter'). Under the ru.aggregate contract the run's reading classifies every road-user class under that id by the definition's words; the rule never expands or overrides that classification. Where the reading leaves a class unresolved (an electric scooter whose 100-pound weight and 20 mph speed limits from DEF-NRS-484A-082 are not observed may or may not be an 'electric scooter' in the defined sense), membership is unknown, as the contract states. 'operation' is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "st.roundabout: 'a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches' — the roundabout of DEF-LVMC-11-02-130 ('an intersection characterized by a circulatory roadway, channelized approaches and yield control of entering traffic ... the area bounded by the outermost curb line ... and includes the crosswalks on any entering or exiting roadway'); 'within' places the subject in it, anchored by rel.occupies (the road user's footprint overlaps the region)."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'vehicular' is the same aggregate DEF-NRS-484A-320::vehicle, with the same definition words as a2; 'travel' is motion: the vehicle is not at rest, drv.motion.complete_halt ('The road user is at rest at the observation ... observed as its speed (kin.speed) at or below a tolerance') being false."
+  },
+  {
+   "span": "a5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.circulating_clockwise_about"
+   ],
+   "justification": "drv.motion.circulating_clockwise_about: 'Road user a travels clockwise about the reference point of region r, as seen from above'; travel in a counterclockwise direction is its negation, the concept's contract leaving out 'one travelling counter-clockwise about the point' and 'one moving towards or away from the point within the angle sin_tol allows'. The concept takes the roundabout as its region argument r, the one the obligation binds. The circulatory roadway is the part of the roundabout 'used by vehicles to travel counterclockwise around a central island' (DEF-LVMC-11-02-040): the sense is judged about the roundabout's reference point."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject belongs to DEF-NRS-484A-320::vehicle (ru.aggregate), its footprint occupies some st.roundabout region (rel.occupies), and it is not at rest (not drv.motion.complete_halt(subject; p.halt_speed_tolerance)).",
+ "obligation": "For every st.roundabout region r whose area the subject's footprint occupies (rel.occupies(subject, r)), the roundabout selection of the applicability written again in full: not drv.motion.circulating_clockwise_about(subject, r; p.halt_speed_tolerance, p.roundabout_clockwise_sin_tol).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.roundabout_clockwise_sin_tol"
+ ],
+ "narrowings": [
+  {
+   "span": "a5",
+   "why": "Counterclockwise is judged about the reference point of the roundabout region, read as the centre of its central island; motion towards or away from that point within the tolerance (entering, leaving) is not clockwise and so is compliant.",
+   "kind": "reading"
+  },
+  {
+   "span": "a2",
+   "why": "'the operation of vehicles' is read through the vehicle's controlled motion: a vehicle moving in the roundabout is taken to be operated, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car in a roundabout circulates keeping the central island on its right, clockwise about the roundabout's reference point."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car circulates keeping the central island on its left, counterclockwise."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car drives on a straight street with no roundabout."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car circulates in a roundabout that the source maps without its reference point and outline.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

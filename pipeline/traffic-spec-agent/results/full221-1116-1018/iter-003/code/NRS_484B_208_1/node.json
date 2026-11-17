@@ -1,0 +1,540 @@
+{
+ "node_id": "NRS_484B_208_1",
+ "law_refs": [
+  "NRS-484B-208-1"
+ ],
+ "segmentation": [
+  {
+   "id": "k1",
+   "text": "Except as otherwise provided in subsection 2,",
+   "role": "exception"
+  },
+  {
+   "id": "k2",
+   "text": "on a controlled-access highway",
+   "role": "condition"
+  },
+  {
+   "id": "k3",
+   "text": "which has two or more clearly marked lanes for traveling in the same direction,",
+   "role": "condition"
+  },
+  {
+   "id": "k4",
+   "text": "a driver may not continue to operate a motor vehicle in the extreme left lane",
+   "role": "obligation"
+  },
+  {
+   "id": "k5",
+   "text": "if the driver knows, or reasonably should know, that he or she is traveling at a rate of speed which is less than the posted speed limit for that portion of the controlled-access highway",
+   "role": "trigger"
+  },
+  {
+   "id": "k6",
+   "text": "and is being overtaken in that lane from the rear by a motor vehicle traveling at a higher rate of speed.",
+   "role": "trigger"
+  },
+  {
+   "id": "k8",
+   "text": "The requirements of subsection 1 do not apply: (a) To a driver operating a motor vehicle that is:",
+   "role": "exception"
+  },
+  {
+   "id": "k9",
+   "text": "(1) Overtaking another vehicle proceeding in the same direction;",
+   "role": "exception"
+  },
+  {
+   "id": "k10",
+   "text": "(2) Preparing for a left turn",
+   "role": "exception"
+  },
+  {
+   "id": "k11",
+   "text": "at an intersection;",
+   "role": "exception"
+  },
+  {
+   "id": "k12",
+   "text": "(3) Traveling in a lane designated for the use of high-occupancy vehicles pursuant to NRS 484A.460,",
+   "role": "exception"
+  },
+  {
+   "id": "k13a",
+   "text": "if the driver complies with the requirements to travel in such a lane",
+   "role": "exception"
+  },
+  {
+   "id": "k13b",
+   "text": "[DEF-NRS-484A-460-2, NRS-484B-323-1]",
+   "role": "reference"
+  },
+  {
+   "id": "k14",
+   "text": "or (4) Engaged in the construction, maintenance or repair of the highway, including, without limitation, the removal of snow.",
+   "role": "exception"
+  },
+  {
+   "id": "k15",
+   "text": "(b) When traffic conditions, inclement weather, obstructions or hazards",
+   "role": "exception"
+  },
+  {
+   "id": "k16",
+   "text": "make it necessary to drive in the extreme left lane.",
+   "role": "standard"
+  },
+  {
+   "id": "k17",
+   "text": "(c) When compliance with an official traffic control device or the directions given by a peace officer makes it necessary to drive in the extreme left lane.",
+   "role": "exception"
+  },
+  {
+   "id": "k18",
+   "text": "(d) To the driver of an authorized emergency vehicle in the course of his or her official duties.",
+   "role": "exception"
+  },
+  {
+   "id": "k19",
+   "text": "(e) To a driver operating a motor vehicle",
+   "role": "exception"
+  },
+  {
+   "id": "k20",
+   "text": "within the geographical limits of a city or town.",
+   "role": "exception"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "elements": [
+  {
+   "span": "k2",
+   "atoms": [
+    "rel.occupies",
+    "st.controlled_access"
+   ],
+   "derived": [],
+   "justification": "st.controlled_access: 'a highway with access only at designated points, and its entrance and exit lanes', DEF-NRS-484A-060's controlled-access highway; rel.occupies (which lists 'controlled-access lane') anchors it to the subject's footprint."
+  },
+  {
+   "span": "k3",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "'two or more … lanes for traveling in the same direction': st.lane_adjacency, 'the count of lanes in that direction', at least the stated figure, read on the lane (st.lane) the subject occupies (rel.occupies). 'clearly marked': the lanes' presence on the map is the evidence (observable_reading status)."
+  },
+  {
+   "span": "k4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "'a motor vehicle' is admitted as DEF-NRS-484A-130::motor_vehicle. 'in the extreme left lane': st.lane_adjacency, 'left / right neighbouring lane of the same direction … ordinal 1 is the leftmost lane, looking along the lane's direction', of the lane the subject occupies (rel.occupies, st.lane): the lane with no left neighbour of the same direction. 'continue to operate' is the subject remaining there while the triggers hold, over the move-over window; 'driver' and 'operate' are read through the vehicle's controlled motion."
+  },
+  {
+   "span": "k5",
+   "atoms": [
+    "kin.speed",
+    "dev.speed_limit_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'traveling at a rate of speed which is less than the posted speed limit for that portion': kin.speed below the value of a dev.speed_limit_sign ('sign stating a maximum or minimum speed, with value and unit'; kind maximum) that governs (dev.governs, 'the travel regions whose traffic the device controls') a travel region (st.travel_region) the subject occupies (rel.occupies): the limit of that portion. 'knows, or reasonably should know' is read through those facts themselves (observable_reading perception)."
+  },
+  {
+   "span": "k6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+    "rel.ahead_behind_in_lane",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'being overtaken in that lane from the rear by a motor vehicle': a road user c other than the subject, a motor vehicle (DEF-NRS-484A-130::motor_vehicle), behind the subject in the same lane (rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane, along the lane direction'); 'traveling at a higher rate of speed': kin.speed of c above the subject's, so that c, behind in that lane, closes on the subject from the rear."
+  },
+  {
+   "span": "k8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'a driver operating a motor vehicle that is:' introduces the exceptions (1)-(4) for the subject, a motor vehicle (DEF-NRS-484A-130::motor_vehicle), carried by their own spans."
+  },
+  {
+   "span": "k9",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'Overtaking another vehicle proceeding in the same direction': drv.interaction.overtake_pass, 'Road user a overtakes and passes road user b from the rear: a, travelling in the same direction as b, comes from having b ahead of it to having b behind it', with b a vehicle other than the subject (DEF-NRS-484A-320::vehicle); the overtaking is under way where its recognition falls within the window ahead of length p.overtake_window."
+  },
+  {
+   "span": "k11",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'at an intersection': st.intersection, 'the region where two roadways meet', DEF-NRS-484A-105's intersection, the target region of the declared intention int.left_turn (k10). The intersection the words place the preparation at is the one the subject is at: one its footprint overlaps (rel.occupies, the turn's preparation carried into the intersection), or the one it approaches, which by st.lane_enters ('a road user's approach to an intersection is a carrier it occupies (rel.occupies) whose entrance end is that intersection') is the intersection a travel region (st.travel_region, the kind of the carrier the relation reads) the subject occupies runs into at its entrance end. No distance is read: the words state no size."
+  },
+  {
+   "span": "k12",
+   "atoms": [
+    "rel.occupies",
+    "st.reserved_lane"
+   ],
+   "derived": [],
+   "justification": "'a lane designated for the use of high-occupancy vehicles': st.reserved_lane, 'lane reserved for a class of vehicles; class ∈ {high_occupancy, …}', class high_occupancy, occupied by the subject (rel.occupies). 'high-occupancy vehicles' borrows DEF-NRS-484A-460-2: '(a) A vehicle that is transporting more than one person; (b) A motorcycle, regardless of the number of passengers; (c) A bus, regardless of the number of passengers; and (d) Any other vehicle designated by regulation.' — the class for which the lane is reserved. 'designated … pursuant to NRS 484A.460' is read through the reserved lane's presence (observable_reading status).",
+   "source_spans": [
+    "k13b"
+   ]
+  },
+  {
+   "span": "k13a",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-460-2::high_occupancy_vehicle",
+    "dev.zone_sign",
+    "dev.governs",
+    "prim.conditions_hold"
+   ],
+   "derived": [],
+   "justification": "'the requirements to travel in such a lane' are, by DEF-NRS-484A-460-2, the conditions the Department determines ('(1) The number of occupants required per vehicle; and (2) The hours of the day that the use of the lane is restricted') and advises on signs; the class of road user the lane serves is the admitted aggregate DEF-NRS-484A-460-2::high_occupancy_vehicle, which borrows '(a) A vehicle that is transporting more than one person; (b) A motorcycle, regardless of the number of passengers; (c) A bus, regardless of the number of passengers; and (d) Any other vehicle designated by regulation.' The posted conditions are a dev.zone_sign of kind high_occupancy_lane governing (dev.governs) the reserved lane, its 'conditions attribute: a structured reading of the sign's legend'; that they hold for the subject is prim.conditions_hold, 'the structured conditions of a device … hold at the observation for a road user'. The sign's exclusion 'Not a stand-in for: whether the condition holds now' is met by reading prim.conditions_hold for it.",
+   "source_spans": [
+    "k13b"
+   ]
+  },
+  {
+   "span": "k14",
+   "atoms": [
+    "ru.official_vehicle",
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "justification": "'Engaged in the construction, maintenance or repair of the highway, including … the removal of snow': the vehicle is in road service, ru.official_vehicle ('a vehicle in official or contracted road service, identifiable by livery or equipment'), kind highway_maintenance, and shows the conduct of a vehicle at work on the highway: an amber warning lamp lit, flashing or rotating (sig.warning_lamp, 'a warning lamp lit; colour ∈ {red, blue, amber, white}, mode ∈ {flashing, rotating, steady}'). Its exclusion 'Not a stand-in for: an audible warning' does not apply; the class's exclusion 'Not a stand-in for: an emergency vehicle' does not apply."
+  },
+  {
+   "span": "k15",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "env.precipitation",
+    "env.wet_road",
+    "env.ice_or_snow",
+    "env.visibility",
+    "st.obstruction",
+    "st.region_geometry",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [],
+   "justification": "'traffic conditions': road users other than the subject of the traffic (DEF-NRS-484A-285::traffic) occupying (rel.occupies) the lane to the right of the subject's (st.lane, st.lane_adjacency 'left / right neighbouring lane of the same direction'). 'inclement weather': env.precipitation ('rain or snow falling'), env.wet_road, env.ice_or_snow, env.visibility ('visibility distance (fog, dust, smoke)'). 'obstructions or hazards': st.obstruction ('a physical object on or beside the roadway that is not a road user'), located from the subject by its ground distance (st.region_geometry) and its side (prim.region_lateral_offset, 'left positive')."
+  },
+  {
+   "span": "k17",
+   "atoms": [
+    "dev.governs",
+    "dev.lane_control_signal",
+    "dev.regulatory_sign",
+    "dev.temporary_traffic_control",
+    "dev.human_direction",
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "'compliance with an official traffic control device … makes it necessary': a device governing (dev.governs) the lane to the right of the lane the subject occupies (st.lane_adjacency) closes it: dev.lane_control_signal state red_x or yellow_x, dev.regulatory_sign code closed_to_traffic or do_not_enter, or dev.temporary_traffic_control ('cones, barricades … marking works, a closure'). 'the directions given by a peace officer': dev.human_direction role police_officer, indication stop, governing that lane. 'official' is read through the device's presence (observable_reading status)."
+  },
+  {
+   "span": "k18",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle",
+    "sig.warning_lamp",
+    "sig.siren"
+   ],
+   "derived": [],
+   "justification": "'authorized emergency vehicle' is admitted as DEF-NRS-484A-020::authorized_emergency_vehicle, carried by ru.aggregate; the class alone is no conduct, so being 'in the course of his or her official duties' is read through the conduct of a vehicle operated on duty as an emergency vehicle: a warning lamp of any colour lit, flashing or rotating (sig.warning_lamp, 'a warning lamp lit … mode ∈ {flashing, rotating, steady}') or a siren sounding (sig.siren, 'a siren, whistle or bell sounding'); the two are read separately, as sig.siren's contract requires. Like exceptions (a)-(c), it excuses the subject inside the obligation, so that another exception holding decides the verdict whatever the reading resolves of the class."
+  },
+  {
+   "span": "k19",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'a driver operating a motor vehicle': the subject, DEF-NRS-484A-130::motor_vehicle, read through the vehicle's controlled motion."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "k16",
+   "standard": "make it necessary to drive in the extreme left lane",
+   "concepts": [
+    "rel.surface_gap",
+    "kin.speed",
+    "env.visibility",
+    "st.region_geometry"
+   ],
+   "params": [
+    "p.following_headway_dry",
+    "p.following_headway_wet",
+    "p.following_headway_ice",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice"
+   ],
+   "convention": "Stopping-distance convention: S = speed(subject) × H + speed(subject)² / (2 × D), with H and D selected by the surface (_ice where env.ice_or_snow, _wet where env.wet_road or env.precipitation, else _dry), as for following distance. The left lane is necessary where moving right cannot be done within S: a traffic member occupying the right neighbouring lane has a longitudinal body gap to the subject (rel.surface_gap) below S, or an obstruction lies within ground distance S of the subject on its right (st.region_geometry, prim.region_lateral_offset negative), or the visibility distance (env.visibility) is below S. Each factor enters by degree: the subject's speed and the surface move S; the gap, the distance and the visibility are compared with it.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "k20",
+   "id": "asm.within_city_or_town_limits",
+   "meaning": "the place of the road user at the observation lies within the geographical limits of an incorporated city or of a town, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [
+  {
+   "span": "k10",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the left at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [
+  {
+   "span": "k13b",
+   "as": "definition",
+   "source": "DEF-NRS-484A-460-2",
+   "quote": "(a) A vehicle that is transporting more than one person; (b) A motorcycle, regardless of the number of passengers; (c) A bus, regardless of the number of passengers; and (d) Any other vehicle designated by regulation."
+  }
+ ],
+ "residues": [
+  {
+   "span": "k1",
+   "why": "Points to subsection 2, which is appended to this same law line and carried by its own exception spans k8-k20; the duty is the same whether or not these words are read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a motor vehicle (ru.aggregate DEF-NRS-484A-130::motor_vehicle) occupying a controlled-access highway (rel.occupies, st.controlled_access) and a lane (st.lane) that has no left neighbouring lane of the same direction (st.lane_adjacency: the leftmost) and whose count of lanes in its direction is at least two (st.lane_adjacency count); and the reading does not place it within the limits of a city or town (not asm.within_city_or_town_limits).",
+ "obligation": "Let S hold at an observation where: the subject occupies a controlled-access highway and the leftmost lane of two or more in its direction; its speed is below the value of some maximum dev.speed_limit_sign governing a travel region it occupies; and none of these holds: (1) within the window ahead of length p.overtake_window, drv.interaction.overtake_pass(subject, c, p.overtake_window, p.overtake_same_direction_cos) for some vehicle c other than the subject (ru.aggregate DEF-NRS-484A-320::vehicle); (2) for some intersection region ix that the subject occupies (rel.occupies) or that a travel region the subject occupies enters (st.lane_enters(carrier, ix)), intent int.left_turn of the subject at ix; (3) the subject occupies a reserved lane r of class high_occupancy, is a high-occupancy vehicle (ru.aggregate DEF-NRS-484A-460-2::high_occupancy_vehicle), and prim.conditions_hold(z, subject) for every dev.zone_sign z of kind high_occupancy_lane governing r; (4) the subject is an official vehicle of kind highway_maintenance showing an amber warning lamp, flashing or rotating (sig.warning_lamp); (b) with S_stop = speed × H + speed² / (2 × D) (H, D selected by surface as in the operationalization), some traffic member other than the subject occupies the lane to the right of the subject's lane with longitudinal surface gap below S_stop, or some obstruction lies within ground distance S_stop on the subject's right, or env.visibility is below S_stop; (c) a device governing the lane to the right closes it (lane control signal red_x or yellow_x, regulatory sign closed_to_traffic or do_not_enter, temporary traffic control, or police_officer direction stop); (d) the subject is an authorized emergency vehicle (ru.aggregate DEF-NRS-484A-020::authorized_emergency_vehicle) showing a warning lamp of any colour flashing or rotating (sig.warning_lamp) or sounding a siren (sig.siren). Let O hold where some motor vehicle c other than the subject is behind the subject in its lane (rel.ahead_behind_in_lane) with speed above the subject's. Violated at an observation where, at every observation of the window behind of length p.left_lane_move_over_time, S has held at every observation since an observation at which O and S held together (holdsFor of since(S, O ∧ S)), and some motor vehicle other than the subject is behind the subject in its lane at the judged observation.",
+ "params": [
+  "p.left_lane_move_over_time",
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.following_headway_dry",
+  "p.following_headway_wet",
+  "p.following_headway_ice",
+  "p.following_decel_dry",
+  "p.following_decel_wet",
+  "p.following_decel_ice"
+ ],
+ "narrowings": [
+  {
+   "span": "k3",
+   "why": "'clearly marked' lanes are read through the lanes the map represents; the paint's clarity is not modelled.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "k4",
+   "why": "'continue to operate' is read as the subject remaining in the leftmost lane, slower than the limit and unexcused, for the window p.left_lane_move_over_time after a faster motor vehicle closed on it from behind, with a motor vehicle still behind it in that lane; 'driver' and 'operate' are read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "k5",
+   "why": "'knows, or reasonably should know' is read through the facts known: the subject's own speed and the posted maximum governing where it is.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "k12",
+   "why": "The lane's designation pursuant to NRS 484A.460 is read through the reserved lane of class high_occupancy the map represents.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "k14",
+   "why": "Being engaged in construction, maintenance or repair of the highway is read through the conduct of a highway-maintenance vehicle at work: its amber warning lamp lit, flashing or rotating; such a vehicle driving with no warning lamp lit is not excused.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "k16",
+   "why": "'traffic conditions' and 'hazards' are read only through road users in the right neighbouring lane and obstructions on the subject's right; inclement weather only through the surface condition, falling rain and the visibility distance.",
+   "kind": "reading"
+  },
+  {
+   "span": "k17",
+   "why": "An 'official' device is read through its presence on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "k18",
+   "why": "'in the course of his or her official duties' is read through the conduct of an emergency vehicle on duty: a warning lamp lit, flashing or rotating, or a siren sounding. An authorized emergency vehicle on duty that shows neither is not excused.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Three-lane controlled-access highway outside city limits (asm.within_city_or_town_limits false), dry; a maximum speed sign of 29 m/s governs the lanes. The subject car, showing no warning lamp and no siren, drives in the leftmost lane at 24 m/s; a car approaches from 80 m behind in the same lane at 32 m/s, closes and then follows at 24 m/s; the subject stays in the leftmost lane for 30 s with the middle lane empty."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; the subject signals and moves to the middle lane 5 s after the faster car closes from behind."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car drives in the middle lane at 24 m/s with a faster car behind it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same scene as forbid; the source declares dev.speed_limit_sign absent, so whether the subject is below the posted limit is unknown.",
+   "masked": [
+    "dev.speed_limit_sign"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "Same scene with the reading placing the highway within city limits (asm.within_city_or_town_limits true)."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Same scene; a lane control signal showing red_x governs the middle lane throughout, closing it."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "The subject drives in the leftmost lane at 24 m/s with no other road user in the scene."
+  },
+  {
+   "name": "branch_4",
+   "expected": "compliant",
+   "narrative": "Same scene as forbid; the subject is a highway-maintenance vehicle in road service with an amber warning lamp flashing throughout."
+  },
+  {
+   "name": "branch_5",
+   "expected": "compliant",
+   "narrative": "Same scene; the middle lane is occupied by a truck travelling alongside the subject at a body gap of 5 m throughout, so moving right is not possible."
+  },
+  {
+   "name": "branch_6",
+   "expected": "compliant",
+   "narrative": "Same scene as forbid; the leftmost lane the subject occupies enters an intersection ahead, and the source declares the subject's plan to turn left at that intersection throughout."
+  },
+  {
+   "name": "branch_7",
+   "expected": "violated",
+   "narrative": "Same scene as branch_6, except that the intersection at which the source declares the subject's plan to turn left is one that no region the subject occupies enters and that the subject never occupies."
+  }
+ ],
+ "literals": [
+  {
+   "span": "k3",
+   "text": "two",
+   "value": 2,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.left_lane_move_over_time",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the time a driver needs, once a faster vehicle closes from behind, to check the mirrors, signal and move one lane to the right: a perception-reaction time, a few seconds of signal and the lane change",
+   "source": "lane-change duration studies; driver manuals (signal at least 3 s before a lane change)"
+  },
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "passing-manoeuvre durations, AASHTO passing sight distance"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading angles"
+  },
+  {
+   "name": "p.following_headway_dry",
+   "unit": "s",
+   "value": 2.0,
+   "convention": "time headway a following driver keeps on a dry surface: the two-second rule of driver manuals",
+   "source": "state driver handbooks"
+  },
+  {
+   "name": "p.following_headway_wet",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time headway a following driver keeps on a wet surface or in rain: the two-second rule lengthened by a second",
+   "source": "state driver handbooks"
+  },
+  {
+   "name": "p.following_headway_ice",
+   "unit": "s",
+   "value": 6.0,
+   "convention": "time headway a following driver keeps on an icy or snow-covered surface: the tripled following time driver manuals advise",
+   "source": "state driver handbooks"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "unit": "m/s^2",
+   "value": 6.0,
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "AASHTO Green Book; tyre-road friction tables"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "AASHTO Green Book; tyre-road friction tables"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.0,
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "tyre-road friction tables"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

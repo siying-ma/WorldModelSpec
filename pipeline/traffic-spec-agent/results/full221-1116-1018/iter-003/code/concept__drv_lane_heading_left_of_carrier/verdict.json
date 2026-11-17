@@ -1,0 +1,167 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.heading",
+   "kin.speed",
+   "st.lane_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_heading\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_heading\"}]}]},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"ratio\"}},{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"sub\":[{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_heading\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_heading\"}]}]},\"rhs\":{\"param\":\"$p0\"}},{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p1\"}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "gt",
+     "lhs": {
+      "add": [
+       {
+        "mul": [
+         {
+          "args": [
+           {
+            "var": "r"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "st_lane_direction"
+         },
+         {
+          "args": [
+           {
+            "var": "a"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "kin_heading"
+         }
+        ]
+       },
+       {
+        "mul": [
+         {
+          "args": [
+           {
+            "var": "r"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "st_lane_direction"
+         },
+         {
+          "args": [
+           {
+            "var": "a"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "kin_heading"
+         }
+        ]
+       }
+      ]
+     },
+     "rhs": {
+      "lit": {
+       "den": 1,
+       "num": 0
+      },
+      "unit": "ratio"
+     }
+    },
+    {
+     "and": [
+      {
+       "cmp": "gt",
+       "lhs": {
+        "sub": [
+         {
+          "mul": [
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "st_lane_direction"
+           },
+           {
+            "args": [
+             {
+              "var": "a"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "kin_heading"
+           }
+          ]
+         },
+         {
+          "mul": [
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "st_lane_direction"
+           },
+           {
+            "args": [
+             {
+              "var": "a"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "kin_heading"
+           }
+          ]
+         }
+        ]
+       },
+       "rhs": {
+        "param": "sin_tol"
+       }
+      },
+      {
+       "cmp": "gt",
+       "lhs": {
+        "args": [
+         {
+          "var": "a"
+         }
+        ],
+        "measure": "kin_speed"
+       },
+       "rhs": {
+        "param": "speed_tol"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "68547735efaff5f5d0630ceb",
+  "candidate_digest": "e2aa1a19be8775bec4eff9013761c4058007cd2acd473b5bd52e5989fe16e7e1"
+ }
+}

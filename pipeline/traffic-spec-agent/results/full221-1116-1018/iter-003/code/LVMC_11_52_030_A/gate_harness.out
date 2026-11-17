@@ -1,0 +1,116 @@
+'TrafficSpec.Rules.LVMC_11_52_030_A.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_52_030_A.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_52_030_A","intentions":[],"laws":["LVMC-11-52-030-A"],"narrowings":[],"operationalizations":[{"concepts":["drv.motion.complete_halt","rel.occupies"],"params":["p.mail_deposit_max_halt"],"standard":"for the period of time necessary to expeditiously deposit mail in such a drop box","surrogate":false}],"residues":["\"whether or not the vehicle is attended and whether or not the engine or motor is running\" makes the duty the same in every case: the halt is barred either way, so neither occupancy nor kin.engine_running is read.","\"whether or not accompanied by signage to that effect\": the red paint alone marks the zone; a sign beside it changes nothing.","\"whether or not there is accompanying signage so indicating\": the armored car and emergency vehicle exception holds with or without a sign."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"red"}],"atom":"st_curb_zone_colour","params":[]},{"not":{"or":[{"and":[{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-150::tour_bus"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-150::shuttle_bus"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-090::limo"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"args":[{"var":"z"},{"lit":"tour_bus_loading"}],"atom":"st_curb_zone_kind","params":[]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"cmp":"le","lhs":{"since_rise":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}]}},"rhs":{"lit":{"den":1,"num":1800},"unit":"second"}}]}]}]},{"or":[{"and":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-120::rtc_bus"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"bus_stop"}],"atom":"st_curb_zone_kind","params":[]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"cmp":"le","lhs":{"since_rise":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}]}},"rhs":{"lit":{"den":1,"num":1800},"unit":"second"}}]}]}]},{"or":[{"or":[{"and":[{"args":[{"var":"subject"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"subject"},{"lit":"armored_car"}],"atom":"ru_official_vehicle_kind","params":[]}]},{"args":[{"var":"subject"}],"atom":"ru_emergency_vehicle","params":[]}]},{"and":[{"body":{"and":[{"args":[{"var":"o"},{"lit":"mail_drop_box"}],"atom":"st_obstruction_kind","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.mail_drop_box_reach"}}]},"exists_region":{"lit":"obstruction"},"var":"o"},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"cmp":"le","lhs":{"since_rise":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}]}},"rhs":{"param":"p.mail_deposit_max_halt"}}]}]}]}]}]}}]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_030_A","intentions":[],"laws":["LVMC-11-52-030-A"],"narrowings":[],"obligation":{"implies":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"or":[{"body":{"and":[{"not":{"same":[{"var":"u"},{"var":"subject"}]}},{"and":[{"args":[{"var":"u"},{"var":"subject"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_halt_gap"}}]}]},"exists_user":"u"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"d"},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]}]},"residues":["\"whether or not the vehicle is attended and whether or not the engine or motor is running\" makes the duty the same in every case: the halt is barred either way, so neither occupancy nor kin.engine_running is read.","\"whether or not accompanied by signage to that effect\": the red paint alone marks the zone; a sign beside it changes nothing.","\"whether or not there is accompanying signage so indicating\": the armored car and emergency vehicle exception holds with or without a sign."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"red"}],"atom":"st_curb_zone_colour","params":[]},{"not":{"or":[{"and":[{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-150::tour_bus"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-150::shuttle_bus"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-090::limo"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"args":[{"var":"z"},{"lit":"tour_bus_loading"}],"atom":"st_curb_zone_kind","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"since_rise":{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}]}},"rhs":{"lit":{"den":1,"num":1800},"unit":"second"}}]}]}]},{"or":[{"and":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-120::rtc_bus"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"bus_stop"}],"atom":"st_curb_zone_kind","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"since_rise":{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}]}},"rhs":{"lit":{"den":1,"num":1800},"unit":"second"}}]}]}]},{"or":[{"or":[{"and":[{"args":[{"var":"subject"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"subject"},{"lit":"armored_car"}],"atom":"ru_official_vehicle_kind","params":[]}]},{"args":[{"var":"subject"}],"atom":"ru_emergency_vehicle","params":[]}]},{"and":[{"body":{"and":[{"args":[{"var":"o"},{"lit":"mail_drop_box"}],"atom":"st_obstruction_kind","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.mail_drop_box_reach"}}]},"exists_region":{"lit":"obstruction"},"var":"o"},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"since_rise":{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}]}},"rhs":{"param":"p.mail_deposit_max_halt"}}]}]}]}]}]}}]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_030_A","intentions":[],"laws":["LVMC-11-52-030-A"],"narrowings":[],"obligation":{"implies":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"or":[{"body":{"and":[{"not":{"same":[{"var":"u"},{"var":"subject"}]}},{"and":[{"args":[{"var":"u"},{"var":"subject"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_halt_gap"}}]}]},"exists_user":"u"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"d"},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]}]},"residues":["\"whether or not the vehicle is attended and whether or not the engine or motor is running\" makes the duty the same in every case: the halt is barred either way, so neither occupancy nor kin.engine_running is read.","\"whether or not accompanied by signage to that effect\": the red paint alone marks the zone; a sign beside it changes nothing.","\"whether or not there is accompanying signage so indicating\": the armored car and emergency vehicle exception holds with or without a sign."],"surrogate":false}
+ATOMS	ru_aggregate,st_curb_zone,rel_occupies,st_curb_zone_colour,st_curb_zone_kind,drv_motion_complete_halt,kin_time,ru_official_vehicle,ru_official_vehicle_kind,ru_emergency_vehicle,st_obstruction,st_obstruction_kind,st_region_geometry_distance,rel_ahead_behind_in_lane,rel_surface_gap,st_travel_region,dev_human_direction,dev_governs,dev_human_direction_role,dev_human_direction_indication,dev_traffic_signal,dev_traffic_signal_shows,dev_stop_sign
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-LVMC-11-02-150::tour_bus	DEF-LVMC-11-02-150::shuttle_bus	DEF-LVMC-11-02-090::limo	DEF-LVMC-11-02-120::rtc_bus
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+MANIFEST	branch_11	
+MANIFEST	branch_12	
+OCC	subject
+OCC	?z
+OCC	subject,z
+OCC	z
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	z
+OCC	subject
+OCC	subject
+OCC	subject,z
+OCC	subject
+OCC	z
+OCC	subject
+OCC	subject
+OCC	subject,z
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?o
+OCC	o
+OCC	subject,o
+OCC	subject
+OCC	subject
+OCC	subject,z
+OCC	subject
+OCC	?u
+OCC	u,subject
+OCC	u,subject
+OCC	subject,u
+OCC	?r
+OCC	subject,r
+OCC	?d
+OCC	d,r
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,r
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,r
+LITERAL	1800/1	TrafficSpec.PUnit'.second
+LITERAL	1800/1	TrafficSpec.PUnit'.second
+TIME	occurrences	0
+TIME	checks	169
+TIME	lint	85
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	180
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	181
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	175
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	182
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	193
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	191
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	175
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	185
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	179
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	176
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	185
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	185
+SCEN	branch_9	compliant	compliant	ok
+TIME	scenario:branch_9	176
+SCEN	branch_10	compliant	compliant	ok
+TIME	scenario:branch_10	175
+SCEN	branch_11	compliant	compliant	ok
+TIME	scenario:branch_11	175
+SCEN	branch_12	violated	violated	ok
+TIME	scenario:branch_12	190
+TIME	witnesses	2904
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_52_030_A.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_52_030_A.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_52_030_A	34	15
+TIME	adequacy_start	54
+ADEQ	applicability leaf 2: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-LVMC-11-02-150::tour_bus"] (one of 4 literal variants of this atom; none exercised)
+TIME	adequacy	89000
+DONE

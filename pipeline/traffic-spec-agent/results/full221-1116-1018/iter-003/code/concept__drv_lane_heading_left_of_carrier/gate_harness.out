@@ -1,0 +1,39 @@
+'TrafficSpec.Concepts.lane.heading_left_of_carrier.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.heading_left_of_carrier.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.lane.heading_left_of_carrier.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"sub":[{"mul":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"}]}]},"rhs":{"param":"sin_tol"}},{"cmp":"gt","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tol"}}]}]},"contract":"Road user a, moving, points to the left of the designated direction of travel of carrier region r by more than a tolerance: its heading has turned off r's direction toward the left. With h a's heading (kin.heading) and d r's designated direction (st.lane_direction), both as a formula reads them normalised, the dot product of d and h is positive, so that a points along d rather than against it, and the cross product d_x times h_y minus d_y times h_x is above sin_tol, so that h lies to the left of d, counter-clockwise in the world frame, by more than the angle whose sine is sin_tol; and a's speed (kin.speed) is above speed_tol. It is a state at one observation: it says nothing of whether a occupies r, of how long its heading has been so, of the path a will follow, or of why it turns. Not denoted: a road user at rest or moving at or below speed_tol; a heading within that angle of d, or turned to its right; a heading that points against d, the dot product being at or below zero. Where r carries no designated direction, or a's heading or speed is unobserved, it is unknown.","definition":null,"id":"drv.lane.heading_left_of_carrier","kind":"formula","narrowings":[],"params":[{"name":"sin_tol","unit":"ratio"},{"name":"speed_tol","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	st_lane_direction,kin_heading,kin_speed
+READS	st_lane_direction,kin_heading,kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"sub":[{"mul":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"}]}]},"rhs":{"param":"sin_tol"}},{"cmp":"gt","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tol"}}]}]}
+WITNESS	holds	drv.lane.heading_left_of_carrier@w
+WITNESS	fails	drv.lane.heading_left_of_carrier@w
+WITNESS	blind	drv.lane.heading_left_of_carrier@w
+OCC	r
+OCC	a
+OCC	r
+OCC	a
+OCC	r
+OCC	a
+OCC	r
+OCC	a
+OCC	a
+INST	drv.lane.heading_left_of_carrier@w	ok
+TIME	checks	158
+TIME	lint	10
+SCEN	holds	drv.lane.heading_left_of_carrier@w	compliant	compliant	ok
+TIME	scenario:drv.lane.heading_left_of_carrier@w/holds	158
+SCEN	fails	drv.lane.heading_left_of_carrier@w	violated	violated	ok
+TIME	scenario:drv.lane.heading_left_of_carrier@w/fails	157
+SCEN	blind	drv.lane.heading_left_of_carrier@w	unknown	unknown	ok
+TIME	scenario:drv.lane.heading_left_of_carrier@w/blind	160
+TIME	witnesses	475
+DONE_WITNESSES
+'TrafficSpec.Concepts.lane.heading_left_of_carrier.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.heading_left_of_carrier.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.lane.heading_left_of_carrier.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.lane.heading_left_of_carrier@w	3	2
+TIME	adequacy_start	67
+TIME	adequacy	1562
+DONE

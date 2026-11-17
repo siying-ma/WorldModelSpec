@@ -1,0 +1,210 @@
+{
+ "node_id": "NRS_484B_260",
+ "law_refs": [
+  "NRS-484B-260"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "about to enter or cross a highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "from a private way",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s6",
+   "text": "to all vehicles approaching on such highway.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle (definitions table); ru.aggregate is 'membership of a legal aggregate', claimed by its id and never expanded. 'Driver' (DEF-NRS-484A-080 'every person who drives or is in actual physical control of a vehicle') is no aggregate: ru.aggregate is 'Not a stand-in for ... a relational role such as who drives or controls a vehicle', so the role is read through the vehicle's controlled motion (observable_reading agency). Mapping index: 'The driver of a vehicle' maps to the same aggregate."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.on_way",
+    "st.highway",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "The entry onto or across the highway is where the subject's footprint comes onto its roadway: rel.occupies 'a road user's footprint overlaps a lane / region (roadway, ...)'; st.roadway 'the part of a highway improved for vehicular traffic, excluding shoulder'; st.on_way 'the public way (a highway region) a structure region lies on' ties that roadway to the highway; st.highway 'the entire public way between its boundary lines, including sidewalks and shoulders' carries DEF-NRS-484A-095 'the entire width between the boundary lines of every way dedicated to a public authority'. st.highway's exclusion ('Not a stand-in for: the roadway') is respected: the roadway is its own atom, the highway only anchors it. kin.speed 'magnitude of velocity' tells a moving entry from a vehicle standing at the edge. 'About to' is an imminent movement, read by the movement itself (ontology, what is not an atom)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.driveway_or_alley_entrance",
+    "st.alley",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "DEF-NRS-484A-190: a private way is 'every way or place in private ownership and used for vehicular travel by the owner'. st.driveway_or_alley_entrance is a 'private road, alley or driveway meeting the highway'; its exclusion 'Not a stand-in for: which of them meets the highway there' is why the rule adds st.alley ('a narrow way within a block serving the rear of properties'): an alley is a highway (DEF-NRS-484A-015 'Alley means a highway'), not a private way, so the subject must overlap the entrance and no alley region. rel.occupies anchors both to the subject's footprint."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "Mapping index: 'shall yield' maps to kin.speed, rel.contact. The yield is judged while the subject moves (kin.speed 'magnitude of velocity' above the halt tolerance): a subject at rest grants precedence. rel.contact 'the bodies of two road users ... touch or overlap (a collision)' is a failure to yield; its exclusion 'Not a stand-in for: a near miss' is respected, since the near conflict is the operationalization of s5."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.travel_region",
+    "st.on_way",
+    "st.highway",
+    "rel.bearing",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle. 'on such highway' singles out the highway the subject enters: the other vehicle's footprint overlaps (rel.occupies) a travel region (st.travel_region, 'the union of the kinds a device can govern: a lane ..., a roadway ..., a shoulder, or an intersection') lying (st.on_way) on that same highway region, re-bound with the selection of s2. st.travel_region's exclusion 'Not a stand-in for: the extent of a highway' is respected: the highway is read through st.on_way, the travel region only locates the vehicle. 'approaching': the vehicle moves (kin.speed above the halt tolerance) and the subject lies ahead of it, rel.bearing 'direction of b from a in a's frame' with a positive longitudinal component."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "the right-of-way: DEF-NRS-484A-210 'approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other'",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: under constant velocities (direction and speed of both), the two centres reach their closest approach within the time-to-collision threshold at a centre distance below the collision clearance; such a pair is in danger of a crash unless the subject grants precedence",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject (vehicle aggregate) is moving (kin.speed above p.halt_speed_tolerance) and its footprint overlaps both a roadway region r lying on a highway region h and a driveway_or_alley_entrance region e, and overlaps no alley region; its overlap with e has held at every observation since one at which it overlapped e and did not overlap r (the subject came onto the entrance from off the roadway: formula 'since').",
+ "obligation": "For every selection of h, r and e satisfying the applicability's conditions at this observation (re-bound in full): for every other road user v of the vehicle aggregate that is moving (kin.speed above p.halt_speed_tolerance), whose footprint overlaps a travel region lying on h, and in whose frame the subject lies ahead (longitudinal component of rel.bearing from v to the subject positive): the subject and v are not in contact (rel.contact), and it is not the case that their closest approach falls within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'about to enter or cross' is an imminent movement, read by the entering movement itself: the rule judges every observation at which the moving subject straddles the private way's entrance and a roadway of the highway, having come onto the entrance from off the roadway; the rest of a crossing is judged through the closest approach under constant velocities that each such observation predicts",
+   "kind": "observable_reading",
+   "category": "intention"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject vehicle rolls out of a driveway entrance region onto roadway r of highway h, kin.speed above p.halt_speed_tolerance, overlapping no alley. Vehicle v moves in a lane on h with the subject ahead of it (rel.bearing longitudinal positive); prim.closest_approach_within holds over p.conflict_horizon and prim.closest_approach_distance is below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but v is far up the lane: their closest approach does not fall within p.conflict_horizon, and no contact occurs."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject drives along roadway r of h and its footprint never overlaps a driveway_or_alley_entrance region; v approaches from behind."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.bearing is not observed on the source, so whether v approaches the subject is unknown while the closest approach is a conflict.",
+   "masked": [
+    "rel.bearing"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject rolls out of a driveway entrance onto roadway r of h and no other road user is in the scene: the duty binds the subject alone and is met."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The subject comes out of an alley: its footprint overlaps an st.alley region and the entrance region as it reaches roadway r, with v in conflict as in forbid. An alley is a highway, not a private way."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's vehicle-state estimates"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (Hyden; FHWA Surrogate Safety Assessment Model)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design vehicle dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 100708,
+  "stop_reason": "end_turn",
+  "session_id": "c8f202e8-f26c-490d-b537-a0b0d45920be",
+  "total_cost_usd": 1.2062260100000002,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 101523,
+   "cache_read_input_tokens": 95491,
+   "output_tokens": 12820,
+   "output_tokens_details": {
+    "thinking_tokens": 3397
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 101523,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 695,
+     "cache_read_input_tokens": 92360,
+     "cache_creation_input_tokens": 12294,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 12294
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 88594,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.009757990000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 12820,
+    "cacheReadInputTokens": 95491,
+    "cacheCreationInputTokens": 101523,
+    "webSearchRequests": 0,
+    "costUSD": 1.1964680200000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3397,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 101523,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've rewritten `record.jsonl` with a revised record for NRS_484B_208_1. It hasn't been checked yet: the harness validates it in its plan context next.\n\n- **Unanchored intersection (`turnAtS`/`turnAtR`, spans k10/k11):** k11 now ties the intersection to the subject. It is either one the subject's footprint overlaps (`rel.occupies`), or the one a region the subject occupies runs into (`st.lane_enters`). That second case is the ontology's own definition of approaching an intersection. No distance bound is used, because the law gives no size.\n- **Last attempt's two validator defects:** k10 now has no observable-reading narrowing. The \"preparing for a left turn\" words are carried only by the declared intention `int.left_turn`.\n- **Emergency-vehicle exception (k18):** this moved from the applicability into the obligation's list of excuses. The run's reading resolves no vehicle class as an authorized emergency vehicle. As a result, a highway-maintenance vehicle with its amber lamp lit was always judged unknown, so the k14 exception could never be decided. Now the k14 excuse decides the verdict even though the emergency-vehicle class stays unknown.\n- **Scenarios:**\n  - `branch_4` (an emergency vehicle, expected `not_applicable`) is gone. It could only ever come out unknown under this reading.\n  - In its place, `branch_4` is a highway-maintenance vehicle with an amber lamp flashing, expected `compliant`.\n  - I added a pair that differs only in the intersection anchor. In `branch_6` the subject's lane enters the intersection where it plans to turn left, so it is `compliant`. In `branch_7` the subject's lane doesn't lead to that intersection, so it is `violated`.\n\nUnder this reading the emergency-vehicle exception itself still can't be decided. That would need the run's reading to count at least `ru.emergency_vehicle` as an authorized emergency vehicle. The reading isn't part of this record, so that change is the operator's to make.",
+  "ttft_ms": 35270,
+  "type": "result",
+  "duration_ms": 99877,
+  "uuid": "91744be6-811f-479b-8f86-ec92fcb9cd68",
+  "ttft_stream_ms": 1305,
+  "time_to_request_ms": 324,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 35,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "transcript_persist": 28,
+   "tool_pool_refresh": 3,
+   "init_message": 4,
+   "init_frame_send": 7,
+   "engine_pickup": 10,
+   "loop_entry": 5,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 191,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 16,
+  "time_to_request_cpu_ms": 360,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1305,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 88594,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.009757990000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 12820,
+    "cacheReadInputTokens": 95491,
+    "cacheCreationInputTokens": 101523,
+    "webSearchRequests": 0,
+    "costUSD": 1.1964680200000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3397,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 101523,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

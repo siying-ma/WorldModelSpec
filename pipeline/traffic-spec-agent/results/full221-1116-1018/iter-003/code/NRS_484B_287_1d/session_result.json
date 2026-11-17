@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 88793,
+  "stop_reason": "end_turn",
+  "session_id": "32180c6a-f911-404b-a410-1d68ef2edcb8",
+  "total_cost_usd": 0.75607785,
+  "usage": {
+   "input_tokens": 12,
+   "cache_creation_input_tokens": 53494,
+   "cache_read_input_tokens": 266262,
+   "output_tokens": 10106,
+   "output_tokens_details": {
+    "thinking_tokens": 3080
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 53494,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 671,
+     "cache_read_input_tokens": 56603,
+     "cache_creation_input_tokens": 1359,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1359
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39551,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004368210000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 12,
+    "outputTokens": 10106,
+    "cacheReadInputTokens": 266262,
+    "cacheCreationInputTokens": 53494,
+    "webSearchRequests": 0,
+    "costUSD": 0.7517096400000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3080,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 53494,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 6,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed on the first run, using 1 of the 6 allowed. It returned **OK** with 5 witnesses and 8 names, and it composes LVMC_11_30_140_B_o1 and LVMC_11_30_140_B_o2.\n\n**The rule** (`NRS_484B_287_1d.lean`):\n- **Who it covers:** a pedestrian under the definition DEF-NRS-484A-165.\n- **When it applies:** the pedestrian is inside an intersection that at least one lane runs into, and neither LVMC_11_30_140_B_o1 nor LVMC_11_30_140_B_o2 applies to them.\n- **What it requires:** at every such intersection, if the pedestrian is moving diagonally, they must be inside a marked crosswalk. \"Diagonally\" means that for every lane entering the intersection, the motion is across the lane but not within the right-angle tolerance of perpendicular to it.\n- **Narrowings:** I declared none; the record's own readings were enough.\n\n**The witnesses** use a 20 m square intersection with four approach lanes (north, east, south, west) and a pedestrian walking at 1.4 m/s:\n\n| Scenario | Scene | Verdict |\n|---|---|---|\n| forbid | heading north-east, no crosswalk | violated |\n| permit | walking east, along the east-west lanes | compliant |\n| idle | on a sidewalk outside the intersection | not applicable |\n| blind | as forbid, velocity masked | unknown |\n| branch_1 | north-east inside a marked diagonal crosswalk | compliant |\n\nThe north-east heading is (3/5, 4/5), which gives cosines of 0.8 and 0.6 against the lanes. Both sit well inside the 0.26–0.94 band that counts as diagonal.\n\nThe record left two choices open. I applied the duty at every intersection that matches, which follows from \"at each such observation\", and I quantified over regions of kind `lane` as the record names them.\n\nThe report is in `task_result.md` in the working directory.",
+  "ttft_ms": 21948,
+  "type": "result",
+  "duration_ms": 106439,
+  "uuid": "ee149e9e-2469-4f4f-8068-4e8d2037ca28",
+  "ttft_stream_ms": 1627,
+  "time_to_request_ms": 369,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 53,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 16,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 56,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 10,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 183,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 7,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 43,
+  "time_to_request_cpu_ms": 373,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 13,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 7,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 1,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1627,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39551,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004368210000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 12,
+    "outputTokens": 10106,
+    "cacheReadInputTokens": 266262,
+    "cacheCreationInputTokens": 53494,
+    "webSearchRequests": 0,
+    "costUSD": 0.7517096400000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3080,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 53494,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

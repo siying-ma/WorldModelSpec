@@ -8,6 +8,14 @@
   "node": "NRS_484B_280_1c",
   "role": "condition"
  },
+ "(1) overtaking another vehicle proceeding in the same direction;": {
+  "atoms": [
+   "drv.interaction.overtake_pass",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
  "(2) at or near a bus stop or bench, shelter or transit stop for passengers of public mass transportation": {
   "atoms": [
    "rel.occupies",
@@ -16,6 +24,21 @@
   ],
   "node": "NRS_484B_280_1c",
   "role": "condition"
+ },
+ "(3) traveling in a lane designated for the use of high-occupancy vehicles pursuant to nrs 484a.460,": {
+  "atoms": [
+   "rel.occupies",
+   "st.reserved_lane"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
+ "(a) an authorized emergency vehicle described in nrs 484a.480;": {
+  "atoms": [
+   "ru.emergency_vehicle"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
  },
  "(a) when there are no children present;": {
   "atoms": [
@@ -28,6 +51,37 @@
   "node": "NRS_484B_363_3",
   "role": "exception"
  },
+ "(b) a vehicle which has been issued a permit to operate as an authorized emergency vehicle pursuant to nrs 484a.490;": {
+  "atoms": [
+   "ru.emergency_vehicle"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
+ },
+ "(b) when traffic conditions, inclement weather, obstructions or hazards": {
+  "atoms": [
+   "env.ice_or_snow",
+   "env.precipitation",
+   "env.visibility",
+   "env.wet_road",
+   "prim.region_lateral_offset",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.lane",
+   "st.lane_adjacency",
+   "st.obstruction",
+   "st.region_geometry"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
+ "(c) a traffic incident management vehicle;": {
+  "atoms": [
+   "ru.official_vehicle"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
+ },
  "(c) if the zone is designated by an operational speed limit beacon,": {
   "atoms": [
    "dev.governs",
@@ -38,6 +92,28 @@
   "node": "NRS_484B_363_2",
   "role": "exception"
  },
+ "(c) when compliance with an official traffic control device or the directions given by a peace officer makes it necessary to drive in the extreme left lane.": {
+  "atoms": [
+   "dev.governs",
+   "dev.human_direction",
+   "dev.lane_control_signal",
+   "dev.regulatory_sign",
+   "dev.temporary_traffic_control",
+   "rel.occupies",
+   "st.lane",
+   "st.lane_adjacency"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
+ "(d) a tow car;": {
+  "atoms": [
+   "ru.motor_vehicle",
+   "ru.official_vehicle"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
+ },
  "(d) if the zone is designated by an operational speed limit beacon,": {
   "atoms": [
    "dev.governs",
@@ -46,6 +122,29 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_363_3",
+  "role": "exception"
+ },
+ "(d) to the driver of an authorized emergency vehicle in the course of his or her official duties.": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle",
+   "sig.siren",
+   "sig.warning_lamp"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
+ "(e) a coroner vehicle;": {
+  "atoms": [
+   "ru.official_vehicle"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
+ },
+ "(e) to a driver operating a motor vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ],
+  "node": "NRS_484B_208_1",
   "role": "exception"
  },
  "a bicycle": {
@@ -72,6 +171,15 @@
   ],
   "node": "NRS_484B_270_5a",
   "role": "condition"
+ },
+ "a bicycle, electric bicycle, or electric scooter": {
+  "atoms": [
+   "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle"
+  ],
+  "node": "LVMC_11_40_180_A",
+  "role": "subject"
  },
  "a bus or other public transportation vehicle;": {
   "atoms": [
@@ -107,11 +215,28 @@
   "node": "NRS_484B_307_12a",
   "role": "condition"
  },
+ "a driver may not continue to operate a motor vehicle in the extreme left lane": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+   "st.lane",
+   "st.lane_adjacency"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "obligation"
+ },
  "a driver of a motor vehicle": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
   ],
   "node": "NRS_484B_280_1a",
+  "role": "subject"
+ },
+ "a pedestrian": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ],
+  "node": "NRS_484B_287_1d",
   "role": "subject"
  },
  "a pedestrian:": {
@@ -125,8 +250,15 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_153_3",
+  "node": "NRS_484B_450_1l",
   "role": "subject"
+ },
+ "a person driving a vehicle described in": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
  },
  "a person shall not drive a motor vehicle": {
   "atoms": [
@@ -135,11 +267,21 @@
   "node": "NRS_484B_363_2",
   "role": "subject"
  },
+ "a person shall not drive a motorcycle, moped or trimobile": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-486-038::moped",
+   "ru.aggregate=DEF-NRS-486-041::motorcycle",
+   "ru.aggregate=DEF-NRS-486-057::trimobile"
+  ],
+  "node": "NRS_486_351_2",
+  "role": "subject"
+ },
  "a person shall not drive a vehicle": {
   "atoms": [
+   "drv.motion.complete_halt",
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_587_1",
+  "node": "NRS_484B_587_2b",
   "role": "subject"
  },
  "a person shall not stand or park a vehicle": {
@@ -165,7 +307,7 @@
    "ru.aggregate=DEF-NRS-484A-320::vehicle",
    "st.travel_region"
   ],
-  "node": "NRS_484B_507_1",
+  "node": "NRS_484B_517",
   "role": "obligation"
  },
  "a person wholly or partially blind, carrying a cane or walking stick white in color, or white tipped in red, or being assisted by a person": {
@@ -213,6 +355,15 @@
   "node": "LVMC_11_46_030_o1",
   "role": "condition"
  },
+ "a signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "sig.hand_signal",
+   "sig.turn_indicator"
+  ],
+  "node": "NRS_484B_413_2",
+  "role": "obligation"
+ },
  "a vehicle": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
@@ -224,7 +375,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_223_4b",
+  "node": "NRS_484B_223_4a",
   "role": "subject"
  },
  "a vehicle of any kind or character": {
@@ -233,6 +384,47 @@
   ],
   "node": "NRS_484B_600_1c",
   "role": "subject"
+ },
+ "about to enter or cross a highway": {
+  "atoms": [
+   "kin.speed",
+   "rel.occupies",
+   "st.highway",
+   "st.on_way",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_260",
+  "role": "trigger"
+ },
+ "about to enter or exit a controlled-access highway": {
+  "atoms": [
+   "kin.speed",
+   "rel.occupies",
+   "st.controlled_access"
+  ],
+  "node": "NRS_484B_263_o2",
+  "role": "trigger"
+ },
+ "abreast of or overtake or pass another vehicle within the same traffic lane.": {
+  "atoms": [
+   "rel.longitudinal_overlap",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.lane"
+  ],
+  "node": "NRS_486_351_2",
+  "role": "obligation"
+ },
+ "across any solid white line that separates an entrance or exit lane from a marked traffic lane.": {
+  "atoms": [
+   "dev.governs",
+   "dev.regulatory_sign",
+   "drv.lane.entering_adjacent_lane",
+   "st.lane",
+   "st.lane_marking"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "obligation"
  },
  "adjacent to a roadway": {
   "atoms": [
@@ -305,6 +497,14 @@
   "node": "NRS_484B_620_2",
   "role": "condition"
  },
+ "all vehicular travel": {
+  "atoms": [
+   "drv.motion.complete_halt",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "LVMC_11_43_010_A",
+  "role": "subject"
+ },
  "alley": {
   "atoms": [
    "rel.occupies",
@@ -332,6 +532,20 @@
   "node": "NRS_484B_267_1b_o1",
   "role": "condition"
  },
+ "an electric scooter": {
+  "atoms": [
+   "ru.electric_scooter"
+  ],
+  "node": "NRS_484B_785_1a",
+  "role": "subject"
+ },
+ "and a person shall not drive another motor vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ],
+  "node": "NRS_486_341",
+  "role": "subject"
+ },
  "and afterward may proceed only": {
   "atoms": [
    "rel.occupies",
@@ -355,6 +569,13 @@
   "node": "NRS_484B_557_o2",
   "role": "condition"
  },
+ "and for the purpose of and while actually engaged in": {
+  "atoms": [
+   "drv.motion.complete_halt"
+  ],
+  "node": "NRS_484B_517",
+  "role": "exception"
+ },
  "and having given a signal when and as required,": {
   "atoms": [
    "sig.hand_signal",
@@ -374,6 +595,15 @@
   ],
   "node": "NRS_484B_620_2",
   "role": "condition"
+ },
+ "and is being overtaken in that lane from the rear by a motor vehicle traveling at a higher rate of speed.": {
+  "atoms": [
+   "kin.speed",
+   "rel.ahead_behind_in_lane",
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "trigger"
  },
  "and is free of oncoming traffic": {
   "atoms": [
@@ -406,6 +636,13 @@
   "node": "NRS_484B_227_1_o2",
   "role": "obligation"
  },
+ "and not less than the last 300 feet traveled": {
+  "atoms": [
+   "kin.path_length"
+  ],
+  "node": "NRS_484B_413_2",
+  "role": "condition"
+ },
  "and of any traffic upon all of the streets or highways entering such intersection": {
   "atoms": [
    "rel.occupies",
@@ -425,6 +662,16 @@
   ],
   "node": "NRS_484B_633_2",
   "role": "definitional"
+ },
+ "and shall continue to yield the right-of-way to that traffic": {
+  "atoms": [
+   "kin.speed",
+   "kin.time",
+   "rel.contact",
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ],
+  "node": "NRS_484B_263_o2",
+  "role": "obligation"
  },
  "and shall give audible signal": {
   "atoms": [
@@ -532,6 +779,14 @@
   "node": "NRS_484B_450_1j",
   "role": "condition"
  },
+ "any bus or taxicab": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-030::bus",
+   "ru.aggregate=DEF-NRS-484A-270::taxicab"
+  ],
+  "node": "NRS_484B_517",
+  "role": "exception"
+ },
  "any cab,": {
   "atoms": [
    "ru.taxicab"
@@ -614,6 +869,16 @@
   "node": "NRS_484A_450_3",
   "role": "trigger"
  },
+ "approaching an intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "trigger"
+ },
  "approaching from the rear shall not overtake and pass such stopped vehicle": {
   "atoms": [
    "drv.interaction.overtake_pass"
@@ -688,7 +953,7 @@
    "st.railway_crossing",
    "st.region_geometry"
   ],
-  "node": "NRS_484B_560_3_o1",
+  "node": "NRS_484B_560_3_o2",
   "role": "condition"
  },
  "at a railroad crossing.": {
@@ -720,6 +985,13 @@
   "node": "NRS_484B_363_2",
   "role": "obligation"
  },
+ "at a speed of not more than 15 miles per hour.": {
+  "atoms": [
+   "kin.speed"
+  ],
+  "node": "NRS_484B_785_1a",
+  "role": "obligation"
+ },
  "at a speed which is greater than the maximum speed which can be maintained with safety to the bridge or structure,": {
   "atoms": [
    "dev.governs",
@@ -742,6 +1014,16 @@
   "node": "NRS_484B_400_2a",
   "role": "trigger"
  },
+ "at an intersection;": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
  "at any place other than by a route at right angles to the curb or by the shortest route to the opposite curb": {
   "atoms": [
    "drv.motion.moving_across_carrier"
@@ -761,6 +1043,24 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_450_1o",
+  "role": "condition"
+ },
+ "at any point other than within a marked crosswalk or within an unmarked crosswalk at an intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.crosswalk"
+  ],
+  "node": "LVMC_11_30_060_A",
+  "role": "condition"
+ },
+ "at the edge of or curb of a highway.": {
+  "atoms": [
+   "st.highway",
+   "st.on_way",
+   "st.region_geometry",
+   "st.road_edge"
+  ],
+  "node": "NRS_484B_450_1l",
   "role": "condition"
  },
  "at the first street intersection after it leaves such stand.": {
@@ -786,6 +1086,28 @@
   ],
   "node": "LVMC_11_18_020",
   "role": "condition"
+ },
+ "be driven in the right turn lane": {
+  "atoms": [
+   "rel.occupies",
+   "st.driveway_or_alley_entrance",
+   "st.highway",
+   "st.intersection",
+   "st.lane_enters",
+   "st.on_way",
+   "st.turn_lane"
+  ],
+  "node": "NRS_484B_223_4a",
+  "role": "obligation"
+ },
+ "be operated no more than two abreast in a single traffic lane.": {
+  "atoms": [
+   "rel.longitudinal_overlap",
+   "rel.occupies",
+   "st.lane"
+  ],
+  "node": "NRS_486_351_2",
+  "role": "exception"
  },
  "before entering": {
   "atoms": [
@@ -930,7 +1252,7 @@
    "st.lane",
    "st.roadway"
   ],
-  "node": "LVMC_11_30_060_B",
+  "node": "LVMC_11_30_060_A",
   "role": "trigger"
  },
  "does not have a clear and unobstructed view of such intersection": {
@@ -1022,7 +1344,7 @@
    "rel.oncoming",
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_203_1_o2",
+  "node": "NRS_484B_203_1_o1",
   "role": "subject"
  },
  "drivers of vehicles,": {
@@ -1084,6 +1406,13 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_503",
+  "role": "condition"
+ },
+ "during not less than the last 100 feet traveled": {
+  "atoms": [
+   "kin.path_length"
+  ],
+  "node": "NRS_484B_413_2",
   "role": "condition"
  },
  "during the time such driver is moving across or within the intersection.": {
@@ -1157,7 +1486,7 @@
    "rel.occupies",
    "st.roundabout"
   ],
-  "node": "LVMC_11_43_010_B_o2",
+  "node": "LVMC_11_43_010_B_o1",
   "role": "trigger"
  },
  "entering into or emerging from an alley, driveway or building": {
@@ -1185,6 +1514,21 @@
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
   "node": "NRS_484A_450_2",
+  "role": "subject"
+ },
+ "every motorcycle or moped": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-486-038::moped",
+   "ru.aggregate=DEF-NRS-486-041::motorcycle"
+  ],
+  "node": "NRS_486_341",
+  "role": "condition"
+ },
+ "every pedestrian": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ],
+  "node": "LVMC_11_30_060_A",
   "role": "subject"
  },
  "every person operating a bicycle, an electric bicycle or an electric scooter": {
@@ -1249,6 +1593,15 @@
   "node": "NRS_484B_587_1",
   "role": "exception"
  },
+ "except if required by an emergency": {
+  "atoms": [
+   "ru.emergency_vehicle",
+   "sig.hazard",
+   "sig.warning_lamp"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
+ },
  "except in a crosswalk": {
   "atoms": [
    "rel.occupies",
@@ -1285,6 +1638,15 @@
    "ru.truck"
   ],
   "node": "NRS_484B_510",
+  "role": "exception"
+ },
+ "except that the driver of a passenger vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "ru.trailer_or_combination",
+   "ru.truck"
+  ],
+  "node": "NRS_484B_517",
   "role": "exception"
  },
  "except through an opening in the barrier or dividing section or space": {
@@ -1382,6 +1744,26 @@
   "node": "NRS_484B_510",
   "role": "exception"
  },
+ "from a different highway.": {
+  "atoms": [
+   "rel.occupies",
+   "st.highway",
+   "st.lane_enters",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "condition"
+ },
+ "from a private way": {
+  "atoms": [
+   "rel.occupies",
+   "st.alley",
+   "st.driveway_or_alley_entrance"
+  ],
+  "node": "NRS_484B_260",
+  "role": "condition"
+ },
  "from one truck route to another": {
   "atoms": [
    "dev.governs",
@@ -1422,8 +1804,8 @@
    "rel.occupies",
    "st.turn_lane"
   ],
-  "node": "NRS_484B_223_4b",
-  "role": "trigger"
+  "node": "NRS_484B_223_4a",
+  "role": "condition"
  },
  "if a highway has two or more clearly marked lanes for traffic traveling in one direction,": {
   "atoms": [
@@ -1488,6 +1870,27 @@
   "node": "LVMC_11_16_040",
   "role": "condition"
  },
+ "if the driver complies with the requirements to travel in such a lane": {
+  "atoms": [
+   "dev.governs",
+   "dev.zone_sign",
+   "prim.conditions_hold",
+   "ru.aggregate=DEF-NRS-484A-460-2::high_occupancy_vehicle"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
+ "if the driver knows, or reasonably should know, that he or she is traveling at a rate of speed which is less than the posted speed limit for that portion of the controlled-access highway": {
+  "atoms": [
+   "dev.governs",
+   "dev.speed_limit_sign",
+   "kin.speed",
+   "rel.occupies",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "trigger"
+ },
  "if the driver of a vehicle": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
@@ -1538,6 +1941,14 @@
   "node": "NRS_484B_270_2a_o2",
   "role": "condition"
  },
+ "in a bus stop,": {
+  "atoms": [
+   "rel.occupies",
+   "st.curb_zone"
+  ],
+  "node": "NRS_484B_517",
+  "role": "condition"
+ },
  "in a clearly marked area of highway construction or maintenance": {
   "atoms": [
    "dev.governs",
@@ -1550,12 +1961,29 @@
   "node": "NRS_484B_330_1",
   "role": "condition"
  },
+ "in a manner which would deprive any such motorcycle or moped of such use.": {
+  "atoms": [
+   "rel.longitudinal_overlap",
+   "rel.occupies",
+   "st.lane"
+  ],
+  "node": "NRS_486_341",
+  "role": "obligation"
+ },
  "in a roadway": {
   "atoms": [
    "rel.occupies",
    "st.roadway"
   ],
   "node": "LVMC_11_52_040_A",
+  "role": "condition"
+ },
+ "in a taxicab stand,": {
+  "atoms": [
+   "rel.occupies",
+   "st.curb_zone"
+  ],
+  "node": "NRS_484B_517",
   "role": "condition"
  },
  "in an access aisle.": {
@@ -1698,6 +2126,14 @@
   "node": "NRS_484B_270_7a",
   "role": "obligation"
  },
+ "is entitled to full use of the traffic lane it is occupying,": {
+  "atoms": [
+   "rel.occupies",
+   "st.lane"
+  ],
+  "node": "NRS_486_341",
+  "role": "condition"
+ },
  "it is unlawful for a driver of a vehicle": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
@@ -1768,6 +2204,13 @@
   ],
   "node": "LVMC_11_40_130",
   "role": "trigger"
+ },
+ "it shall be unlawful for any person to ride": {
+  "atoms": [
+   "drv.motion.complete_halt"
+  ],
+  "node": "LVMC_11_40_180_A",
+  "role": "obligation"
  },
  "it shall be unlawful for the operator of any vehicle to drive into a crosswalk": {
   "atoms": [
@@ -1846,10 +2289,9 @@
  },
  "loading or unloading of passengers": {
   "atoms": [
-   "drv.motion.complete_halt",
    "sig.door_open"
   ],
-  "node": "NRS_484B_503",
+  "node": "NRS_484B_517",
   "role": "exception"
  },
  "local authorities may by ordinance permit angle parking on any highway, except that angle parking must not be permitted on any highway constructed and maintained by the department of transportation under the authority granted by chapter 408 of nrs unless the department has determined that the highway is of sufficient width to permit angle parking without interfering with the free movement of traffic.": {
@@ -1908,6 +2350,18 @@
   ],
   "node": "NRS_484B_307_12a",
   "role": "obligation"
+ },
+ "may drive that vehicle on a paved shoulder of a controlled-access highway where lawfully placed signage allows that vehicle to use the shoulder in that manner.": {
+  "atoms": [
+   "dev.governs",
+   "dev.regulatory_sign",
+   "prim.conditions_hold",
+   "rel.occupies",
+   "st.controlled_access",
+   "st.shoulder"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
  },
  "may make such left turn": {
   "atoms": [
@@ -1980,6 +2434,14 @@
   ],
   "node": "NRS_484B_307_5a_o1",
   "role": "obligation"
+ },
+ "motorcycles and mopeds may,": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-486-038::moped",
+   "ru.aggregate=DEF-NRS-486-041::motorcycle"
+  ],
+  "node": "NRS_486_351_2",
+  "role": "exception"
  },
  "move the vehicle to the lane to the immediate left,": {
   "atoms": [
@@ -2201,6 +2663,13 @@
   "node": "NRS_484B_413_3",
   "role": "subject"
  },
+ "of a vehicle.": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_413_2",
+  "role": "subject"
+ },
  "of an authorized flagger serving in a traffic control capacity": {
   "atoms": [
    "dev.governs",
@@ -2226,12 +2695,37 @@
   "node": "NRS_484B_457_1",
   "role": "exception"
  },
+ "on a controlled-access highway": {
+  "atoms": [
+   "rel.occupies",
+   "st.controlled_access"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "condition"
+ },
+ "on a controlled-access highway:": {
+  "atoms": [
+   "rel.occupies",
+   "st.controlled_access"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "trigger"
+ },
  "on a highway": {
   "atoms": [
    "rel.occupies",
    "st.highway"
   ],
   "node": "NRS_484B_653_1a",
+  "role": "condition"
+ },
+ "on a roadway, bicycle lane, path or route": {
+  "atoms": [
+   "rel.occupies",
+   "st.bicycle_lane_or_path",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_785_1a",
   "role": "condition"
  },
  "on all streets and highways": {
@@ -2256,6 +2750,16 @@
    "st.highway"
   ],
   "node": "NRS_484B_603_1_o2",
+  "role": "condition"
+ },
+ "on the highway side of any vehicle": {
+  "atoms": [
+   "prim.region_lateral_offset",
+   "rel.bearing",
+   "rel.longitudinal_overlap",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_450_1l",
   "role": "condition"
  },
  "on the through highway": {
@@ -2325,6 +2829,14 @@
   "node": "NRS_484B_280_1c",
   "role": "condition"
  },
+ "or (4) engaged in the construction, maintenance or repair of the highway, including, without limitation, the removal of snow.": {
+  "atoms": [
+   "ru.official_vehicle",
+   "sig.warning_lamp"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
  "or (d) if the zone is not designated by an operational speed limit beacon,": {
   "atoms": [
    "dev.governs",
@@ -2345,6 +2857,13 @@
   "node": "NRS_484B_363_3",
   "role": "exception"
  },
+ "or (f) a public transit motor bus,": {
+  "atoms": [
+   "ru.transit_bus"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
+ },
  "or a marked or unmarked crosswalk.": {
   "atoms": [
    "rel.occupies",
@@ -2353,6 +2872,13 @@
   ],
   "node": "NRS_484B_280_1c",
   "role": "condition"
+ },
+ "or a taxicab": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-270::taxicab"
+  ],
+  "node": "NRS_484B_517",
+  "role": "exception"
  },
  "or a traffic-control signal:": {
   "atoms": [
@@ -2402,6 +2928,13 @@
   "node": "NRS_484B_250_4_o2",
   "role": "condition"
  },
+ "or as otherwise authorized by subsection 3": {
+  "atoms": [
+   "dev.regulatory_sign"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
+ },
  "or at a crossover or intersection established by a public authority.": {
   "atoms": [
    "rel.occupies",
@@ -2443,7 +2976,7 @@
    "rel.occupies",
    "st.travel_region"
   ],
-  "node": "NRS_484B_450_1o",
+  "node": "NRS_484B_450_1l",
   "role": "exception"
  },
  "or in compliance with law.": {
@@ -2468,6 +3001,15 @@
   ],
   "node": "NRS_484B_280_1c",
   "role": "condition"
+ },
+ "or is making a left turn.": {
+  "atoms": [
+   "kin.yaw_rate",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "exception"
  },
  "or make any left turn, semicircular turn or u-turn,": {
   "atoms": [
@@ -2505,7 +3047,7 @@
    "rel.occupies",
    "st.travel_region"
   ],
-  "node": "NRS_484B_450_1o",
+  "node": "NRS_484B_450_1l",
   "role": "exception"
  },
  "or on a divided highway": {
@@ -2532,7 +3074,18 @@
    "rel.occupies",
    "st.travel_region"
   ],
-  "node": "NRS_484B_450_1o",
+  "node": "NRS_484B_450_1l",
+  "role": "exception"
+ },
+ "or to vehicles approaching each other from opposite directions,": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
   "role": "exception"
  },
  "or trailer": {
@@ -2595,6 +3148,13 @@
   ],
   "node": "NRS_484B_450_1m",
   "role": "condition"
+ },
+ "other than a bus": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-030::bus"
+  ],
+  "node": "NRS_484B_517",
+  "role": "exception"
  },
  "other than a city vehicle": {
   "atoms": [
@@ -2693,6 +3253,16 @@
   "node": "NRS_484B_777_3",
   "role": "subject"
  },
+ "prior to changing the course": {
+  "atoms": [
+   "drv.lane.heading_left_of_carrier",
+   "drv.lane.heading_right_of_carrier",
+   "rel.occupies",
+   "st.lane"
+  ],
+  "node": "NRS_484B_413_2",
+  "role": "trigger"
+ },
  "proceed": {
   "atoms": [
    "kin.speed"
@@ -2781,6 +3351,13 @@
    "drv.motion.circulating_clockwise_about"
   ],
   "node": "NRS_484B_220_2",
+  "role": "obligation"
+ },
+ "shall be in a counterclockwise direction": {
+  "atoms": [
+   "drv.motion.circulating_clockwise_about"
+  ],
+  "node": "LVMC_11_43_010_A",
   "role": "obligation"
  },
  "shall be ridden": {
@@ -2876,6 +3453,17 @@
   "node": "NRS_484B_627_2",
   "role": "obligation"
  },
+ "shall not cross an intersection diagonally": {
+  "atoms": [
+   "drv.motion.moving_across_carrier",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane",
+   "st.lane_enters"
+  ],
+  "node": "NRS_484B_287_1d",
+  "role": "obligation"
+ },
  "shall not drive a motorcycle or moped": {
   "atoms": [
    "ru.aggregate=DEF-NRS-486-038::moped",
@@ -2890,6 +3478,17 @@
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
   "node": "NRS_484B_127_1",
+  "role": "obligation"
+ },
+ "shall not form two lanes of traffic": {
+  "atoms": [
+   "rel.longitudinal_overlap",
+   "rel.occupies",
+   "rel.same_direction",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.lane"
+  ],
+  "node": "NRS_484B_560_3_o2",
   "role": "obligation"
  },
  "shall not leave open a door on the side of a vehicle which is closest to passing traffic": {
@@ -2912,6 +3511,14 @@
    "sig.door_open"
   ],
   "node": "NRS_484B_153_2",
+  "role": "obligation"
+ },
+ "shall not overtake and pass another vehicle upon the right": {
+  "atoms": [
+   "drv.interaction.overtake_pass_on_right",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_210_3",
   "role": "obligation"
  },
  "shall not park a vehicle": {
@@ -2972,7 +3579,19 @@
    "drv.motion.complete_halt",
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_450_1o",
+  "node": "NRS_484B_450_1l",
+  "role": "obligation"
+ },
+ "shall not: overtake and pass a motor vehicle": {
+  "atoms": [
+   "drv.interaction.overtake_pass",
+   "kin.heading",
+   "kin.position",
+   "rel.longitudinal_overlap",
+   "rel.same_direction",
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ],
+  "node": "NRS_484B_270_7b",
   "role": "obligation"
  },
  "shall not: stop, stand or park a vehicle": {
@@ -2999,6 +3618,16 @@
    "drv.motion.u_turn"
   ],
   "node": "NRS_484B_403_2",
+  "role": "obligation"
+ },
+ "shall pass each other keeping to the right,": {
+  "atoms": [
+   "rel.bearing",
+   "rel.longitudinal_overlap",
+   "rel.occupies",
+   "st.highway"
+  ],
+  "node": "NRS_484B_203_1_o1",
   "role": "obligation"
  },
  "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.": {
@@ -3112,6 +3741,17 @@
   "node": "LVMC_11_40_120",
   "role": "obligation"
  },
+ "shall use the left lane to turn left or complete a u-turn": {
+  "atoms": [
+   "drv.motion.left_turn_through_region",
+   "drv.motion.u_turn_through_region",
+   "rel.occupies",
+   "st.lane",
+   "st.lane_adjacency"
+  ],
+  "node": "LVMC_11_43_010_C1",
+  "role": "obligation"
+ },
  "shall use the right lane to turn right": {
   "atoms": [
    "drv.motion.right_turn_through_region",
@@ -3127,7 +3767,15 @@
    "kin.speed",
    "rel.contact"
   ],
-  "node": "NRS_484B_253_o2",
+  "node": "NRS_484B_250_1",
+  "role": "obligation"
+ },
+ "shall yield the right-of-way": {
+  "atoms": [
+   "kin.speed",
+   "rel.contact"
+  ],
+  "node": "NRS_484B_263_o1",
   "role": "obligation"
  },
  "shall: exercise": {
@@ -3140,21 +3788,10 @@
  },
  "stopped or parked": {
   "atoms": [
-   "dev.governs",
-   "dev.human_direction",
-   "dev.railway_signal_or_gate",
-   "dev.stop_sign",
-   "dev.traffic_signal",
-   "dev.yield_sign",
-   "drv.motion.complete_halt",
-   "rel.ahead_behind_in_lane",
-   "rel.occupies",
-   "rel.surface_gap",
-   "ru.aggregate=DEF-NRS-484A-285::traffic",
-   "st.travel_region"
+   "drv.motion.complete_halt"
   ],
-  "node": "NRS_484B_457_1",
-  "role": "trigger"
+  "node": "NRS_484B_450_1l",
+  "role": "condition"
  },
  "streets": {
   "atoms": [
@@ -3201,6 +3838,19 @@
   ],
   "node": "NRS_484B_307_2a",
   "role": "subject"
+ },
+ "that is being driven on the paved shoulder of a highway where lawfully placed signage allows that vehicle to use the shoulder in that manner.": {
+  "atoms": [
+   "dev.governs",
+   "dev.regulatory_sign",
+   "prim.conditions_hold",
+   "rel.occupies",
+   "st.highway",
+   "st.on_way",
+   "st.shoulder"
+  ],
+  "node": "NRS_484B_587_2b",
+  "role": "exception"
  },
  "that posted by a public authority": {
   "atoms": [
@@ -3254,7 +3904,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_403_2",
+  "node": "NRS_484B_560_3_o2",
   "role": "subject"
  },
  "the driver of a motor vehicle": {
@@ -3268,7 +3918,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_363_3",
+  "node": "NRS_484B_250_1",
   "role": "subject"
  },
  "the driver of a vehicle:": {
@@ -3348,7 +3998,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "LVMC_11_43_010_B_o2",
+  "node": "LVMC_11_43_010_B_o1",
   "role": "subject"
  },
  "the operation of vehicles within a roundabout": {
@@ -3357,7 +4007,7 @@
    "ru.aggregate=DEF-NRS-484A-320::vehicle",
    "st.roundabout"
   ],
-  "node": "LVMC_11_43_010_C2",
+  "node": "LVMC_11_43_010_C1",
   "role": "subject"
  },
  "the operator of a bicycle, an electric bicycle or an electric scooter": {
@@ -3366,7 +4016,7 @@
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_270_7a",
+  "node": "NRS_484B_270_7b",
   "role": "subject"
  },
  "the operator of a bicycle, electric bicycle, or electric scooter": {
@@ -3382,7 +4032,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "LVMC_11_43_010_B_o2",
+  "node": "LVMC_11_43_010_B_o1",
   "role": "subject"
  },
  "the prima facie speed limit is twenty-five miles per hour": {
@@ -3399,6 +4049,13 @@
   "node": "LVMC_11_16_040",
   "role": "obligation"
  },
+ "the requirements of subsection 1 do not apply: (a) to a driver operating a motor vehicle that is:": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "exception"
+ },
  "the side of a vehicle which is closest to passing traffic": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle",
@@ -3406,6 +4063,19 @@
   ],
   "node": "NRS_484B_153_2",
   "role": "condition"
+ },
+ "this section does not apply at intersections controlled by official traffic-control devices": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.traffic_signal",
+   "dev.yield_sign",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "exception"
  },
  "this subsection does not apply to any vehicle or combination of vehicles while moving on a highway on which there are two or more lanes available for traffic moving in the same direction.": {
   "atoms": [
@@ -3424,6 +4094,15 @@
   "node": "NRS_484B_110",
   "role": "obligation"
  },
+ "to a vehicle which has entered the intersection": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "condition"
+ },
  "to all vehicles approaching on said roadway": {
   "atoms": [
    "prim.closest_approach_within",
@@ -3434,13 +4113,37 @@
   "node": "LVMC_11_20_060_o3",
   "role": "condition"
  },
+ "to all vehicles approaching on such highway.": {
+  "atoms": [
+   "kin.speed",
+   "rel.bearing",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.highway",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_260",
+  "role": "condition"
+ },
+ "to all vehicles approaching on the highway": {
+  "atoms": [
+   "kin.speed",
+   "rel.bearing",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.controlled_access"
+  ],
+  "node": "NRS_484B_263_o2",
+  "role": "condition"
+ },
  "to all vehicles upon the roadway": {
   "atoms": [
    "rel.occupies",
    "ru.aggregate=DEF-NRS-484A-320::vehicle",
    "st.roadway"
   ],
-  "node": "LVMC_11_30_060_B",
+  "node": "LVMC_11_30_060_A",
   "role": "condition"
  },
  "to any pedestrian": {
@@ -3643,6 +4346,15 @@
   "node": "NRS_484B_253_o2",
   "role": "condition"
  },
+ "to vehicles already in the roundabout": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.roundabout"
+  ],
+  "node": "LVMC_11_43_010_B_o1",
+  "role": "condition"
+ },
  "to vehicles not so obligated to stop or yield": {
   "atoms": [
    "dev.governs",
@@ -3716,6 +4428,14 @@
   "node": "LVMC_11_16_060",
   "role": "exception"
  },
+ "unless authorized by official traffic-control devices.": {
+  "atoms": [
+   "rel.occupies",
+   "st.crosswalk"
+  ],
+  "node": "NRS_484B_287_1d",
+  "role": "exception"
+ },
  "unless official traffic-control devices are erected permitting such standing or parking.": {
   "atoms": [
    "dev.governs",
@@ -3741,6 +4461,16 @@
    "st.sight_distance"
   ],
   "node": "NRS_484B_213_1",
+  "role": "exception"
+ },
+ "unless the highway is marked for four or more lanes of traffic.": {
+  "atoms": [
+   "rel.occupies",
+   "st.highway",
+   "st.lane",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_560_3_o2",
   "role": "exception"
  },
  "unloading and delivery or pickup and loading of materials": {
@@ -3964,6 +4694,14 @@
   "node": "LVMC_11_18_020",
   "role": "condition"
  },
+ "upon the sidewalks": {
+  "atoms": [
+   "rel.occupies",
+   "st.sidewalk"
+  ],
+  "node": "LVMC_11_40_180_A",
+  "role": "condition"
+ },
  "upon the traveled portion of a highway or shoulder adjacent thereto,": {
   "atoms": [
    "rel.occupies",
@@ -4007,6 +4745,16 @@
   ],
   "node": "NRS_484B_307_5a_o2",
   "role": "subject"
+ },
+ "waiting to enter or about to enter such zone.": {
+  "atoms": [
+   "drv.motion.complete_halt",
+   "rel.occupies",
+   "st.curb_zone",
+   "st.region_geometry"
+  ],
+  "node": "NRS_484B_517",
+  "role": "exception"
  },
  "when a red lens is illuminated with rapid intermittent flashes,": {
   "atoms": [
@@ -4090,6 +4838,14 @@
   "node": "NRS_484B_213_2b",
   "role": "trigger"
  },
+ "when being driven on the highway": {
+  "atoms": [
+   "rel.occupies",
+   "st.highway"
+  ],
+  "node": "NRS_486_341",
+  "role": "condition"
+ },
  "when crossing at grade any track or tracks of a railroad,": {
   "atoms": [
    "rel.occupies",
@@ -4157,7 +4913,7 @@
    "dev.governs",
    "dev.regulatory_sign"
   ],
-  "node": "LVMC_11_30_060_B",
+  "node": "LVMC_11_30_060_A",
   "role": "exception"
  },
  "when proper signs have been erected,": {
@@ -4183,8 +4939,25 @@
    "rel.occupies",
    "st.travel_region"
   ],
-  "node": "NRS_484B_560_3_o1",
+  "node": "NRS_484B_560_3_o2",
   "role": "trigger"
+ },
+ "when such movement requires driving off the paved portion of the highway.": {
+  "atoms": [
+   "rel.occupies",
+   "st.road_edge",
+   "st.shoulder"
+  ],
+  "node": "NRS_484B_210_3",
+  "role": "condition"
+ },
+ "when such stop or stand has been officially designated and appropriately signed,": {
+  "atoms": [
+   "rel.occupies",
+   "st.curb_zone"
+  ],
+  "node": "NRS_484B_517",
+  "role": "condition"
  },
  "when such stop signs are erected": {
   "atoms": [
@@ -4430,6 +5203,15 @@
   "node": "NRS_484B_307_8e",
   "role": "condition"
  },
+ "which has two or more clearly marked lanes for traveling in the same direction,": {
+  "atoms": [
+   "rel.occupies",
+   "st.lane",
+   "st.lane_adjacency"
+  ],
+  "node": "NRS_484B_208_1",
+  "role": "condition"
+ },
  "which is following a truck, or combination of vehicles 80 inches or more in overall width,": {
   "atoms": [
    "kin.extent",
@@ -4489,11 +5271,12 @@
  },
  "who intends to exit a roundabout": {
   "atoms": [
-   "drv.motion.right_turn_through_region",
+   "drv.motion.left_turn_through_region",
+   "drv.motion.u_turn_through_region",
    "rel.occupies",
    "st.roundabout"
   ],
-  "node": "LVMC_11_43_010_C2",
+  "node": "LVMC_11_43_010_C1",
   "role": "condition"
  },
  "with a pedestrian.": {
@@ -4524,7 +5307,7 @@
    "rel.surface_gap",
    "ru.aggregate=DEF-NRS-484A-285::traffic"
   ],
-  "node": "NRS_484B_450_1o",
+  "node": "NRS_484B_450_1l",
   "role": "exception"
  },
  "with respect to pedestrians or other traffic,": {
@@ -4538,6 +5321,13 @@
   ],
   "node": "NRS_484B_603_1_o1",
   "role": "condition"
+ },
+ "with the consent of the drivers,": {
+  "atoms": [
+   "rel.same_direction"
+  ],
+  "node": "NRS_486_351_2",
+  "role": "exception"
  },
  "within 20 feet of a driveway entrance to any fire station": {
   "atoms": [
@@ -4576,7 +5366,7 @@
    "rel.occupies",
    "st.roundabout"
   ],
-  "node": "LVMC_11_43_010_B_o2",
+  "node": "LVMC_11_43_010_B_o1",
   "role": "condition"
  },
  "within an alley": {

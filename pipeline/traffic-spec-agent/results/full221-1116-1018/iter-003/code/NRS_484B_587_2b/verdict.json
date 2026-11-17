@@ -1,0 +1,760 @@
+{
+ "verdict": "OK",
+ "details": [
+  "15 witnesses, 22 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "derived": "drv_motion_complete_halt",
+       "params": [
+        {
+         "param": "p.halt_speed_tolerance"
+        }
+       ]
+      }
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "ca"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "controlled_access"
+        },
+        "var": "ca"
+       },
+       {
+        "and": [
+         {
+          "not": {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              }
+             ],
+             "atom": "sig_hazard",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                }
+               ],
+               "atom": "ru_emergency_vehicle",
+               "params": []
+              },
+              {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "lit": "red"
+                  }
+                 ],
+                 "atom": "sig_warning_lamp",
+                 "params": []
+                },
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "blue"
+                    }
+                   ],
+                   "atom": "sig_warning_lamp",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "amber"
+                      }
+                     ],
+                     "atom": "sig_warning_lamp",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "white"
+                      }
+                     ],
+                     "atom": "sig_warning_lamp",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         },
+         {
+          "not": {
+           "and": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                }
+               ],
+               "atom": "ru_emergency_vehicle",
+               "params": []
+              },
+              {
+               "or": [
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "atom": "ru_official_vehicle",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "incident_management"
+                      }
+                     ],
+                     "atom": "ru_official_vehicle_kind",
+                     "params": []
+                    },
+                    {
+                     "or": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "lit": "coroner"
+                        }
+                       ],
+                       "atom": "ru_official_vehicle_kind",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "tow"
+                          }
+                         ],
+                         "atom": "ru_official_vehicle_kind",
+                         "params": []
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "atom": "ru_motor_vehicle",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  }
+                 ],
+                 "atom": "ru_transit_bus",
+                 "params": []
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "sh"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "sh"
+                   }
+                  ],
+                  "atom": "st_shoulder_paved",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "hw"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "sh"
+                        },
+                        {
+                         "var": "hw"
+                        }
+                       ],
+                       "atom": "st_on_way",
+                       "params": []
+                      }
+                     ]
+                    },
+                    "exists_region": {
+                     "lit": "highway"
+                    },
+                    "var": "hw"
+                   },
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "dsh"
+                        },
+                        {
+                         "lit": "shoulder_use_permitted"
+                        }
+                       ],
+                       "atom": "dev_regulatory_sign_code",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "dsh"
+                          },
+                          {
+                           "var": "sh"
+                          }
+                         ],
+                         "atom": "dev_governs",
+                         "params": []
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "dsh"
+                          },
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "derived": "prim_conditions_hold",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "exists_device": {
+                     "lit": "regulatory_sign"
+                    },
+                    "var": "dsh"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "shoulder"
+             },
+             "var": "sh"
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_587_2b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-587-2b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "body": {
+       "and": [
+        {
+         "or": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r1"
+              },
+              {
+               "var": "r2"
+              },
+              {
+               "lit": "left"
+              }
+             ],
+             "derived": "drv_lane_entering_adjacent_lane",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "r1"
+                },
+                {
+                 "lit": "left"
+                },
+                {
+                 "lit": "solid"
+                },
+                {
+                 "lit": "white"
+                }
+               ],
+               "atom": "st_lane_marking",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "r1"
+                },
+                {
+                 "lit": "left"
+                },
+                {
+                 "lit": "double_solid"
+                },
+                {
+                 "lit": "white"
+                }
+               ],
+               "atom": "st_lane_marking",
+               "params": []
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r1"
+              },
+              {
+               "var": "r2"
+              },
+              {
+               "lit": "right"
+              }
+             ],
+             "derived": "drv_lane_entering_adjacent_lane",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "r1"
+                },
+                {
+                 "lit": "right"
+                },
+                {
+                 "lit": "solid"
+                },
+                {
+                 "lit": "white"
+                }
+               ],
+               "atom": "st_lane_marking",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "r1"
+                },
+                {
+                 "lit": "right"
+                },
+                {
+                 "lit": "double_solid"
+                },
+                {
+                 "lit": "white"
+                }
+               ],
+               "atom": "st_lane_marking",
+               "params": []
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "or": [
+          {
+           "and": [
+            {
+             "body": {
+              "and": [
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "dA1"
+                   },
+                   {
+                    "lit": "entrance"
+                   }
+                  ],
+                  "atom": "dev_regulatory_sign_code",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "dA1"
+                   },
+                   {
+                    "lit": "exit"
+                   }
+                  ],
+                  "atom": "dev_regulatory_sign_code",
+                  "params": []
+                 }
+                ]
+               },
+               {
+                "args": [
+                 {
+                  "var": "dA1"
+                 },
+                 {
+                  "var": "r1"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               }
+              ]
+             },
+             "exists_device": {
+              "lit": "regulatory_sign"
+             },
+             "var": "dA1"
+            },
+            {
+             "not": {
+              "body": {
+               "and": [
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "dA2"
+                    },
+                    {
+                     "lit": "entrance"
+                    }
+                   ],
+                   "atom": "dev_regulatory_sign_code",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "dA2"
+                    },
+                    {
+                     "lit": "exit"
+                    }
+                   ],
+                   "atom": "dev_regulatory_sign_code",
+                   "params": []
+                  }
+                 ]
+                },
+                {
+                 "args": [
+                  {
+                   "var": "dA2"
+                  },
+                  {
+                   "var": "r2"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                }
+               ]
+              },
+              "exists_device": {
+               "lit": "regulatory_sign"
+              },
+              "var": "dA2"
+             }
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "body": {
+              "and": [
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "dB2"
+                   },
+                   {
+                    "lit": "entrance"
+                   }
+                  ],
+                  "atom": "dev_regulatory_sign_code",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "dB2"
+                   },
+                   {
+                    "lit": "exit"
+                   }
+                  ],
+                  "atom": "dev_regulatory_sign_code",
+                  "params": []
+                 }
+                ]
+               },
+               {
+                "args": [
+                 {
+                  "var": "dB2"
+                 },
+                 {
+                  "var": "r2"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               }
+              ]
+             },
+             "exists_device": {
+              "lit": "regulatory_sign"
+             },
+             "var": "dB2"
+            },
+            {
+             "not": {
+              "body": {
+               "and": [
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "dB1"
+                    },
+                    {
+                     "lit": "entrance"
+                    }
+                   ],
+                   "atom": "dev_regulatory_sign_code",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "dB1"
+                    },
+                    {
+                     "lit": "exit"
+                    }
+                   ],
+                   "atom": "dev_regulatory_sign_code",
+                   "params": []
+                  }
+                 ]
+                },
+                {
+                 "args": [
+                  {
+                   "var": "dB1"
+                  },
+                  {
+                   "var": "r1"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                }
+               ]
+              },
+              "exists_device": {
+               "lit": "regulatory_sign"
+              },
+              "var": "dB1"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "lane"
+      },
+      "var": "r2"
+     },
+     "exists_region": {
+      "lit": "lane"
+     },
+     "var": "r1"
+    }
+   },
+   "residues": [
+    "Introduces the list of NRS 484B.210(4) as appended; the exemption from the passing rule of NRS 484B.210(1)(c)(1) it states is that section's, not this duty's, and is not read here."
+   ],
+   "surrogate": false
+  },
+  "context": "d3b5b49693d50f31d8e5868b",
+  "candidate_digest": "d9c9d95a69a450a840c167bb70715b5ba8f403fb866983839e47fc81306d1a07"
+ }
+}

@@ -1,0 +1,324 @@
+{
+ "node_id": "NRS_484B_267_2d",
+ "law_refs": [
+  "NRS-484B-267-2d"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Upon approaching an authorized emergency vehicle or an official vehicle of a regulatory agency which is moving or preparing to move in any direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "including, without limitation, arriving at or leaving the scene of a crash or other incident,",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "and making use of flashing lights meeting the requirements of",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "subsection 3 of NRS 484A.480 [DEF-NRS-484A-480-3],",
+   "role": "reference"
+  },
+  {
+   "id": "s5",
+   "text": "the driver of any other vehicle shall,",
+   "role": "subject"
+  },
+  {
+   "id": "s6",
+   "text": "except when otherwise directed by a law enforcement officer:",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "If the authorized emergency vehicle or official vehicle of a regulatory agency is moving in the same direction of travel as the driver,",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "not drive abreast of or overtake the authorized emergency vehicle or official vehicle of a regulatory agency.",
+   "role": "obligation"
+  },
+  {
+   "id": "s9",
+   "text": "As used in this section, “preparing to move” means any indication that is visible to an approaching driver that an authorized emergency vehicle or an official vehicle of a regulatory agency is about to move, including, without limitation: (a) A movement of the vehicle; or (b) The use of hand signals by the driver of the vehicle.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "kin.speed",
+    "rel.bearing",
+    "rel.centre_distance",
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle",
+    "ru.official_vehicle",
+    "rel.visible",
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "justification": "'an authorized emergency vehicle' is the admitted aggregate DEF-NRS-484A-020::authorized_emergency_vehicle ('a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'), claimed as ru.aggregate; its 'not a stand-in for' a responding role does not bite, since the conduct the words require of it is read separately. 'an official vehicle of a regulatory agency' is ru.official_vehicle of kind regulatory_agency, not read as an emergency vehicle. 'Upon approaching': the subject, moving (kin.speed above the halt tolerance), has that vehicle ahead of it (rel.bearing, 'direction of b from a in a's frame', longitudinal component positive) within the approach reach of centre distance (rel.centre_distance; no clearance is read from it). 'which is moving': the vehicle's kin.speed above the halt tolerance; 'or preparing to move', as the section defines it (s9): the vehicle visible from the subject (rel.visible) showing an arm signal (sig.hand_signal meaning other than no_signal) or a lit turn indicator (sig.turn_indicator left or right: the signal, not the manoeuvre). 'in any direction' adds no restriction. The vehicle is quantified in the formula, never a binder."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "source_spans": [
+    "s4"
+   ],
+   "justification": "sig.warning_lamp: 'a warning lamp lit; colour ∈ {red, blue, amber, white}, mode ∈ {flashing, rotating, steady}, facing ∈ {front, rear, side}'. The words borrowed from DEF-NRS-484A-480-3, 'at least one flashing red warning lamp visible from the front', fix which lights meet the requirements: a lamp lit on the approached vehicle of colour red, mode flashing, facing front. Not a stand-in for an audible warning: no siren is read."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'any other vehicle' is the defined term vehicle, admitted as DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); its exclusions are the reading's classification under that id. 'other' excludes the approached vehicle: the subject and it are not the same road user. 'the driver' is a relational role read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.human_direction: 'a person directing traffic and the direction given; role ∈ {police_officer, ...}': a law enforcement officer is role police_officer. The exception holds where such a device governs (dev.governs, 'the travel regions whose traffic the device controls'; not a position) a travel region (st.travel_region, through the quantifier) the subject occupies (rel.occupies, 'a road user's footprint overlaps a lane / region')."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.same_direction",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'is moving' is the approached vehicle's kin.speed above the halt tolerance; 'in the same direction of travel as the driver' is rel.same_direction ('headings aligned: the cosine of the angle between the headings is above its tolerance') between the subject and that vehicle, with the overtaking heading tolerance. 'the authorized emergency vehicle or official vehicle' is the vehicle s1 selects, re-bound with its whole selection."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "rel.longitudinal_overlap",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'overtake' is drv.interaction.overtake_pass(subject, vehicle): 'a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'; it denotes the relative motion only, and the lanes are not read. 'drive abreast of' is the two side by side while the subject drives: the bodies' projections on the subject's heading share length (rel.longitudinal_overlap at or above zero, 'the bodies overlap along the subject's heading (side by side)'; a projection, not a contact or a distance) with the subject's kin.speed above the halt tolerance. 'the authorized emergency vehicle or official vehicle' is the vehicle s1 selects, re-bound."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "kin.speed",
+    "rel.visible",
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "justification": "The section's own definition of 'preparing to move', read as s1 reads it: 'any indication that is visible to an approaching driver' is the vehicle visible from the subject (rel.visible) showing an indication; '(a) A movement of the vehicle' its kin.speed above the halt tolerance; '(b) The use of hand signals' sig.hand_signal meaning other than no_signal; 'including, without limitation' admits a lit turn indicator (sig.turn_indicator). 'about to move' is an imminent movement read through these indications."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s4",
+   "as": "definition",
+   "source": "DEF-NRS-484A-480-3",
+   "quote": "at least one flashing red warning lamp visible from the front"
+  }
+ ],
+ "residues": [
+  {
+   "span": "s2",
+   "why": "'including, without limitation' lists examples of a vehicle moving or preparing to move; the duty is the same whether or not the vehicle is arriving at or leaving the scene of a crash or other incident",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-320::vehicle. Some road user e, not the subject, a member of DEF-NRS-484A-020::authorized_emergency_vehicle or an ru.official_vehicle of kind regulatory_agency, was approached by the subject at some observation of the window behind of length p.overtake_window (up to and including this one): there e showed a lit sig.warning_lamp red, flashing, facing front; e was moving (kin.speed above p.halt_speed_tolerance) or preparing to move (rel.visible from the subject and e's sig.hand_signal other than no_signal or sig.turn_indicator other than off); e lay ahead of the subject (rel.bearing longitudinal component positive) within p.emergency_approach_reach (rel.centre_distance), the subject moving above p.halt_speed_tolerance; and at some observation of that window e was moving (kin.speed above p.halt_speed_tolerance) with its heading aligned with the subject's (rel.same_direction, tolerance p.overtake_same_direction_cos). For the overtaking alternative these trigger and condition observations lie between the act's onset and its recognition (occasion some_moment). Not applicable where a dev.human_direction of role police_officer governs (dev.governs) a st.travel_region the subject occupies (rel.occupies) at every observation of the act (occasion throughout), or, for the abreast alternative, at the judged observation.",
+ "obligation": "For every e selected as in the applicability (re-bound with its whole selection): (i) the subject does not drive abreast of e: it is not the case that the subject moves (kin.speed above p.halt_speed_tolerance) while the projections of the two bodies on the subject's heading share length (rel.longitudinal_overlap at or above zero); and (ii) the subject does not overtake e: drv.interaction.overtake_pass(subject, e) with window p.overtake_window and same_dir_cos p.overtake_same_direction_cos does not rise at the observation.",
+ "params": [
+  "p.emergency_approach_reach",
+  "p.halt_speed_tolerance",
+  "p.overtake_window",
+  "p.overtake_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "'the driver' of a vehicle is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "'preparing to move', defined as an indication that the vehicle is 'about to move', is an imminent movement read through the visible indications the definition lists and a lit turn indicator",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s1",
+   "why": "'visible to an approaching driver' is read as the vehicle being in the subject's line of sight (rel.visible)",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "s8",
+   "why": "'drive abreast' is read as the two bodies side by side along the subject's heading while the subject moves; a subject at rest that the vehicle draws alongside does not drive abreast of it"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A fire engine (authorized emergency vehicle) moves ahead of the subject in the same direction with its red front lamp flashing; the subject approaches it from behind within the reach, draws alongside and passes it, the fire engine coming to be behind it."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene, but the subject stays behind the fire engine throughout, never sharing length with it along its heading."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject passes a slower car; no emergency or regulatory-agency vehicle is in the scene. The duty binds the subject alone and does not arise."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe warning lamps.",
+   "masked": [
+    "sig.warning_lamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "As in forbid, but the subject draws alongside the fire engine and keeps level with it, moving, without completing the pass."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The fire engine with its red lamp flashing moves in the opposite direction; the subject approaches it head-on and they come side by side as they meet. The headings are opposed, so the condition fails."
+  },
+  {
+   "name": "occasion_s1",
+   "expected": "violated",
+   "narrative": "The subject approaches the moving fire engine from behind within the reach at the onset of the pass; once alongside, the fire engine is no longer ahead, so the approach holds for part of the pass only; the pass is completed."
+  },
+  {
+   "name": "occasion_s1_outside",
+   "expected": "not_applicable",
+   "narrative": "The subject approached the fire engine earlier, then halted; while the subject stands at rest the fire engine, lamps flashing, backs past it, so that relative to the subject it goes from ahead to behind. The subject was not moving at any observation of the act, so the approach held only before it began."
+  },
+  {
+   "name": "occasion_s3",
+   "expected": "violated",
+   "narrative": "The fire engine's red front lamp flashes at the onset of the subject's pass and is switched off midway; the pass is completed."
+  },
+  {
+   "name": "occasion_s3_outside",
+   "expected": "not_applicable",
+   "narrative": "The fire engine's lamp flashed while the subject approached and was switched off before the pass began, outside the window behind its recognition; it stays off throughout the pass."
+  },
+  {
+   "name": "occasion_s7",
+   "expected": "violated",
+   "narrative": "The fire engine moves in the subject's direction at the onset of the pass and halts midway; the subject completes the pass."
+  },
+  {
+   "name": "occasion_s7_outside",
+   "expected": "not_applicable",
+   "narrative": "The fire engine moved in the subject's direction long before, then halted on the roadway with its lamp flashing and visibly signalled with its driver's arm; it stays at rest throughout the subject's pass, which falls outside the window behind its last movement."
+  },
+  {
+   "name": "occasion_s6",
+   "expected": "violated",
+   "narrative": "A police officer directing traffic governs the subject's lane at the onset of the pass only; the subject completes the pass in a lane no officer governs."
+  },
+  {
+   "name": "occasion_s6_outside",
+   "expected": "not_applicable",
+   "narrative": "A police officer directing traffic governs the lanes the subject occupies at every observation of the pass, and did not before it began; the officer waves the subject past."
+  }
+ ],
+ "occasion": {
+  "act": "drv.interaction.overtake_pass",
+  "boundary": "window",
+  "window": "p.overtake_window",
+  "under_way": {
+   "words": "overtake",
+   "atoms": [
+    "rel.longitudinal_overlap",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "An observation inside the pass is one from the act's onset — the last observation of the window behind at which the vehicle was ahead of the subject with headings aligned, as drv.interaction.overtake_pass states it — to its recognition: there the subject moves (kin.speed above the halt tolerance) and the vehicle is no longer ahead clear of it, the bodies' projections on the subject's heading sharing length (rel.longitudinal_overlap at or above zero) or the vehicle being behind; before the onset the vehicle is ahead with no shared length."
+  },
+  "spans": {
+   "s1": "some_moment",
+   "s3": "some_moment",
+   "s7": "some_moment",
+   "s6": "throughout"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.emergency_approach_reach",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "centre distance within which a driver approaching an emergency or enforcement vehicle that shows flashing warning lamps counts as approaching it: about the distance at which the lamps are conspicuous by day and a driver at an urban speed of 15 m/s has ten seconds to slow",
+   "source": "warning-lamp conspicuity and perception-reaction figures (as proposed this iteration by NRS_484B_267_2a)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "source speed resolution (as proposed this iteration by LVMC_11_12_070_B)"
+  },
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "overtaking-duration figures (as proposed this iteration by LVMC_11_30_030)"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading figures (as proposed this iteration by LVMC_11_30_030)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

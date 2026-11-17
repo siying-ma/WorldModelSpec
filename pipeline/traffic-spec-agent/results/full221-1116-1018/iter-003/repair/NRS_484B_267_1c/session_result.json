@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 26189,
+  "stop_reason": "end_turn",
+  "session_id": "d4abaee2-3453-4e57-8792-63957500d3e9",
+  "total_cost_usd": 0.80066503,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 81187,
+   "cache_read_input_tokens": 85202,
+   "output_tokens": 2674,
+   "output_tokens_details": {
+    "thinking_tokens": 1263
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 81187,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 594,
+     "cache_read_input_tokens": 82071,
+     "cache_creation_input_tokens": 2247,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2247
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 78304,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00862939,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 2674,
+    "cacheReadInputTokens": 85202,
+    "cacheCreationInputTokens": 81187,
+    "webSearchRequests": 0,
+    "costUSD": 0.79203564,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1263,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 81187,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I withdrew the record for span `u4` as an `atom` gap instead of revising it. The law is now blocked until the operator decides the gap.\n\n**Why:** `u4` is a condition span. With the words it borrows from `u5`, it means the approaching vehicle is using \"at least one flashing red warning lamp visible from the front.\" The `sig.warning_lamp` atom lists a facing attribute, but Core's formula forms only take `[track, colour]` or `[track, colour, mode]`. So no rule can say \"facing front.\"\n\n**Why not drop the facing:** a red flashing lamp facing any direction is a weaker condition. The duty would then arise when a vehicle closes from behind showing only rear- or side-facing red flashers, which the law doesn't cover. Rule 3/3b doesn't allow narrowing a condition span that way. No other atom can stand in for it: `rel.visible` explicitly says it is not a lamp being lit, and `rel.bearing` gives a road user's position, not which way a lamp faces.\n\n**What would unblock it:** a Core form `sig_warning_lamp [track, colour, mode, facing]`. Per the coder's note, the rule would then only need `.lit \"front\"` added to the lamp atom and the `no_atom` narrowing removed. Every witness already builds its lamps facing front.\n\n**Separate issue (not part of this withdrawal):** the coder also flagged that the reading puts no road-user class in the authorized-emergency-vehicle aggregate. The `u2` limb (authorized emergency vehicle) can then never be true, so a scene with an ambulance or fire truck comes out unknown. Every decided witness therefore uses the regulatory-agency limb. That needs fixing in the reading, outside this node.\n\nThe output is `record.jsonl` in the repair directory.",
+  "ttft_ms": 13154,
+  "type": "result",
+  "duration_ms": 25870,
+  "uuid": "51fa80e6-605f-4d1f-8963-dac656e3b72a",
+  "ttft_stream_ms": 1370,
+  "time_to_request_ms": 471,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 46,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 12,
+   "input_hooks": 4,
+   "conversation_append": 1,
+   "transcript_persist": 82,
+   "tool_pool_refresh": 2,
+   "init_message": 4,
+   "init_frame_send": 8,
+   "engine_pickup": 11,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 269,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 38,
+  "time_to_request_cpu_ms": 522,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1370,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 78304,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00862939,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 2674,
+    "cacheReadInputTokens": 85202,
+    "cacheCreationInputTokens": 81187,
+    "webSearchRequests": 0,
+    "costUSD": 0.79203564,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1263,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 81187,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

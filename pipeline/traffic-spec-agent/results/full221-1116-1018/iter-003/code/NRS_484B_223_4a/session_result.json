@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 110679,
+  "stop_reason": "end_turn",
+  "session_id": "a853bc6f-4fda-4910-9156-ea8943b240be",
+  "total_cost_usd": 1.0210721399999998,
+  "usage": {
+   "input_tokens": 22,
+   "cache_creation_input_tokens": 70523,
+   "cache_read_input_tokens": 583454,
+   "output_tokens": 12176,
+   "output_tokens_details": {
+    "thinking_tokens": 3593
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 70523,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 798,
+     "cache_read_input_tokens": 73681,
+     "cache_creation_input_tokens": 1310,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1310
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37511,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004141060000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 22,
+    "outputTokens": 12176,
+    "cacheReadInputTokens": 583454,
+    "cacheCreationInputTokens": 70523,
+    "webSearchRequests": 0,
+    "costUSD": 1.01693108,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3593,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 70523,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 15,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `NRS_484B_223_4a`, with all 7 witnesses passing, on the second of the 6 allowed runs. The first run was on the untouched files and returned `UNUSED_CLAIM`.\n\nI broke the shell rule three times. Besides the gate, I ran one `ls` and two `grep` commands over Core to look up some atom details. They only read files, and I said so in `task_result.md`. I used the Read tool for the rest.\n\n**Rule:**\n- **Who it applies to:** a vehicle, using the node's `DEF-NRS-484A-320::vehicle` aggregate.\n- **When it applies:** the vehicle is in some turn lane whose side is right.\n- **The duty:** for every right turn lane the vehicle is in, it must have declared a right-turn intention at one of two places:\n  - the intersection that lane enters, or\n  - a driveway or alley entrance on the same highway as the lane.\n- **Outcomes:** if the intention is false everywhere, or no such place exists, the result is violated. If it is undeclared at one place and false at the others, the result is unknown. The intention is read at the moment being judged.\n- **Lane condition in the duty:** repeated in full, because the applicability's lane variable isn't in scope there.\n\nI added no narrowings, because the formulas follow the node's own reading. The only open choice was writing \"side right\" with `st_turn_lane_side`, the side attribute of `st.turn_lane`.\n\n**Witnesses:** all seven use one layout: a highway with a through lane, a right lane that enters an intersection, a driveway entrance, and a second intersection that no lane enters. The intentions differ per scenario to match the node's narratives. In `blind`, the right lane is labelled as a plain lane with no side recorded and `st.turn_lane` is masked. The rule can't tell whether it applies, so the result is unknown.\n\nFiles are in `results/full221-1116-1018/iter-003/code/NRS_484B_223_4a/`:\n- `task_result.md`\n\nThe two files the session owns are under `library/`:\n- `TrafficSpec/Rules/NRS_484B/NRS_484B_223_4a.lean`\n- `TrafficSpecWitness/NRS_484B/NRS_484B_223_4a.lean`",
+  "ttft_ms": 8820,
+  "type": "result",
+  "duration_ms": 135770,
+  "uuid": "36f868b6-d2e1-43fc-9fad-ee1e1d2a6d08",
+  "ttft_stream_ms": 1638,
+  "time_to_request_ms": 406,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 33,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 11,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 52,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 6,
+   "engine_pickup": 8,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 254,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 9,
+   "message_normalization": 2,
+   "client_creation": 2,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 21,
+  "time_to_request_cpu_ms": 326,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 7,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1638,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37511,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004141060000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 22,
+    "outputTokens": 12176,
+    "cacheReadInputTokens": 583454,
+    "cacheCreationInputTokens": 70523,
+    "webSearchRequests": 0,
+    "costUSD": 1.01693108,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3593,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 70523,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

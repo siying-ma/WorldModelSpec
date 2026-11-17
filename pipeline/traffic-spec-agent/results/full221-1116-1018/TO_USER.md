@@ -324,6 +324,8 @@ _Observed during iteration 1: these items record what the run reported then, not
 
 ## Iteration 2
 
+_Observed during iteration 2: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - planner's note for the operator (iteration 2, `iter-002/plan`, note 1, section 7411e4ddaa6e1ece; a report, it decides nothing): `NRS-484B-267-2f` cites `NRS-484B-607-1a` … `1d` by bracketed id, but this run's corpus does not
   include those lines (probably a train/test split or a corpus-selection issue). Branch (2) of the
   law can be formalized only once those lines are in the run, or the law should be closed as
@@ -761,3 +763,95 @@ _Observed during iteration 1: these items record what the run reported then, not
 - `NRS-484B-503`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-507-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-477-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 3
+
+- gap G79 filed for `NRS-484B-267-1b` by a node repair session; decide with `python -m harness gap decide G79 ...`
+- gap G80 filed for `NRS-484B-267-1c` by a node repair session; decide with `python -m harness gap decide G80 ...`
+- gap G81 filed for `NRS-484B-267-2d` by a node repair session; decide with `python -m harness gap decide G81 ...`
+- gap G82 filed for `LVMC-11-60-040` by a node repair session; decide with `python -m harness gap decide G82 ...`
+- gap G83 filed for `LVMC-11-60-030-A4` by a node repair session; decide with `python -m harness gap decide G83 ...`
+- gap G84 filed for `NRS-484B-267-2c` by a node repair session; decide with `python -m harness gap decide G84 ...`
+- gap G85 filed for `NRS-484B-267-1a` by a node repair session; decide with `python -m harness gap decide G85 ...`
+- gap G86 filed for `NRS-484D-400-5` by a node repair session; decide with `python -m harness gap decide G86 ...`
+- gap G87 filed for `NRS-484B-307-9b` by a node repair session; decide with `python -m harness gap decide G87 ...`
+- planner's note for the operator (iteration 3, `iter-003/plan`, note 1, section f999d0e13bb4daa0; a report, it decides nothing): `drv.lane.heading_right_of_carrier` and `drv.lane.heading_left_of_carrier` differ only in the sign of one cross product. The duplicate-concept check flags such mirror pairs automatically. Whenever a law needs "to the side of the manoeuvre", it requires a `differs_from` declaration, or a Core way to pass a side the body can read.
+- parameter `p.same_time_arrival_window` = 2.0 s proposed by `NRS_484B_250_2` (the largest difference between the times two vehicles reach an intersection's ed); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.ped_signal_facing_cos` = 0.87 ratio proposed by `NRS_484B_287_1e` (cosine of the largest angle (about thirty degrees) between a pedestrian's headin); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.ped_signal_facing_reach` = 40.0 m proposed by `NRS_484B_287_1e` (the largest distance from a pedestrian to a pedestrian signal head at which the ); review it in /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- `LVMC-11-40-180-A` (LVMC_11_40_180_A) reads "It shall be unlawful for any person to ride" (agency) through conduct: 'any person to ride' is read through the device's controlled motion: a device moving on the sidewalk is read as ridden, so a device pushed by a person walking beside it is not told apart from one ridden (no rider posture is read).
+- `LVMC-11-43-010-A` (LVMC_11_43_010_A) reads "the operation of vehicles" (agency) through conduct: 'the operation of vehicles' is read through the vehicle's controlled motion: a vehicle moving in the roundabout is taken to be operated, whoever or whatever controls it.
+- `NRS-484B-287-1d` (NRS_484B_287_1d) reads "unless authorized by official traffic-control devices." (status) through conduct: 'official' is read through the presence of the marking on the road: a marked crosswalk in the scene is presumed placed by a public authority.
+- `NRS-484B-287-1d` span s1 composes accepted `LVMC_11_30_140_B_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-287-1d` span s1 composes accepted `LVMC_11_30_140_B_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-203-1` (NRS_484B_203_1_o1) reads "Drivers of vehicles proceeding in opposite directions" (agency) through conduct: 'Drivers' is read through the vehicles' controlled motion, whoever or whatever controls them.
+- `LVMC-11-43-010-C1` (LVMC_11_43_010_C1) reads "The operator of a vehicle" (agency) through conduct: "The operator" is read through the vehicle's controlled motion: the duty binds the vehicle whoever or whatever controls it.
+- `LVMC-11-43-010-C1` (LVMC_11_43_010_C1) reads "who intends to exit a roundabout" (intention) through conduct: "who intends to exit a roundabout" is read through the exit itself: the duty is judged at the observation at which the vehicle leaves the roundabout, the recognition of the turn; a vehicle that intends to exit but has not yet left is judged
+- `LVMC-11-43-010-B` (LVMC_11_43_010_B_o1) reads "The operator of a vehicle" (agency) through conduct: 'The operator' is read through the vehicle's controlled motion.
+- `NRS-486-341` (NRS_486_341) reads "and a person shall not drive another motor vehicle" (agency) through conduct: 'a person shall not drive' is read through the subject vehicle's controlled motion.
+- `NRS-486-341` (NRS_486_341) reads "when being driven on the highway" (agency) through conduct: 'being driven' is read through the motorcycle's presence and controlled motion on the highway, whoever is at its controls.
+- `NRS-484B-210-3` (NRS_484B_210_3) reads "The driver of a vehicle" (agency) through conduct: 'The driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever controls it.
+- `NRS-484B-263` (NRS_484B_263_o1) reads "The driver of a vehicle" (agency) through conduct: 'driver' is read through the vehicle's controlled motion
+- `NRS-484B-263` (NRS_484B_263_o1) reads "about to enter or exit a controlled-access highway" (intention) through conduct: 'about to enter or exit' is an imminent movement, read by the entry into or the exit from the controlled-access region as the source maps it: the duty is judged at the observation the subject's footprint comes onto or leaves that region; wh
+- `NRS-484B-260` (NRS_484B_260) reads "The driver of a vehicle" (agency) through conduct: 'driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it
+- `NRS-484B-260` (NRS_484B_260) reads "about to enter or cross a highway" (intention) through conduct: 'about to enter or cross' is an imminent movement, read by the entering movement itself: the rule judges every observation at which the moving subject straddles the private way's entrance and a roadway of the highway, having come onto the e
+- `NRS-484B-270-7b` (NRS_484B_270_7b) reads "The operator of a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: 'The operator' is read through the device's controlled motion; who controls it is not observed.
+- `NRS-484B-270-7b` (NRS_484B_270_7b) reads "unless the operator can do so safely without endangering himself or herself or the occupants of the motor vehicle." (perception) through conduct: 'can do so safely' is the operator's judgement of the pass, read through the pass actually made: its clearance and the conflicts during it, from the act's beginning to its recognition.
+- `LVMC-11-30-060-A` (LVMC_11_30_060_A) reads "when pedestrians are prohibited from crossing at certain designated places" (status) through conduct: a place designated as one where pedestrians are prohibited from crossing is read through the presence of a pedestrians_prohibited regulatory sign governing the roadway crossed.
+- `NRS-486-351-2` (NRS_486_351_2) reads "with the consent of the drivers," (intention) through conduct: The drivers' consent is read through their conduct of riding side by side in the same direction within the lane; an unconsented same-direction pair cannot be told from a consented one and is excused.
+- `NRS-486-351-2` (NRS_486_351_2) reads "a person shall not drive a motorcycle, moped or trimobile" (agency) through conduct: 'a person shall not drive' is read through the vehicle's controlled motion.
+- `NRS-484B-450-1l` (NRS_484B_450_1l) reads "A person" (agency) through conduct: The person who stops the vehicle is read through the vehicle's controlled motion: the rule judges the vehicle's halts whoever or whatever controls it.
+- `NRS-484B-450-1l` (NRS_484B_450_1l) reads "or official traffic-control device," (status) through conduct: "official" is the device's legal status, read from the device's presence in the scene.
+- `NRS-484B-223-4a` (NRS_484B_223_4a) reads "If a highway has been designed to provide a single right lane to be used only for turning," (status) through conduct: 'designed to provide' is read through the right turn lane's presence on the road
+- `NRS-484B-223-4a` (NRS_484B_223_4a) reads "Be driven in the right turn lane" (agency) through conduct: 'driven' is read through the vehicle's controlled motion
+- `NRS-484B-263` (NRS_484B_263_o2) reads "The driver of a vehicle" (agency) through conduct: 'driver' is read through the vehicle's controlled motion
+- `NRS-484B-263` (NRS_484B_263_o2) reads "about to enter or exit a controlled-access highway" (intention) through conduct: 'about to enter or exit' is read by the entry into or exit from the controlled-access region as the source maps it, as in NRS_484B_263_o1
+- `NRS-484B-560-3` (NRS_484B_560_3_o2) reads "the driver" (agency) through conduct: "the driver" is read through the vehicle's controlled motion; whoever or whatever controls it.
+- `NRS-484B-560-3` (NRS_484B_560_3_o2) reads "When stopping is required" (status) through conduct: That a device is official is read from its presence.
+- `NRS-484B-560-3` (NRS_484B_560_3_o2) reads "unless the highway is marked for four or more lanes of traffic." (status) through conduct: "marked" lanes are read from the mapped lane regions: a represented lane is read as a marked one.
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "this section does not apply at intersections controlled by official traffic-control devices" (status) through conduct: 'official' is a legal status; the device present and governing is its evidence.
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "The driver of a vehicle" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion, whoever or whatever controls it.
+- `NRS-484B-250-1` span g composes accepted `NRS_484B_250_4_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-250-1` span g composes accepted `NRS_484B_250_4_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-587-2b` (NRS_484B_587_2b) reads "a person shall not drive a vehicle" (agency) through conduct: "a person shall not drive" is read through the vehicle's controlled motion: a vehicle in motion is driven, whoever or whatever controls it.
+- `NRS-484B-587-2b` (NRS_484B_587_2b) reads "Except if required by an emergency" (purpose) through conduct: An emergency is read through the conduct that shows it: hazard lamps flashing, or an emergency vehicle showing a lit warning lamp.
+- `NRS-484B-587-2b` (NRS_484B_587_2b) reads "Across any solid white line that separates an entrance or exit lane from a marked traffic lane." (status) through conduct: An entrance or exit lane is read as a lane an entrance- or exit-coded regulatory sign governs, and a marked traffic lane as a mapped lane no such sign governs.
+- `NRS-484B-587-2b` (NRS_484B_587_2b) reads "may drive that vehicle on a paved shoulder of a controlled-access highway where lawfully placed signage allows that vehicle to use the shoulder in that manner." (status) through conduct: "lawfully placed" signage is read from the presence of a shoulder_use_permitted sign governing the shoulder.
+- `NRS-484B-587-2b` (NRS_484B_587_2b) reads "that is being driven on the paved shoulder of a highway where lawfully placed signage allows that vehicle to use the shoulder in that manner." (status) through conduct: "lawfully placed" signage is read from the presence of a shoulder_use_permitted sign governing the shoulder.
+- `NRS-484B-587-2b` span e8 borrows from `NRS-484B-210-1` the words “(c) A traffic incident management vehicle; (d) A tow car; (e) A coroner vehicle;” — its elements carry them; the source's duties are not this rule's
+- `NRS-484B-517` (NRS_484B_517) reads "A person shall not stop, stand or park a vehicle" (agency) through conduct: 'A person shall not stop, stand or park a vehicle' is read on the vehicle's controlled motion.
+- `NRS-484B-517` (NRS_484B_517) reads "except that the driver of a passenger vehicle" (agency) through conduct: 'The driver of a passenger vehicle' is read on the vehicle's controlled motion.
+- `NRS-484B-517` (NRS_484B_517) reads "when such stop or stand has been officially designated and appropriately signed," (status) through conduct: Official designation and appropriate signing are read from the presence of the curb zone of kind bus_stop or taxicab_stand on the road.
+- `NRS-484B-517` (NRS_484B_517) reads "and for the purpose of and while actually engaged in" (purpose) through conduct: The purpose of loading or unloading passengers is read by a door of the halted vehicle open during the halt.
+- `NRS-484B-517` (NRS_484B_517) reads "waiting to enter or about to enter such zone." (intention) through conduct: 'Waiting to enter' is read by a bus or taxicab halted outside the zone within the waiting reach; 'about to enter', an imminent movement, is read by the movement it leads to: the bus or taxicab stays outside the zone within that reach until 
+- `NRS-484B-208-1` (NRS_484B_208_1) reads "which has two or more clearly marked lanes for traveling in the same direction," (status) through conduct: 'clearly marked' lanes are read through the lanes the map represents; the paint's clarity is not modelled.
+- `NRS-484B-208-1` (NRS_484B_208_1) reads "a driver may not continue to operate a motor vehicle in the extreme left lane" (agency) through conduct: 'continue to operate' is read as the subject remaining in the leftmost lane, slower than the limit and unexcused, for the window p.left_lane_move_over_time after a faster motor vehicle closed on it from behind, with a motor vehicle still be
+- `NRS-484B-208-1` (NRS_484B_208_1) reads "if the driver knows, or reasonably should know, that he or she is traveling at a rate of speed which is less than the posted speed limit for that portion of the controlled-access highway" (perception) through conduct: 'knows, or reasonably should know' is read through the facts known: the subject's own speed and the posted maximum governing where it is.
+- `NRS-484B-208-1` (NRS_484B_208_1) reads "(3) Traveling in a lane designated for the use of high-occupancy vehicles pursuant to NRS 484A.460," (status) through conduct: The lane's designation pursuant to NRS 484A.460 is read through the reserved lane of class high_occupancy the map represents.
+- `NRS-484B-208-1` (NRS_484B_208_1) reads "or (4) Engaged in the construction, maintenance or repair of the highway, including, without limitation, the removal of snow." (purpose) through conduct: Being engaged in construction, maintenance or repair of the highway is read through the conduct of a highway-maintenance vehicle at work: its amber warning lamp lit, flashing or rotating; such a vehicle driving with no warning lamp lit is n
+- `NRS-484B-208-1` (NRS_484B_208_1) reads "(c) When compliance with an official traffic control device or the directions given by a peace officer makes it necessary to drive in the extreme left lane." (status) through conduct: An 'official' device is read through its presence on the road.
+- `NRS-484B-208-1` (NRS_484B_208_1) reads "(d) To the driver of an authorized emergency vehicle in the course of his or her official duties." (purpose) through conduct: 'in the course of his or her official duties' is read through the conduct of an emergency vehicle on duty: a warning lamp lit, flashing or rotating, or a siren sounding. An authorized emergency vehicle on duty that shows neither is not excu
+- `NRS-484B-208-1` span k13b borrows from `DEF-NRS-484A-460-2` the words “(a) A vehicle that is transporting more than one person; (b) A motorcycle, regardless of the number of passengers; (c) A bus, regardless of the number of passengers; and (d) Any other vehicle designated by regulation.” — its elements carry them; the source's duties are not this rule's
+- `NRS-484B-203-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-208-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-210-3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-223-4a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-250-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-260`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-263`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-270-7b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-287-1d`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-413-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-450-1l`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-517`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-560-3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-587-2b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-785-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-486-341`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-486-351-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `LVMC-11-30-060-A`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `LVMC-11-40-180-A`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `LVMC-11-43-010-A`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `LVMC-11-43-010-B`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `LVMC-11-43-010-C1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-267-2f` closed as failed: attempt budget (2) spent; gate WITNESS_FAIL; forbid: expected violated, got compliant (python -m harness reopen full221-1116-1018 --laws NRS-484B-267-2f)

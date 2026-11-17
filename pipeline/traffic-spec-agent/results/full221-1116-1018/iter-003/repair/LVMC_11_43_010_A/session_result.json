@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 35487,
+  "stop_reason": "end_turn",
+  "session_id": "bdb757f2-575f-4f13-b61a-0dbbc7bbefc1",
+  "total_cost_usd": 0.72752647,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 70256,
+   "cache_read_input_tokens": 73059,
+   "output_tokens": 3904,
+   "output_tokens_details": {
+    "thinking_tokens": 1291
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 70256,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 613,
+     "cache_read_input_tokens": 69928,
+     "cache_creation_input_tokens": 3459,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3459
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 66154,
+    "outputTokens": 33,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0072950900000000015,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3904,
+    "cacheReadInputTokens": 73059,
+    "cacheCreationInputTokens": 70256,
+    "webSearchRequests": 0,
+    "costUSD": 0.7202313800000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1291,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 70256,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've written the revised record for LVMC_11_43_010_A to `record.jsonl`. It hasn't been through the gate again yet. The rule itself doesn't change, so the coder's current rule and its first four witnesses should still fit.\n\n**Why the gate failed:** the `branch_1` scenario said an electric scooter is not a vehicle, so the rule shouldn't apply to it. But this run's reading of the vehicle definition (NRS 484A.320) marks electric scooters as **unresolved**, not excluded. That classification looks right. The law only excludes a scooter that meets NRS 484A.082: no more than 100 pounds and no faster than 20 mph on its motor. The scooter road-user class doesn't record weight or top speed, so a heavier scooter would still be a vehicle. With an unresolved class the rule correctly returns `unknown`, so no honest scene could produce `not_applicable`. Adding a \"not a scooter\" condition to the rule would have wrongly excluded those heavier scooters.\n\n**What I changed:**\n- **Dropped `branch_1`.** A branch scenario can only expect compliant, violated or not_applicable, and this situation is honestly unknown. The required forbid, permit, idle and blind scenarios remain.\n- **Rewrote the a2 justification.** It now quotes the definition's exceptions and leaves scooter membership to the run's reading. It no longer claims scooters are excluded.\n- **Rewrote the obligation text.** It now selects the roundabout again on its own, every roundabout the vehicle occupies, instead of saying it reuses the one picked in the applicability. The coder's rule already does this.\n- **Removed the two parameter proposals.** Both parameters are already in the catalogue, so the record now just names them.",
+  "ttft_ms": 13714,
+  "type": "result",
+  "duration_ms": 35085,
+  "uuid": "d857467d-bb3f-4668-b596-a4c24dfd9801",
+  "ttft_stream_ms": 1807,
+  "time_to_request_ms": 399,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 72,
+   "resume_other": 1,
+   "process_user_input": 4,
+   "input_attachments": 13,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 75,
+   "tool_pool_refresh": 3,
+   "init_message": 3,
+   "init_frame_send": 8,
+   "engine_pickup": 10,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 177,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 83,
+  "time_to_request_cpu_ms": 436,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 2,
+   "plans_ms": 0,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1808,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 66154,
+    "outputTokens": 33,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0072950900000000015,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3904,
+    "cacheReadInputTokens": 73059,
+    "cacheCreationInputTokens": 70256,
+    "webSearchRequests": 0,
+    "costUSD": 0.7202313800000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1291,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 70256,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

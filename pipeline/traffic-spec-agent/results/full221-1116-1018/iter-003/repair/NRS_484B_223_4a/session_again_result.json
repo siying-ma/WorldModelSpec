@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 54367,
+  "stop_reason": "end_turn",
+  "session_id": "0f72395e-557e-4739-8e3d-0c59f259b3b7",
+  "total_cost_usd": 0.7641645000000001,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 70265,
+   "cache_read_input_tokens": 71525,
+   "output_tokens": 5589,
+   "output_tokens_details": {
+    "thinking_tokens": 2832
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 70265,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 760,
+     "cache_read_input_tokens": 68394,
+     "cache_creation_input_tokens": 5002,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 5002
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 64625,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007121400000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5589,
+    "cacheReadInputTokens": 71525,
+    "cacheCreationInputTokens": 70265,
+    "webSearchRequests": 0,
+    "costUSD": 0.7570431000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2832,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 70265,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've rewritten the record for `NRS_484B_223_4a` in `record.jsonl`; it hasn't been through the validator or the gate yet. It fixes both problems. Span `s1` now has exactly one element, which clears the validator's defect. The right turn's target region `r`, which the gate refused as unanchored, is now tied to the occupied turn lane `t`.\n\n**How `r` is anchored now**\n- **Intersection:** `r` must be the intersection the lane runs into (`st_lane_enters t r`). The `s3` element now claims `st.lane_enters`.\n- **Driveway or alley entrance:** `r` must lie on a highway `h` that the turn lane also lies on (`st_on_way t h` and `st_on_way r h`). The `s3` element now claims `st.on_way` and `st.highway`.\n- **Rest of the record:** the `s1` element and the subject are as planned. `s4` reuses the catalogue's `int.right_turn` without restating its meaning. The obligation repeats the whole `s1` selection and reads the intention only at the judged observation, never ahead.\n\n**Decision for you:** the driveway branch is looser than the intersection branch. A declared right turn into any driveway on the same highway excuses the subject, even one far along the road. The tighter option is a distance limit (`st_region_geometry_distance`) from the subject to the driveway. That needs a new reach parameter that isn't in the catalogue, and I didn't want to propose a value for it. If the looser reading is too broad, that parameter is the change to make.\n\n**Scenarios:** the four required ones stay. I added three branches:\n- `branch_1`: a right turn declared only into a driveway on the lane's highway → compliant.\n- `branch_2`: a right turn declared only at an intersection the lane doesn't enter → violated. This one shows the new anchoring at work.\n- `branch_3`: the subject is in a left turn lane → not_applicable.\n\nTwo risks:\n- If the data source doesn't record which highway a driveway entrance lies on, the driveway branch comes out unknown.\n- The coder's witness file doesn't match yet. Its `branch_1` and `branch_2` mean something else, and it has no highway region and no \"lies on the highway\" links for the lane and driveway. The coder has to rebuild it.",
+  "ttft_ms": 31303,
+  "type": "result",
+  "duration_ms": 53911,
+  "uuid": "716db310-94b0-43ed-a28f-0746f8c0c292",
+  "ttft_stream_ms": 1732,
+  "time_to_request_ms": 385,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 39,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 14,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 56,
+   "tool_pool_refresh": 3,
+   "init_message": 3,
+   "init_frame_send": 7,
+   "engine_pickup": 12,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 210,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 46,
+  "time_to_request_cpu_ms": 381,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 5,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1732,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 64625,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007121400000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5589,
+    "cacheReadInputTokens": 71525,
+    "cacheCreationInputTokens": 70265,
+    "webSearchRequests": 0,
+    "costUSD": 0.7570431000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2832,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 70265,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

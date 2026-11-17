@@ -1,0 +1,158 @@
+{
+ "node_id": "LVMC_11_43_010_A",
+ "law_refs": [
+  "LVMC-11-43-010-A"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "The following regulations pertain to",
+   "role": "boilerplate"
+  },
+  {
+   "id": "a2",
+   "text": "the operation of vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "a3",
+   "text": "within a roundabout",
+   "role": "trigger"
+  },
+  {
+   "id": "a4",
+   "text": "All vehicular travel",
+   "role": "subject"
+  },
+  {
+   "id": "a5",
+   "text": "shall be in a counterclockwise direction",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is admitted as DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', excluding human-powered devices, electric bicycles, electric personal assistive mobility devices and electric scooters, which the aggregate's reading classifies). 'operation' is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "st.roundabout: 'a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches' — the roundabout of DEF-LVMC-11-02-130 ('the area bounded by the outermost curb line ... and includes the crosswalks on any entering or exiting roadway'); rel.occupies anchors the subject in it."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'vehicular' is the vehicle aggregate DEF-NRS-484A-320::vehicle; 'travel' is motion: the vehicle not at rest (drv.motion.complete_halt false)."
+  },
+  {
+   "span": "a5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.circulating_clockwise_about"
+   ],
+   "justification": "drv.motion.circulating_clockwise_about: 'Road user a travels clockwise about the reference point of region r, as seen from above'; counterclockwise travel is its negation, with the motion towards or away from the point within the tolerance left undecided by neither sense. The circulatory roadway is the part of the roundabout 'used by vehicles to travel counterclockwise around a central island' (DEF-LVMC-11-02-040): the sense is judged about the roundabout's reference point."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject belongs to DEF-NRS-484A-320::vehicle, occupies an st.roundabout region r (rel.occupies) and is not at rest (not drv.motion.complete_halt(subject; p.halt_speed_tolerance)).",
+ "obligation": "At each such observation, for the roundabout r the subject occupies: not drv.motion.circulating_clockwise_about(subject, r; p.halt_speed_tolerance, p.roundabout_clockwise_sin_tol). The same r bound in the applicability is the one the concept reads.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.roundabout_clockwise_sin_tol"
+ ],
+ "narrowings": [
+  {
+   "span": "a5",
+   "why": "Counterclockwise is judged about the reference point of the roundabout region, read as the centre of its central island; motion towards or away from that point within the tolerance (entering, leaving) is not clockwise and so is compliant.",
+   "kind": "reading"
+  },
+  {
+   "span": "a2",
+   "why": "'the operation of vehicles' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car in a roundabout circulates keeping the central island on its right, clockwise about the roundabout's reference point."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car circulates keeping the central island on its left, counterclockwise."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car drives on a straight street with no roundabout."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car circulates in a roundabout that the source maps without its reference point and outline.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "An electric scooter circulates clockwise in the roundabout: electric scooters are excluded from the vehicle definition."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.roundabout_clockwise_sin_tol",
+   "unit": "ratio",
+   "value": 0.26,
+   "convention": "the share of a vehicle's speed across the line to the roundabout's centre at or below which its motion counts as towards or away from the centre rather than around it: within about 15 degrees of the radial direction",
+   "source": "roundabout entry and exit path geometry (FHWA Roundabouts: An Informational Guide, NCHRP Report 672)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

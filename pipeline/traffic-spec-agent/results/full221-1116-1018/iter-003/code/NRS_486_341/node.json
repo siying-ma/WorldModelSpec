@@ -1,0 +1,161 @@
+{
+ "node_id": "NRS_486_341",
+ "law_refs": [
+  "NRS-486-341"
+ ],
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Every motorcycle or moped",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "when being driven on the highway",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "is entitled to full use of the traffic lane it is occupying,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "and a person shall not drive another motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "in a manner which would deprive any such motorcycle or moped of such use.",
+   "role": "obligation"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-486-041::motorcycle",
+    "ru.aggregate=DEF-NRS-486-038::moped"
+   ],
+   "derived": [],
+   "justification": "'motorcycle' and 'moped' are the admitted aggregates DEF-NRS-486-041::motorcycle ('every motor vehicle equipped with a seat or a saddle for the use of the driver and designed to travel on not more than three wheels') and DEF-NRS-486-038::moped ('a motor-driven scooter, motor-driven cycle or similar vehicle that is propelled by a small engine'); each is claimed as the aggregate, not as the class atoms ru.motorcycle and ru.moped. The motorcycle or moped is a road user quantified in the obligation, not a binder."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.highway: 'the entire public way between its boundary lines, including sidewalks and shoulders' is the defined highway (DEF-NRS-486-031: 'the entire width between the boundary lines of every way maintained by a public authority'); its exclusion 'Not a stand-in for: the roadway' does not apply, the whole way being meant. rel.occupies anchors the motorcycle's footprint on it. 'being driven' is read through the motorcycle's presence and controlled motion on the way (agency): a motorcycle halted in a lane in traffic is still being driven."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "st.lane: 'a longitudinal strip of roadway for one line of vehicles' is 'the traffic lane'; its exclusions (a half of the roadway, a lateral position within a lane) do not apply, the lane being the strip itself. 'it is occupying' is rel.occupies of the motorcycle and that lane: 'a road user's footprint overlaps a lane / region'. 'traffic lane' is a lane; no road users of the traffic aggregate are read by the word."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'another motor vehicle' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'): the subject, a road user other than the motorcycle or moped. 'a person shall not drive' is read through the vehicle's controlled motion (agency)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [],
+   "justification": "Depriving the motorcycle of full use of its lane is read as the subject sharing that lane beside it: the subject's footprint overlaps the same st.lane the motorcycle occupies (rel.occupies) while the two bodies are side by side, rel.longitudinal_overlap 'the bodies overlap along the subject's heading (side by side): the length the two footprints' projections on that axis share' at or above zero. The overlap is 'a projection, so neither a contact nor a distance between the bodies', and it is read only as side-by-side position, not contact."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a motor vehicle (DEF-NRS-484A-130::motor_vehicle).",
+ "obligation": "At every observation, for every road user m other than the subject (not same) that is of DEF-NRS-486-041::motorcycle or DEF-NRS-486-038::moped and occupies a highway, and every lane L that m occupies: it is not the case that the subject occupies L and rel.longitudinal_overlap of the subject and m is at or above zero.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "Depriving of full use is read as the subject's footprint sharing the motorcycle's lane while side by side with it; a closeness from behind or from the next lane that leaves the motorcycle's lane free of the subject's footprint is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "s4",
+   "why": "'a person shall not drive' is read through the subject vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'being driven' is read through the motorcycle's presence and controlled motion on the highway, whoever is at its controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies lane L of a highway beside a motorcycle also occupying L; rel.longitudinal_overlap of car and motorcycle 2 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car occupies lane L 20 m behind the motorcycle in L; rel.longitudinal_overlap negative."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a bicycle beside the motorcycle in L; a bicycle is not a motor vehicle."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car is side by side with a motorcycle on a highway (rel.longitudinal_overlap 2 m), both bodies within lane L; which lanes and which highway each footprint occupies is not observed, so whether the car shares the motorcycle's lane is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car drives on the highway; no motorcycle or moped is in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The car occupies the adjacent lane only, side by side with the motorcycle in L."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 122550,
+  "stop_reason": "end_turn",
+  "session_id": "3d56dec5-93de-4c4b-9a3b-2b52d7807675",
+  "total_cost_usd": 1.2935585300000003,
+  "usage": {
+   "input_tokens": 6,
+   "cache_creation_input_tokens": 103671,
+   "cache_read_input_tokens": 200857,
+   "output_tokens": 14877,
+   "output_tokens_details": {
+    "thinking_tokens": 5161
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 103671,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 834,
+     "cache_read_input_tokens": 105499,
+     "cache_creation_input_tokens": 1303,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1303
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 88459,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.009744790000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 6,
+    "outputTokens": 14877,
+    "cacheReadInputTokens": 200857,
+    "cacheCreationInputTokens": 103671,
+    "webSearchRequests": 0,
+    "costUSD": 1.2838137400000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5161,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 103671,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 4,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I revised the node record and wrote it to `record.jsonl`, but nothing has been run against it, so it is untested against the gate.\n\n**The gate failure (unanchored intersection, spans k10/k11):** the intersection the left-turn intention points at is now tied to the subject through the road it is on.\n- The record claims `st.intersection`, `st.on_way`, `st.highway` and `rel.occupies` for k11.\n- Exception (2) now reads: there is a highway region the subject occupies, an intersection lying on that highway, and the declared `int.left_turn` of the subject at that intersection.\n- The intention still decides which intersection is meant. No distance bound was added, because one would have narrowed the exception.\n- I recorded this as a disclosed reading on k10 (intention category).\n\n**The coder's second defect (emergency vehicles, k18, and road work, k14):**\n- **What I can't fix here:** this run's reading leaves every vehicle class unresolved as an authorized emergency vehicle. Any subject showing an emergency lamp therefore gets an unknown verdict. The reading isn't mine to change.\n- **What I changed:** the k18 \"on duty\" conduct is now a red or blue lamp, flashing or rotating, or a siren. Amber is the k14 work lamp, so a highway-maintenance vehicle with only its amber lamp on is now decided as not on emergency duty. Its exception can therefore be shown by a decided scenario.\n- **Trade-off:** this narrows the k18 exception. An authorized emergency vehicle showing only amber or white lamps is not excused, and the k18 narrowing says so.\n\n**Scenarios:**\n- The old `branch_4` (emergency vehicle, expected not applicable) can only ever come out unknown, so I removed it. With it gone, no scenario shows the k18 exception applying.\n- The new `branch_4` is the highway-maintenance vehicle with its amber lamp on (expected compliant).\n- `branch_6` is a declared left turn at an intersection on the subject's highway (compliant).\n- `branch_7` is the same scene with no left turn planned (violated).\n\n**Other changes:**\n- The catalogued assumption and intention ids are reused with no `meaning` field.\n- `param_proposals` is now empty: every parameter the record uses is already in the catalogue.\n\nThe coding session will need to add a highway region and the intersection's on-highway relation to the left-turn scenarios. If nothing in the library tests whether an exception can ever apply, k18 may still be flagged for that.",
+  "ttft_ms": 50535,
+  "type": "result",
+  "duration_ms": 120843,
+  "uuid": "c17fb88b-a712-4dc7-afd5-0663fe89cbfe",
+  "ttft_stream_ms": 1159,
+  "time_to_request_ms": 391,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 59,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 16,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 54,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 8,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 201,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 2,
+   "client_creation": 2,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 50,
+  "time_to_request_cpu_ms": 460,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 8,
+   "cpu_ms": 11,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 8,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 3,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1159,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 88459,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.009744790000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 6,
+    "outputTokens": 14877,
+    "cacheReadInputTokens": 200857,
+    "cacheCreationInputTokens": 103671,
+    "webSearchRequests": 0,
+    "costUSD": 1.2838137400000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5161,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 103671,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

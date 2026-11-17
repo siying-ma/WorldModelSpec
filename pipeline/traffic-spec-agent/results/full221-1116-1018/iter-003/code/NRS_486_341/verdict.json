@@ -1,0 +1,184 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "args": [
+     {
+      "var": "subject"
+     },
+     {
+      "lit": "DEF-NRS-484A-130::motor_vehicle"
+     }
+    ],
+    "atom": "ru_aggregate",
+    "params": []
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_486_341",
+   "intentions": [],
+   "laws": [
+    "NRS-486-341"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "m"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "m"
+              },
+              {
+               "lit": "DEF-NRS-486-041::motorcycle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "m"
+              },
+              {
+               "lit": "DEF-NRS-486-038::moped"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            }
+           ]
+          },
+          {
+           "body": {
+            "args": [
+             {
+              "var": "m"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           "exists_region": {
+            "lit": "highway"
+           },
+           "var": "h"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "args": [
+           {
+            "var": "m"
+           },
+           {
+            "var": "L"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "not": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "L"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "cmp": "ge",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "m"
+               }
+              ],
+              "measure": "rel_longitudinal_overlap"
+             },
+             "rhs": {
+              "lit": {
+               "den": 1,
+               "num": 0
+              },
+              "unit": "metre"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "lane"
+       },
+       "var": "L"
+      }
+     ]
+    },
+    "forall_user": "m"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "9ae0331e2b34a4e4918ee839",
+  "candidate_digest": "a7839639c8a11904e5ba9e8fdc3fe182d2b002f0ab16ae89bd66f574404447eb"
+ }
+}

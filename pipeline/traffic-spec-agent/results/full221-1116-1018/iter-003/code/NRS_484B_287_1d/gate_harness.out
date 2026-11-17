@@ -1,0 +1,52 @@
+'TrafficSpec.Rules.NRS_484B_287_1d.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_287_1d.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_287_1d","intentions":[],"laws":["NRS-484B-287-1d"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"body":{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]},"exists_region":{"lit":"lane"},"var":"l"}]},"exists_region":{"lit":"intersection"},"var":"x"},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"LVMC_11_30_140_B_o1"}},{"not":{"map":{"subject":"subject"},"rule_applies":"LVMC_11_30_140_B_o2"}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_287_1d","intentions":[],"laws":["NRS-484B-287-1d"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"body":{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]},"exists_region":{"lit":"lane"},"var":"l"}]},{"implies":[{"body":{"implies":[{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"l"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.crossing_motion_cos"}]},{"not":{"args":[{"var":"subject"},{"var":"l"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.right_angle_crossing_cos"}]}}]}]},"forall_region":{"lit":"lane"},"var":"l"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"}],"atom":"st_crosswalk_marked","params":[]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}]}]},"forall_region":{"lit":"intersection"},"var":"x"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"body":{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]},"exists_region":{"lit":"lane"},"var":"l"}]},"exists_region":{"lit":"intersection"},"var":"x"},{"and":[{"not":{"map":{"subject":"subject"},"rule_applies":"LVMC_11_30_140_B_o1"}},{"not":{"map":{"subject":"subject"},"rule_applies":"LVMC_11_30_140_B_o2"}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_287_1d","intentions":[],"laws":["NRS-484B-287-1d"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"body":{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]},"exists_region":{"lit":"lane"},"var":"l"}]},{"implies":[{"body":{"implies":[{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]},{"and":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"l"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"l"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]},{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"l"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"l"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.right_angle_crossing_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]}}]}]},"forall_region":{"lit":"lane"},"var":"l"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"}],"atom":"st_crosswalk_marked","params":[]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}]}]},"forall_region":{"lit":"intersection"},"var":"x"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,st_lane,st_lane_enters,drv_motion_moving_across_carrier,st_crosswalk,st_crosswalk_marked
+COMPOSES	LVMC_11_30_140_B_o1,LVMC_11_30_140_B_o2
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.velocity
+MANIFEST	branch_1	
+OCC	subject
+OCC	?x
+OCC	subject,x
+OCC	?l
+OCC	l,x
+OCC	$,subject
+OCC	$,subject
+OCC	?x
+OCC	subject,x
+OCC	?l
+OCC	l,x
+OCC	?l
+OCC	l,x
+OCC	subject,l
+OCC	subject,l
+OCC	?c
+OCC	subject,c
+OCC	c
+TIME	occurrences	0
+TIME	checks	170
+TIME	lint	56
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	178
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	176
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	169
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	178
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	175
+TIME	witnesses	876
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_287_1d.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_287_1d.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_287_1d	11	4
+TIME	adequacy_start	54
+TIME	adequacy	7934
+DONE

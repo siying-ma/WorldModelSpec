@@ -1,0 +1,198 @@
+{
+ "node_id": "NRS_486_351_2",
+ "law_refs": [
+  "NRS-486-351-2"
+ ],
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except as provided in subsection 3,",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "a person shall not drive a motorcycle, moped or trimobile",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "abreast of or overtake or pass another vehicle within the same traffic lane.",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "Motorcycles and mopeds may,",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "with the consent of the drivers,",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "be operated no more than two abreast in a single traffic lane.",
+   "role": "exception"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-486-041::motorcycle",
+   "ru.aggregate=DEF-NRS-486-038::moped",
+   "ru.aggregate=DEF-NRS-486-057::trimobile"
+  ]
+ },
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-486-041::motorcycle",
+    "ru.aggregate=DEF-NRS-486-038::moped",
+    "ru.aggregate=DEF-NRS-486-057::trimobile"
+   ],
+   "derived": [],
+   "justification": "'motorcycle', 'moped' and 'trimobile' are the admitted aggregates DEF-NRS-486-041::motorcycle ('every motor vehicle equipped with a seat or a saddle for the use of the driver and designed to travel on not more than three wheels'), DEF-NRS-486-038::moped ('a motor-driven scooter, motor-driven cycle or similar vehicle that is propelled by a small engine') and DEF-NRS-486-057::trimobile ('every motor vehicle equipped with handlebars and a saddle seat and designed to travel with three wheels'), each claimed as an aggregate, never expanded. 'a person shall not drive' is read through the vehicle's controlled motion (agency)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.lane",
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [],
+   "justification": "'another vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'). 'within the same traffic lane': the subject and the other both occupy one st.lane ('a longitudinal strip of roadway for one line of vehicles'; rel.occupies 'a road user's footprint overlaps a lane'). 'abreast of': rel.longitudinal_overlap 'the bodies overlap along the subject's heading (side by side)' at or above zero; it is 'a projection, so neither a contact nor a distance', read only as side-by-side position. 'overtake or pass ... within the same traffic lane' is read through the same configuration: a pass made within one lane brings the two side by side within that lane, and the duty forbids the place of the pass, so it is judged at every observation the pass is made abreast in the lane; the act concept drv.interaction.overtake_pass, recognised only once the other is behind, would judge the pass after it may have left the lane. 'traffic lane' is a lane; the traffic aggregate is not read by the word."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-486-041::motorcycle",
+    "ru.aggregate=DEF-NRS-486-038::moped"
+   ],
+   "derived": [],
+   "justification": "'Motorcycles and mopeds' are the admitted aggregates DEF-NRS-486-041::motorcycle and DEF-NRS-486-038::moped: the exception holds only where both the subject and the other vehicle are of one of them (a trimobile is not named)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "derived": [],
+   "justification": "The consent of both drivers is not observable; it shows in their conduct of riding together as a pair: rel.same_direction 'headings aligned: the cosine of the angle between the headings is above its tolerance', with tolerance p.side_by_side_same_direction_cos, while abreast within the lane. A pair met head-on in the lane shows no consent."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [],
+   "justification": "'no more than two abreast in a single traffic lane': no third road user occupies the same st.lane (rel.occupies) side by side with the subject (rel.longitudinal_overlap at or above zero, 'the bodies overlap along the subject's heading (side by side)'). The figure two is a literal."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s1",
+   "why": "Points to subsection 3, whose words are this line's second sentence and are carried by s4-s6; the duty is the same whether the pointer is read or not.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-486-041::motorcycle",
+    "ru.aggregate=DEF-NRS-486-038::moped",
+    "ru.aggregate=DEF-NRS-486-057::trimobile"
+   ]
+  }
+ ],
+ "applicability": "The subject is of DEF-NRS-486-041::motorcycle, DEF-NRS-486-038::moped or DEF-NRS-486-057::trimobile.",
+ "obligation": "At every observation, for every road user v other than the subject of DEF-NRS-484A-320::vehicle and every lane L that both the subject and v occupy with rel.longitudinal_overlap of subject and v at or above zero, the pair is excused (s4-s6), else the duty is violated. The pair is excused where the subject and v are each of DEF-NRS-486-041::motorcycle or DEF-NRS-486-038::moped, rel.same_direction of subject and v holds with tolerance p.side_by_side_same_direction_cos (consent read), and no third road user w (other than the subject and v) of DEF-NRS-484A-320::vehicle occupies L with rel.longitudinal_overlap of subject and w at or above zero (no more than two abreast).",
+ "params": [
+  "p.side_by_side_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "The drivers' consent is read through their conduct of riding side by side in the same direction within the lane; an unconsented same-direction pair cannot be told from a consented one and is excused.",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s2",
+   "why": "'a person shall not drive' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "Overtaking or passing within the same lane is judged at the observations at which the subject is side by side with the other within that lane, not at the recognition of a completed pass.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motorcycle occupies lane L; a car travelling the opposite way also occupies L and comes abreast of it (rel.longitudinal_overlap 2 m at one observation): the car is of the vehicle aggregate, the headings are opposed so no consent shows (s5 fails) and the pair is not excused."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The motorcycle occupies L 15 m behind a car in L travelling the same way, overlap negative at every observation."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a bicycle (of none of the motorcycle, moped or trimobile aggregates) beside a car in L."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A road user and a second road user both occupy L side by side, headings aligned, no third road user beside them; the road-user classes are not observed, so whether the subject is a motorcycle, moped or trimobile and whether the pair is a motorcycle-or-moped pair is unknown.",
+   "masked": [
+    "ru.aggregate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Two motorcycles ride side by side in L with headings aligned; no third vehicle beside them."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Three motorcycles ride side by side in L with headings aligned."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "The motorcycle rides alone in L; no other vehicle in the scene."
+  },
+  {
+   "name": "branch_4",
+   "expected": "violated",
+   "narrative": "Two motorcycles are abreast in L with opposed headings (met head-on): no consent shows and the pair is not excused."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s6",
+   "text": "two",
+   "value": 2,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

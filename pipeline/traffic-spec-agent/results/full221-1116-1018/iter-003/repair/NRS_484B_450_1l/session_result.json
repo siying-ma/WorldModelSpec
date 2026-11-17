@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 54656,
+  "stop_reason": "end_turn",
+  "session_id": "cfa87cc4-b4d8-466a-9788-a4e5ebd65efa",
+  "total_cost_usd": 0.90017741,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 81581,
+   "cache_read_input_tokens": 81453,
+   "output_tokens": 7096,
+   "output_tokens_details": {
+    "thinking_tokens": 1064
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 81581,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 876,
+     "cache_read_input_tokens": 78322,
+     "cache_creation_input_tokens": 6390,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 6390
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 74550,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.008215350000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 7096,
+    "cacheReadInputTokens": 81453,
+    "cacheCreationInputTokens": 81581,
+    "webSearchRequests": 0,
+    "costUSD": 0.89196206,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1064,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 81581,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I rewrote the node record in `record.jsonl` so the only failing witness, `blind`, can be built. I haven't re-run the gate on it.\n\n**Why `blind` failed.** The planned scenario hid only `rel.bearing` and expected an unknown verdict. That can't happen: when the source doesn't supply a bearing, Core works it out from the two vehicles' positions and the subject's heading. The rest of the applicability needs those same inputs. So whenever everything else was decided, the bearing was decided too, and the witness came out violated.\n\n**What I changed:**\n- **`blind`** now hides `st.region_geometry`, the region outlines. Without them the distance from the parked vehicle's body to the road edge is unknown, by that atom's own contract. Whether the vehicle \"stands at the edge\" (s11) then can't be decided, so the expected verdict stays unknown. The coder proposed this fix. The edge's lateral offset also needs the outline, so it will be unknown in the same scene. I'm expecting the gate to trace that back to the hidden atom rather than reject it as a stray reason, but that hasn't been confirmed.\n- **The s9 and s11 justifications and the applicability text** now say \"both strictly negative or both strictly positive\" instead of \"same nonzero sign\". This matches how the coder had to write it, because the unit check refuses a product of two lengths. The s11 justification also says the edge distance is unknown when the source has no outlines.\n- **New `branch_4` (expects violated):** the forbid scene mirrored, so the parked vehicle and the edge are on the subject's left. It covers the left-side half of the condition, which the coder had added as `branch_10`.\n- **`param_proposals` is now empty.** All three parameters (`p.halt_speed_tolerance`, `p.queue_halt_gap`, `p.edge_standing_gap`) are already in the catalogue, so the record names them without proposing values.\n\nEverything else is unchanged from the planned record.\n\n**One issue I left open.** s5, \"in compliance with law\", is read only as a halt required by a stop sign or a red signal. Halts required by other laws, such as yielding to a pedestrian or an emergency vehicle, aren't covered. The rules don't allow narrowing an exception, so this is arguably a defect in the record. I didn't change it because the gate passed it, and carrying it properly would mean a gap or a composition that blocks the law.",
+  "ttft_ms": 11351,
+  "type": "result",
+  "duration_ms": 54205,
+  "uuid": "e95e66eb-2e00-4812-a0e2-29145470f250",
+  "ttft_stream_ms": 1823,
+  "time_to_request_ms": 397,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 59,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 11,
+   "input_hooks": 4,
+   "conversation_append": 1,
+   "transcript_persist": 37,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 235,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 42,
+  "time_to_request_cpu_ms": 264,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 11,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 3,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1823,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 74550,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.008215350000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 7096,
+    "cacheReadInputTokens": 81453,
+    "cacheCreationInputTokens": 81581,
+    "webSearchRequests": 0,
+    "costUSD": 0.89196206,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1064,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 81581,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

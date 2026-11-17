@@ -1,0 +1,230 @@
+{
+ "node_id": "LVMC_11_52_030_B",
+ "law_refs": [
+  "LVMC-11-52-030-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The parking of vehicles is prohibited or restricted in certain zones as set forth in this Section.",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "The location of such zones shall be established by posting appropriate signage or other durable markings, by painting curbs or the edges of road surfaces in accordance with the colors listed below, or by a combination thereof:",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "Yellow indicates a zone for:",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "(1) Commercial vehicles to stop, stand or park for the purpose of loading or unloading freight",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "in accordance with the conditions and times posted on an accompanying sign; and",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "(2) Taxicabs to stop, stand, park for the purpose of loading, unloading or waiting for passengers",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "in accordance with the conditions and times posted on an accompanying sign.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"vehicles\" is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"), one atom; \"is prohibited or restricted in certain zones\" introduces the restriction the yellow zone states."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.curb_zone",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "Same words, same atoms as LVMC_11_52_030_A: st.curb_zone \"a signed or marked length of curb; ... colour ... where the curb itself is painted\", its presence the evidence of the zone (observable_reading status); rel.occupies anchors the subject in it."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.curb_zone",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"Yellow indicates a zone for\" the uses listed: the subject occupies (rel.occupies) a st.curb_zone of colour yellow; the zone being for those uses only, any other halt in it (drv.motion.complete_halt, \"at rest at the observation\") is restricted. \"stop\" in the list carries two posted definitions, each with its own scope; both are a halting, which is what the concept reads, so no choice between them is made."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-LVMC-11-02-070::commercial_vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"Commercial vehicles\" is the admitted aggregate DEF-LVMC-11-02-070::commercial_vehicle, one atom, never replaced by ru.commercial_motor_vehicle. \"to stop, stand or park\": its halt (drv.motion.complete_halt). \"for the purpose of loading or unloading freight\" is a purpose, read through the halt it explains (observable_reading purpose)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "prim.conditions_hold"
+   ],
+   "derived": [],
+   "justification": "\"an accompanying sign\": a dev.zone_sign of kind parking_restricted (\"a sign that begins or ends a signed zone along the road; ... conditions attribute: a structured reading of the sign's legend — a list of time windows ..., a duration limit, a vehicle class\") governing (dev.governs) a travel region (st.travel_region) the subject occupies (rel.occupies), the lane beside the curb. \"in accordance with the conditions and times posted\": prim.conditions_hold \"the structured conditions of a device ... hold at the observation for a road user\" for the subject; the sign's legend is not whether its condition holds, which is the primitive's."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "ru.aggregate=DEF-LVMC-11-02-140::taxicab"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"Taxicabs\" is the admitted aggregate DEF-LVMC-11-02-140::taxicab, one atom, never replaced by ru.taxicab. \"to stop, stand, park\": its halt (drv.motion.complete_halt). \"for the purpose of loading, unloading or waiting for passengers\" is read through the halt it explains (observable_reading purpose)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "prim.conditions_hold"
+   ],
+   "derived": [],
+   "justification": "Same words, same atoms as s5: a dev.zone_sign of kind parking_restricted governing a travel region the subject occupies, with prim.conditions_hold for the subject."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle). At the judged observation bind a region z of kind st.curb_zone whose colour is yellow, with rel.occupies(subject, z). Exceptions (the duty does not apply): (1) the subject is a commercial vehicle (ru.aggregate DEF-LVMC-11-02-070::commercial_vehicle) and some dev.zone_sign d of kind parking_restricted governs (dev.governs) a travel region the subject occupies, with prim.conditions_hold(d, subject); (2) the subject is a taxicab (ru.aggregate DEF-LVMC-11-02-140::taxicab) and such a sign's conditions hold for it.",
+ "obligation": "The subject does not halt in z: not drv_motion_complete_halt(subject), with speed_tol p.halt_speed_tolerance.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "The zones' establishment by sign, marking or paint is read through the signed or marked curb zone's presence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "\"a zone for\" commercial vehicles and taxicabs is read as barring any other vehicle's halt in the yellow zone, and theirs where the accompanying sign's conditions do not hold; a halt outside the sign's hours is read as outside the conditions posted."
+  },
+  {
+   "span": "s4",
+   "why": "\"for the purpose of loading or unloading freight\" is read through the commercial vehicle's halt; whether freight moves is not read.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s5",
+   "why": "The accompanying sign is read as a parking_restricted zone sign governing the lane beside the curb the subject occupies; its posting is the evidence of its force.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s6",
+   "why": "\"for the purpose of loading, unloading or waiting for passengers\" is read through the taxicab's halt.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s7",
+   "why": "The accompanying sign is read as a parking_restricted zone sign governing the lane beside the curb the subject occupies.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A curb zone z (st.curb_zone, colour yellow, kind freight_loading) with a zone sign d (dev.zone_sign kind parking_restricted, conditions: weekdays during business hours, class commercial) governing the parking lane beside it. A private passenger car (ru.motor_vehicle, not classified as commercial) halts in z at rest for several minutes on a weekday morning."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car drives along z without halting."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same car halts for several minutes in a curb zone whose colour is white."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source supplies no speed for the subject (kin.speed absent): whether it halts is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A commercial delivery van classified under DEF-LVMC-11-02-070::commercial_vehicle halts in z on a weekday morning, within the sign's time window."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A taxicab classified under DEF-LVMC-11-02-140::taxicab halts in a yellow zone of kind taxicab_stand whose zone sign's conditions hold for it."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "The commercial van of branch_1 halts in z on a Sunday, outside the sign's time windows."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

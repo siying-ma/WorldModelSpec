@@ -1,0 +1,215 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "rises": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "var": "r"
+       }
+      ],
+      "atom": "rel_occupies",
+      "params": []
+     }
+    },
+    "exists_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_43_010_B_o1",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-43-010-B"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "rises": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "subject"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "lit": "DEF-NRS-484A-320::vehicle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "v"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "not": {
+                 "rises": {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "r"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "v"
+              }
+             ],
+             "atom": "rel_contact",
+             "params": []
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "v"
+                }
+               ],
+               "derived": "prim_closest_approach_within",
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ]
+              },
+              {
+               "cmp": "lt",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "v"
+                 }
+                ],
+                "params": [
+                 {
+                  "param": "p.conflict_horizon"
+                 }
+                ],
+                "quantity": "prim_closest_approach_distance"
+               },
+               "rhs": {
+                "param": "p.conflict_centre_clearance"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "forall_user": "v"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "f78307089716a85b6be32365",
+  "candidate_digest": "4e904c8ab657a9d5c81663f8f5e886c06109b89cf02e97e6ae6e3e461f841eb6"
+ }
+}

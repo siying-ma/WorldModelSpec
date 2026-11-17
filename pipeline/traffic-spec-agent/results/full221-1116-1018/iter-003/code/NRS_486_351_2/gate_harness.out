@@ -1,0 +1,69 @@
+'TrafficSpec.Rules.NRS_486_351_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_486_351_2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_486_351_2","intentions":[],"laws":["NRS-486-351-2"],"narrowings":[],"operationalizations":[],"residues":["Points to subsection 3, whose words are this line's second sentence and are carried by s4-s6; the duty is the same whether the pointer is read or not."],"surrogate":false}
+RULEJSON	{"applicability":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-057::trimobile"}],"atom":"ru_aggregate","params":[]}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-057::trimobile"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"NRS_486_351_2","intentions":[],"laws":["NRS-486-351-2"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"v"},{"var":"subject"}]}},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"v"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]},{"and":[{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"or":[{"args":[{"var":"v"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"v"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"args":[{"var":"subject"},{"var":"v"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]},{"cmp":"le","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"count"},"var":"w","where":{"or":[{"same":[{"var":"w"},{"var":"subject"}]},{"and":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"w"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"w"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}},"rhs":{"lit":{"den":1,"num":2},"unit":"count"}}]}]}]}]},"forall_user":"v"},"forall_region":{"lit":"lane"},"var":"L"},"residues":["Points to subsection 3, whose words are this line's second sentence and are carried by s4-s6; the duty is the same whether the pointer is read or not."],"surrogate":false}
+RULEXJSON	{"applicability":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-057::trimobile"}],"atom":"ru_aggregate","params":[]}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-057::trimobile"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"NRS_486_351_2","intentions":[],"laws":["NRS-486-351-2"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"v"},{"var":"subject"}]}},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"v"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]},{"and":[{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"or":[{"args":[{"var":"v"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"v"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"args":[{"var":"subject"},{"var":"v"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]},{"cmp":"le","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"count"},"var":"w","where":{"or":[{"same":[{"var":"w"},{"var":"subject"}]},{"and":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"w"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"w"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}},"rhs":{"lit":{"den":1,"num":2},"unit":"count"}}]}]}]}]},"forall_user":"v"},"forall_region":{"lit":"lane"},"var":"L"},"residues":["Points to subsection 3, whose words are this line's second sentence and are carried by s4-s6; the duty is the same whether the pointer is read or not."],"surrogate":false}
+ATOMS	ru_aggregate,st_lane,rel_occupies,rel_longitudinal_overlap,rel_same_direction
+COMPOSES	
+AGGREGATES	DEF-NRS-486-041::motorcycle	DEF-NRS-486-038::moped	DEF-NRS-486-057::trimobile	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	ru.aggregate
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?L
+OCC	?v
+OCC	v,subject
+OCC	v
+OCC	subject,L
+OCC	v,L
+OCC	subject
+OCC	v
+OCC	subject
+OCC	subject
+OCC	v
+OCC	v
+OCC	subject,v
+OCC	?w
+OCC	w,subject
+OCC	w
+OCC	w,L
+OCC	subject
+OCC	w
+LITERAL	2/1	TrafficSpec.PUnit'.count
+TIME	occurrences	0
+TIME	checks	162
+TIME	lint	32
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	171
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	169
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	169
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	175
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	172
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	174
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	169
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	171
+TIME	witnesses	1370
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_486_351_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_486_351_2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_486_351_2	13	7
+TIME	adequacy_start	50
+TIME	adequacy	9897
+DONE

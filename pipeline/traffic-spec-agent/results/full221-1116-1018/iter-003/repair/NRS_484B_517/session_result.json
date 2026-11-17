@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 96823,
+  "stop_reason": "end_turn",
+  "session_id": "16df3c8e-655f-4e3a-863a-86691fd4b845",
+  "total_cost_usd": 1.0495240799999999,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 88385,
+   "cache_read_input_tokens": 84172,
+   "output_tokens": 11122,
+   "output_tokens_details": {
+    "thinking_tokens": 5150
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 88385,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 814,
+     "cache_read_input_tokens": 81041,
+     "cache_creation_input_tokens": 10475,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 10475
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 77279,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00851664,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 11122,
+    "cacheReadInputTokens": 84172,
+    "cacheCreationInputTokens": 88385,
+    "webSearchRequests": 0,
+    "costUSD": 1.04100744,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5150,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 88385,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've written the revised record to `record.jsonl`. It has not been through the gate again yet.\n\n**Why `branch_1` and `branch_2` failed:** the rule itself was fine. The run's reading of the \"bus\" and \"taxicab\" definitions puts no vehicle class firmly inside either one. So no road user can ever be decided to be a bus or a taxicab. And no truck can be decided to be \"not a bus\" or \"not a taxicab\". That made both planned scenarios impossible to decide as violated. The record can't change that reading, so I rewrote the scenarios to stay inside what the reading can decide:\n\n- **`branch_1`:** a passenger car of the taxicab class halts briefly in a bus stop with its doors closed the whole time. It isn't loading passengers, so it's violated. (This replaces \"a bus waiting nearby\", which can only ever come out unknown.)\n- **`branch_2`:** the same car halts in a bus stop with a door open but stays longer than the allowed dwell time. The stop isn't temporary, so it's violated. (This replaces \"a truck in a taxicab stand\", which can't be decided.)\n- **`branch_3` (new):** the car is queued just behind a halted vehicle ahead in its lane. That counts as avoiding conflict with other traffic, so it's compliant.\n- **`idle` and `blind`:** I moved these to the setups the coder already found workable. `idle` is now a car in a passenger-loading zone, so the rule doesn't apply. `blind` is now in a bus stop with the doors not observed.\n\n**Other fix — \"about to enter\":** the old record only counted a bus or taxicab that was halted outside the zone. That dropped a moving one that is \"about to enter\", which narrowed an exception, and the rules don't allow that. It now also counts a bus or taxicab that stays outside the zone, within the waiting distance, until it actually moves onto it. That is how the ontology says an imminent movement should be read. Under the current reading this part of the rule can still only come out unknown.\n\n**Still open:** the coder recommended changing the reading so that the bus classes count as \"bus\" and the taxicab class counts as \"taxicab\". I couldn't raise that from this kind of session; it's for whoever owns the reading to decide. Until then, every scenario has to use a taxicab-class car in a bus stop as its subject.",
+  "ttft_ms": 52538,
+  "type": "result",
+  "duration_ms": 96174,
+  "uuid": "7f34cfe9-03cf-4749-bdba-cdec88749f08",
+  "ttft_stream_ms": 1620,
+  "time_to_request_ms": 357,
+  "time_to_request_phases_ms": {
+   "other": 7,
+   "system_prompt": 61,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 14,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 48,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 7,
+   "engine_pickup": 12,
+   "loop_entry": 5,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 3,
+   "request_announcements": 154,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 7,
+   "message_normalization": 2,
+   "client_creation": 12,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 46,
+  "time_to_request_cpu_ms": 399,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 4,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 2,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1621,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 77279,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00851664,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 11122,
+    "cacheReadInputTokens": 84172,
+    "cacheCreationInputTokens": 88385,
+    "webSearchRequests": 0,
+    "costUSD": 1.04100744,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5150,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 88385,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

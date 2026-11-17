@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 24404,
+  "stop_reason": "end_turn",
+  "session_id": "655a1594-cf35-4332-b4e4-89c7ad025361",
+  "total_cost_usd": 0.7956477100000001,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 81173,
+   "cache_read_input_tokens": 85448,
+   "output_tokens": 2448,
+   "output_tokens_details": {
+    "thinking_tokens": 1077
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 81173,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 634,
+     "cache_read_input_tokens": 82317,
+     "cache_creation_input_tokens": 1987,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1987
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 78550,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.008653149999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 2448,
+    "cacheReadInputTokens": 85448,
+    "cacheCreationInputTokens": 81173,
+    "webSearchRequests": 0,
+    "costUSD": 0.7869945600000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1077,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 81173,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I withdrew span `s3` as an `atom` gap and did not revise the record. This node stays uncoded until the operator decides the gap.\n\n**Why it can't be re-mapped:** `s3` borrows \"at least one flashing red warning lamp visible from the front\" from subsection 3 of NRS 484A.480. The `sig.warning_lamp` atom's contract includes a facing (front, rear or side). But the formula language only reads that atom as colour, or colour and mode. Nothing reads the facing. The other options all fail:\n- **Drop the facing:** that weakens a trigger, which isn't allowed. The rule would then fire on a vehicle showing only rear- or side-facing red flashing lamps, which the words exclude.\n- **Quote the \"may display … to the front, sides or rear\" sentence instead:** that's a permission in the source, not the requirements the law names.\n- **Use `rel.visible` or `rel.bearing`:** their contracts rule this out. `rel.visible` is a line of sight to the vehicle's body and says explicitly it is not a stand-in for a lit lamp. `rel.bearing` gives where one road user is from another, not which way a lamp faces.\n\n**What the gap asks for:** a way to read `sig.warning_lamp` with its facing (road user, colour, mode, facing). The words it decides are which lit vehicles trigger the duty.\n\nThe withdrawal is in `record.jsonl` in the repair directory.\n\n**Separate problem the coder found (not this node's):** the run's reading puts no vehicle class under authorized emergency vehicle. So an ambulance, police car or fire engine is never decided as one, and this rule can never fire on them. That's why the coder's witnesses use a regulatory-agency vehicle instead of the planned ambulance. Classing `ru.emergency_vehicle` and `ru.fire_apparatus` as included would fix it, and needs to be handled in the reading.",
+  "ttft_ms": 11093,
+  "type": "result",
+  "duration_ms": 23941,
+  "uuid": "d409a63e-ec0c-4aa4-a439-ae85ac6ec4f1",
+  "ttft_stream_ms": 1115,
+  "time_to_request_ms": 336,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 42,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 11,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 39,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 6,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 197,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 19,
+  "time_to_request_cpu_ms": 296,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1116,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 78550,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.008653149999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 2448,
+    "cacheReadInputTokens": 85448,
+    "cacheCreationInputTokens": 81173,
+    "webSearchRequests": 0,
+    "costUSD": 0.7869945600000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1077,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 81173,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

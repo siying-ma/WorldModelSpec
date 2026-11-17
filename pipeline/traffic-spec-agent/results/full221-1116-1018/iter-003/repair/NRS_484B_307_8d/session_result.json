@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 86352,
+  "stop_reason": "end_turn",
+  "session_id": "c22ea29f-d5cf-4d40-8406-875ef831c530",
+  "total_cost_usd": 1.16000566,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 101104,
+   "cache_read_input_tokens": 97005,
+   "output_tokens": 10864,
+   "output_tokens_details": {
+    "thinking_tokens": 3001
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 101104,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 670,
+     "cache_read_input_tokens": 93874,
+     "cache_creation_input_tokens": 10361,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 10361
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 90106,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.009923760000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 10864,
+    "cacheReadInputTokens": 97005,
+    "cacheCreationInputTokens": 101104,
+    "webSearchRequests": 0,
+    "costUSD": 1.1500819,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3001,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 101104,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I revised the record by removing scenario `branch_1` (the passenger car expected to be `not_applicable`). This is a planning change only: the gate hasn't been re-run, so whether the revised node passes is still unconfirmed.\n\n**Why `branch_1` had to go:** the run's reading leaves `ru.motor_vehicle` unresolved under four of the definitions in the subject span (`s4`): motorcycle, moped, electric bicycle and electric scooter. A road user honestly labelled as a car therefore has unknown membership in the subject class, and the rule correctly reports `unknown`. According to the coder, no class in the vocabulary is ruled out by all six subject classes, so no honest witness can reach `not_applicable` through class alone. A branch scenario can't expect `unknown`, so it is removed rather than changed. The other \"doesn't apply\" cases are still covered:\n- `idle`: only one green cycle during the wait.\n- `branch_2`: no halt at the stop place.\n- `branch_3`: a sign prohibits the turn the rider made.\n\n**Other changes:**\n- The justification for the subject span now says that a class the reading leaves unresolved gives `unknown` membership, not `not_applicable`.\n- I kept the names `branch_2` and `branch_3` so they don't clash with the coder's old car witness, which was also called `branch_1`.\n- Every other mapping, the condition and duty text, and the parameters are unchanged.\n\n**Possible next failure:** the coder warned that, without a witness whose subject has no class, the gate's emptiness check may now flag `ru.motorcycle` (my mapping for \"trimobile\"). It adds nothing because the motorcycle definition already includes it. I kept it because it is the closest match for the word \"trimobile\". If the gate does flag it, the choice is between dropping it and carrying \"trimobile\" through the motorcycle definition, or keeping it with a scenario that makes it count.\n\nThe revised record is in `record.jsonl` in the repair directory.",
+  "ttft_ms": 30152,
+  "type": "result",
+  "duration_ms": 85259,
+  "uuid": "c530a888-6ff0-49ef-a8b0-5eb8eda11c57",
+  "ttft_stream_ms": 1172,
+  "time_to_request_ms": 235,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 42,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 11,
+   "input_hooks": 3,
+   "conversation_append": 0,
+   "transcript_persist": 28,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 3,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 99,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 22,
+  "time_to_request_cpu_ms": 332,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 1,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1172,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 90106,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.009923760000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 10864,
+    "cacheReadInputTokens": 97005,
+    "cacheCreationInputTokens": 101104,
+    "webSearchRequests": 0,
+    "costUSD": 1.1500819,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3001,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 101104,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

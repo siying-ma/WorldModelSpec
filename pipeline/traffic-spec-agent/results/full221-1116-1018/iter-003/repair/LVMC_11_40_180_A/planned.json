@@ -1,0 +1,153 @@
+{
+ "node_id": "LVMC_11_40_180_A",
+ "law_refs": [
+  "LVMC-11-40-180-A"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "It shall be unlawful for any person to ride",
+   "role": "obligation"
+  },
+  {
+   "id": "a2",
+   "text": "a bicycle, electric bicycle, or electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "a3",
+   "text": "upon the sidewalks",
+   "role": "condition"
+  },
+  {
+   "id": "a4",
+   "text": "on Fremont Street between Main Street and Seventh Street",
+   "role": "condition"
+  },
+  {
+   "id": "a5",
+   "text": "This area shall be posted with signs indicating that the riding of bicycles, electric bicycles, or electric scooters on the sidewalk is prohibited",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "Riding is read through the device's controlled motion: a device ridden moves, so the duty is that the device be at rest (drv.motion.complete_halt: 'The road user is at rest at the observation ... its speed (kin.speed) at or below a tolerance'), as the mapping index reads 'shall be ridden' (LVMC_11_38_030)."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "Each term is admitted as its aggregate (DEF-NRS-484A-025::bicycle 'a device propelled by human power upon which a person may ride'; DEF-LVMC-11-02-082::electric_bicycle 'a device upon which a person may ride ... an electric motor'; DEF-LVMC-11-02-083::electric_scooter 'a device with handlebars and an electric motor'); the subject belongs to one of them."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "st.sidewalk: 'area for pedestrians between roadway and property line' (DEF-NRS-484A-240); rel.occupies: 'a road user's footprint overlaps a lane / region' anchors the subject on it. Same atoms as the mapping index's 'upon any sidewalk'."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "a4",
+   "id": "asm.fremont_street_main_to_seventh",
+   "meaning": "the place of the road user at the observation lies on Fremont Street between Main Street and Seventh Street, as the map's reading records the named way and its limits"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "a5",
+   "why": "The sentence directs the City to post signs; the riding prohibition of the first sentence holds whether or not the signs are posted, so the duty is the same either way.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a bicycle, electric bicycle or electric scooter that occupies an st.sidewalk region (rel.occupies) at a place where asm.fremont_street_main_to_seventh holds.",
+ "obligation": "At each such observation the subject is at rest: drv.motion.complete_halt(subject; p.halt_speed_tolerance).",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "a1",
+   "why": "'any person to ride' is read through the device's controlled motion: a device moving on the sidewalk is read as ridden, so a device pushed by a person walking beside it is not told apart from one ridden (no rider posture is read).",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "An electric scooter moves along a sidewalk at a place the map's reading declares to be Fremont Street between Main Street and Seventh Street."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A bicycle stands at rest on that sidewalk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle rides on the roadway of Fremont Street within the declared stretch, never on the sidewalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A bicycle on that sidewalk whose speed the source does not supply.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A bicycle rides on a sidewalk at a place the map's reading declares outside the named stretch."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,193 @@
+{
+ "node_id": "LVMC_11_52_300",
+ "law_refs": [
+  "LVMC-11-52-300"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except for a motor vehicle,",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "no person shall park",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "any vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "on any street",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "for a period of time longer than thirty minutes",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "between the hours of one a.m. and six a.m. of any day.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'motor vehicle' is admitted as DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'); ru.aggregate is 'membership of a legal aggregate'. The class atom ru.motor_vehicle never replaces an admitted aggregate."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'park' applies DEF-NRS-484A-155 'the standing of a vehicle, whether occupied or not, otherwise than temporarily for the purpose of and while actually engaged in loading or unloading'; drv.motion.parked denotes 'at rest at every observation of the window behind the observation, of length min_duration', a shorter halt 'is not denoted'. Same mapping as the index's 'It shall be unlawful for any person to park'."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is admitted as DEF-NRS-484A-320::vehicle; ru.aggregate is 'membership of a legal aggregate'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'Street' applies DEF-NRS-484A-265 'the entire width between the boundary lines of every highway inside the territorial limits of a city'; st.highway is 'the entire public way between its boundary lines, including sidewalks and shoulders' (not the roadway alone, whose exclusion does not apply since the definition takes the entire width). rel.occupies anchors the vehicle's footprint on it. Same mapping as the index's 'upon any street' (LVMC_11_48_050); the city limits are the jurisdiction this city ordinance applies in."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "kin.time"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'for a period of time longer than thirty minutes' is one continuous period of parking, a time window behind the observation of the stated length at every observation of which the vehicle was parked on the street within the hours; the window reads kin.time, 'instant of observation of a scene'."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "env.civil_time"
+   ],
+   "derived": [],
+   "justification": "env.civil_time is 'the local calendar time of the observation: date, weekday, time of day (from the recording's metadata, not from the scene)'; the law states the hours itself, so the time of day is compared with the stated one a.m. and six a.m. 'Not a stand-in for: kin.time' does not apply: the clock of day, not the order of observations, is read. Same mapping as the index's 'between the hours of seven p.m. and six a.m.;' (LVMC_11_48_050)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle and not a motor vehicle (ru.aggregate DEF-NRS-484A-130::motor_vehicle does not hold), its footprint overlaps a street (st.highway, rel.occupies), and the civil time of day (env.civil_time) is at or after one a.m. and before six a.m.",
+ "obligation": "It is not the case that, at every observation of the time window of thirty minutes behind the observation, the subject was parked (drv.motion.parked with p.halt_speed_tolerance, p.parking_min_duration) with its footprint on a street and with the civil time of day at or after one a.m. and before six a.m.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'no person shall park' is read through the vehicle's own standing, whoever controls it; the definition's temporary halt for loading or unloading is read through the halt's duration (min_duration), the purpose itself not being observed.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A trailer (vehicle aggregate, not a motor vehicle) stands at rest on a street from 01:10 to 01:50 civil time."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A trailer stands at rest on a street from 02:00 to 02:20 civil time and is then towed away."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A passenger car (motor vehicle aggregate) stands at rest on a street from 01:00 to 05:00 civil time."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "masked": [
+    "env.civil_time"
+   ],
+   "narrative": "A trailer stands at rest on a street for forty minutes; the recording carries no civil time, so whether the period lies between one and six a.m. is unknown."
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A trailer stands at rest on a street from 00:30 to 01:20 civil time and is then towed away: only twenty minutes of the period lie within the hours."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s5",
+   "text": "thirty minutes",
+   "value": 30,
+   "unit": "min"
+  },
+  {
+   "span": "s6",
+   "text": "one a.m.",
+   "value": 1,
+   "unit": "h"
+  },
+  {
+   "span": "s6",
+   "text": "six a.m.",
+   "value": 6,
+   "unit": "h"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source's kinematic channel"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "municipal curbside management practice: passenger loading zone time limits"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,278 @@
+{
+ "node_id": "NRS_484B_267_1b_o2",
+ "law_refs": [
+  "NRS-484B-267-1b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "u1",
+   "text": "Upon the immediate approach of",
+   "role": "standard"
+  },
+  {
+   "id": "u2",
+   "text": "an authorized emergency vehicle",
+   "role": "condition"
+  },
+  {
+   "id": "u3",
+   "text": "or an official vehicle of a regulatory agency,",
+   "role": "condition"
+  },
+  {
+   "id": "u4",
+   "text": "making use of flashing lights meeting the requirements of",
+   "role": "condition"
+  },
+  {
+   "id": "u5",
+   "text": "subsection 3 of NRS 484A.480 [DEF-NRS-484A-480-3],",
+   "role": "reference"
+  },
+  {
+   "id": "u6",
+   "text": "the driver of every other vehicle shall,",
+   "role": "subject"
+  },
+  {
+   "id": "u7",
+   "text": "except when otherwise directed by a law enforcement officer:",
+   "role": "exception"
+  },
+  {
+   "id": "b1",
+   "text": "Except as otherwise provided in this paragraph,",
+   "role": "sibling"
+  },
+  {
+   "id": "b2",
+   "text": "immediately",
+   "role": "sibling"
+  },
+  {
+   "id": "b3",
+   "text": "drive to a position parallel to, and",
+   "role": "sibling"
+  },
+  {
+   "id": "b4",
+   "text": "as close as possible to, the right-hand edge or, if applicable, curb of a highway",
+   "role": "sibling"
+  },
+  {
+   "id": "b5",
+   "text": "and clear of any intersection.",
+   "role": "sibling"
+  },
+  {
+   "id": "b6",
+   "text": "The driver shall not drive to and stop in a position on a paved shoulder of a highway",
+   "role": "obligation"
+  },
+  {
+   "id": "b7",
+   "text": "where lawfully placed signage allows a vehicle described in paragraphs (a) to (f), inclusive, of subsection 4 of NRS 484B.210 [list appended below] to drive on the shoulder.",
+   "role": "condition"
+  },
+  {
+   "id": "b8",
+   "text": "The provisions of subparagraph (1) of paragraph (c) of subsection 1 do not apply to: (a) An authorized emergency vehicle described in NRS 484A.480; (b) A vehicle which has been issued a permit to operate as an authorized emergency vehicle pursuant to NRS 484A.490; (c) A traffic incident management vehicle; (d) A tow car; (e) A coroner vehicle; or (f) A public transit motor bus, that is being driven on the paved shoulder of a highway where lawfully placed signage allows that vehicle to use the shoulder in that manner.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "u2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle"
+   ],
+   "derived": [],
+   "justification": "Admitted aggregate DEF-NRS-484A-020::authorized_emergency_vehicle ('a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'); ru.aggregate 'membership of a legal aggregate'; conduct carried by u4 and u1."
+  },
+  {
+   "span": "u3",
+   "atoms": [
+    "ru.official_vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.official_vehicle 'a vehicle in official or contracted road service ...; kind in {... regulatory_agency ...}', read with kind regulatory_agency; 'Not a stand-in for: an emergency vehicle' respected."
+  },
+  {
+   "span": "u4",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "justification": "sig.warning_lamp 'a warning lamp lit; colour ..., mode ..., facing ...', read as colour red, mode flashing, facing front from the quoted requirement 'at least one flashing red warning lamp visible from the front'; not a stand-in for an audible warning.",
+   "source_spans": [
+    "u5"
+   ]
+  },
+  {
+   "span": "u6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Admitted aggregate DEF-NRS-484A-320::vehicle; 'every other' excludes the approaching vehicle; 'driver' read through the vehicle's controlled motion."
+  },
+  {
+   "span": "u7",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Mapping index: 'unless otherwise directed by a Police Officer' maps to dev.governs, dev.human_direction, rel.occupies, st.travel_region; read with role police_officer governing a travel region the subject occupies."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "rel.occupies",
+    "st.shoulder",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'drive to and stop': the subject comes to rest, drv.motion.complete_halt ('at rest at the observation — complete cessation from movement', DEF-NRS-484A-255, the definition of 'stop' when required, here the stop the words forbid in a place) holding at this observation and not at the previous one; 'in a position on a paved shoulder of a highway': its footprint overlaps (rel.occupies) a st.shoulder region ('the part of the highway beside the roadway not intended for vehicular traffic; paved attribute') with paved attribute, lying (st.on_way) on a highway region (st.highway 'the entire public way ... including sidewalks and shoulders')."
+  },
+  {
+   "span": "b7",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "'lawfully placed signage allows ... to drive on the shoulder': dev.regulatory_sign 'a point regulation by catalogue code ... shoulder_use_permitted', governing (dev.governs 'the travel regions whose traffic the device controls — ... or shoulder') the shoulder of b6. Its exclusion 'Not a stand-in for: a manoeuvre or a road feature' is respected: the sign is read as the condition, the shoulder is its own atom. 'lawfully placed' is the sign's status, read by its presence."
+  },
+  {
+   "span": "b8",
+   "atoms": [
+    "dev.regulatory_sign"
+   ],
+   "derived": [],
+   "justification": "The appended list (NRS 484B.210(4)) describes the vehicles ('(a) An authorized emergency vehicle ... (f) A public transit motor bus') that 'lawfully placed signage allows ... to use the shoulder': it is the legend of the shoulder_use_permitted regulatory sign b7 reads (dev.regulatory_sign, 'with the same structured conditions attribute ... a class'). The subject's duty does not depend on its own class, so the listed classes are read only as what the sign allows."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "u1",
+   "standard": "the immediate approach of the emergency or regulatory vehicle",
+   "concepts": [
+    "kin.speed",
+    "rel.bearing",
+    "rel.centre_distance"
+   ],
+   "params": [
+    "p.halt_speed_tolerance",
+    "p.emergency_immediate_approach_reach"
+   ],
+   "convention": "the vehicle moves with the subject ahead of it in its own frame, within the centre distance a vehicle at an urban response speed covers in the time a driver needs to perceive its lamps and begin clearing the way",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "u5",
+   "as": "definition",
+   "source": "DEF-NRS-484A-480-3",
+   "quote": "at least one flashing red warning lamp visible from the front"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "There is a road user e, not the subject, of the authorized-emergency-vehicle aggregate or an official vehicle of kind regulatory_agency, showing a lit warning lamp of colour red, mode flashing, facing front, moving (kin.speed above p.halt_speed_tolerance) with the subject ahead of it in its frame (rel.bearing longitudinal positive), within centre distance p.emergency_immediate_approach_reach; and no human_direction device of role police_officer governs a travel region the subject occupies.",
+ "obligation": "It is not the case that the subject comes to rest at this observation (drv.motion.complete_halt with speed_tol p.halt_speed_tolerance holds here and did not at the previous observation) while its footprint overlaps a shoulder region with paved attribute, lying on a highway region, that a regulatory sign of code shoulder_use_permitted governs.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.emergency_immediate_approach_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "u6",
+   "why": "'driver' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b7",
+   "why": "'lawfully placed signage' is read by the sign's presence governing the shoulder",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "b6",
+   "why": "'drive to and stop' is read as the subject coming to rest on such a shoulder while the emergency vehicle's immediate approach lasts; a vehicle already at rest there before the approach began is not judged",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Ambulance e with a lit red flashing front lamp approaches the moving subject within p.emergency_immediate_approach_reach; the subject pulls onto a paved shoulder governed by a shoulder_use_permitted regulatory sign and comes to rest there (complete_halt rises)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but the subject comes to rest at the roadway edge with its footprint off that shoulder."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No vehicle with lit warning lamps approaches; the subject stops on the signed shoulder."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but sig.warning_lamp is not observed, so whether the duty is engaged is unknown.",
+   "masked": [
+    "sig.warning_lamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "As forbid, but the paved shoulder carries no shoulder_use_permitted sign: stopping there is allowed."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's vehicle-state estimates"
+  },
+  {
+   "name": "p.emergency_immediate_approach_reach",
+   "unit": "m",
+   "value": 100.0,
+   "convention": "centre distance within which an emergency or enforcement vehicle closing on a road user with its warning lamps flashing is in immediate approach: about five seconds of travel at an urban response speed of 20 m/s, the time a driver needs to perceive the lamps and begin to clear the way",
+   "source": "driver-response studies of emergency-vehicle encounters (perception-reaction time plus lane-change time)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

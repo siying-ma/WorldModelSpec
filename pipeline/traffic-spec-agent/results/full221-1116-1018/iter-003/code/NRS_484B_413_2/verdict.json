@@ -1,0 +1,441 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "or": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "l"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "rises": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "l"
+            }
+           ],
+           "derived": "drv_lane_heading_left_of_carrier",
+           "params": [
+            {
+             "param": "p.course_departure_sin_tol"
+            },
+            {
+             "param": "p.halt_speed_tolerance"
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "l"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "rises": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "l"
+            }
+           ],
+           "derived": "drv_lane_heading_right_of_carrier",
+           "params": [
+            {
+             "param": "p.course_departure_sin_tol"
+            },
+            {
+             "param": "p.halt_speed_tolerance"
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "exists_region": {
+      "lit": "lane"
+     },
+     "var": "l"
+    },
+    "defined_when": {
+     "body": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "var": "l"
+       }
+      ],
+      "atom": "rel_occupies",
+      "params": []
+     },
+     "exists_region": {
+      "lit": "lane"
+     },
+     "var": "l"
+    }
+   },
+   "assumptions": [
+    "asm.business_or_residence_district",
+    "asm.business_or_residence_district"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_413_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-413-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "and": [
+     {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "l"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "rises": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l"
+             }
+            ],
+            "derived": "drv_lane_heading_left_of_carrier",
+            "params": [
+             {
+              "param": "p.course_departure_sin_tol"
+             },
+             {
+              "param": "p.halt_speed_tolerance"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "or": [
+          {
+           "and": [
+            {
+             "asm": "asm.business_or_residence_district"
+            },
+            {
+             "body": {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "left"
+                 }
+                ],
+                "atom": "sig_turn_indicator",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "left"
+                 }
+                ],
+                "atom": "sig_hand_signal",
+                "params": []
+               }
+              ]
+             },
+             "holds_for": "path",
+             "length": {
+              "lit": {
+               "den": 25,
+               "num": 762
+              },
+              "unit": "metre"
+             },
+             "subject": "subject"
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "not": {
+              "asm": "asm.business_or_residence_district"
+             }
+            },
+            {
+             "body": {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "left"
+                 }
+                ],
+                "atom": "sig_turn_indicator",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "left"
+                 }
+                ],
+                "atom": "sig_hand_signal",
+                "params": []
+               }
+              ]
+             },
+             "holds_for": "path",
+             "length": {
+              "lit": {
+               "den": 25,
+               "num": 2286
+              },
+              "unit": "metre"
+             },
+             "subject": "subject"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "forall_region": {
+       "lit": "lane"
+      },
+      "var": "l"
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "l"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "rises": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l"
+             }
+            ],
+            "derived": "drv_lane_heading_right_of_carrier",
+            "params": [
+             {
+              "param": "p.course_departure_sin_tol"
+             },
+             {
+              "param": "p.halt_speed_tolerance"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "or": [
+          {
+           "and": [
+            {
+             "asm": "asm.business_or_residence_district"
+            },
+            {
+             "body": {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "right"
+                 }
+                ],
+                "atom": "sig_turn_indicator",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "right"
+                 }
+                ],
+                "atom": "sig_hand_signal",
+                "params": []
+               }
+              ]
+             },
+             "holds_for": "path",
+             "length": {
+              "lit": {
+               "den": 25,
+               "num": 762
+              },
+              "unit": "metre"
+             },
+             "subject": "subject"
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "not": {
+              "asm": "asm.business_or_residence_district"
+             }
+            },
+            {
+             "body": {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "right"
+                 }
+                ],
+                "atom": "sig_turn_indicator",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "right"
+                 }
+                ],
+                "atom": "sig_hand_signal",
+                "params": []
+               }
+              ]
+             },
+             "holds_for": "path",
+             "length": {
+              "lit": {
+               "den": 25,
+               "num": 2286
+              },
+              "unit": "metre"
+             },
+             "subject": "subject"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "forall_region": {
+       "lit": "lane"
+      },
+      "var": "l"
+     }
+    ]
+   },
+   "residues": [
+    "The words exclude the weather as a ground for any other duty; the duty is the same whatever the weather, so they add no restriction."
+   ],
+   "surrogate": false
+  },
+  "context": "64c1fb301a1a9a9acbc23904",
+  "candidate_digest": "088f5ecc02042261c173030d7e8c4824fb5fa086201755d2d6e30f79174489c6"
+ }
+}

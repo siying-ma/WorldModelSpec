@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 41270,
+  "stop_reason": "end_turn",
+  "session_id": "59203620-ab69-4018-8af5-127a8f3b3bec",
+  "total_cost_usd": 0.81164314,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 76420,
+   "cache_read_input_tokens": 77862,
+   "output_tokens": 5190,
+   "output_tokens_details": {
+    "thinking_tokens": 964
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 76420,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 534,
+     "cache_read_input_tokens": 74731,
+     "cache_creation_input_tokens": 4820,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4820
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 70970,
+    "outputTokens": 24,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007819900000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5190,
+    "cacheReadInputTokens": 77862,
+    "cacheCreationInputTokens": 76420,
+    "webSearchRequests": 0,
+    "costUSD": 0.80382324,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 964,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 76420,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote the revised record for NRS_484B_260 to `record.jsonl`. Nothing has been run against the gate yet.\n\n**What failed:** the `blind` scenario hid `rel.bearing`. Hiding it only removes the measured bearing. The rule then works the bearing out from the other vehicle's position and heading and the subject's position. A track can't be admitted without those, so `rel.bearing` could never make the verdict unknown.\n\n**What changed:** only `blind`. It now hides `st.on_way` instead. That is a map relation the source records; Core never computes it from motion.\n- **Applicability:** whether roadway r lies on highway h becomes unknown.\n- **Obligation:** whether the other vehicle's lane lies on that same highway becomes unknown.\n- Everything else in the scene stays as in `forbid`: the subject straddles the entrance and the roadway, and the closest approach is still a conflict. So the only thing that can make the verdict unknown is the hidden atom.\n\nEverything else in the record is as before. That includes the `rel.bearing` reading of \"approaching\" in s6, which is still a fair reading of the law.\n\n**Risk:** I'm assuming hiding `st.on_way` blanks the `ways` field the witness builders set; I have no Core source in hand to confirm it. If Core doesn't blank it, `blind` will fail the gate again and needs a different hidden atom.\n\nThe coder needs to rebuild the `blind` witness as the `forbid` scene with `st.on_way` hidden. The current witness file still has `blind` as a copy of `forbid` with `rel.bearing` hidden.",
+  "ttft_ms": 11184,
+  "type": "result",
+  "duration_ms": 40707,
+  "uuid": "b7d7b6e2-b93e-4a4e-829f-8e1871ad37c8",
+  "ttft_stream_ms": 1106,
+  "time_to_request_ms": 256,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 48,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 11,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 31,
+   "tool_pool_refresh": 3,
+   "init_message": 2,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 111,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 27,
+  "time_to_request_cpu_ms": 219,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1106,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 70970,
+    "outputTokens": 24,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007819900000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5190,
+    "cacheReadInputTokens": 77862,
+    "cacheCreationInputTokens": 76420,
+    "webSearchRequests": 0,
+    "costUSD": 0.80382324,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 964,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 76420,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

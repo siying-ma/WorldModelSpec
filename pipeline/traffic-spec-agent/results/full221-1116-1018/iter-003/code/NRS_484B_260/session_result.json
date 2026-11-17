@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 170229,
+  "stop_reason": "end_turn",
+  "session_id": "363af169-0374-4443-ae2e-22ae5baddc24",
+  "total_cost_usd": 1.53470449,
+  "usage": {
+   "input_tokens": 20,
+   "cache_creation_input_tokens": 108222,
+   "cache_read_input_tokens": 803280,
+   "output_tokens": 18233,
+   "output_tokens_details": {
+    "thinking_tokens": 8102
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 108222,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 837,
+     "cache_read_input_tokens": 111110,
+     "cache_creation_input_tokens": 1580,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1580
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 40014,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004415290000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 20,
+    "outputTokens": 18233,
+    "cacheReadInputTokens": 803280,
+    "cacheCreationInputTokens": 108222,
+    "webSearchRequests": 0,
+    "costUSD": 1.5302892,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 8102,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 108222,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 14,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "NRS_484B_260 passes the gate with **OK** (6 witnesses), using 2 of the 6 gate runs.\n\n- **Run 1: `CHECK_FAIL`.** I had written \"the subject is ahead of v\" as a `rel_bearing` measure with a `\"longitudinal\"` component, but the measure only accepts `x`/`y`. I switched to the Boolean form `rel_bearing [v, subject, \"ahead\"]`, which means exactly what the record says: the bearing from v to the subject, in v's frame, points forward.\n- **Run 2: `OK`.**\n\n**Rule** (`NRS_484B_260.lean`):\n- **Subject:** a member of the vehicle aggregate `DEF-NRS-484A-320::vehicle`.\n- **When it applies:** the subject is moving faster than the halt tolerance and is in no alley. Its body overlaps a roadway r that lies on a highway h, and a driveway entrance e. It came onto e from off the roadway: it has stayed on e since an observation where it was on e and not on r.\n- **The duty:** for every such h, r and e (the full selection is written again in the obligation), it covers every other moving vehicle v that is on a travel region of h and has the subject ahead of it. The subject must not touch v. Their closest approach must also not come within `p.conflict_horizon` at a centre distance below `p.conflict_centre_clearance`.\n- **Narrowings:** none. Spelling \"ahead\" with the bearing atom was the only free choice, and it means exactly what the record states.\n\n**Witnesses** (`NRS_484B_260.lean` in the witness folder): three instants, 1 s apart. The subject heads north at 2 m/s out of a driveway entrance and straddles the entrance and the roadway at the last instant. Vehicle v drives east at 10 m/s in a lane on the same highway.\n\n| Scenario | Setup | Expected |\n|---|---|---|\n| forbid | v 20 m short of the crossing: closest approach ≈0.98 m after ≈1.98 s | violated |\n| permit | v 100 m short: closest approach ≈9.7 s out, past the horizon | compliant |\n| idle | subject drives along the roadway, never on the entrance | not applicable |\n| blind | forbid's trace with `st.on_way` masked | unknown |\n| branch_1 | forbid without v | compliant |\n| branch_2 | forbid, with the subject also on an alley | not applicable |\n\nFiles are in the working directory:\n- task_result.md",
+  "ttft_ms": 48215,
+  "type": "result",
+  "duration_ms": 203163,
+  "uuid": "f867a6ce-83b6-4906-8898-3926eade1986",
+  "ttft_stream_ms": 1575,
+  "time_to_request_ms": 390,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 34,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 12,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 61,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 0,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 236,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 24,
+  "time_to_request_cpu_ms": 296,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 5,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1575,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 40014,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004415290000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 20,
+    "outputTokens": 18233,
+    "cacheReadInputTokens": 803280,
+    "cacheCreationInputTokens": 108222,
+    "webSearchRequests": 0,
+    "costUSD": 1.5302892,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 8102,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 108222,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

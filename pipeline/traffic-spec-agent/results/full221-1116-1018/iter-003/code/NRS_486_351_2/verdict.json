@@ -1,0 +1,386 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "or": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-486-041::motorcycle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-486-038::moped"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-486-057::trimobile"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-486-041::motorcycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-486-038::moped"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-486-057::trimobile"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_486_351_2",
+   "intentions": [],
+   "laws": [
+    "NRS-486-351-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "implies": [
+       {
+        "and": [
+         {
+          "not": {
+           "same": [
+            {
+             "var": "v"
+            },
+            {
+             "var": "subject"
+            }
+           ]
+          }
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "v"
+             },
+             {
+              "lit": "DEF-NRS-484A-320::vehicle"
+             }
+            ],
+            "atom": "ru_aggregate",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "L"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "v"
+                 },
+                 {
+                  "var": "L"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "cmp": "ge",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "v"
+                  }
+                 ],
+                 "measure": "rel_longitudinal_overlap"
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 1,
+                  "num": 0
+                 },
+                 "unit": "metre"
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "and": [
+         {
+          "or": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "lit": "DEF-NRS-486-041::motorcycle"
+             }
+            ],
+            "atom": "ru_aggregate",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "lit": "DEF-NRS-486-038::moped"
+             }
+            ],
+            "atom": "ru_aggregate",
+            "params": []
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "or": [
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "lit": "DEF-NRS-486-041::motorcycle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "lit": "DEF-NRS-486-038::moped"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "v"
+               }
+              ],
+              "atom": "rel_same_direction",
+              "params": [
+               {
+                "param": "p.side_by_side_same_direction_cos"
+               }
+              ]
+             },
+             {
+              "cmp": "le",
+              "lhs": {
+               "aggregate": "count",
+               "of": {
+                "lit": {
+                 "den": 1,
+                 "num": 0
+                },
+                "unit": "count"
+               },
+               "var": "w",
+               "where": {
+                "or": [
+                 {
+                  "same": [
+                   {
+                    "var": "w"
+                   },
+                   {
+                    "var": "subject"
+                   }
+                  ]
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "w"
+                     },
+                     {
+                      "lit": "DEF-NRS-484A-320::vehicle"
+                     }
+                    ],
+                    "atom": "ru_aggregate",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "w"
+                       },
+                       {
+                        "var": "L"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     },
+                     {
+                      "cmp": "ge",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "w"
+                        }
+                       ],
+                       "measure": "rel_longitudinal_overlap"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "rhs": {
+               "lit": {
+                "den": 1,
+                "num": 2
+               },
+               "unit": "count"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "forall_user": "v"
+    },
+    "forall_region": {
+     "lit": "lane"
+    },
+    "var": "L"
+   },
+   "residues": [
+    "Points to subsection 3, whose words are this line's second sentence and are carried by s4-s6; the duty is the same whether the pointer is read or not."
+   ],
+   "surrogate": false
+  },
+  "context": "6d409cdecc2d3f07e0ab964d",
+  "candidate_digest": "4e7e7d5bf13f1f19cc7e42d829c95921eeeeb843ed156dceda12dbba7026833a"
+ }
+}

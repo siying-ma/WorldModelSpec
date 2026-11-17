@@ -1,0 +1,217 @@
+{
+ "node_id": "LVMC_11_30_060_A",
+ "law_refs": [
+  "LVMC-11-30-060-A"
+ ],
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "Every pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "f2",
+   "text": "crossing a roadway",
+   "role": "trigger"
+  },
+  {
+   "id": "f3",
+   "text": "at any point other than within a marked crosswalk or within an unmarked crosswalk at an intersection",
+   "role": "condition"
+  },
+  {
+   "id": "f4",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "f5",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "f6",
+   "text": "to all vehicles upon the roadway",
+   "role": "condition"
+  },
+  {
+   "id": "f7",
+   "text": "The foregoing rules in this Section shall have no application under the conditions stated in Section 11.30.070",
+   "role": "reference"
+  },
+  {
+   "id": "f8",
+   "text": "when pedestrians are prohibited from crossing at certain designated places",
+   "role": "exception"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); one atom."
+  },
+  {
+   "span": "f2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "Same atoms and concept as LVMC_11_30_050's 'shall cross a roadway'. 'crossing a roadway' is a passage that lasts from the edge to the far side and does not end when the pedestrian pauses on the roadway: the pedestrian occupies a roadway r (rel.occupies; st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder') and has occupied r at every observation since one, the judged observation included, at which it moved across a carrier it occupied (a lane, st.lane, or r itself): drv.motion.moving_across_carrier with speed_tol p.halt_speed_tolerance and cos_max p.crossing_motion_cos, written with the past operator since (occupies r) since (moving across). A pedestrian who halts mid-crossing is thus still crossing, so the obligation's speed test (f4) can tell holding back from proceeding; one who has only walked along the roadway is not crossing. The roadway so bound is r."
+  },
+  {
+   "span": "f3",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "st.crosswalk, 'marked crossing, or the unmarked prolongation of sidewalks at an intersection', carries both the marked crosswalk and the unmarked crosswalk at an intersection (the defined crosswalk's two branches); the condition is that the pedestrian, at the judged observation, does not occupy one (rel.occupies)."
+  },
+  {
+   "span": "f4",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "Same words and meaning as the index's 'shall yield' -> kin.speed, rel.contact: the pedestrian grants precedence by not proceeding into a conflict; kin.speed, 'magnitude of velocity', tells whether the crossing pedestrian proceeds (above p.halt_speed_tolerance) or holds back, and rel.contact, 'the bodies of two road users ... touch or overlap (a collision)', is the crash the yield secures against. Not a near miss: the near conflict is the standard's (f5). Because the trigger (f2) keeps a pedestrian who has halted mid-crossing within the rule, the speed test is decided both ways where the rule applies."
+  },
+  {
+   "span": "f6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "'all vehicles' are members v of the admitted aggregate DEF-NRS-484A-320::vehicle, quantified in the obligation; 'upon the roadway' is 'the' roadway r the pedestrian crosses, re-bound in the obligation for every roadway with its whole selection (occupied by the subject, occupied since the subject moved across a carrier on it, and governed by no pedestrians_prohibited sign), and v occupies it (rel.occupies; st.roadway)."
+  },
+  {
+   "span": "f8",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "A place where pedestrians are prohibited from crossing is shown on the road by a posted prohibition: dev.regulatory_sign, 'a point regulation by catalogue code', code pedestrians_prohibited, governing (dev.governs, 'the travel regions whose traffic the device controls') the roadway r the pedestrian crosses. 'designated' is legal status, read through the sign's presence. A prohibition sign is a condition, not a manoeuvre, as its contract says."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "f5",
+   "standard": "the right-of-way: precedence owed where direction, speed and proximity give rise to the danger of a crash",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: the defined right-of-way arises between road users 'approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash'; that danger is read, from the two road users' directions, speeds and positions, as their centres approaching under constant velocities within p.conflict_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "f7",
+   "why": "Section 11.30.070 is no node of this run's library, neither accepted nor planned, so no rule can be composed; the condition under which it suspends this section is stated in this text's own words, 'when pedestrians are prohibited from crossing at certain designated places', carried by f8. Conditions of 11.30.070 those words do not state are not read; reported to the operator."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-165::pedestrian; there is a roadway r such that: the subject occupies r, and (subject occupies r) since (the subject moves across a carrier it occupies: some lane k it occupies with drv.motion.moving_across_carrier(subject, k), or r itself with drv.motion.moving_across_carrier(subject, r); speed_tol p.halt_speed_tolerance, cos_max p.crossing_motion_cos) — the strong past since, holding at the judged observation where the subject moves across there, and where it moved across at an earlier observation and has occupied r at every observation since; and no dev.regulatory_sign of code pedestrians_prohibited governs (dev.governs) r. Further, at the judged observation the subject occupies no crosswalk (st.crosswalk).",
+ "obligation": "For every roadway r selected again with the applicability's whole selection (the subject occupies r, has occupied r since it moved across a carrier as stated there, and no pedestrians_prohibited regulatory sign governs r), and for every vehicle v (DEF-NRS-484A-320::vehicle) that occupies r: the subject is not in contact with v (rel.contact), and it is not the case that the subject is moving (kin.speed above p.halt_speed_tolerance) while the subject's and v's centres, under constant velocities, approach within p.conflict_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "f4",
+   "why": "'shall yield' is read as not proceeding into a danger of a crash with a vehicle on the roadway: a crossing pedestrian who holds back at rest yields, and one moving while no conflict with any vehicle is projected yields too.",
+   "kind": "reading"
+  },
+  {
+   "span": "f5",
+   "why": "the right-of-way's 'direction, speed and proximity' are read only through the constant-velocity closest approach of the two centres; a crash danger arising from acceleration within the horizon is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "f8",
+   "why": "a place designated as one where pedestrians are prohibited from crossing is read through the presence of a pedestrians_prohibited regulatory sign governing the roadway crossed.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian crosses a laned roadway mid-block at 1.4 m/s; a car on that roadway at 12 m/s would come within 1 m of the pedestrian's centre in 2 s, and the pedestrian keeps walking."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A pedestrian crosses the roadway mid-block at 1.4 m/s; no vehicle is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian crosses the roadway within a marked crosswalk while a car approaches."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian occupies the roadway mid-block while a car approaches, but the pedestrian's velocity is not observed.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A pedestrian walks across a lane mid-block from the roadway edge, then halts in the lane while a car on that roadway approaches and passes with its centre about 2 m from the pedestrian's (a conflict is projected while the car approaches, but the pedestrian is at rest and the bodies do not touch); the pedestrian walks on once the car has gone."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian walks along the roadway mid-block, its velocity aligned with the lane's direction from the first observation on, while a car approaches behind it in the same lane: it never moves across a carrier, so it is not crossing."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A pedestrian walks onto the roadway mid-block, halts in the lane, then walks on into the path of an approaching car whose centre would come within 1 m of the pedestrian's in 2 s."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

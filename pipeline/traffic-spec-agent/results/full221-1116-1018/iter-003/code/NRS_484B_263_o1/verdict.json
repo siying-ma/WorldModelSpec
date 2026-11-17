@@ -1,0 +1,290 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "cmp": "gt",
+      "lhs": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "measure": "kin_speed"
+      },
+      "rhs": {
+       "param": "p.halt_speed_tolerance"
+      }
+     },
+     {
+      "body": {
+       "or": [
+        {
+         "rises": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        },
+        {
+         "rises": {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "controlled_access"
+      },
+      "var": "c"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_263_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-263"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "or": [
+        {
+         "rises": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        },
+        {
+         "rises": {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "subject"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "lit": "DEF-NRS-484A-320::vehicle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "cmp": "gt",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "v"
+                  }
+                 ],
+                 "measure": "kin_speed"
+                },
+                "rhs": {
+                 "param": "p.halt_speed_tolerance"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "ahead"
+                   }
+                  ],
+                  "atom": "rel_bearing",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "v"
+              }
+             ],
+             "atom": "rel_contact",
+             "params": []
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "v"
+                }
+               ],
+               "derived": "prim_closest_approach_within",
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ]
+              },
+              {
+               "cmp": "lt",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "v"
+                 }
+                ],
+                "params": [
+                 {
+                  "param": "p.conflict_horizon"
+                 }
+                ],
+                "quantity": "prim_closest_approach_distance"
+               },
+               "rhs": {
+                "param": "p.conflict_centre_clearance"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "forall_user": "v"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "controlled_access"
+    },
+    "var": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "1d0be5ffc9e66c2e1ff0148f",
+  "candidate_digest": "7bf3056704e71ed7c82c01dad128163092eab806fa778b2e41bd26b02dad6a56"
+ }
+}

@@ -1,0 +1,148 @@
+{
+ "node_id": "NRS_484B_223_4a",
+ "law_refs": [
+  "NRS-484B-223-4a"
+ ],
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a highway has been designed to provide a single right lane to be used only for turning,",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "a vehicle must:",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "Be driven in the right turn lane",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "only for the purpose of making a right turn.",
+   "role": "exception"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.turn_lane",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "st.turn_lane: 'a lane designated only for turning; side ∈ {left, right}', with side right ('a single right lane to be used only for turning'), occupied by the subject (rel.occupies, 'a road user's footprint overlaps a lane / region'). 'Designed to provide' is read through the lane's presence on the road (observable_reading, status)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exclusions classified by the reading); ru.aggregate is 'true when the user carries an included class'."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.turn_lane",
+    "st.intersection",
+    "st.lane_enters",
+    "st.driveway_or_alley_entrance",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'Be driven in the right turn lane': the subject's footprint overlaps (rel.occupies) the right turn lane t (st.turn_lane, side right) — the same lane s1 selects, re-bound with its whole selection. The right turn the lane is for, which s4's declared intention takes as its target region, is tied to that lane, never to any region of the scene: either the intersection t is an approach to (st.lane_enters: 'the intersection region a directed approach carrier runs into at its entrance end'; st.intersection: 'the region where two roadways meet'), or a driveway or alley entrance (st.driveway_or_alley_entrance: 'private road, alley or driveway meeting the highway') that lies on the same highway as t (st.on_way: 'the public way (a highway region) a structure region lies on'; st.highway: 'the entire public way between its boundary lines'), so that a turn into a driveway or alley off that way also counts as the right turn the lane serves."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s4",
+   "id": "int.right_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the right at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies some turn lane t of side right (st.turn_lane, rel.occupies).",
+ "obligation": "For every turn lane t of side right that the subject occupies (the whole s1 selection restated), at the judged observation the subject's declared intention int.right_turn is true either at the intersection r that t enters (st_lane_enters t r) or at some driveway or alley entrance r lying on a highway h on which t lies (st_on_way t h and st_on_way r h). Where it is declared false at every such region, or no such region exists, the subject's presence in t is violated; where it is undeclared at one such region and false at the others, it is unknown. The intention is read at the judged observation, never ahead.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'designed to provide' is read through the right turn lane's presence on the road",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'driven' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject occupies a st.turn_lane of side right that enters intersection X; int.right_turn is declared false at X and at the driveway entrance lying on the same highway as the lane (its plan goes straight)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject occupies the right turn lane and int.right_turn is declared true at the intersection the lane enters."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject occupies a through st.lane; no turn lane is occupied."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source labels lanes but cannot tell a turn lane; the subject occupies the rightmost lane with int.right_turn declared false at the intersection it enters and at the driveway entrance.",
+   "masked": [
+    "st.turn_lane"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject in the right turn lane declares int.right_turn false at the intersection the lane enters and true at a driveway entrance lying on the same highway as the lane."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The subject in the right turn lane declares int.right_turn true only at another intersection of the scene, one the lane does not enter, and false at the intersection the lane enters and at the driveway entrance on its highway."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "The subject occupies a turn lane of side left, its plan going straight: no right turn lane is occupied."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

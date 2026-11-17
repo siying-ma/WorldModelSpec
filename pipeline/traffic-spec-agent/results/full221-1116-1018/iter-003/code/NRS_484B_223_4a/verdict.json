@@ -1,0 +1,204 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "t"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "args": [
+        {
+         "var": "t"
+        },
+        {
+         "lit": "right"
+        }
+       ],
+       "atom": "st_turn_lane_side",
+       "params": []
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "turn_lane"
+    },
+    "var": "t"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_223_4a",
+   "intentions": [
+    "int.right_turn"
+   ],
+   "laws": [
+    "NRS-484B-223-4a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "t"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "t"
+          },
+          {
+           "lit": "right"
+          }
+         ],
+         "atom": "st_turn_lane_side",
+         "params": []
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "t"
+             },
+             {
+              "var": "x"
+             }
+            ],
+            "atom": "st_lane_enters",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "x"
+             }
+            ],
+            "int": "int.right_turn"
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "intersection"
+         },
+         "var": "x"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "t"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "e"
+                },
+                {
+                 "var": "h"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "e"
+                }
+               ],
+               "int": "int.right_turn"
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "driveway_or_alley_entrance"
+            },
+            "var": "e"
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "highway"
+         },
+         "var": "h"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "turn_lane"
+    },
+    "var": "t"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "65adaba8b44d3583a70b7928",
+  "candidate_digest": "1380252f10f3d81c2bfbc89863ffc693d08fa6b5a04e73055454e6a1a201725c"
+ }
+}

@@ -1,0 +1,48 @@
+'TrafficSpec.Rules.LVMC_11_52_300.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.LVMC_11_52_300.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_52_300","intentions":[],"laws":["LVMC-11-52-300"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"not":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]}},{"and":[{"body":{"args":[{"var":"subject"},{"var":"street"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"street"},{"and":[{"cmp":"ge","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":60},"unit":"count"}},{"cmp":"lt","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":360},"unit":"count"}}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_300","intentions":[],"laws":["LVMC-11-52-300"],"narrowings":[],"obligation":{"not":{"body":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.parking_min_duration"}]},{"and":[{"body":{"args":[{"var":"subject"},{"var":"street"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"street"},{"and":[{"cmp":"ge","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":60},"unit":"count"}},{"cmp":"lt","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":360},"unit":"count"}}]}]}]},"holds_for":"time","length":{"lit":{"den":1,"num":1800},"unit":"second"},"subject":"subject"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"not":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]}},{"and":[{"body":{"args":[{"var":"subject"},{"var":"street"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"street"},{"and":[{"cmp":"ge","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":60},"unit":"count"}},{"cmp":"lt","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":360},"unit":"count"}}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_300","intentions":[],"laws":["LVMC-11-52-300"],"narrowings":[],"obligation":{"not":{"body":{"and":[{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.parking_min_duration"},"subject":"subject"},{"and":[{"body":{"args":[{"var":"subject"},{"var":"street"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"street"},{"and":[{"cmp":"ge","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":60},"unit":"count"}},{"cmp":"lt","lhs":{"args":[{"lit":"minute_of_day"}],"measure":"env_civil_time"},"rhs":{"lit":{"den":1,"num":360},"unit":"count"}}]}]}]},"holds_for":"time","length":{"lit":{"den":1,"num":1800},"unit":"second"},"subject":"subject"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,env_civil_time,kin_time,drv_motion_parked
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-130::motor_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	env.civil_time
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	subject
+OCC	subject
+OCC	?street
+OCC	subject,street
+OCC	
+OCC	
+OCC	subject
+OCC	subject
+OCC	?street
+OCC	subject,street
+OCC	
+OCC	
+LITERAL	60/1	TrafficSpec.PUnit'.count
+LITERAL	360/1	TrafficSpec.PUnit'.count
+LITERAL	1800/1	TrafficSpec.PUnit'.second
+LITERAL	60/1	TrafficSpec.PUnit'.count
+LITERAL	360/1	TrafficSpec.PUnit'.count
+TIME	occurrences	1
+TIME	checks	164
+TIME	lint	346
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]
+TIME	scenario:forbid	267
+SCEN	permit	compliant	?	permit: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]
+TIME	scenario:permit	301
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	759
+SCEN	blind	unknown	?	blind: unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle], not for an atom the manifest masks
+TIME	scenario:blind	535
+SCEN	branch_1	compliant	?	branch_1: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]
+TIME	scenario:branch_1	351
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	262
+TIME	witnesses	2475
+DONE_WITNESSES

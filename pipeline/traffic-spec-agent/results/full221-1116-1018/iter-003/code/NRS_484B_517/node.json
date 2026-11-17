@@ -1,0 +1,336 @@
+{
+ "node_id": "NRS_484B_517",
+ "law_refs": [
+  "NRS-484B-517"
+ ],
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person shall not stop, stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "s2",
+   "text": "other than a bus",
+   "role": "exception"
+  },
+  {
+   "id": "s3",
+   "text": "in a bus stop,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "or a taxicab",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "in a taxicab stand,",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "when such stop or stand has been officially designated and appropriately signed,",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "except that the driver of a passenger vehicle",
+   "role": "exception"
+  },
+  {
+   "id": "s8",
+   "text": "may temporarily stop there",
+   "role": "standard"
+  },
+  {
+   "id": "s9",
+   "text": "and for the purpose of and while actually engaged in",
+   "role": "exception"
+  },
+  {
+   "id": "s10",
+   "text": "expeditiously",
+   "role": "standard"
+  },
+  {
+   "id": "s11",
+   "text": "loading or unloading of passengers",
+   "role": "exception"
+  },
+  {
+   "id": "s12",
+   "text": "when such stopping does not interfere with",
+   "role": "standard"
+  },
+  {
+   "id": "s13",
+   "text": "any bus or taxicab",
+   "role": "exception"
+  },
+  {
+   "id": "s14",
+   "text": "waiting to enter or about to enter such zone.",
+   "role": "exception"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.governs",
+    "dev.human_direction",
+    "dev.railway_signal_or_gate",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.yield_sign",
+    "rel.ahead_behind_in_lane",
+    "rel.occupies",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' when prohibited is 'any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device' (DEF-NRS-484A-260, the definition the table resolves for 'stopping' in this law); 'stand' is 'the halting of a vehicle, whether occupied or not' (DEF-NRS-484A-250) and 'park' 'the standing of a vehicle' (DEF-NRS-484A-155): together a halt, drv.motion.complete_halt ('at rest at the observation ... its speed at or below a tolerance', p.halt_speed_tolerance). The definition's exclusions are carried beside it: a halt with another road user ahead in the same lane (rel.ahead_behind_in_lane) within p.queue_halt_gap of the body (rel.surface_gap, 'distance between the nearest points of two bodies', not a centre distance) avoids conflict with other traffic; a halt on a travel region the subject occupies (rel.occupies, st.travel_region) governed (dev.governs) by a stop sign, a yield sign, a traffic signal showing red or yellow, a railway signal flashing or a gate not up, or a police officer's stop indication (dev.stop_sign, dev.yield_sign, dev.traffic_signal, dev.railway_signal_or_gate, dev.human_direction) complies with a device or an officer. 'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-030::bus"
+   ],
+   "derived": [],
+   "justification": "'Bus' is the admitted aggregate DEF-NRS-484A-030::bus ('a vehicle owned by the State, a political subdivision or a private school or nursery, designed for carrying ... passengers and used for the transportation of persons, or a vehicle, other than a taxicab, designed and used for the transportation of persons for compensation'), claimed as one atom, never expanded; which classes it decides is the run's reading of the definition."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "A bus stop at the curb is st.curb_zone of kind bus_stop ('a signed or marked length of curb'), which the subject's footprint overlaps (rel.occupies, 'a road user's footprint overlaps a lane / region (... curb zone ...)')."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-270::taxicab"
+   ],
+   "derived": [],
+   "justification": "'Taxicab' is the admitted aggregate DEF-NRS-484A-270::taxicab ('a motor vehicle designed or constructed to accommodate and transport ... passengers, including the driver, and used to transport passengers for a charge or fee'), claimed as one atom; which classes it decides is the run's reading of the definition."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "'Taxicab stand' is 'a fixed area in a highway parallel and adjacent to the curb or edge of the highway and set aside for taxicabs to stand for passengers' (DEF-NRS-484B-067): st.curb_zone of kind taxicab_stand ('a signed or marked length of curb'), which the subject's footprint overlaps (rel.occupies)."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "That the stop or stand 'has been officially designated and appropriately signed' is its legal status, read from the feature's presence on the road: the curb zone of kind bus_stop or taxicab_stand the subject occupies (st.curb_zone, 'a signed or marked length of curb'; rel.occupies) is presumed designated and signed."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "ru.truck",
+    "ru.trailer_or_combination"
+   ],
+   "derived": [],
+   "justification": "'Driver' is 'every person who drives or is in actual physical control of a vehicle' (DEF-NRS-484A-080), read through the vehicle's controlled motion. 'Passenger vehicle' has no posted definition: it is read as a vehicle (the admitted aggregate DEF-NRS-484A-320::vehicle) not built to carry goods or to be drawn: not ru.truck ('motor vehicle for carrying goods, with a body built for that purpose') and not ru.trailer_or_combination ('vehicle drawn by another, or the combination'), carried beside the aggregate."
+  },
+  {
+   "span": "s9",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'While actually engaged in' fixes the loading to the stop itself: the door of s11 is open at an observation of the same halt (drv.motion.complete_halt, 'at rest at the observation'); the purpose is read by that conduct."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "sig.door_open"
+   ],
+   "derived": [],
+   "justification": "The loading or unloading of passengers is read by the act through which passengers board or alight: a door of the vehicle open (sig.door_open, 'a door open; side in {traffic, curb}')."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-030::bus",
+    "ru.aggregate=DEF-NRS-484A-270::taxicab"
+   ],
+   "derived": [],
+   "justification": "'Any bus or taxicab': the admitted aggregates DEF-NRS-484A-030::bus and DEF-NRS-484A-270::taxicab, each claimed as one atom; a road user the run's reading leaves unresolved under both makes this limb unknown, never decided."
+  },
+  {
+   "span": "s14",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone",
+    "st.region_geometry"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Waiting to enter or about to enter such zone' is read by the conduct, on the same zone z the subject occupies (st.curb_zone, rel.occupies): the bus or taxicab does not overlap z and the ground distance from its body to z (st.region_geometry, 'the ground distance from a road user's body outline to it') is within p.zone_entry_wait_reach; it is waiting where it is halted there (drv.motion.complete_halt), and about to enter where, read by the movement it leads to, it stays outside z within that reach until its footprint comes to overlap z (rel.occupies)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s8",
+   "standard": "temporarily",
+   "concepts": [
+    "drv.motion.parked"
+   ],
+   "params": [
+    "p.standing_min_duration",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "curbside passenger pick-up dwell: a stop counts as temporary while it has not lasted as long as a passenger pick-up dwell, i.e. while the subject is not at rest at every observation of a window of length p.standing_min_duration behind the observation (drv.motion.parked)",
+   "surrogate": false
+  },
+  {
+   "span": "s10",
+   "standard": "expeditiously",
+   "concepts": [
+    "drv.motion.parked"
+   ],
+   "params": [
+    "p.standing_min_duration",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "curbside passenger pick-up dwell: loading or unloading counts as expeditious while the halt has not lasted as long as a passenger pick-up dwell (drv.motion.parked with min_duration p.standing_min_duration); the same bound as the temporary stop it qualifies",
+   "surrogate": false
+  },
+  {
+   "span": "s12",
+   "standard": "does not interfere with",
+   "concepts": [
+    "drv.motion.complete_halt",
+    "st.region_geometry",
+    "rel.occupies"
+   ],
+   "params": [
+    "p.zone_entry_wait_reach",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "queueing at a curb space: a stop interferes with a bus or taxicab where, at some observation of the stop so far, it is outside the zone within one passenger-car length plus a queue spacing of it (p.zone_entry_wait_reach), the place a vehicle waits to take the space, and is halted there or stays there until it comes onto the zone",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) whose footprint overlaps (rel.occupies) a curb zone z (st.curb_zone) that is of kind bus_stop while the subject is not a bus (ru.aggregate DEF-NRS-484A-030::bus false), or of kind taxicab_stand while the subject is not a taxicab (ru.aggregate DEF-NRS-484A-270::taxicab false).",
+ "obligation": "For every zone z the subject occupies that is selected as in the applicability (re-bound with its kind and the subject's class), the subject is not halted (drv.motion.complete_halt with p.halt_speed_tolerance), except a halt that is (a) to avoid conflict with other traffic: some road user other than the subject is ahead of the subject in the same lane (rel.ahead_behind_in_lane) with a gap between bodies (rel.surface_gap) at most p.queue_halt_gap; or (b) in compliance with a device or an officer: a travel region the subject occupies is governed (dev.governs) by a stop sign, a yield sign, a traffic signal displaying a red or yellow indication or flashing_red, a railway signal or gate with lights flashing or gate not up, or a person in the role police_officer giving the indication stop; or (c) a temporary, expeditious stop of a passenger vehicle for passengers: the subject is neither a truck (ru.truck) nor a trailer or combination (ru.trailer_or_combination), it is not parked with min_duration p.standing_min_duration (drv.motion.parked), a door of the subject is open (sig.door_open) at some observation of the same halt, before or after the observation, and at no observation of the halt up to the judged one is there a road user w other than the subject that is a bus or a taxicab (the two admitted aggregates), whose footprint does not overlap z, whose body's ground distance to z (st.region_geometry) is at most p.zone_entry_wait_reach, and which either is halted there (drv.motion.complete_halt: waiting to enter) or, from that observation on, stays outside z within p.zone_entry_wait_reach of it until its footprint overlaps z (strong until, rel.occupies: about to enter).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap",
+  "p.standing_min_duration",
+  "p.zone_entry_wait_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'A person shall not stop, stand or park a vehicle' is read on the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s7",
+   "why": "'The driver of a passenger vehicle' is read on the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s6",
+   "why": "Official designation and appropriate signing are read from the presence of the curb zone of kind bus_stop or taxicab_stand on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s9",
+   "why": "The purpose of loading or unloading passengers is read by a door of the halted vehicle open during the halt.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s14",
+   "why": "'Waiting to enter' is read by a bus or taxicab halted outside the zone within the waiting reach; 'about to enter', an imminent movement, is read by the movement it leads to: the bus or taxicab stays outside the zone within that reach until its footprint overlaps the zone.",
+   "kind": "observable_reading",
+   "category": "intention"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A taxicab-class passenger car halts in a bus_stop curb zone for longer than the standing duration, doors closed; no road user ahead and no stop control governs its lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A taxicab-class passenger car halts briefly in a bus_stop curb zone with its curb-side door open and moves off before the standing duration; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A taxicab-class passenger car halts in a passenger_loading curb zone, which is neither a bus stop nor a taxicab stand; no bus_stop or taxicab_stand zone is occupied."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A taxicab-class passenger car halts briefly in a bus_stop curb zone and the source does not observe its doors.",
+   "masked": [
+    "sig.door_open"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A taxicab-class passenger car halts briefly in a bus_stop curb zone and moves off before the standing duration, its doors closed throughout the halt: it is not loading or unloading passengers; no other road user is in the scene and no stop control governs its lane."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A taxicab-class passenger car halts in a bus_stop curb zone with its curb-side door open and stays halted longer than the standing duration: the stop is not temporary; no other road user is in the scene and no stop control governs its lane."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "A taxicab-class passenger car halts in a bus_stop curb zone for longer than the standing duration, doors closed, a short queue gap behind a halted vehicle ahead in its lane: a halt to avoid conflict with other traffic."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

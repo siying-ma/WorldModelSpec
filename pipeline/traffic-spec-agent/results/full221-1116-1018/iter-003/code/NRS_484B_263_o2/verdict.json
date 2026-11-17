@@ -1,0 +1,422 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "cmp": "gt",
+      "lhs": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "measure": "kin_speed"
+      },
+      "rhs": {
+       "param": "p.halt_speed_tolerance"
+      }
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "cmp": "gt",
+         "lhs": {
+          "since_rise": {
+           "or": [
+            {
+             "rises": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            },
+            {
+             "rises": {
+              "not": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "c"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             }
+            }
+           ]
+          }
+         },
+         "rhs": {
+          "lit": {
+           "den": 1,
+           "num": 0
+          },
+          "unit": "second"
+         }
+        },
+        {
+         "cmp": "le",
+         "lhs": {
+          "since_rise": {
+           "or": [
+            {
+             "rises": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            },
+            {
+             "rises": {
+              "not": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "c"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             }
+            }
+           ]
+          }
+         },
+         "rhs": {
+          "param": "p.merge_window"
+         }
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "controlled_access"
+      },
+      "var": "c"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_263_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-263"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "cmp": "gt",
+         "lhs": {
+          "since_rise": {
+           "or": [
+            {
+             "rises": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            },
+            {
+             "rises": {
+              "not": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "c"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             }
+            }
+           ]
+          }
+         },
+         "rhs": {
+          "lit": {
+           "den": 1,
+           "num": 0
+          },
+          "unit": "second"
+         }
+        },
+        {
+         "cmp": "le",
+         "lhs": {
+          "since_rise": {
+           "or": [
+            {
+             "rises": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            },
+            {
+             "rises": {
+              "not": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "c"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             }
+            }
+           ]
+          }
+         },
+         "rhs": {
+          "param": "p.merge_window"
+         }
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "subject"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "lit": "DEF-NRS-484A-285::traffic"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "v"
+                 },
+                 {
+                  "lit": "DEF-NRS-484A-320::vehicle"
+                 }
+                ],
+                "atom": "ru_aggregate",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "cmp": "gt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "v"
+                    }
+                   ],
+                   "measure": "kin_speed"
+                  },
+                  "rhs": {
+                   "param": "p.halt_speed_tolerance"
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "v"
+                     },
+                     {
+                      "var": "c"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "v"
+                     },
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "lit": "ahead"
+                     }
+                    ],
+                    "atom": "rel_bearing",
+                    "params": []
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "v"
+              }
+             ],
+             "atom": "rel_contact",
+             "params": []
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "v"
+                }
+               ],
+               "derived": "prim_closest_approach_within",
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ]
+              },
+              {
+               "cmp": "lt",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "v"
+                 }
+                ],
+                "params": [
+                 {
+                  "param": "p.conflict_horizon"
+                 }
+                ],
+                "quantity": "prim_closest_approach_distance"
+               },
+               "rhs": {
+                "param": "p.conflict_centre_clearance"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "forall_user": "v"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "controlled_access"
+    },
+    "var": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "8694aab24d044b60c61ce5e4",
+  "candidate_digest": "624ea0020d54f88c94e5cbea1d2d76604db59f326cba63c66987c8bf2faf0648"
+ }
+}

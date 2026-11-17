@@ -1,0 +1,162 @@
+{
+ "node_id": "NRS_484D_400_5",
+ "law_refs": [
+  "NRS-484D-400-5"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "An authorized emergency vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "may be equipped with a siren, whistle or bell, capable of emitting sound audible under normal conditions from a distance of not less than 500 feet,",
+   "role": "definitional"
+  },
+  {
+   "id": "s3",
+   "text": "but the siren must not be used",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "except when the vehicle is operated in response to an emergency call",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "or in the immediate pursuit of an actual or suspected violator of the law,",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "in which event the driver of the vehicle may sound the siren to warn pedestrians and other drivers of his or her approach.",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "A driver of an emergency vehicle may operate the vehicle’s warning lamps without sounding the siren.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle"
+   ],
+   "derived": [],
+   "justification": "'authorized emergency vehicle' is the admitted aggregate DEF-NRS-484A-020::authorized_emergency_vehicle ('a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'), claimed as the aggregate and never replaced by ru.emergency_vehicle."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "sig.siren"
+   ],
+   "derived": [],
+   "justification": "sig.siren: 'a siren, whistle or bell sounding (audible; a source without audio declares it absent, and does not read a warning lamp as the sound)'. 'the siren must not be used' is the subject's own sig.siren not sounding. The exclusion of the warning lamp is respected: the lamp enters only the exception."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "justification": "Responding to an emergency call is a purpose; ru.emergency_vehicle's contract says 'the class alone is not responding; its responding is conduct'. The conduct of a vehicle operated in response to a call is the display of its warning lamps: sig.warning_lamp, 'a warning lamp lit; colour in {red, blue, amber, white}, mode in {flashing, rotating, steady}', read with mode flashing or rotating. Its exclusion 'Not a stand-in for: an audible warning' is respected: the lamp is never read as the siren."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "justification": "Immediate pursuit of a violator is a purpose read through the same conduct: the pursuing vehicle displays its warning lamps, sig.warning_lamp 'a warning lamp lit', mode flashing or rotating; not read as an audible warning."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s2",
+   "why": "A permission about equipment and its audible range; it imposes no duty on conduct and the rule judges only whether the siren sounds."
+  },
+  {
+   "span": "s6",
+   "why": "Restates the permission the exception (s4, s5) grants: in that event the siren may sound. The purpose 'to warn pedestrians and other drivers of his or her approach' is what a sounding siren does; the duty is the same whether or not these words are read.",
+   "scope": "none"
+  },
+  {
+   "span": "s7",
+   "why": "A permission to show warning lamps without the siren; it imposes no duty, and the siren duty never judges lamps alone."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is an authorized emergency vehicle (DEF-NRS-484A-020::authorized_emergency_vehicle), except at an observation at which it displays a warning lamp (sig.warning_lamp) in mode flashing or rotating, which is read as the vehicle operated in response to an emergency call or in immediate pursuit (s4, s5).",
+ "obligation": "At every such observation the subject's sig.siren is not sounding.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "Operation in response to an emergency call is read through its conduct, the vehicle's warning lamps flashing or rotating; a response made without lamps is not recognised.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s5",
+   "why": "Immediate pursuit of an actual or suspected violator is read through the pursuing vehicle's warning lamps flashing or rotating; a pursuit without lamps is not recognised.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A police car (authorized emergency vehicle) drives with sig.siren sounding and no sig.warning_lamp lit."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The police car drives with sig.siren silent and no warning lamp lit."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a private passenger car, not an authorized emergency vehicle; its siren is not observed to sound."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The police car drives with no warning lamp lit; the source has no audio, sig.siren absent.",
+   "masked": [
+    "sig.siren"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The police car drives with red and blue sig.warning_lamp flashing and sig.siren sounding: operated in response to a call."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

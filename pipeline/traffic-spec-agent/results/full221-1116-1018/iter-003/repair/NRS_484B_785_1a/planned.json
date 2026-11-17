@@ -1,0 +1,138 @@
+{
+ "node_id": "NRS_484B_785_1a",
+ "law_refs": [
+  "NRS-484B-785-1a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except as otherwise provided in an ordinance enacted pursuant to NRS 484A.469 [DEF-LVMC-11-40-185-A],",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "may be operated:",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "On a roadway, bicycle lane, path or route",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "at a speed of not more than 15 miles per hour.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregate DEF-NRS-484B-018::electric_scooter, claimed as one ru.aggregate atom ('membership of a legal aggregate'); the named class ru.electric_scooter is not substituted for it."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.bicycle_lane_or_path"
+   ],
+   "derived": [],
+   "justification": "'roadway' (DEF-NRS-484A-220: 'that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder') is st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder'; 'bicycle lane, path' is st.bicycle_lane_or_path, 'lane or separate path reserved for bicycles and the devices a jurisdiction groups with them'; a 'route' for these devices runs on roadways and paths, so it adds no place beyond them. rel.occupies anchors the scooter on them. 'bicycle' here names the structure kind, not road users the duty counts."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed, 'magnitude of velocity' (m/s), compared with the law's own figure, a literal; its 'not a stand-in for' clauses concern no other quantity here."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s1",
+   "why": "The ordinance the words name (LVMC 11.40.185(A), posted as DEF-LVMC-11-40-185-A: 'an electric bicycle or an electric scooter may be operated on a public roadway or sidewalk, or a lane, path, or route designated for bicycle, electric bicycle, or electric scooter use') provides where a scooter may be operated and states no speed; nothing in it provides otherwise on the speed this line bounds, so the duty is the same whether or not the exception's words hold.",
+   "scope": "none"
+  },
+  {
+   "span": "s3",
+   "why": "The permission to operate adds no restriction to the speed bound: a scooter at rest or moving below the bound meets it alike, so the duty is the same whether or not the scooter is being operated.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of the electric scooter aggregate and its footprint overlaps a roadway or a bicycle lane or path at the observation.",
+ "obligation": "The subject's speed (kin.speed) is at most the literal 15 mph at the observation.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "The permission 'may be operated ... at a speed of not more than 15 miles per hour' is read as its limit: operation on these places above the figure is outside what the line permits.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "An electric scooter rides on a roadway at 8 m/s, above 15 mph."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "An electric scooter rides in a bicycle lane at 5 m/s."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "An electric scooter rides on a sidewalk at 8 m/s, overlapping no roadway, bicycle lane or path."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "An electric scooter rides on a roadway; the source does not observe speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "literals": [
+  {
+   "span": "s5",
+   "text": "15 miles per hour",
+   "value": 15,
+   "unit": "mph"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

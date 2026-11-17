@@ -1,0 +1,81 @@
+{
+ "concept_id": "drv.lane.heading_left_of_carrier",
+ "kind": "formula",
+ "contract": "Road user a, moving, points to the left of the designated direction of travel of carrier region r by more than a tolerance: its heading has turned off r's direction toward the left. With h a's heading (kin.heading) and d r's designated direction (st.lane_direction), both as a formula reads them normalised, the dot product of d and h is positive, so that a points along d rather than against it, and the cross product d_x times h_y minus d_y times h_x is above sin_tol, so that h lies to the left of d, counter-clockwise in the world frame, by more than the angle whose sine is sin_tol; and a's speed (kin.speed) is above speed_tol. It is a state at one observation: it says nothing of whether a occupies r, of how long its heading has been so, of the path a will follow, or of why it turns. Not denoted: a road user at rest or moving at or below speed_tol; a heading within that angle of d, or turned to its right; a heading that points against d, the dot product being at or below zero. Where r carries no designated direction, or a's heading or speed is unobserved, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "sin_tol",
+   "unit": "ratio",
+   "meaning": "sine of the largest angle between a's heading and r's designated direction at which a counts as keeping r's direction"
+  },
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "the speed at or below which a counts as at rest, so that its heading marks no course"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a's heading (kin.heading)",
+   "atoms": [
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.heading: 'direction the body points', read normalised as the contract states."
+  },
+  {
+   "span": "r's designated direction (st.lane_direction)",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction: 'direction of travel designated for a structure a vehicle travels in'; a carrier with none reads unknown, as the contract states."
+  },
+  {
+   "span": "a's speed (kin.speed) is above speed_tol",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed: 'magnitude of velocity'; a road user at rest has no course to depart from."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "r's direction points along x; a moves at 10 m/s with its heading turned about ten degrees counter-clockwise from x: dot positive, cross above sin_tol."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "r's direction points along x; a moves at 10 m/s with its heading turned about ten degrees clockwise from x: the cross product is negative."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As holds, but a's heading is not observed on the source.",
+   "masked": [
+    "kin.heading"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_413_2"
+ ],
+ "differs_from": {
+  "concept": "drv.lane.heading_right_of_carrier",
+  "why": "It denotes the mirror state: a heading turned to the LEFT of the carrier's direction (cross product d_x*h_y - d_y*h_x above +sin_tol), which the accepted concept's contract explicitly excludes ('Not denoted: ... a heading within that angle of d, or turned to its left'). Its formals cannot be swapped or negated to obtain this side (track and region formals; no sign formal), and a literal side formal would be read only where a spelling is expected, so the two sides are separate concepts. A law that requires a signal to the side of a course change needs both."
+ }
+}

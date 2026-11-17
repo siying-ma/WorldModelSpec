@@ -1,0 +1,176 @@
+{
+ "node_id": "NRS_484B_287_1d",
+ "law_refs": [
+  "NRS-484B-287-1d"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except as provided in NRS 484B.290 [LVMC-11-30-140-B]:",
+   "role": "reference"
+  },
+  {
+   "id": "s2",
+   "text": "A pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall not cross an intersection diagonally",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "unless authorized by official traffic-control devices.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Pedestrian' is defined by DEF-NRS-484A-165 ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); the run admits it as the aggregate DEF-NRS-484A-165::pedestrian, claimed whole and never expanded into class atoms."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane",
+    "st.lane_enters"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "'intersection' (DEF-NRS-484A-105: 'The area embraced within the prolongation or connection of the lateral curb lines') is st.intersection, 'the region where two roadways meet, bounded by the prolongation of their edges'; the alley-junction exclusion of the definition's (3) is made by the atom's own contract. rel.occupies ('a road user's footprint overlaps a lane / region') anchors the pedestrian in that intersection. 'diagonally' is a direction of the pedestrian's motion relative to the ways that meet there: the lanes that run into the intersection are read through st.lane_enters ('the intersection region a directed approach carrier runs into at its entrance end'; kind st.lane), and drv.motion.moving_across_carrier, whose contract compares the road user's velocity with a carrier's designated direction, is read at two tolerances on every such lane: across it with the tolerance that tells across from along, and not across it with the right-angle tolerance, so the motion is oblique to both crossing ways. st.lane_enters is not used for the subject's presence (that is rel.occupies) nor for governance."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "An 'official traffic-control device' (DEF-NRS-484A-145) includes every 'marking ... placed or erected by a public authority ... for the purpose of regulating, warning or guiding traffic'; the marking that authorizes a pedestrian crossing is a crosswalk 'distinctly indicated for pedestrian crossing by lines or other markings on the surface' (DEF-NRS-484A-065 (2)), carried by st.crosswalk ('marked crossing ...; marked attribute') read with its marked attribute; rel.occupies anchors the pedestrian inside that marked crossing. st.crosswalk 'Not a stand-in for' clauses do not concern this use."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s1",
+   "rule": "LVMC_11_30_140_B_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "s1",
+   "rule": "LVMC_11_30_140_B_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian) whose footprint overlaps an intersection x (rel.occupies, st.intersection) into which at least one lane runs (st.lane_enters); the duty does not apply where LVMC_11_30_140_B_o1 or LVMC_11_30_140_B_o2 is engaged for the subject.",
+ "obligation": "At each such observation: if the subject moves diagonally across x, that is, for every lane l with st.lane_enters(l, x), drv_motion_moving_across_carrier(subject, l) holds with parameters (p.halt_speed_tolerance, p.crossing_motion_cos) and does not hold with parameters (p.halt_speed_tolerance, p.right_angle_crossing_cos), then the subject's footprint overlaps a marked crosswalk (st.crosswalk with its marked attribute true). Otherwise compliant.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos",
+  "p.right_angle_crossing_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'cross ... diagonally' is read at each observation as the pedestrian, inside the intersection, moving oblique to every lane that runs into it (neither within the right-angle tolerance of across a lane nor along it); a crossing is judged by its motion at each observation, not as a corner-to-corner path.",
+   "kind": "reading"
+  },
+  {
+   "span": "s4",
+   "why": "'official' is read through the presence of the marking on the road: a marked crosswalk in the scene is presumed placed by a public authority.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Lanes running into intersection x run north-south and east-west; a pedestrian inside x walks north-east at 1.4 m/s, oblique to every entering lane, with no crosswalk under its footprint."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A pedestrian inside x near its edge walks east at 1.4 m/s: across the north-south lanes at right angles, so the motion is not diagonal."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The pedestrian walks along a sidewalk and its footprint overlaps no intersection."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The pedestrian is inside x with no marked crosswalk under it, but its velocity is not observed, so whether it moves diagonally cannot be told.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A pedestrian inside x walks north-east within a marked diagonal crosswalk."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "pedestrian trajectory heading variability in naturalistic crossing studies"
+  },
+  {
+   "name": "p.right_angle_crossing_cos",
+   "unit": "ratio",
+   "value": 0.26,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the motion counts as at right angles to the curb: within about 15 degrees of perpendicular",
+   "source": "pedestrian trajectory heading variability in naturalistic crossing studies"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "LVMC_11_30_140_B_o1": "c16e53d5e0751e3a33e4714a395f6ae52908edc285cd35ac0d6020639580e0c3",
+  "LVMC_11_30_140_B_o2": "0d2aef4518131bacbb70d019a2e6c616f63408c9c7a2ac88844a4af81c612fb1"
+ }
+}

@@ -1,0 +1,247 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 8 names, composes LVMC_11_30_140_B_o1,LVMC_11_30_140_B_o2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "x"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "args": [
+           {
+            "var": "l"
+           },
+           {
+            "var": "x"
+           }
+          ],
+          "atom": "st_lane_enters",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "lane"
+         },
+         "var": "l"
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "intersection"
+      },
+      "var": "x"
+     },
+     {
+      "and": [
+       {
+        "not": {
+         "map": {
+          "subject": "subject"
+         },
+         "rule_applies": "LVMC_11_30_140_B_o1"
+        }
+       },
+       {
+        "not": {
+         "map": {
+          "subject": "subject"
+         },
+         "rule_applies": "LVMC_11_30_140_B_o2"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_287_1d",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-287-1d"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "x"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "args": [
+           {
+            "var": "l"
+           },
+           {
+            "var": "x"
+           }
+          ],
+          "atom": "st_lane_enters",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "lane"
+         },
+         "var": "l"
+        }
+       ]
+      },
+      {
+       "implies": [
+        {
+         "body": {
+          "implies": [
+           {
+            "args": [
+             {
+              "var": "l"
+             },
+             {
+              "var": "x"
+             }
+            ],
+            "atom": "st_lane_enters",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "l"
+               }
+              ],
+              "derived": "drv_motion_moving_across_carrier",
+              "params": [
+               {
+                "param": "p.halt_speed_tolerance"
+               },
+               {
+                "param": "p.crossing_motion_cos"
+               }
+              ]
+             },
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "l"
+                }
+               ],
+               "derived": "drv_motion_moving_across_carrier",
+               "params": [
+                {
+                 "param": "p.halt_speed_tolerance"
+                },
+                {
+                 "param": "p.right_angle_crossing_cos"
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "forall_region": {
+          "lit": "lane"
+         },
+         "var": "l"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "st_crosswalk_marked",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "crosswalk"
+         },
+         "var": "c"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "x"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "8bf1c490ea697f7ff2f834e2",
+  "candidate_digest": "89d45a2be62f306fec6eb8b7603a3bd4988ceb77f8a08a1e200e311d4524fe0e"
+ }
+}

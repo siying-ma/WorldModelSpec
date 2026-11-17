@@ -1,0 +1,162 @@
+{
+ "node_id": "NRS_484B_210_3",
+ "law_refs": [
+  "NRS-484B-210-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not overtake and pass another vehicle upon the right",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "when such movement requires driving off the paved portion of the highway.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole. 'driver' (DEF-NRS-484A-080) is a relational role read through the vehicle's controlled motion (observable_reading, agency)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass_on_right"
+   ],
+   "justification": "'overtake and pass another vehicle upon the right' is the act drv.interaction.overtake_pass_on_right(subject, b), 'Road user a overtakes and passes road user b on b's right'; b is of DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.shoulder",
+    "st.road_edge"
+   ],
+   "derived": [],
+   "justification": "'driving off the paved portion of the highway': at some observation of the act the subject's footprint overlaps (rel.occupies, 'a road user's footprint overlaps a lane / region') an st.shoulder whose paved attribute is unset ('the part of the highway beside the roadway ...; paved attribute'), or an st.road_edge whose paved attribute, 'for the surface beyond it', is unset, so that part of the body is at or beyond the edge of the pavement. 'requires' is read through the movement as made (reading). 'highway' keeps its extent: the paved portion is any paved part of it, so a paved shoulder or sidewalk is not 'off' it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of DEF-NRS-484A-320::vehicle, overtakes and passes on its right another road user b of DEF-NRS-484A-320::vehicle: drv.interaction.overtake_pass_on_right(subject, b) with p.overtake_window and p.overtake_same_direction_cos is recognized at the judged observation; b is quantified there, not a binder.",
+ "obligation": "At no observation of the act, from its beginning (the last observation of the window behind at which b was ahead of the subject with aligned headings) to its recognition, does the subject's footprint overlap (rel.occupies) an st.shoulder whose paved attribute is unset or an st.road_edge whose paved attribute, for the surface beyond it, is unset; where it does at some such observation, the duty is violated.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'The driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject passes b on b's right with its footprint overlapping an st.shoulder whose paved attribute is unset during the side-by-side phase."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject passes b on b's right in the adjacent lane, its footprint overlapping no unpaved shoulder and no road edge with an unpaved surface beyond."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject drives along an unpaved shoulder with no road user ahead of it: no pass is recognized."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject passes b on its right; rel.occupies is not observed, so whether it overlapped an unpaved shoulder is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "occasion_s3",
+   "expected": "violated",
+   "narrative": "The subject's footprint overlaps an unpaved shoulder during the middle part of the pass only, the rest of the act on the roadway."
+  },
+  {
+   "name": "occasion_s3_outside",
+   "expected": "compliant",
+   "narrative": "The subject's footprint overlapped an unpaved shoulder only before the act began; it returned to the roadway, and then passed b on its right on the pavement."
+  }
+ ],
+ "occasion": {
+  "act": "drv.interaction.overtake_pass_on_right",
+  "boundary": "window",
+  "window": "p.overtake_window",
+  "under_way": {
+   "words": "overtake and pass another vehicle upon the right",
+   "atoms": [
+    "kin.velocity",
+    "rel.bearing",
+    "rel.longitudinal_overlap",
+    "rel.same_direction"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass_on_right"
+   ],
+   "justification": "An observation inside the act lies after its beginning, the last observation of the window behind at which b was ahead of the subject with headings aligned (rel.bearing longitudinal component positive, rel.longitudinal_overlap negative, rel.same_direction), and at or before its recognition, while the subject's velocity (kin.velocity), exceeding b's along its heading, carries it up to and past b; an unpaved shoulder occupied before that observation is outside the act. These relations read the two road users' relative motion, never a place."
+  },
+  "spans": {
+   "s3": "some_moment"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "overtaking-manoeuvre durations in naturalistic driving studies"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading angles in naturalistic driving data"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

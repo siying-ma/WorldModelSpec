@@ -1,0 +1,665 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 20 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "cmp": "le",
+       "lhs": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "c"
+         }
+        ],
+        "measure": "st_region_geometry_distance"
+       },
+       "rhs": {
+        "param": "p.railroad_crossing_approach_reach"
+       }
+      },
+      "exists_region": {
+       "lit": "railway_crossing"
+      },
+      "var": "c"
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "or": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "dRail"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "dRail"
+                   },
+                   {
+                    "lit": "flashing"
+                   }
+                  ],
+                  "atom": "dev_railway_signal_or_gate_lights",
+                  "params": []
+                 },
+                 {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "dRail"
+                     },
+                     {
+                      "lit": "lowering"
+                     }
+                    ],
+                    "atom": "dev_railway_signal_or_gate_gate",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "dRail"
+                     },
+                     {
+                      "lit": "down"
+                     }
+                    ],
+                    "atom": "dev_railway_signal_or_gate_gate",
+                    "params": []
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_device": {
+              "lit": "railway_signal_or_gate"
+             },
+             "var": "dRail"
+            },
+            {
+             "or": [
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "dStop"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               },
+               "exists_device": {
+                "lit": "stop_sign"
+               },
+               "var": "dStop"
+              },
+              {
+               "or": [
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "dSignal"
+                     },
+                     {
+                      "var": "r"
+                     }
+                    ],
+                    "atom": "dev_governs",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "dSignal"
+                     },
+                     {
+                      "lit": "circular_red"
+                     }
+                    ],
+                    "atom": "dev_traffic_signal_shows",
+                    "params": []
+                   }
+                  ]
+                 },
+                 "exists_device": {
+                  "lit": "traffic_signal"
+                 },
+                 "var": "dSignal"
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "dHuman"
+                     },
+                     {
+                      "var": "r"
+                     }
+                    ],
+                    "atom": "dev_governs",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "dHuman"
+                         },
+                         {
+                          "lit": "police_officer"
+                         }
+                        ],
+                        "atom": "dev_human_direction_role",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "dHuman"
+                         },
+                         {
+                          "lit": "railroad_flagger"
+                         }
+                        ],
+                        "atom": "dev_human_direction_role",
+                        "params": []
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "dHuman"
+                       },
+                       {
+                        "lit": "stop"
+                       }
+                      ],
+                      "atom": "dev_human_direction_indication",
+                      "params": []
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_device": {
+                  "lit": "human_direction"
+                 },
+                 "var": "dHuman"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "travel_region"
+        },
+        "var": "r"
+       },
+       {
+        "not": {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "cmp": "ge",
+            "lhs": {
+             "cond": {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "l1"
+                  },
+                  {
+                   "var": "h"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "l2"
+                     },
+                     {
+                      "var": "h"
+                     }
+                    ],
+                    "atom": "st_on_way",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "not": {
+                       "same": [
+                        {
+                         "var": "l1"
+                        },
+                        {
+                         "var": "l2"
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "l3"
+                          },
+                          {
+                           "var": "h"
+                          }
+                         ],
+                         "atom": "st_on_way",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "not": {
+                            "same": [
+                             {
+                              "var": "l1"
+                             },
+                             {
+                              "var": "l3"
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "and": [
+                            {
+                             "not": {
+                              "same": [
+                               {
+                                "var": "l2"
+                               },
+                               {
+                                "var": "l3"
+                               }
+                              ]
+                             }
+                            },
+                            {
+                             "body": {
+                              "and": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "l4"
+                                 },
+                                 {
+                                  "var": "h"
+                                 }
+                                ],
+                                "atom": "st_on_way",
+                                "params": []
+                               },
+                               {
+                                "and": [
+                                 {
+                                  "not": {
+                                   "same": [
+                                    {
+                                     "var": "l1"
+                                    },
+                                    {
+                                     "var": "l4"
+                                    }
+                                   ]
+                                  }
+                                 },
+                                 {
+                                  "and": [
+                                   {
+                                    "not": {
+                                     "same": [
+                                      {
+                                       "var": "l2"
+                                      },
+                                      {
+                                       "var": "l4"
+                                      }
+                                     ]
+                                    }
+                                   },
+                                   {
+                                    "not": {
+                                     "same": [
+                                      {
+                                       "var": "l3"
+                                      },
+                                      {
+                                       "var": "l4"
+                                      }
+                                     ]
+                                    }
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             "exists_region": {
+                              "lit": "lane"
+                             },
+                             "var": "l4"
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "exists_region": {
+                       "lit": "lane"
+                      },
+                      "var": "l3"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "lane"
+                 },
+                 "var": "l2"
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "lane"
+              },
+              "var": "l1"
+             },
+             "else": {
+              "lit": {
+               "den": 1,
+               "num": 0
+              },
+              "unit": "count"
+             },
+             "then": {
+              "lit": {
+               "den": 1,
+               "num": 4
+              },
+              "unit": "count"
+             }
+            },
+            "rhs": {
+             "lit": {
+              "den": 1,
+              "num": 4
+             },
+             "unit": "count"
+            }
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "highway"
+         },
+         "var": "h"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_560_3_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-560-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "cmp": "le",
+       "lhs": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "c"
+         }
+        ],
+        "measure": "st_region_geometry_distance"
+       },
+       "rhs": {
+        "param": "p.railroad_crossing_approach_reach"
+       }
+      },
+      {
+       "not": {
+        "body": {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "v"
+             },
+             {
+              "var": "subject"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "lit": "DEF-NRS-484A-285::traffic"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "v"
+                 },
+                 {
+                  "var": "lv"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               "exists_region": {
+                "lit": "lane"
+               },
+               "var": "lv"
+              },
+              {
+               "and": [
+                {
+                 "cmp": "le",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "measure": "st_region_geometry_distance"
+                 },
+                 "rhs": {
+                  "param": "p.railroad_crossing_approach_reach"
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "v"
+                    }
+                   ],
+                   "atom": "rel_same_direction",
+                   "params": [
+                    {
+                     "param": "p.side_by_side_same_direction_cos"
+                    }
+                   ]
+                  },
+                  {
+                   "cmp": "gt",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "v"
+                     }
+                    ],
+                    "measure": "rel_longitudinal_overlap"
+                   },
+                   "rhs": {
+                    "lit": {
+                     "den": 1,
+                     "num": 0
+                    },
+                    "unit": "metre"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "exists_user": "v"
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "cc5913ee0f6131849aca4d3b",
+  "candidate_digest": "be285105180ee9470f2020477db15f68f7956dc69278715efc5cccda2233e967"
+ }
+}

@@ -1,0 +1,499 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 13 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "since": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "k"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "k"
+                   }
+                  ],
+                  "derived": "drv_motion_moving_across_carrier",
+                  "params": [
+                   {
+                    "param": "p.halt_speed_tolerance"
+                   },
+                   {
+                    "param": "p.crossing_motion_cos"
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "lane"
+               },
+               "var": "k"
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "derived": "drv_motion_moving_across_carrier",
+                 "params": [
+                  {
+                   "param": "p.halt_speed_tolerance"
+                  },
+                  {
+                   "param": "p.crossing_motion_cos"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "lit": "pedestrians_prohibited"
+                }
+               ],
+               "atom": "dev_regulatory_sign_code",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              }
+             ]
+            },
+            "exists_device": {
+             "lit": "regulatory_sign"
+            },
+            "var": "d"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "roadway"
+      },
+      "var": "r"
+     },
+     {
+      "not": {
+       "body": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "c"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "crosswalk"
+       },
+       "var": "c"
+      }
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_30_060_A",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-060-A"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "since": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "k"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "k"
+                   }
+                  ],
+                  "derived": "drv_motion_moving_across_carrier",
+                  "params": [
+                   {
+                    "param": "p.halt_speed_tolerance"
+                   },
+                   {
+                    "param": "p.crossing_motion_cos"
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "lane"
+               },
+               "var": "k"
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "derived": "drv_motion_moving_across_carrier",
+                 "params": [
+                  {
+                   "param": "p.halt_speed_tolerance"
+                  },
+                  {
+                   "param": "p.crossing_motion_cos"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "lit": "pedestrians_prohibited"
+                }
+               ],
+               "atom": "dev_regulatory_sign_code",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              }
+             ]
+            },
+            "exists_device": {
+             "lit": "regulatory_sign"
+            },
+            "var": "d"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "v"
+             },
+             {
+              "lit": "DEF-NRS-484A-320::vehicle"
+             }
+            ],
+            "atom": "ru_aggregate",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "v"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "v"
+              }
+             ],
+             "atom": "rel_contact",
+             "params": []
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "cmp": "gt",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "measure": "kin_speed"
+               },
+               "rhs": {
+                "param": "p.halt_speed_tolerance"
+               }
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "v"
+                  }
+                 ],
+                 "derived": "prim_closest_approach_within",
+                 "params": [
+                  {
+                   "param": "p.conflict_horizon"
+                  }
+                 ]
+                },
+                {
+                 "cmp": "lt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "v"
+                   }
+                  ],
+                  "params": [
+                   {
+                    "param": "p.conflict_horizon"
+                   }
+                  ],
+                  "quantity": "prim_closest_approach_distance"
+                 },
+                 "rhs": {
+                  "param": "p.conflict_centre_clearance"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "forall_user": "v"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "roadway"
+    },
+    "var": "r"
+   },
+   "residues": [
+    "Section 11.30.070 is no node of this run's library, neither accepted nor planned, so no rule can be composed; the condition under which it suspends this section is stated in this text's own words, 'when pedestrians are prohibited from crossing at certain designated places', carried by f8. Conditions of 11.30.070 those words do not state are not read; reported to the operator."
+   ],
+   "surrogate": false
+  },
+  "context": "1952ff04abd5e9681c3f1d48",
+  "candidate_digest": "639a6757653b4859e91464fe8a811c99fc8eaca8ec1a9fbe79343a85bd770544"
+ }
+}

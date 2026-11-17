@@ -1,0 +1,177 @@
+{
+ "node_id": "NRS_484B_210_2",
+ "law_refs": [
+  "NRS-484B-210-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "may overtake and pass another vehicle upon the right only",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "under conditions permitting such movement in safety.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle (ru.aggregate: 'membership of a legal aggregate'), claimed whole. 'driver' (DEF-NRS-484A-080) is a relational role read through the vehicle's controlled motion (observable_reading, agency)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass_on_right"
+   ],
+   "justification": "'overtake and pass another vehicle upon the right' is the act drv.interaction.overtake_pass_on_right(subject, b), 'Road user a overtakes and passes road user b on b's right'; b is of DEF-NRS-484A-320::vehicle. 'only' makes the act lawful only under the conditions of s3."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "under conditions permitting such movement in safety",
+   "concepts": [
+    "rel.contact",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Traffic-conflict technique: the movement is made in safety where, at every observation of the act, the subject is in contact (rel.contact) with no road user and no road user's closest approach to it under constant velocities (prim.closest_approach_within over p.conflict_horizon) comes closer than p.conflict_centre_clearance (prim.closest_approach_distance); the closest-approach distance is the measured magnitude the bound is compared with, so the verdict moves with how close the conflict is.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of DEF-NRS-484A-320::vehicle, overtakes and passes on its right another road user b of DEF-NRS-484A-320::vehicle: drv.interaction.overtake_pass_on_right(subject, b) with p.overtake_window and p.overtake_same_direction_cos is recognized at the judged observation; b is quantified there, not a binder.",
+ "obligation": "At every observation of the act, from its beginning (the last observation of the window behind at which b was ahead of the subject with aligned headings) to its recognition, for every road user u other than the subject (b included): the subject is not in rel.contact with u, and it is not the case that prim.closest_approach_within(subject, u) over p.conflict_horizon holds with prim.closest_approach_distance(subject, u) over p.conflict_horizon below p.conflict_centre_clearance. Otherwise the duty is violated. Surrogate: the verdict is evidence on the safety standard, not a legal conclusion.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'The driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "The catch-all 'conditions permitting such movement in safety' is read only through conflicts with road users: contact and closest approaches under constant velocities. Conditions of the road (surface, view) enter only through those conflicts.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject passes b on b's right and, while side by side, closes laterally on b so that their closest approach within p.conflict_horizon falls below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject passes b on b's right in the adjacent lane keeping its distance; no closest approach within p.conflict_horizon falls below p.conflict_centre_clearance and no contact occurs; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject follows b in the same lane at a steady gap and never passes it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject draws past b on its right but rel.bearing is not observed: whether a pass on the right occurred is unknown.",
+   "masked": [
+    "rel.bearing"
+   ]
+  }
+ ],
+ "occasion": {
+  "act": "drv.interaction.overtake_pass_on_right",
+  "boundary": "window",
+  "window": "p.overtake_window",
+  "under_way": {
+   "words": "overtake and pass another vehicle upon the right",
+   "atoms": [
+    "kin.velocity",
+    "rel.bearing",
+    "rel.longitudinal_overlap",
+    "rel.same_direction"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass_on_right"
+   ],
+   "justification": "An observation inside the act lies after its beginning, the last observation of the window behind at which b was ahead of the subject with headings aligned (rel.bearing longitudinal component positive, rel.longitudinal_overlap negative, rel.same_direction), and at or before its recognition, while the subject's velocity (kin.velocity), exceeding b's along its heading, carries it up to and past b. These relations are computed from the two road users' kinematics, so the boundary reads their relative motion, never a place."
+  },
+  "spans": {}
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "overtaking-manoeuvre durations in naturalistic driving studies"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading angles in naturalistic driving data"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique; FHWA Surrogate Safety Assessment Model"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design-vehicle dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

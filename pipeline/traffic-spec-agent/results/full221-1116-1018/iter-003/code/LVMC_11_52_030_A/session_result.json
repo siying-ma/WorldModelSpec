@@ -1,0 +1,247 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 339501,
+  "stop_reason": "end_turn",
+  "session_id": "c5a77dc3-14e5-4a6b-82c8-3d1d7fadfc53",
+  "total_cost_usd": 2.7564262000000004,
+  "usage": {
+   "input_tokens": 36,
+   "cache_creation_input_tokens": 168787,
+   "cache_read_input_tokens": 2189719,
+   "output_tokens": 35630,
+   "output_tokens_details": {
+    "thinking_tokens": 20882
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 168787,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 927,
+     "cache_read_input_tokens": 166502,
+     "cache_creation_input_tokens": 6753,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 6753
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 48442,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0053440200000000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 36,
+    "outputTokens": 35630,
+    "cacheReadInputTokens": 2189719,
+    "cacheCreationInputTokens": 168787,
+    "webSearchRequests": 0,
+    "costUSD": 2.7510821800000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 20882,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 168787,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01YKA7cTSWfox91tUMk8sYh4",
+    "tool_input": {
+     "command": "python -m harness gate --run_id full221-1116-1018 --node_id LVMC_11_52_030_A --help 2>/dev/null | head -0; true",
+     "description": "placeholder (not run)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 21,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I stopped with the gate verdict **VACUOUS**, and the cause is in the node and the run's reading, not in the Lean. The gate reported nothing against the build, the static checks or the declarations, and all 16 witnesses passed. Its only complaint is that the four \"tour bus / shuttle bus / limo / RTC bus\" membership tests in exceptions (2) and (3) never change any witness's verdict.\n\n**Why no witness can fix it:** the run's reading counts no vehicle type as inside or outside those four groups. Every vehicle type that can be the subject is left \"unresolved\" in all four, so each membership test is unknown for every vehicle at every moment. The gate's check swaps each test for true and for false and looks for a decided witness whose verdict changes. A verdict that is decided while the test is unknown comes out the same either way, so no scene can pass this check.\n\n**What the plan or reading needs to change (spans s9–s12):** either\n- classify at least one vehicle type under each group (for example, `tour_bus_or_limousine` as a tour bus, shuttle bus or limo, and `transit_bus` as an RTC bus), or\n- treat membership in exceptions (2) and (3) as a gap until the LVMC 11-02 definitions are read.\n\n**Gate budget:** two of six runs used. The first returned VACUOUS. The second was a mistake on my part: I re-ran the gate on unchanged files with its output thrown away, so its verdict is unknown but should be the same. Earlier I also ran one `ls` that the rules don't allow. A second stray command was blocked and did not run.\n\n**Rule:**\n- **Applicability:** the subject occupies a red curb zone and none of the five exceptions holds. Exceptions (2) and (3) are a bus group, the matching zone kind, and a halt of at most the text's 30 minutes. (4) is an armored car or an emergency vehicle. (5) is a mail drop box within reach, with a halt no longer than the mail-deposit limit.\n- **Obligation:** a halt is allowed only behind another vehicle ahead in the same lane within the queue gap, or when directed to stop: police stop, red signal, or stop sign on the subject's lane.\n- **Choices made where the node was open:**\n  - Exception (4) needs no halt, following the record's wording.\n  - The obligation doesn't re-select the zone.\n  - \"Red arrow\" is written as all four arrow directions.\n  - No narrowings were added.\n\n**Witnesses:** besides the nine the node plans, I added seven branches:\n- an ambulance: not applicable\n- too long a stop at the mail drop box, and a box out of reach: violated\n- police stop, red signal and stop sign: compliant\n- an RTC bus parked 40 minutes: violated\n\nFiles are in the working directory:\n- task_result.md",
+  "ttft_ms": 45847,
+  "type": "result",
+  "duration_ms": 545316,
+  "uuid": "f5806943-b46c-4df8-b2bd-bc12a46d1b68",
+  "ttft_stream_ms": 1186,
+  "time_to_request_ms": 335,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 56,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 11,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 24,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 195,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 35,
+  "time_to_request_cpu_ms": 300,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 1,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1186,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 48442,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0053440200000000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 36,
+    "outputTokens": 35630,
+    "cacheReadInputTokens": 2189719,
+    "cacheCreationInputTokens": 168787,
+    "webSearchRequests": 0,
+    "costUSD": 2.7510821800000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 20882,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 168787,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

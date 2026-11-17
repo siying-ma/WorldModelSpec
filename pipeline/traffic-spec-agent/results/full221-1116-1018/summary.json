@@ -1,26 +1,27 @@
 {
  "run": "full221-1116-1018",
- "iteration": 2,
+ "iteration": 3,
  "status": "incomplete",
- "stop_reason": "the iteration bound (2) was reached",
+ "stop_reason": "the iteration bound (3) was reached",
  "laws": {
-  "planned": 175,
-  "blocked": 45,
-  "returned": 1
+  "planned": 146,
+  "blocked": 54,
+  "returned": 20,
+  "failed": 1
  },
- "accepted_nodes": 144,
- "accepted_concepts": 14,
+ "accepted_nodes": 167,
+ "accepted_concepts": 16,
  "concepts": {
-  "accepted": 14,
-  "returned": 3
+  "accepted": 16,
+  "returned": 1
  },
  "gate_costs": {
   "cost_failures": 0,
   "core_panics": 0,
   "held_for_operator": []
  },
- "gaps_total": 62,
- "gaps_created_by_this_run": 62,
+ "gaps_total": 71,
+ "gaps_created_by_this_run": 71,
  "never_planned": [],
  "stop": "iteration_limit",
  "stage": "done",
@@ -35,6 +36,7 @@
    "LVMC-11-22-020",
    "LVMC-11-30-030",
    "LVMC-11-30-050",
+   "LVMC-11-30-060-A",
    "LVMC-11-30-060-B",
    "LVMC-11-30-070-B",
    "LVMC-11-30-090",
@@ -43,6 +45,10 @@
    "LVMC-11-40-120",
    "LVMC-11-40-130",
    "LVMC-11-40-140",
+   "LVMC-11-40-180-A",
+   "LVMC-11-43-010-A",
+   "LVMC-11-43-010-B",
+   "LVMC-11-43-010-C1",
    "LVMC-11-43-010-C2",
    "LVMC-11-46-030",
    "LVMC-11-48-060",
@@ -61,6 +67,9 @@
    "NRS-484B-127-2",
    "NRS-484B-153-2",
    "NRS-484B-153-3",
+   "NRS-484B-203-1",
+   "NRS-484B-208-1",
+   "NRS-484B-210-3",
    "NRS-484B-213-1",
    "NRS-484B-213-2a",
    "NRS-484B-213-2b",
@@ -71,18 +80,24 @@
    "NRS-484B-223-3a",
    "NRS-484B-223-3b",
    "NRS-484B-223-3c",
+   "NRS-484B-223-4a",
    "NRS-484B-223-4b",
    "NRS-484B-227-1",
+   "NRS-484B-250-1",
    "NRS-484B-250-4",
    "NRS-484B-253",
    "NRS-484B-257-1",
+   "NRS-484B-260",
+   "NRS-484B-263",
    "NRS-484B-267-2b",
    "NRS-484B-267-2e",
    "NRS-484B-270-2a",
    "NRS-484B-270-5a",
    "NRS-484B-270-7a",
+   "NRS-484B-270-7b",
    "NRS-484B-280-1a",
    "NRS-484B-280-1c",
+   "NRS-484B-287-1d",
    "NRS-484B-293",
    "NRS-484B-307-12a",
    "NRS-484B-307-12b",
@@ -106,11 +121,13 @@
    "NRS-484B-403-3",
    "NRS-484B-407",
    "NRS-484B-410",
+   "NRS-484B-413-2",
    "NRS-484B-413-3",
    "NRS-484B-450-1g",
    "NRS-484B-450-1h",
    "NRS-484B-450-1j",
    "NRS-484B-450-1k",
+   "NRS-484B-450-1l",
    "NRS-484B-450-1m",
    "NRS-484B-450-1o",
    "NRS-484B-457-1",
@@ -123,11 +140,14 @@
    "NRS-484B-503",
    "NRS-484B-507-1",
    "NRS-484B-510",
+   "NRS-484B-517",
    "NRS-484B-533",
    "NRS-484B-557",
+   "NRS-484B-560-3",
    "NRS-484B-560-7a",
    "NRS-484B-560-7b",
    "NRS-484B-587-1",
+   "NRS-484B-587-2b",
    "NRS-484B-600-1a",
    "NRS-484B-600-1c",
    "NRS-484B-600-1e",
@@ -139,74 +159,45 @@
    "NRS-484B-633-2",
    "NRS-484B-653-1a",
    "NRS-484B-777-3",
+   "NRS-484B-785-1a",
    "NRS-484D-165-3",
    "NRS-484D-165-4",
-   "NRS-486-351-1"
+   "NRS-486-341",
+   "NRS-486-351-1",
+   "NRS-486-351-2"
   ],
   "awaiting_label_repair": [],
   "generating": [
-   "LVMC-11-30-060-A",
-   "LVMC-11-40-180-A",
+   "NRS-484B-210-2",
+   "NRS-484B-250-2",
+   "NRS-484B-287-1c",
+   "NRS-484B-287-1e",
+   "NRS-484B-307-2b",
+   "NRS-484B-307-4b",
+   "NRS-484B-307-8b",
+   "NRS-484B-307-9c"
+  ],
+  "to_plan": [
    "LVMC-11-40-180-C",
-   "LVMC-11-43-010-A",
-   "LVMC-11-43-010-B",
-   "LVMC-11-43-010-C1",
    "LVMC-11-52-030-A",
    "LVMC-11-52-030-B",
    "LVMC-11-52-300",
-   "LVMC-11-60-030-A4",
-   "LVMC-11-60-040",
-   "NRS-484B-203-1",
-   "NRS-484B-208-1",
-   "NRS-484B-210-2",
-   "NRS-484B-210-3",
    "NRS-484B-217-2",
-   "NRS-484B-223-4a",
-   "NRS-484B-250-1",
-   "NRS-484B-250-2",
    "NRS-484B-257-2",
-   "NRS-484B-260",
-   "NRS-484B-263",
-   "NRS-484B-267-1a",
-   "NRS-484B-267-1b",
-   "NRS-484B-267-1c",
    "NRS-484B-267-2a",
-   "NRS-484B-267-2c",
-   "NRS-484B-267-2d",
-   "NRS-484B-267-2f",
    "NRS-484B-270-2b",
-   "NRS-484B-270-7b",
    "NRS-484B-283-1a",
    "NRS-484B-283-1b",
    "NRS-484B-283-1d1",
    "NRS-484B-283-1d2",
    "NRS-484B-283-1d3",
    "NRS-484B-283-1d4",
-   "NRS-484B-287-1c",
-   "NRS-484B-287-1d",
-   "NRS-484B-287-1e",
-   "NRS-484B-307-2b",
-   "NRS-484B-307-4b",
    "NRS-484B-307-8a",
-   "NRS-484B-307-8b",
    "NRS-484B-307-8d",
    "NRS-484B-307-9a",
-   "NRS-484B-307-9b",
-   "NRS-484B-307-9c",
    "NRS-484B-363-4",
-   "NRS-484B-450-1l",
-   "NRS-484B-517",
-   "NRS-484B-560-3",
    "NRS-484B-587-2a",
-   "NRS-484B-587-2b",
-   "NRS-484B-777-1",
-   "NRS-484B-785-1a",
-   "NRS-484D-400-5",
-   "NRS-486-341",
-   "NRS-486-351-2"
-  ],
-  "to_plan": [
-   "NRS-484B-413-2"
+   "NRS-484B-777-1"
   ],
   "blocked": [
    "LVMC-11-16-030",
@@ -230,16 +221,24 @@
    "LVMC-11-52-305-A",
    "LVMC-11-60-030-A1",
    "LVMC-11-60-030-A2",
+   "LVMC-11-60-030-A4",
    "LVMC-11-60-030-A5",
+   "LVMC-11-60-040",
    "NRS-484B-117-1",
    "NRS-484B-127-3",
    "NRS-484B-210-1",
+   "NRS-484B-267-1a",
+   "NRS-484B-267-1b",
+   "NRS-484B-267-1c",
+   "NRS-484B-267-2c",
+   "NRS-484B-267-2d",
    "NRS-484B-270-1",
    "NRS-484B-270-3",
    "NRS-484B-270-4",
    "NRS-484B-297-2",
    "NRS-484B-297-6",
    "NRS-484B-300-1",
+   "NRS-484B-307-9b",
    "NRS-484B-360-1",
    "NRS-484B-440-1",
    "NRS-484B-450-1a",
@@ -253,9 +252,12 @@
    "NRS-484B-769",
    "NRS-484B-913",
    "NRS-484D-100-1",
-   "NRS-484D-215-1"
+   "NRS-484D-215-1",
+   "NRS-484D-400-5"
   ],
-  "failed": []
+  "failed": [
+   "NRS-484B-267-2f"
+  ]
  },
  "generation": {
   "complete": false,
@@ -271,6 +273,9 @@
     "NRS-484B-127-2",
     "NRS-484B-153-2",
     "NRS-484B-153-3",
+    "NRS-484B-203-1",
+    "NRS-484B-208-1",
+    "NRS-484B-210-3",
     "NRS-484B-213-1",
     "NRS-484B-213-2a",
     "NRS-484B-213-2b",
@@ -281,18 +286,24 @@
     "NRS-484B-223-3a",
     "NRS-484B-223-3b",
     "NRS-484B-223-3c",
+    "NRS-484B-223-4a",
     "NRS-484B-223-4b",
     "NRS-484B-227-1",
+    "NRS-484B-250-1",
     "NRS-484B-250-4",
     "NRS-484B-253",
     "NRS-484B-257-1",
+    "NRS-484B-260",
+    "NRS-484B-263",
     "NRS-484B-267-2b",
     "NRS-484B-267-2e",
     "NRS-484B-270-2a",
     "NRS-484B-270-5a",
     "NRS-484B-270-7a",
+    "NRS-484B-270-7b",
     "NRS-484B-280-1a",
     "NRS-484B-280-1c",
+    "NRS-484B-287-1d",
     "NRS-484B-293",
     "NRS-484B-307-2a",
     "NRS-484B-307-3a",
@@ -316,11 +327,13 @@
     "NRS-484B-403-3",
     "NRS-484B-407",
     "NRS-484B-410",
+    "NRS-484B-413-2",
     "NRS-484B-413-3",
     "NRS-484B-450-1g",
     "NRS-484B-450-1h",
     "NRS-484B-450-1j",
     "NRS-484B-450-1k",
+    "NRS-484B-450-1l",
     "NRS-484B-450-1m",
     "NRS-484B-450-1o",
     "NRS-484B-457-1",
@@ -330,11 +343,14 @@
     "NRS-484B-497",
     "NRS-484B-500",
     "NRS-484B-510",
+    "NRS-484B-517",
     "NRS-484B-533",
     "NRS-484B-557",
+    "NRS-484B-560-3",
     "NRS-484B-560-7a",
     "NRS-484B-560-7b",
     "NRS-484B-587-1",
+    "NRS-484B-587-2b",
     "NRS-484B-600-1a",
     "NRS-484B-600-1c",
     "NRS-484B-600-1e",
@@ -346,9 +362,12 @@
     "NRS-484B-633-2",
     "NRS-484B-653-1a",
     "NRS-484B-777-3",
+    "NRS-484B-785-1a",
     "NRS-484D-165-3",
     "NRS-484D-165-4",
+    "NRS-486-341",
     "NRS-486-351-1",
+    "NRS-486-351-2",
     "LVMC-11-12-070-B",
     "LVMC-11-16-040",
     "LVMC-11-16-060",
@@ -358,6 +377,7 @@
     "LVMC-11-22-020",
     "LVMC-11-30-030",
     "LVMC-11-30-050",
+    "LVMC-11-30-060-A",
     "LVMC-11-30-060-B",
     "LVMC-11-30-070-B",
     "LVMC-11-30-090",
@@ -366,6 +386,10 @@
     "LVMC-11-40-120",
     "LVMC-11-40-130",
     "LVMC-11-40-140",
+    "LVMC-11-40-180-A",
+    "LVMC-11-43-010-A",
+    "LVMC-11-43-010-B",
+    "LVMC-11-43-010-C1",
     "LVMC-11-43-010-C2",
     "LVMC-11-46-030",
     "LVMC-11-48-060",
@@ -380,69 +404,37 @@
     "NRS-484B-477-1a"
    ],
    "generating": [
-    "NRS-484B-203-1",
-    "NRS-484B-208-1",
     "NRS-484B-210-2",
-    "NRS-484B-210-3",
-    "NRS-484B-217-2",
-    "NRS-484B-223-4a",
-    "NRS-484B-250-1",
     "NRS-484B-250-2",
-    "NRS-484B-257-2",
-    "NRS-484B-260",
-    "NRS-484B-263",
-    "NRS-484B-267-1a",
-    "NRS-484B-267-1b",
-    "NRS-484B-267-1c",
-    "NRS-484B-267-2a",
-    "NRS-484B-267-2c",
-    "NRS-484B-267-2d",
-    "NRS-484B-267-2f",
-    "NRS-484B-270-2b",
-    "NRS-484B-270-7b",
-    "NRS-484B-283-1a",
-    "NRS-484B-283-1b",
-    "NRS-484B-283-1d1",
-    "NRS-484B-283-1d2",
-    "NRS-484B-283-1d3",
-    "NRS-484B-283-1d4",
     "NRS-484B-287-1c",
-    "NRS-484B-287-1d",
     "NRS-484B-287-1e",
     "NRS-484B-307-2b",
     "NRS-484B-307-4b",
-    "NRS-484B-307-8a",
     "NRS-484B-307-8b",
-    "NRS-484B-307-8d",
-    "NRS-484B-307-9a",
-    "NRS-484B-307-9b",
-    "NRS-484B-307-9c",
-    "NRS-484B-363-4",
-    "NRS-484B-450-1l",
-    "NRS-484B-517",
-    "NRS-484B-560-3",
-    "NRS-484B-587-2a",
-    "NRS-484B-587-2b",
-    "NRS-484B-777-1",
-    "NRS-484B-785-1a",
-    "NRS-484D-400-5",
-    "NRS-486-341",
-    "NRS-486-351-2",
-    "LVMC-11-30-060-A",
-    "LVMC-11-40-180-A",
-    "LVMC-11-40-180-C",
-    "LVMC-11-43-010-A",
-    "LVMC-11-43-010-B",
-    "LVMC-11-43-010-C1",
-    "LVMC-11-52-030-A",
-    "LVMC-11-52-030-B",
-    "LVMC-11-52-300",
-    "LVMC-11-60-030-A4",
-    "LVMC-11-60-040"
+    "NRS-484B-307-9c"
    ],
    "waiting_provider": {},
    "to_plan": {
-    "NRS-484B-413-2": "NRS_484B_413_2: concept `drv.lane.heading_left_of_carrier` is neither accepted nor proposed in this plan (a concept record for span s6)"
+    "NRS-484B-217-2": "`NRS_484B_217_2` composes or calls `NRS_484B_413_2` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-257-2": "`NRS_484B_257_2_o1` composes or calls `NRS_484B_257_1_o1` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-267-2a": "`NRS_484B_267_2a` composes or calls `NRS_484B_600_1a` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-270-2b": "`NRS_484B_270_2b_o3` composes or calls `NRS_484B_213_2c` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-283-1a": "`NRS_484B_283_1a` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-283-1b": "`NRS_484B_283_1b` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-283-1d1": "`NRS_484B_283_1d1` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-283-1d2": "`NRS_484B_283_1d2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-283-1d3": "`NRS_484B_283_1d3_o2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-283-1d4": "`NRS_484B_283_1d4_o2` composes or calls `LVMC_11_30_060_A` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "NRS-484B-307-8a": "NRS_484B_307_8a_o2: span s7 `After complying with the requirement to stop,` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as condition, and the role of words is fixed with the segmentation once a node of the law is accepted; NRS_484B_307_8a_o2: span s8 `vehicular traffic facing such a signal and situated on the e` has role exception; accepted node NRS_484B_307_8a_o3 of the same law segments these words as subject, and the role of words is fixed with the segmentation once a node of the law is accepted",
+    "NRS-484B-307-8d": "gate BARE_LITERAL; formula literals [] ≠ the node's declared literals [('2', 'count')]; a figure the law states is declared on its span, any other magnitude belongs in the reading",
+    "NRS-484B-307-9a": "NRS_484B_307_9a_o1: the normative reference “Except as otherwise provided in paragraph (b) [NRS-484B-307-9b]” names NRS-484B-307-9b, and no composition of a usable node on its span s2 composes a node of NRS-484B-307-9b: each law the reference names is composed (how they combine is stated by the compositions' kinds), even one not yet accepted; NRS_484B_307_9a_o2: the normative reference “Except as otherwise provided in paragraph (b) [NRS-484B-307-9b]” names NRS-484B-307-9b, and no composition of a usable node on its span s2 composes a node of NRS-484B-307-9b: each law the reference names is composed (how they combine is stated by the compositions' kinds), even one not yet accepted",
+    "NRS-484B-363-4": "gate WITNESS_FAIL; blind: unknown for [absent_atom:rel_longitudinal_overlap, window_truncated:since, absent_atom:rel_bearing, window_truncated:until], not for an atom the manifest masks; the manifest masks kin.position",
+    "NRS-484B-587-2a": "gate VACUOUS; obligation leaf 2: atom ru_aggregate [TrafficSpec.Arg.var \"subject\", TrafficSpec.Arg.lit \"DEF-NRS-484A-020::authorized_emergency_vehicle\"] (one of 2 literal variants of this atom; none exercised)",
+    "NRS-484B-777-1": "`NRS_484B_777_1_o1` composes or calls `NRS_484B_785_1a` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
+    "LVMC-11-40-180-C": "gate WITNESS_FAIL; branch_3: expected not_applicable, got unknown for [aggregate_unresolved:DEF-LVMC-11-02-082::electric_bicycle, aggregate_unresolved:DEF-LVMC-11-02-083::electric_scooter]",
+    "LVMC-11-52-030-A": "gate VACUOUS; applicability leaf 2: atom ru_aggregate [TrafficSpec.Arg.var \"subject\", TrafficSpec.Arg.lit \"DEF-LVMC-11-02-150::tour_bus\"] (one of 4 literal variants of this atom; none exercised)",
+    "LVMC-11-52-030-B": "gate VACUOUS; applicability leaf 2: atom ru_aggregate [TrafficSpec.Arg.var \"subject\", TrafficSpec.Arg.lit \"DEF-LVMC-11-02-070::commercial_vehicle\"] (one of 2 literal variants of this atom; none exercised)",
+    "LVMC-11-52-300": "gate WITNESS_FAIL; forbid: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-130::motor_vehicle]"
    },
    "blocked": {
     "NRS-484B-117-1": [
@@ -457,6 +449,21 @@
     ],
     "NRS-484B-210-1": [
      "G55"
+    ],
+    "NRS-484B-267-1a": [
+     "G85"
+    ],
+    "NRS-484B-267-1b": [
+     "G79"
+    ],
+    "NRS-484B-267-1c": [
+     "G80"
+    ],
+    "NRS-484B-267-2c": [
+     "G84"
+    ],
+    "NRS-484B-267-2d": [
+     "G81"
     ],
     "NRS-484B-270-1": [
      "G56"
@@ -482,6 +489,9 @@
     ],
     "NRS-484B-300-1": [
      "G62"
+    ],
+    "NRS-484B-307-9b": [
+     "G87"
     ],
     "NRS-484B-360-1": [
      "G63"
@@ -526,6 +536,9 @@
     ],
     "NRS-484D-215-1": [
      "G78"
+    ],
+    "NRS-484D-400-5": [
+     "G86"
     ],
     "LVMC-11-16-030": [
      "G17"
@@ -593,8 +606,14 @@
      "G46",
      "G47"
     ],
+    "LVMC-11-60-030-A4": [
+     "G83"
+    ],
     "LVMC-11-60-030-A5": [
      "G48"
+    ],
+    "LVMC-11-60-040": [
+     "G82"
     ],
     "LVMC-11-22-100": [
      "G19",
@@ -604,7 +623,9 @@
      "G23"
     ]
    },
-   "failed": [],
+   "failed": [
+    "NRS-484B-267-2f"
+   ],
    "revoked": {}
   },
   "scope": "all",
@@ -634,6 +655,21 @@
    "NRS-484B-210-1": [
     "G55"
    ],
+   "NRS-484B-267-1a": [
+    "G85"
+   ],
+   "NRS-484B-267-1b": [
+    "G79"
+   ],
+   "NRS-484B-267-1c": [
+    "G80"
+   ],
+   "NRS-484B-267-2c": [
+    "G84"
+   ],
+   "NRS-484B-267-2d": [
+    "G81"
+   ],
    "NRS-484B-270-1": [
     "G56"
    ],
@@ -658,6 +694,9 @@
    ],
    "NRS-484B-300-1": [
     "G62"
+   ],
+   "NRS-484B-307-9b": [
+    "G87"
    ],
    "NRS-484B-360-1": [
     "G63"
@@ -702,6 +741,9 @@
    ],
    "NRS-484D-215-1": [
     "G78"
+   ],
+   "NRS-484D-400-5": [
+    "G86"
    ],
    "LVMC-11-16-030": [
     "G17"
@@ -769,8 +811,14 @@
     "G46",
     "G47"
    ],
+   "LVMC-11-60-030-A4": [
+    "G83"
+   ],
    "LVMC-11-60-030-A5": [
     "G48"
+   ],
+   "LVMC-11-60-040": [
+    "G82"
    ],
    "LVMC-11-22-100": [
     "G19",

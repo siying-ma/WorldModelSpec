@@ -1,0 +1,112 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 4 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "sw"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "sidewalk"
+      },
+      "var": "sw"
+     },
+     {
+      "asm": "asm.fremont_street_main_to_seventh"
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.fremont_street_main_to_seventh"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-025::bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-LVMC-11-02-082::electric_bicycle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-LVMC-11-02-083::electric_scooter"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_40_180_A",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-40-180-A"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "args": [
+     {
+      "var": "subject"
+     }
+    ],
+    "derived": "drv_motion_complete_halt",
+    "params": [
+     {
+      "param": "p.halt_speed_tolerance"
+     }
+    ]
+   },
+   "residues": [
+    "The sentence directs the City to post signs; the riding prohibition of the first sentence holds whether or not the signs are posted, so the duty is the same either way."
+   ],
+   "surrogate": false
+  },
+  "context": "c44879869ef6dc9888fde051",
+  "candidate_digest": "3c57c4609bf9d1585f6fc5bc47b4353a9420ab706f8f56bb0d7e29b05bf20e49"
+ }
+}

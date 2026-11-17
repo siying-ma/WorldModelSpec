@@ -1,4 +1,4 @@
-# Observable readings and identity-class carriers (as of iteration 2)
+# Observable readings and identity-class carriers (as of iteration 3)
 
 Rebuilt in full from the latest record of each node of the run each time it is written. A report: nothing here files a gap, returns a record, holds a law or grants a change.
 

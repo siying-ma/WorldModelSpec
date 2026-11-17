@@ -1,0 +1,96 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "or": [
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "rw"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "roadway"
+      },
+      "var": "rw"
+     },
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "bl"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "bicycle_lane_or_path"
+      },
+      "var": "bl"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       }
+      ],
+      "atom": "ru_electric_scooter",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_785_1a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-785-1a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "cmp": "le",
+    "lhs": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "measure": "kin_speed"
+    },
+    "rhs": {
+     "lit": {
+      "den": 625,
+      "num": 4191
+     },
+     "unit": "metre_per_second"
+    }
+   },
+   "residues": [
+    "The ordinance the words name is LVMC 11.40.185(A), posted as DEF-LVMC-11-40-185-A: 'an electric bicycle or an electric scooter may be operated on a public roadway or sidewalk, or a lane, path, or route designated for bicycle, electric bicycle, or electric scooter use'. It provides where a scooter may be operated and states no speed. Nothing in it provides otherwise on the speed this line bounds, so the duty is the same whether or not the exception's words hold.",
+    "The permission to operate adds no restriction to the speed bound: a scooter at rest and one moving below the bound both meet it. The duty is therefore the same whether or not the scooter is being operated."
+   ],
+   "surrogate": false
+  },
+  "context": "a951066ee225d61deddb57a3",
+  "candidate_digest": "bd28d81b3cffe609ba2dead01caabaa2cf73d79b086b23f8a20ef14d2592c26b"
+ }
+}

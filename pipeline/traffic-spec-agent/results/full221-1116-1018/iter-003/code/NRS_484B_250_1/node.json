@@ -1,0 +1,326 @@
+{
+ "node_id": "NRS_484B_250_1",
+ "law_refs": [
+  "NRS-484B-250-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "b",
+   "text": "approaching an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "c",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "d",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "e",
+   "text": "to a vehicle which has entered the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "f",
+   "text": "from a different highway.",
+   "role": "condition"
+  },
+  {
+   "id": "g",
+   "text": "Except as otherwise provided in subsection 4 [NRS-484B-250-4],",
+   "role": "reference"
+  },
+  {
+   "id": "h",
+   "text": "this section does not apply at intersections controlled by official traffic-control devices",
+   "role": "exception"
+  },
+  {
+   "id": "i",
+   "text": "or to vehicles approaching each other from opposite directions,",
+   "role": "exception"
+  },
+  {
+   "id": "j",
+   "text": "when the driver of one of the vehicles is intending to",
+   "role": "exception"
+  },
+  {
+   "id": "k",
+   "text": "or is making a left turn.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Same mapping as 'The driver of a vehicle' in the index: the admitted aggregate DEF-NRS-484A-320::vehicle (ru.aggregate 'membership of a legal aggregate'); 'driver' is the vehicle's controlled motion, not membership."
+  },
+  {
+   "span": "b",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Same mapping as 'approaching the intersection' in the index: the subject occupies (rel.occupies) a carrier c1 whose entrance end is X — st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end — the carrier is an approach to that intersection'; st.travel_region is c1's kind, st.intersection X's. Never read from distance or velocity."
+  },
+  {
+   "span": "c",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "Same mapping as 'shall yield' in the index: the subject does not proceed — kin.speed ('magnitude of velocity') above the halt tolerance — while the protected vehicle is in conflict, and does not collide with it (rel.contact 'the bodies of two road users ... touch or overlap (a collision)'). Contact is not a near miss; the near miss is the standard's bound."
+  },
+  {
+   "span": "e",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'A vehicle' is the admitted aggregate; 'which has entered the intersection' is its footprint overlapping X (rel.occupies), continuously since the observation at which it came from its approach carrier (f)."
+  },
+  {
+   "span": "f",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'From a different highway' (DEF-NRS-484A-095: 'the entire width between the boundary lines of every way') is v's approach carrier c2 (rel.occupies, st.lane_enters c2 X) lying on a highway h2 (st.on_way: 'the public way (a highway region) a structure region lies on') on which the subject's carrier c1 does not lie. st.on_way is not nearness to a way: the relation is the map's."
+  },
+  {
+   "span": "h",
+   "atoms": [
+    "dev.governs",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.yield_sign",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Same mapping as 'or at a traffic-controlled intersection' in the index. DEF-NRS-484A-145: 'every sign, signal, marking and device ... for the purpose of regulating, warning or guiding traffic'; the intersection is controlled where a traffic signal, stop sign or yield sign governs X or a carrier entering it (dev.governs: 'the travel regions whose traffic the device controls ... or an intersection'; st.lane_enters ties the carrier to X)."
+  },
+  {
+   "span": "i",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.lane_direction"
+   ],
+   "derived": [],
+   "justification": "'Vehicles approaching each other from opposite directions': per rel.oncoming's 'Not a stand-in for: the direction a road user approaches from — that is read through the carrier it approaches through ... and through that carrier's direction (st.lane_direction)'. The subject's carrier c1 and the carrier c2 v entered X from (rel.occupies, st.lane_enters) have designated directions opposed within p.oncoming_heading_cos. 'Vehicles' is the admitted aggregate."
+  },
+  {
+   "span": "k",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'Is making a left turn' is the turn under way in X: the vehicle's heading change since its entry into X (rel.occupies), integrated from kin.yaw_rate ('rate of change of heading, positive when the heading turns to the left') by the formula language's heading-since term, lying to the left between p.turn_heading_min and p.u_turn_heading_min. kin.yaw_rate is not a stand-in for road curvature: it is the vehicle's own turning."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "d",
+   "standard": "the right-of-way: precedence owed where 'circumstances of direction, speed and proximity ... give rise to the danger of a crash' (DEF-NRS-484A-210)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: a danger of a crash exists where, under constant velocities, the two centres approach within the time-to-collision threshold p.conflict_horizon to a centre distance below p.conflict_centre_clearance; the subject proceeds where its speed exceeds p.halt_speed_tolerance",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "j",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the left at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [
+  {
+   "span": "g",
+   "rule": "NRS_484B_250_4_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "g",
+   "rule": "NRS_484B_250_4_o2",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At every observation at which the subject occupies a carrier c1 that enters an intersection X (st.lane_enters c1 X): the subject approaching X; except where X is controlled — a traffic signal, stop sign or yield sign governs X or a carrier entering X (dev.governs) — and except where NRS_484B_250_4_o1 or NRS_484B_250_4_o2 (binder subject ↦ subject) applies to the subject.",
+ "obligation": "Re-binding c1 and X as in the applicability: for every other road user v of DEF-NRS-484A-320::vehicle whose footprint overlaps X and has overlapped it continuously since an observation at which v occupied a carrier c2 that enters X (st.lane_enters c2 X) and lies on a highway h2 (st.on_way c2 h2) on which c1 does not lie — excepting the pair where the designated directions of c1 and c2 (st.lane_direction) have a dot product below minus p.oncoming_heading_cos and either the subject or v declares int.left_turn at X at this observation, or v's heading change since its latest entry into X (heading-since over kin.yaw_rate, step p.heading_since_step_carla_scene_graph) is a turn to the left of at least p.turn_heading_min and below p.u_turn_heading_min: the subject is not in contact with v (rel.contact), and it is not the case that the subject is moving (kin.speed above p.halt_speed_tolerance) while prim.closest_approach_within(subject, v; p.conflict_horizon) holds with prim.closest_approach_distance(subject, v; p.conflict_horizon) below p.conflict_centre_clearance.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.oncoming_heading_cos",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min",
+  "p.heading_since_step_carla_scene_graph"
+ ],
+ "narrowings": [
+  {
+   "span": "h",
+   "why": "'official' is a legal status; the device present and governing is its evidence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "a",
+   "why": "'the driver' is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "No device governs X or its carriers. Vehicle v entered X from carrier c2 on highway h2, on which the subject's carrier c1 does not lie, and is crossing X. The subject on c1 keeps kin.speed well above p.halt_speed_tolerance and its closest approach to v lies within p.conflict_horizon at a centre distance below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; the subject comes to rest on c1 short of X until v has cleared, then proceeds."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A dev.stop_sign governs c1: the intersection is controlled."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Uncontrolled X; v crossing X from a different highway on a conflicting path; kin.speed is absent, so whether the subject proceeds into the conflict is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject approaches the uncontrolled X with no other road user in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "v is approaching X on its own carrier and has not entered X; the subject's closest approach to v is in conflict, but v is not a vehicle which has entered the intersection."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "At a skewed junction v entered X from c2 on another highway whose designated direction is opposed to c1's within p.oncoming_heading_cos, and v declares int.left_turn at X; the subject proceeds in conflict with v: the pair is excepted."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channels"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique time-to-collision thresholds"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "design passenger-car dimensions"
+  },
+  {
+   "name": "p.oncoming_heading_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle off exactly opposed headings (about 25 degrees) at which two vehicles count as proceeding in opposite directions",
+   "source": "skew tolerance of opposing intersection approaches"
+  },
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "lane-change heading changes of a few degrees versus junction turns of about ninety degrees"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "midpoint between a right-angle turn and a full reversal of direction"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "NRS_484B_250_4_o1": "27e20665118f16a595f1ac3a1fe755229a99e123241b428a2c7f8d8b805bc946",
+  "NRS_484B_250_4_o2": "2d68461ae1e6e439bf407dba238bf726d3ba347a2ff3ff5ff2ce85e1a83abae9"
+ }
+}

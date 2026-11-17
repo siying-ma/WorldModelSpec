@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 58738,
+  "stop_reason": "end_turn",
+  "session_id": "2a62ae36-cdf1-4ece-8595-5c0346305dec",
+  "total_cost_usd": 0.8172348800000001,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 74116,
+   "cache_read_input_tokens": 74442,
+   "output_tokens": 6417,
+   "output_tokens_details": {
+    "thinking_tokens": 3295
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 74116,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 653,
+     "cache_read_input_tokens": 71311,
+     "cache_creation_input_tokens": 5936,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 5936
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 67544,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007445240000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 6417,
+    "cacheReadInputTokens": 74442,
+    "cacheCreationInputTokens": 74116,
+    "webSearchRequests": 0,
+    "costUSD": 0.8097896400000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3295,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 74116,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've rewritten `record.jsonl`, which should clear the bare-literal problem, but the trailer witnesses will probably still fail. Nothing has been run yet: I haven't put it through the validator or the gate.\n\n**The literal fix.** The two s6 literals are now stated in the unit the civil-time field actually reads, which is a count of minutes in the day. \"one a.m.\" is minute 60 and \"six a.m.\" is minute 360, both with unit `count`. The formula can then compare `minute_of_day` with these directly, so it no longer needs the undeclared 60-second conversion factor. I updated the applicability, the obligation and the s6 justification to say this. The s5 literal stays \"thirty minutes\" in `min`. The rest of the mapping is unchanged.\n\n**The trailer problem is still open.** The coder's second defect is outside what this record can change. The run's reading leaves trailers (`ru.trailer_or_combination`) unresolved under the motor-vehicle definition. So a trailer is \"unknown\" as a motor vehicle, the exception in s1 is unknown, and the `forbid` scenario can't come out `violated`. The definition's words do exclude a trailer, because it isn't self-propelled, and I noted that in the s1 justification. But that note doesn't change how the reading classifies trailers. Someone with access to the reading needs to resolve trailers as excluded (not motor vehicles) under that definition. Until then, a realistic vehicle in this rule is either a motor vehicle or unknown, so the rule can never be violated.\n\nI kept the trailer scenarios, because a trailer is the only realistic vehicle that isn't a motor vehicle. The other classes the reading decides that way (taxicabs, emergency vehicles and so on) are really motor vehicles. Building a scene from one of them alone would be a false scene.",
+  "ttft_ms": 34361,
+  "type": "result",
+  "duration_ms": 58314,
+  "uuid": "c53e7b07-8e9f-4e2d-8188-f92dd8823ca0",
+  "ttft_stream_ms": 1189,
+  "time_to_request_ms": 363,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 46,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 12,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 26,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 224,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 7,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 24,
+  "time_to_request_cpu_ms": 321,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 6,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 1,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 1,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 2,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1190,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 67544,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007445240000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 6417,
+    "cacheReadInputTokens": 74442,
+    "cacheCreationInputTokens": 74116,
+    "webSearchRequests": 0,
+    "costUSD": 0.8097896400000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3295,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 74116,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

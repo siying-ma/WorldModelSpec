@@ -1,0 +1,50 @@
+'TrafficSpec.Rules.NRS_486_341.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_486_341.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_486_341","intentions":[],"laws":["NRS-486-341"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_486_341","intentions":[],"laws":["NRS-486-341"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"m"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"m"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"m"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},{"body":{"args":[{"var":"m"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]}]},{"body":{"implies":[{"args":[{"var":"m"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"args":[{"var":"subject"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"m"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}}]},"forall_region":{"lit":"lane"},"var":"L"}]},"forall_user":"m"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_486_341","intentions":[],"laws":["NRS-486-341"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"m"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"m"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"m"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},{"body":{"args":[{"var":"m"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]}]},{"body":{"implies":[{"args":[{"var":"m"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"args":[{"var":"subject"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"m"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}}]},"forall_region":{"lit":"lane"},"var":"L"}]},"forall_user":"m"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,st_lane,rel_longitudinal_overlap
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle	DEF-NRS-486-041::motorcycle	DEF-NRS-486-038::moped
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.occupies
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	subject
+OCC	subject
+OCC	?m
+OCC	m,subject
+OCC	m
+OCC	m
+OCC	?h
+OCC	m,h
+OCC	?L
+OCC	m,L
+OCC	subject,L
+OCC	subject
+OCC	m
+TIME	occurrences	0
+TIME	checks	164
+TIME	lint	51
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	173
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	171
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	171
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	174
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	171
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	171
+TIME	witnesses	1031
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_486_341.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_486_341.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_486_341	7	5
+TIME	adequacy_start	53
+TIME	adequacy	6030
+DONE

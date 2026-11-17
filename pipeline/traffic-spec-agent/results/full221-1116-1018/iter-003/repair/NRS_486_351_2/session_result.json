@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 46184,
+  "stop_reason": "end_turn",
+  "session_id": "da58cbd1-cca3-4de7-bf50-00fbca765474",
+  "total_cost_usd": 0.8158709900000001,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 76510,
+   "cache_read_input_tokens": 78003,
+   "output_tokens": 5344,
+   "output_tokens_details": {
+    "thinking_tokens": 1672
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 76510,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 743,
+     "cache_read_input_tokens": 74872,
+     "cache_creation_input_tokens": 4769,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4769
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 71108,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00783673,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5344,
+    "cacheReadInputTokens": 78003,
+    "cacheCreationInputTokens": 76510,
+    "webSearchRequests": 0,
+    "costUSD": 0.8080342600000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1672,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 76510,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote the revised record to `record.jsonl`. It hasn't been re-checked yet; the harness validates it next. Only the scenarios changed. The spans still map to the same atoms, and the applicability, the obligation and the narrowings are unchanged.\n\n- **`blind` now hides the road-user classes (`ru.aggregate`) instead of `rel.longitudinal_overlap`.** The overlap could never come out unknown: Core recomputes it from the two vehicles' footprints, and any vehicle that reads as occupying the lane must have one. With the classes hidden, the scene is two vehicles side by side in the lane, headings aligned, no third. Nobody can tell whether the subject is a motorcycle, moped or trimobile, or whether the pair counts as two motorcycles or mopeds, so the verdict is unknown.\n- **`forbid`: the car now comes the opposite way.** The current reading doesn't rule out that a car could be a motorcycle or moped. So a car riding alongside a motorcycle in the same direction comes out unknown, not violated. With the car oncoming, the headings show no consent and the pair is not excused, so the verdict is violated.\n- **`idle`: the subject is now a bicycle.** A passenger-car subject was unknown under the motorcycle and trimobile definitions, for the same reason. A bicycle is none of the three, so the rule doesn't apply.\n- **New `branch_4` (violated):** two motorcycles side by side in the lane, met head-on, so no consent shows.\n\nI also dropped the proposal for `p.side_by_side_same_direction_cos`, because it is already in the parameter catalogue and is now just named.\n\nA limitation remains in the reading, not in this record. As long as a car's class stays unresolved under the motorcycle and moped definitions, the main case can't be decided: a car travelling alongside a motorcycle in the same lane and direction will always come out unknown. Fixing that means changing how the reading classifies `motor_vehicle`, which is outside this record.",
+  "ttft_ms": 17208,
+  "type": "result",
+  "duration_ms": 45612,
+  "uuid": "a77f3472-3967-4207-9327-5b01b6499cbe",
+  "ttft_stream_ms": 1344,
+  "time_to_request_ms": 349,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 49,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 13,
+   "input_hooks": 4,
+   "conversation_append": 1,
+   "transcript_persist": 28,
+   "tool_pool_refresh": 3,
+   "init_message": 4,
+   "init_frame_send": 7,
+   "engine_pickup": 11,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 3,
+   "request_announcements": 193,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 34,
+  "time_to_request_cpu_ms": 345,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 4,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1345,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 71108,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00783673,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 5344,
+    "cacheReadInputTokens": 78003,
+    "cacheCreationInputTokens": 76510,
+    "webSearchRequests": 0,
+    "costUSD": 0.8080342600000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1672,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 76510,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

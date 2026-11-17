@@ -1,0 +1,170 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "not": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "derived": "drv_motion_complete_halt",
+     "params": [
+      {
+       "param": "p.halt_speed_tolerance"
+      }
+     ]
+    }
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_203_1_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-203-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "c"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "highway"
+           },
+           "var": "h"
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "c"
+              }
+             ],
+             "atom": "rel_oncoming",
+             "params": [
+              {
+               "param": "p.oncoming_heading_cos"
+              }
+             ]
+            },
+            {
+             "cmp": "gt",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "measure": "rel_longitudinal_overlap"
+             },
+             "rhs": {
+              "lit": {
+               "den": 1,
+               "num": 0
+              },
+              "unit": "metre"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "c"
+        },
+        {
+         "lit": "left"
+        }
+       ],
+       "atom": "rel_bearing",
+       "params": []
+      }
+     ]
+    },
+    "forall_user": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "15b270fadae76ad9269aef53",
+  "candidate_digest": "abf5ec13cea68f2defa1c7b8f80a3f503a3b5cfb2512c4ec4ce43dd99e058336"
+ }
+}

@@ -1,0 +1,210 @@
+{
+ "node_id": "NRS_484B_270_7b",
+ "law_refs": [
+  "NRS-484B-270-7b"
+ ],
+ "segmentation": [
+  {
+   "id": "y1",
+   "text": "The operator of a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "y2",
+   "text": "shall not: Overtake and pass a motor vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "y3",
+   "text": "unless the operator can do so safely without endangering himself or herself or the occupants of the motor vehicle.",
+   "role": "standard"
+  }
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "elements": [
+  {
+   "span": "y1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The three admitted aggregates, claimed as ru.aggregate with their ids, as the index maps 'a bicycle, an electric bicycle or an electric scooter'; 'the operator' is read through the device's controlled motion (observable_reading, agency), ru.aggregate being 'Not a stand-in for: ... a relational role'."
+  },
+  {
+   "span": "y2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+    "kin.position",
+    "kin.heading",
+    "rel.longitudinal_overlap",
+    "rel.same_direction"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'Overtake and pass' is drv.interaction.overtake_pass, whose contract is 'Road user a overtakes and passes road user b from the rear: a, travelling in the same direction as b, comes from having b ahead of it to having b behind it', with a the subject and b the motor vehicle, as the index maps 'approaching from the rear shall not overtake and pass such stopped vehicle'; it 'says nothing of the lanes they occupy, of whether b moves', so a pass of a moving or a standing motor vehicle is covered alike. The concept holds at the recognition only, so the act's beginning, from which the standard of y3 is read, is located in the rule by the same definition the concept's contract gives it: 'The act begins at the last observation of the window behind at which b was ahead of a with their headings aligned within same_dir_cos (rel.same_direction)', where 'b is ahead of a where the longitudinal component of b's bearing in a's frame, the component along a's heading (kin.heading) of the vector from a's position to b's position (kin.position), is positive and the two bodies' projections on a's heading share no length (rel.longitudinal_overlap negative)'. These four atoms are claimed for that beginning: kin.position ('position of the body's reference point') and kin.heading ('direction the body points', read normalised) give the longitudinal component, rel.longitudinal_overlap ('the length the two footprints' projections on that axis share, negative for the gap between the projections') the absence of overlap, rel.same_direction ('the cosine of the angle between the headings is above its tolerance') the alignment, with p.overtake_same_direction_cos the same tolerance the concept is called with. 'A motor vehicle' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle, claimed as ru.aggregate."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "y3",
+   "standard": "safely, without endangering the operator or the occupants of the motor vehicle",
+   "concepts": [
+    "rel.contact",
+    "rel.surface_gap",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.bicycle_pass_safe_gap",
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "bicyclist operating space: a pass is safe where the gap between the rider's body and the passed vehicle's body stays at least the rider's operating-space sway and the bodies never touch; traffic-conflict technique: no other road user comes into a closest approach within a time-to-collision horizon and below a centre clearance during the pass",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, read as operated.",
+ "obligation": "For every road user m other than the subject that is a member of DEF-NRS-484A-130::motor_vehicle: at each observation at which drv.interaction.overtake_pass(subject, m) with window p.overtake_window and same_dir_cos p.overtake_same_direction_cos holds (the pass's recognition), the pass was safe at every observation since its beginning, read with since. The beginning is the latest observation before the recognition at which m was ahead of the subject with headings aligned, as the concept's contract defines it: the component along the subject's heading (kin.heading) of the vector from the subject's position to m's position (kin.position) is positive, rel.longitudinal_overlap(subject, m) is negative, and rel.same_direction(subject, m) holds within p.overtake_same_direction_cos; the concept's recognition guarantees such an observation within the window behind. Safe at an observation: the subject is not in contact with m (rel.contact), its rel.surface_gap to m (the distance between the bodies) is at least p.bicycle_pass_safe_gap, and no road user u other than the subject and m has prim.closest_approach_within(subject, u) over p.conflict_horizon with prim.closest_approach_distance(subject, u) over p.conflict_horizon below p.conflict_centre_clearance. Where the pass is recognized and the pass was not safe at the beginning and at every observation after it up to the recognition, violated; an unobserved gap, contact, closest approach, position or heading that decides it leaves it unknown.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.bicycle_pass_safe_gap",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "y1",
+   "why": "'The operator' is read through the device's controlled motion; who controls it is not observed.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "y3",
+   "why": "'can do so safely' is the operator's judgement of the pass, read through the pass actually made: its clearance and the conflicts during it, from the act's beginning to its recognition.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "y3",
+   "why": "Endangering the occupants of the motor vehicle is read through the clearance to and contact with its body, which carries them; endangering the operator is read through that clearance and through conflicting closest approaches with every other road user during the pass; other hazards (the surface, the operator's speed) are not read.",
+   "kind": "reading"
+  }
+ ],
+ "occasion": {
+  "act": "drv.interaction.overtake_pass",
+  "boundary": "window",
+  "window": "p.overtake_window",
+  "spans": {}
+ },
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A bicycle overtakes and passes a car moving slowly in the same direction, keeping a gap between bodies smaller than p.bicycle_pass_safe_gap while alongside."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A bicycle overtakes and passes a slow car with a gap of at least p.bicycle_pass_safe_gap throughout the pass, no contact and no conflicting closest approach with any other road user."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a moped (outside the bicycle, electric bicycle and electric scooter aggregates, each of which leaves a moped out) overtaking and passing a car."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A bicycle overtakes and passes a car with no conflict with other road users; the gap between bodies is not observed on this source.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A bicycle begins the pass of a car with a wide gap, then closes to a gap below p.bicycle_pass_safe_gap while still alongside before clearing the car: the pass is safe for part of the act only."
+  },
+  {
+   "name": "branch_4",
+   "expected": "compliant",
+   "narrative": "A bicycle follows close behind a car with a small gap before the pass begins, then moves out and keeps a gap of at least p.bicycle_pass_safe_gap at every observation from the pass's beginning to its recognition."
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A bicycle rides on a street with no motor vehicle in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A bicycle overtakes and passes a standing car with a wide gap, but during the pass an oncoming car comes into a closest approach with the bicycle within p.conflict_horizon and below p.conflict_centre_clearance."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "passing-manoeuvre durations (AASHTO passing sight distance model)"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading angles"
+  },
+  {
+   "name": "p.bicycle_pass_safe_gap",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "the lateral clearance between the body of a passing motor vehicle and a bicyclist's: the bicyclist's operating-space sway beyond its body width, about one metre of free space beside it",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (bicyclist operating space)"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design vehicle dimensions (AASHTO)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

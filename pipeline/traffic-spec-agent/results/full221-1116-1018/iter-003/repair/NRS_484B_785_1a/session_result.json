@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "6e016daa3a154c2b869e11d607f650cb",
+ "result": {
+  "duration_api_ms": 36909,
+  "stop_reason": "end_turn",
+  "session_id": "6e67b799-02e7-4944-936e-1f56de54c6e5",
+  "total_cost_usd": 0.75939028,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 72999,
+   "cache_read_input_tokens": 75544,
+   "output_tokens": 4218,
+   "output_tokens_details": {
+    "thinking_tokens": 1595
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 72999,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 668,
+     "cache_read_input_tokens": 72413,
+     "cache_creation_input_tokens": 3717,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3717
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 68645,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0075658,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 4218,
+    "cacheReadInputTokens": 75544,
+    "cacheCreationInputTokens": 72999,
+    "webSearchRequests": 0,
+    "costUSD": 0.75182448,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1595,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 72999,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I revised the record for `NRS_484B_785_1a` and wrote it to `record.jsonl`; it hasn't been through validation or the gate yet.\n\n**Why the gate failed:** the run's reading lists no class as included under `DEF-NRS-484B-018::electric_scooter`. So the old subject class could never be true. Every scenario that needed the rule to apply came out `unknown`, whatever the formulas said.\n\n**The fix:** \"an electric scooter\" (s2) and the subject binder now map to the class atom `ru.electric_scooter` instead of the aggregate. Three things support this:\n- The definition (\"a vehicle with handlebars and an electric motor … ridden on in an upright or seated position\") matches that atom's contract (\"a standing or seated electric scooter with handlebars\").\n- The atom is a local one, meaning it follows the jurisdiction's own vehicle taxonomy. I treated the definition's limits (100 pounds, 20 mph) as part of that taxonomy.\n- The `ru.aggregate` contract itself says it does not stand in for a named class that has its own atom.\n\n**Everything else is unchanged:**\n- s4 still requires the scooter to overlap a roadway or a bicycle lane or path.\n- s5 still compares `kin.speed` with the literal 15 mph.\n- s1 and s3 stay residues of scope none.\n- The s5 reading of the permission as a speed limit is kept.\n- The four scenarios (forbid, permit, idle, blind) are the same.\n\nThe coder's rule and witnesses should pass once the class line names `ru_electric_scooter` instead of the aggregate.\n\n**Risk:** the old justification said the run had admitted this word as an aggregate. If the harness requires \"electric scooter\" to map to the same atoms in every node of the run, a sibling node that uses the aggregate would make this record fail validation. In that case the real fix is in the run's reading: list `ru.electric_scooter` as included under that aggregate, which this record can't change.",
+  "ttft_ms": 15845,
+  "type": "result",
+  "duration_ms": 36492,
+  "uuid": "0f7bab75-7a55-4dbd-9b3c-1589e41cfa6d",
+  "ttft_stream_ms": 952,
+  "time_to_request_ms": 369,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 51,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 12,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 41,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 7,
+   "engine_pickup": 10,
+   "loop_entry": 3,
+   "message_prep": 2,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 208,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 32,
+  "time_to_request_cpu_ms": 338,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 4,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 1,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 952,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 68645,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0075658,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 4218,
+    "cacheReadInputTokens": 75544,
+    "cacheCreationInputTokens": 72999,
+    "webSearchRequests": 0,
+    "costUSD": 0.75182448,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1595,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 72999,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

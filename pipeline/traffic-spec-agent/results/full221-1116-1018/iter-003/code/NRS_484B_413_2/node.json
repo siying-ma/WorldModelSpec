@@ -1,0 +1,204 @@
+{
+ "node_id": "NRS_484B_413_2",
+ "law_refs": [
+  "NRS-484B-413-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously",
+   "role": "obligation"
+  },
+  {
+   "id": "s2",
+   "text": "during not less than the last 100 feet traveled",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "in a business or residential district",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "and not less than the last 300 feet traveled",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "in any other area",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "prior to changing the course",
+   "role": "trigger"
+  },
+  {
+   "id": "s7",
+   "text": "of a vehicle.",
+   "role": "subject"
+  },
+  {
+   "id": "s8",
+   "text": "This rule shall be observed, regardless of the weather.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "sig.turn_indicator",
+    "sig.hand_signal",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'A signal of intention to turn right or left, or otherwise turn ... from a direct course' is the signal itself, not a declared intention: sig.turn_indicator, 'the turn indicator state in {off, left, right}', to the side of the course change, or sig.hand_signal, 'a driver's or rider's arm signal; meaning in {..., left, right, ...}', to that side; the indicator's exclusion (not the turn or lane change itself) does not apply, the words naming the signal and not the manoeuvre. 'given continuously' is the signal holding at every observation of the window the next spans state. 'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "'during not less than the last 100 feet traveled' is a .path window of the stated 100 feet of the subject's path behind the course change; the window reads kin.path_length, 'distance travelled along the body's path since the start of the trace'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "'not less than the last 300 feet traveled': a .path window of the stated 300 feet of the subject's path (kin.path_length, 'distance travelled along the body's path') behind the course change."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.lane"
+   ],
+   "derived": [
+    "drv.lane.heading_left_of_carrier",
+    "drv.lane.heading_right_of_carrier"
+   ],
+   "justification": "'changing the course' is the onset of the subject's turn from a direct course: the observation at which, for an st.lane ('a longitudinal strip of roadway for one line of vehicles') the subject occupies (rel.occupies, 'a road user's footprint overlaps a lane / region'), drv.lane.heading_left_of_carrier ('Road user a, moving, points to the left of the designated direction of travel of carrier region r by more than a tolerance') or the catalogued drv.lane.heading_right_of_carrier ('points to the right of the designated direction of travel of carrier region r by more than a tolerance') rises; the side of the departure is the side the signal must show. A turn, a lane change and a pull-out each begin so; following the lane's own direction is keeping the course. st.lane's exclusion (a half of the roadway or a lateral position) does not apply: the lane is the carrier whose direction is the course."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'of a vehicle': the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole: the subject is the vehicle whose course changes."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s3",
+   "id": "asm.business_or_residence_district",
+   "meaning": "the place of the road user at the observation lies in a business district or a residence district, as the map's reading classifies the area"
+  },
+  {
+   "span": "s5",
+   "id": "asm.business_or_residence_district",
+   "meaning": "the place of the road user at the observation lies in a business district or a residence district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s8",
+   "why": "The words exclude the weather as a ground for any other duty; the duty is the same whatever the weather, so they add no restriction.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of DEF-NRS-484A-320::vehicle, changes course at the judged observation: for some st.lane l the subject occupies (rel.occupies), drv.lane.heading_left_of_carrier(subject, l) or drv.lane.heading_right_of_carrier(subject, l), each with p.course_departure_sin_tol and p.halt_speed_tolerance, holds here and did not at the previous observation (rises). The trigger is read only where the subject occupies some lane (definedWhen): where it occupies none, the course change is unknown.",
+ "obligation": "At that observation, for the side of the departure (left for heading_left_of_carrier, right for heading_right_of_carrier, read on the same lane l), the subject has shown sig.turn_indicator to that side or sig.hand_signal of meaning that side at every observation of the .path window of the subject's path behind it (holdsFor .path over kin.path_length). Written as two branches with constant window lengths: asm.business_or_residence_district holds at that observation and the signal holds over the stated 100 feet; or asm.business_or_residence_district does not hold and the signal holds over the stated 300 feet. It is unknown where the assumption is undeclared or the window reaches before the recording. Otherwise the duty is violated.",
+ "params": [
+  "p.course_departure_sin_tol",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "The side of the signal is the side the heading departs to; a departure that later reverses is judged at its own onset.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "asm.business_or_residence_district false; the subject moves in its lane with sig.turn_indicator off and sig.hand_signal no_signal, then its heading turns left of the lane's direction beyond p.course_departure_sin_tol (a lane change to the left)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "asm.business_or_residence_district false; the subject shows sig.turn_indicator left at every observation over the last stated 300 feet of its path before its heading departs to the left of its lane."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject keeps its heading along its lane's designated direction throughout; no course change begins."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject's heading departs to the right of its lane; neither sig.turn_indicator nor sig.hand_signal is observed on the source.",
+   "masked": [
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "asm.business_or_residence_district true; the subject shows sig.turn_indicator right over a stretch of its path longer than the stated 100 feet but shorter than the stated 300 feet before its heading departs to the right of its lane."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "As branch_1 with asm.business_or_residence_district false: the indicator was not shown over the last stated 300 feet."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "asm.business_or_residence_district false; the subject shows sig.turn_indicator right over the last stated 300 feet and its heading departs to the left of its lane: the signal shows the wrong side."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s2",
+   "text": "100 feet",
+   "value": 100,
+   "unit": "ft"
+  },
+  {
+   "span": "s4",
+   "text": "300 feet",
+   "value": 300,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}
