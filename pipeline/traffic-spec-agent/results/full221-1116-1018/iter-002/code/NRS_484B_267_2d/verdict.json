@@ -1,0 +1,17 @@
+{
+ "verdict": "UNEXPRESSED",
+ "details": [
+  "s3 (no_atom): The borrowed words of s4 ('at least one flashing red warning lamp visible from the front'), which the record reads as a lit sig.warning_lamp red, flashing, facing front: no formula can read a lamp's f",
+  "the vocabulary or the language cannot state these words: the repair session withdraws the span as a gap or re-maps it"
+ ],
+ "extras": {
+  "unexpressed": [
+   {
+    "kind": "no_atom",
+    "span": "s3",
+    "why": "The borrowed words of s4 ('at least one flashing red warning lamp visible from the front'), which the record reads as a lit sig.warning_lamp red, flashing, facing front: no formula can read a lamp's facing. The formula surface of sig_warning_lamp takes a colour, or a colour and a mode, only (Semantics.evalAtomE: [x, col] or [x, col, m]; atomArgSorts admits at most two literal positions for sig_*), so 'facing front' / 'visible from the front' cannot be stated. Colour red and mode flashing are written; the facing is not, so the trigger as written is weaker than the record's (a lamp lit red and flashing facing only the rear or side would engage it). Either the plan re-maps s3 to a red flashing lamp and files 'visible from the front' as a gap, or Core gives sig_warning_lamp a facing literal."
+   }
+  ],
+  "context": "4f091560205279dd9d18b565"
+ }
+}

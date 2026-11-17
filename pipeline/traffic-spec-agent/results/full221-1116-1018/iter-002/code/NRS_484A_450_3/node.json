@@ -1,0 +1,216 @@
+{
+ "node_id": "NRS_484A_450_3",
+ "law_refs": [
+  "NRS-484A-450-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "approaching a yield sign",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "if required for safety to stop",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "shall stop before entering the crosswalk on the nearest side of the intersection or, if there is no crosswalk, at a clearly marked stop line, or if none, then at the point nearest the intersecting highway where the driver has a view of approaching traffic on the intersecting highway.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a defined term whose admitted aggregate is DEF-NRS-484A-320::vehicle; 'driver' is a role read through the vehicle's controlled motion (agency narrowing). Same mapping as the index's 'The driver of a vehicle'."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.yield_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.intersection",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.yield_sign is the 'regulatory sign requiring yielding without a mandatory halt'; the vehicle approaches it where it occupies (rel.occupies) a carrier c the sign governs (dev.governs) and whose entrance end is the intersection r (st.lane_enters). The intersection is named by 'the nearest side of the intersection'; st.travel_region is the kind of c."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.crosswalk",
+    "st.stop_line",
+    "st.entrance_of",
+    "rel.occupies",
+    "st.intersection",
+    "st.region_geometry",
+    "prim.region_offset_along",
+    "st.lane_direction",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stop' is required here, so DEF-NRS-484A-255 applies: 'complete cessation from movement', drv.motion.complete_halt. The places are read through the approach carrier c, in the order listed. (1) The crosswalk 'on the nearest side of the intersection' is the st.crosswalk recorded as marking c's entrance (st.entrance_of: 'the carrier whose entrance into an intersection a stop line or a crosswalk marks'); 'before entering' it is a halt off it (rel.occupies), short of it along c's direction (prim.region_offset_along along st.lane_direction) and within the stop-point tolerance (st.region_geometry). (2) 'if there is no crosswalk' holds where the crosswalk lists are observed and none marks c; the st.stop_line recorded as marking c is then the place: a halt not past it, body within the tolerance; 'clearly marked' is read by the represented line (status). (3) 'if none': no stop line marks c either; the point nearest the intersecting highway before entering is c's entrance end at r (st.intersection): a halt off r, short of it along c's direction, body within the tolerance — the point nearest the intersecting highway and the one with the widest view along it. 'approaching traffic on the intersecting highway' is the admitted aggregate DEF-NRS-484A-285::traffic ('using any highway for purposes of travel', carried as rel.occupies of a st.highway): the road users whose danger of a crash with the subject makes the stop 'required for safety' (operationalization of s3)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "required for safety to stop",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: a stop is required for safety where, at some observation of the approach, some other road user of traffic (the traffic of s4, occupying a highway) and the subject approach each other within the time-to-collision threshold p.conflict_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance), the envelope within which two bodies collide or nearly collide",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that enters an intersection r at the judged observation t — its footprint overlaps r at t and not at t-1 (rel.occupies) — having occupied at t-1 a carrier c (st.travel_region) whose entrance end is r (st.lane_enters(c, r)) and which a yield sign (dev.yield_sign) governs (dev.governs); and a stop was required for safety: at some observation from the approach start (as defined in the obligation) to t-1, some road user u other than the subject (not same) that is traffic (ru.aggregate DEF-NRS-484A-285::traffic) occupying a highway (rel.occupies, st.highway) satisfies prim.closest_approach_within(subject, u, p.conflict_horizon) and prim.closest_approach_distance(subject, u, p.conflict_horizon) < p.conflict_centre_clearance. Where no observation of that stretch shows such a road user, the duty does not arise.",
+ "obligation": "Duty of an act before an event (approach convention). Event: the entry into r at t through c; the duty is judged at t. Act: a halt of the subject (drv.motion.complete_halt, speed_tol = p.halt_speed_tolerance) at the governing place, read through c. Place, in the order the words list: (1) where a crosswalk x is recorded as marking c (st.entrance_of(x, c)): a halt at which the footprint does not overlap x (rel.occupies), the subject is short of x along c's designated direction (prim.region_offset_along of x along st.lane_direction of c, positive) and the body-to-x ground distance (st.region_geometry) is at most p.stop_point_tolerance; (2) else, where the crosswalk lists are observed and none marks c, and a stop line l is recorded as marking c: a halt at which the subject is not past l along c's direction and the body-to-l distance is at most p.stop_point_tolerance; (3) else, where the crosswalk and stop-line lists are observed and none marks c: a halt at which the footprint does not overlap r, the subject is short of r along c's direction, and the body-to-r distance is at most p.stop_point_tolerance. Where several marks of the governing kind mark c, a halt in the zone of any of them it has not passed counts. History bound: the search runs back from t-1 and ends at the approach start — the last observation before t at which the subject, on a carrier the governing mark is recorded as marking, is outside that mark's stopping zone upstream (off the mark, short of it, farther than p.stop_point_tolerance; with several marks, outside and short of each) — or at the subject's previous entry into r, whichever is later. Nothing else ends it: not the start of the recording, a first observation, another intersection or mark, or a distance travelled. Crossing the mark, moving on toward r, a change of carrier or lateral move within the same entry, a reverse within the zone and speed noise begin no new approach; only an observed exit from the zone upstream does. Verdict: the act found → compliant; the search reaches the approach start or the previous entry without it → violated; it reaches neither without the act → unknown. Missing evidence: the entry is unknown, never absent, where t-1 does not show the subject on a mapped carrier with an observed association to r; an unobserved dev.governs of c, an unobserved association of a mark with c, or an unobserved closest approach makes the verdict unknown only where it turns on it — a halt found at a place known to govern is compliant whatever the conflict reading, and a duty that does not arise is decided whatever the missing fact.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'approaching a yield sign' is read through a yield sign the source records as governing the approach carrier c that enters r; a sign recorded only as governing the intersection itself is not read as facing c.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "'clearly marked' is read by the represented stop line; the paint's clarity is not modelled.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "The point nearest the intersecting highway 'where the driver has a view of approaching traffic' is read as c's entrance end, the edge of r, within p.stop_point_tolerance: no point nearer the intersecting highway lies before the intersection, and the view along it is widest there; the view itself (st.sight_along_way) is not compared with a bound."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car on lane c, governed by a yield sign, with a crosswalk marking c, approaches at 10 m/s while a car on the crossing highway is on a closest approach with it 2 s ahead at 1 m; the car never comes to rest and enters the intersection."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same conflict; the car comes to rest 1 m short of the crosswalk, off it, lets the crossing car pass, and enters."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car approaches the yield sign alone in the scene, no road user is ever on a closest approach with it, and it enters without halting: no stop was required for safety."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe which travel regions the yield sign governs.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "No crosswalk marks c (lists observed); a stop line marks c; with the conflict present, the car comes to rest 1 m short of the line and then enters."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Neither a crosswalk nor a stop line marks c (lists observed); with the conflict present, the car comes to rest 1 m short of the intersection's edge, off it, and then enters."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A crosswalk marks c; the conflict is present on the approach; the car rests 20 m short of the crosswalk, moves on and enters without halting again."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the car already 1 m short of the crosswalk marking c, moving at 3 m/s, while a crossing car is on a closest approach with it 2 s ahead at 1 m; it enters without a recorded halt and no recorded observation shows it outside the stopping zone upstream.",
+   "boundary": "the approach start: the observation at which the car was outside the crosswalk's stopping zone upstream lies before the recording, so whether it halted within the zone before the recording began is not observed"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "proposed this iteration by LVMC_11_20_060_o1; MUTCD stop-line placement before a crosswalk"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "proposed this iteration by LVMC_11_12_070_B; traffic-conflict technique TTC thresholds"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "proposed this iteration by LVMC_11_12_070_B; passenger-car design dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

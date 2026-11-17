@@ -1,0 +1,175 @@
+{
+ "node_id": "NRS_484B_307_12b",
+ "law_refs": [
+  "NRS-484B-307-12b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Whenever signals are placed over the individual lanes of a highway,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "the signals indicate, and apply to",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s3",
+   "text": "drivers of vehicles,",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "as follows:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s5",
+   "text": "A red “X” symbol means",
+   "role": "trigger"
+  },
+  {
+   "id": "s6",
+   "text": "a driver facing the signal",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "must not enter or drive in any lane over which the red signal is shown.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.lane_control_signal",
+    "dev.governs",
+    "st.lane",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'signals ... placed over the individual lanes' is dev.lane_control_signal ('an overhead per-lane signal'), the lane it is over read by dev.governs ('the travel regions whose traffic the device controls — a lane ...'; not a stand-in for a position, and no halt position is read); 'lanes of a highway' is st.lane ('a longitudinal strip of roadway for one line of vehicles') lying on a st.highway by st.on_way ('the public way ... a structure region lies on'). The lane is used as a lane, not as a half of the roadway."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'drivers of vehicles' is read through the vehicle's controlled motion (agency reading): the subject is a member of the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); 'driver' is not an aggregate."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "dev.lane_control_signal"
+   ],
+   "derived": [],
+   "justification": "'A red “X” symbol' is the state red_x of dev.lane_control_signal ('state ∈ {green_down_arrow, red_x, yellow_x, yellow_arrow(dir), dark}')."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.position",
+    "kin.position",
+    "kin.heading"
+   ],
+   "derived": [],
+   "justification": "As the index maps 'pedestrians facing the signal' (NRS_484B_283_1d1): facing is read from the head's location (dev.position 'location of the device head / sign face'; not a stand-in for a stop line or crossing, none is read) and the subject's kin.position and kin.heading ('direction the body points'): the head lies ahead of the subject, the dot product of the vector from the subject to the head with its heading being positive. No atom carries the orientation of a signal face; a head ahead of the driver is the head it faces."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "dev.governs"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'enter ... any lane' is the rise of the subject's footprint overlap with the lane (rel.occupies 'a road user's footprint overlaps a lane / region'); 'drive in' is the overlap while the subject moves (drv.motion.complete_halt — 'at rest at the observation' — not holding with p.halt_speed_tolerance); 'over which the red signal is shown' is the lane governed (dev.governs) by the lane-control signal displaying red_x."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), and some lane l (st.lane) lying on a highway (st.on_way, st.highway) has a lane-control signal d placed over it (dev.lane_control_signal d, dev.governs(d, l)) that displays red_x and faces the subject: the dot product of (dev.position of d minus kin.position of the subject) with the subject's kin.heading is above zero.",
+ "obligation": "For every lane l and lane-control signal d so selected (re-bound with the whole selection: d governs l, displays red_x and faces the subject): the subject does not enter l — rel.occupies(subject, l) does not rise at the observation — and does not drive in l — it does not occupy l while drv.motion.complete_halt(subject; p.halt_speed_tolerance) fails.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s7",
+   "why": "A vehicle that occupies a red-X lane while at rest (already in the lane when the indication appeared, halted) neither enters nor drives in it at that observation.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "'drivers' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever is at its controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A vehicle (ru.aggregate vehicle) moving at 15 m/s changes into a st.lane over which a dev.lane_control_signal 80 m ahead (dev.position ahead along kin.heading) displays red_x: rel.occupies of that lane rises. No other road user is in the scene."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The vehicle keeps to its own lane, whose signal displays green_down_arrow, while the signal over the adjacent lane displays red_x; it never occupies the red-X lane."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No lane-control signal in the scene displays red_x."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The vehicle drives on a road whose lane-control signals are not observed by the source.",
+   "masked": [
+    "dev.lane_control_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The vehicle already occupies a lane when its overhead signal ahead turns to red_x and keeps driving in it at 12 m/s."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of tracked-object kinematics in driving datasets and simulators"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

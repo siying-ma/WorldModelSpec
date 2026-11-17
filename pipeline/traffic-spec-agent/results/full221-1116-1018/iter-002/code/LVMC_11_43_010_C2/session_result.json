@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 364889,
+  "stop_reason": "end_turn",
+  "session_id": "ea9ca70c-9e82-419f-b7ae-cc175fd699b2",
+  "total_cost_usd": 2.0430102,
+  "usage": {
+   "input_tokens": 24,
+   "cache_creation_input_tokens": 111636,
+   "cache_read_input_tokens": 971119,
+   "output_tokens": 38298,
+   "output_tokens_details": {
+    "thinking_tokens": 23358
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 111636,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 799,
+     "cache_read_input_tokens": 114612,
+     "cache_creation_input_tokens": 1492,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1492
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38987,
+    "outputTokens": 31,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004305620000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 24,
+    "outputTokens": 38298,
+    "cacheReadInputTokens": 971119,
+    "cacheCreationInputTokens": 111636,
+    "webSearchRequests": 0,
+    "costUSD": 2.03870458,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 23358,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 111636,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 19,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the third of six runs: all five witnesses (`forbid`, `permit`, `idle`, `blind`, `branch_1`) reach their planned verdicts.\n\n**Rule** (`LVMC_11_43_010_C2.lean`):\n- **Who it covers:** the subject must be a vehicle under the admitted aggregate `DEF-NRS-484A-320::vehicle`.\n- **When it applies:** some roundabout `r` for which `drv_motion_right_turn_through_region(subject, r)` holds. That concept is true only at the moment the subject leaves `r`, so the rule is judged once, at the exit.\n- **What it requires:** for every roundabout so selected, from the latest entry into `r` up to the exit, every lane the subject occupies inside `r` has ordinal equal to the count of lanes in its direction (the rightmost lane).\n\n**One departure from the record's wording:** the record writes `since(φ, rises(occupies) ∧ φ)`. I added `¬rises(occupies(subject, r))` to the left side, so the backward search stops at the latest entry. Without it, when a lane's ordinal is unknown at the entry, the search ran back to the start of the trace. `blind` then came out unknown for the wrong reason, a truncated window rather than the masked atom. Where every value is observed, both forms give the same verdict. It matches the record's own \"latest observation at which rel.occupies rose\", so I declared no narrowing, but the plan agent should be aware of it.\n\n**What changed between gate runs:**\n1. **First run:** all witnesses were rejected as traces no adapter could produce, because the heading stayed fixed while the yaw rate was turning. I rebuilt the scenes so the subject drives a quarter circle. Its heading now turns 4.5° every 50 ms, in step with the yaw rate, and the lanes are curved strips around the same point.\n2. **Second run:** only `blind` failed, for the search problem above. Its lanes also lacked ordinals, so it was unknown even without the mask. It now uses `forbid`'s scenes, with only `st.lane_adjacency` masked.\n\n**Witness labelling:** ordinal 1 is the lane on the left of the direction of travel. The narrative calls it the \"inner\" lane, meaning nearer the central island, but only the ordinals matter to the rule.\n\nThe full report is in `task_result.md` in the working directory.",
+  "ttft_ms": 56100,
+  "type": "result",
+  "duration_ms": 405218,
+  "uuid": "05603e08-2abb-4cc4-ad57-26014d288ede",
+  "ttft_stream_ms": 776,
+  "time_to_request_ms": 329,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 56,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 11,
+   "input_hooks": 3,
+   "conversation_append": 0,
+   "transcript_persist": 18,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 187,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 34,
+  "time_to_request_cpu_ms": 247,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 776,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38987,
+    "outputTokens": 31,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004305620000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 24,
+    "outputTokens": 38298,
+    "cacheReadInputTokens": 971119,
+    "cacheCreationInputTokens": 111636,
+    "webSearchRequests": 0,
+    "costUSD": 2.03870458,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 23358,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 111636,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

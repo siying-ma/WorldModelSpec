@@ -1,0 +1,59 @@
+'TrafficSpec.Rules.NRS_484B_267_1b_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_267_1b_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_267_1b_o2","intentions":[],"laws":["NRS-484B-267-1b"],"narrowings":[{"kind":"no_atom","span":"u4","why":"'visible from the front' (borrowed from DEF-NRS-484A-480-3 via u5; the record's 'facing front'): the formula surface reads a warning lamp only by colour and mode (sig_warning_lamp [x, colour, mode]); no accessor reads its facing, so the condition can be written only as 'a red flashing warning lamp lit', weaker than the record states"}],"operationalizations":[{"concepts":["kin.speed","rel.bearing","rel.centre_distance"],"params":["p.halt_speed_tolerance","p.emergency_immediate_approach_reach"],"standard":"the immediate approach of the emergency or regulatory vehicle","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"},{"var":"subject"},{"lit":"x"}],"measure":"rel_bearing"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_1b_o2","intentions":[],"laws":["NRS-484B-267-1b"],"narrowings":[{"kind":"no_atom","span":"u4","why":"'visible from the front' (borrowed from DEF-NRS-484A-480-3 via u5; the record's 'facing front'): the formula surface reads a warning lamp only by colour and mode (sig_warning_lamp [x, colour, mode]); no accessor reads its facing, so the condition can be written only as 'a red flashing warning lamp lit', weaker than the record states"}],"obligation":{"not":{"and":[{"rises":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},{"body":{"and":[{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]},{"and":[{"body":{"args":[{"var":"s"},{"var":"w"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"highway"},"var":"w"},{"body":{"and":[{"args":[{"var":"g"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"g"},{"var":"s"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"g"}]}]}]},"exists_region":{"lit":"shoulder"},"var":"s"}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"},{"var":"subject"},{"lit":"x"}],"measure":"rel_bearing"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_1b_o2","intentions":[],"laws":["NRS-484B-267-1b"],"narrowings":[{"kind":"no_atom","span":"u4","why":"'visible from the front' (borrowed from DEF-NRS-484A-480-3 via u5; the record's 'facing front'): the formula surface reads a warning lamp only by colour and mode (sig_warning_lamp [x, colour, mode]); no accessor reads its facing, so the condition can be written only as 'a red flashing warning lamp lit', weaker than the record states"}],"obligation":{"not":{"and":[{"rises":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},{"body":{"and":[{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]},{"and":[{"body":{"args":[{"var":"s"},{"var":"w"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"highway"},"var":"w"},{"body":{"and":[{"args":[{"var":"g"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"g"},{"var":"s"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"g"}]}]}]},"exists_region":{"lit":"shoulder"},"var":"s"}]}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,ru_official_vehicle,ru_official_vehicle_kind,sig_warning_lamp,kin_speed,rel_bearing,rel_centre_distance,dev_human_direction,dev_human_direction_role,st_travel_region,rel_occupies,dev_governs,drv_motion_complete_halt,st_shoulder,st_shoulder_paved,st_highway,st_on_way,dev_regulatory_sign,dev_regulatory_sign_code
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-020::authorized_emergency_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.warning_lamp
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	subject
+OCC	?e
+OCC	e,subject
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	subject
+OCC	e,subject
+OCC	?d
+OCC	d
+OCC	?r
+OCC	subject,r
+OCC	d,r
+OCC	subject
+OCC	?s
+OCC	subject,s
+OCC	s
+OCC	?w
+OCC	s,w
+OCC	?g
+OCC	g
+OCC	g,s
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	95
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	15
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	13
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	11
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	16
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	14
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	12
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	13
+TIME	witnesses	94
+DONE_WITNESSES

@@ -1,0 +1,37 @@
+'TrafficSpec.Rules.LVMC_11_60_040.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_60_040.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_60_040","intentions":[],"laws":["LVMC-11-60-040"],"narrowings":[],"operationalizations":[],"residues":["'This provision shall not prevent' a temporary passenger stop: the words leave such a stop to the other stopping and parking regulations, which judge it by their own rules. A temporary stop that breaches another regulation is that regulation's violation; under this provision it is neither standing nor parking (DEF-NRS-484A-250, DEF-NRS-484A-155), so this rule's verdict is the same whether or not the stop complies with the others."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-140::taxicab"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_60_040","intentions":[],"laws":["LVMC-11-60-040"],"narrowings":[],"obligation":{"implies":[{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.standing_min_duration"}]}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"taxicab_stand"}],"atom":"st_curb_zone_kind","params":[]}]},"exists_region":{"lit":"curb_zone"},"var":"z"}]},"residues":["'This provision shall not prevent' a temporary passenger stop: the words leave such a stop to the other stopping and parking regulations, which judge it by their own rules. A temporary stop that breaches another regulation is that regulation's violation; under this provision it is neither standing nor parking (DEF-NRS-484A-250, DEF-NRS-484A-155), so this rule's verdict is the same whether or not the stop complies with the others."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-140::taxicab"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_60_040","intentions":[],"laws":["LVMC-11-60-040"],"narrowings":[],"obligation":{"implies":[{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.standing_min_duration"},"subject":"subject"}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"taxicab_stand"}],"atom":"st_curb_zone_kind","params":[]}]},"exists_region":{"lit":"curb_zone"},"var":"z"}]},"residues":["'This provision shall not prevent' a temporary passenger stop: the words leave such a stop to the other stopping and parking regulations, which judge it by their own rules. A temporary stop that breaches another regulation is that regulation's violation; under this provision it is neither standing nor parking (DEF-NRS-484A-250, DEF-NRS-484A-155), so this rule's verdict is the same whether or not the stop complies with the others."],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,drv_motion_complete_halt,drv_motion_parked,st_curb_zone,st_curb_zone_kind
+COMPOSES	
+AGGREGATES	DEF-LVMC-11-02-140::taxicab	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+OCC	subject
+OCC	subject
+OCC	?h
+OCC	subject,h
+OCC	subject
+OCC	subject
+OCC	?z
+OCC	subject,z
+OCC	z
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	291
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-LVMC-11-02-140::taxicab]
+TIME	scenario:forbid	80
+SCEN	permit	compliant	?	permit: expected compliant, got unknown [aggregate_unresolved:DEF-LVMC-11-02-140::taxicab]
+TIME	scenario:permit	78
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	78
+SCEN	blind	unknown	?	blind: unknown for [aggregate_unresolved:DEF-LVMC-11-02-140::taxicab], not for an atom the manifest masks
+TIME	scenario:blind	160
+SCEN	branch_1	compliant	?	branch_1: expected compliant, got unknown [aggregate_unresolved:DEF-LVMC-11-02-140::taxicab]
+TIME	scenario:branch_1	93
+TIME	witnesses	489
+DONE_WITNESSES

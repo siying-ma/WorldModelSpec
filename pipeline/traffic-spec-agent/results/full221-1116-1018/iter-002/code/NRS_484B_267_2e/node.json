@@ -1,0 +1,332 @@
+{
+ "node_id": "NRS_484B_267_2e",
+ "law_refs": [
+  "NRS-484B-267-2e"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Upon approaching an authorized emergency vehicle or an official vehicle of a regulatory agency which is moving or preparing to move in any direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "including, without limitation, arriving at or leaving the scene of a crash or other incident,",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "and making use of flashing lights meeting the requirements of",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "subsection 3 of NRS 484A.480 [DEF-NRS-484A-480-3],",
+   "role": "reference"
+  },
+  {
+   "id": "s5",
+   "text": "the driver of any other vehicle shall,",
+   "role": "subject"
+  },
+  {
+   "id": "s6",
+   "text": "except when otherwise directed by a law enforcement officer:",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "If possible,",
+   "role": "standard"
+  },
+  {
+   "id": "s8",
+   "text": "drive in a lane that is not adjacent to the lane in which the authorized emergency vehicle or official vehicle of a regulatory agency is moving,",
+   "role": "obligation"
+  },
+  {
+   "id": "s9",
+   "text": "unless roadway, traffic, weather or other conditions make doing so unsafe or impossible.",
+   "role": "standard"
+  },
+  {
+   "id": "s10",
+   "text": "As used in this section, “preparing to move” means any indication that is visible to an approaching driver that an authorized emergency vehicle or an official vehicle of a regulatory agency is about to move, including, without limitation: (a) A movement of the vehicle; or (b) The use of hand signals by the driver of the vehicle.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "kin.speed",
+    "rel.bearing",
+    "rel.centre_distance",
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle",
+    "ru.official_vehicle",
+    "rel.visible",
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "justification": "'an authorized emergency vehicle' is the admitted aggregate DEF-NRS-484A-020::authorized_emergency_vehicle ('a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'); its 'not a stand-in for' a responding role does not bite, since the conduct is read separately. 'an official vehicle of a regulatory agency' is ru.official_vehicle of kind regulatory_agency, not an emergency vehicle. 'Upon approaching': the subject, moving (kin.speed above the halt tolerance), has that vehicle ahead of it (rel.bearing longitudinal component positive) within the approach reach (rel.centre_distance; no clearance read). 'which is moving': the vehicle's kin.speed above the halt tolerance; 'or preparing to move', as defined in s10: visible from the subject (rel.visible) with an arm signal (sig.hand_signal other than no_signal) or a lit turn indicator (sig.turn_indicator: the signal, not the manoeuvre). 'in any direction' adds no restriction."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "source_spans": [
+    "s4"
+   ],
+   "justification": "sig.warning_lamp: 'a warning lamp lit; colour ..., mode ..., facing ...'. The words borrowed from DEF-NRS-484A-480-3, 'at least one flashing red warning lamp visible from the front', fix the lights: a lamp lit of colour red, mode flashing, facing front. Not a stand-in for an audible warning: no siren is read."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'any other vehicle' is DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); exclusions are the reading's. 'other' excludes the approached vehicle. 'the driver' is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.human_direction 'a person directing traffic ...; role ∈ {police_officer, ...}': a law enforcement officer is role police_officer; excepted where such a device governs (dev.governs) a travel region (st.travel_region) the subject occupies (rel.occupies)."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_direction",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "'drive in a lane' is the subject's footprint overlapping a lane (rel.occupies; st.lane, 'a longitudinal strip of roadway for one line of vehicles'), the lane being the subject's own feature; 'the lane in which the ... vehicle ... is moving' is a lane the approached vehicle occupies (rel.occupies, st.lane). 'adjacent' is read in two ways the contracts carry: the left or right neighbouring lane of the same direction (st.lane_adjacency, 'left / right neighbouring lane of the same direction'; not the marking between the lanes), and, for a vehicle moving against the subject's direction, the two leftmost lanes of opposite directions — each of lane ordinal one (st.lane_adjacency ordinal, 'ordinal 1 is the leftmost lane, looking along the lane's direction'), their designated directions opposed (st.lane_direction) — on one and the same roadway that both road users occupy (st.roadway, 'separate roadways of a divided highway are separate', so a divided highway's opposing lanes are never adjacent). A lane is not adjacent to itself."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "kin.speed",
+    "rel.visible",
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "justification": "The section's definition of 'preparing to move', read as s1 reads it: visible from the subject (rel.visible); '(a) A movement of the vehicle' kin.speed above the halt tolerance; '(b) The use of hand signals' sig.hand_signal other than no_signal; 'including, without limitation' admits a lit turn indicator (sig.turn_indicator). 'about to move' is read through these indications."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s7",
+   "standard": "If possible",
+   "concepts": [
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_direction",
+    "st.on_way",
+    "st.highway",
+    "rel.occupies"
+   ],
+   "params": [
+    "p.emergency_lane_change_window"
+   ],
+   "convention": "lane-change time: moving away from the vehicle's lane is possible once the approach has lasted the time a driver needs to perceive the vehicle and change one lane, and only where the subject's way carries a candidate lane: a lane on the same highway as the subject's lane (st.on_way) whose designated direction points the subject's way (st.lane_direction, positive dot product with the subject's lane direction) and that is not adjacent to the vehicle's lane",
+   "surrogate": false
+  },
+  {
+   "span": "s9",
+   "standard": "unless roadway, traffic, weather or other conditions make doing so unsafe or impossible",
+   "concepts": [
+    "rel.occupies",
+    "rel.surface_gap",
+    "kin.speed",
+    "dev.temporary_traffic_control",
+    "dev.governs",
+    "env.ice_or_snow",
+    "env.wet_road",
+    "env.precipitation",
+    "env.visibility"
+   ],
+   "params": [
+    "p.following_headway_dry",
+    "p.following_headway_wet",
+    "p.following_headway_ice",
+    "p.emergency_lane_change_window"
+   ],
+   "convention": "gap acceptance and lane availability: a candidate lane is impossible (roadway) where a temporary traffic control device governs it, and unsafe (traffic) where a road user occupying it, other than the subject (any road user using the highway: 'pedestrians, ridden or herded animals, vehicles and other conveyances', DEF-NRS-484A-285, read without exclusion), is nearer the subject's body (rel.surface_gap) than the subject's speed times the following headway for the surface (ice or snow, else wet road or precipitation, else dry); weather makes the move unsafe where the road is icy or snow-covered, or the visibility (env.visibility) is shorter than the distance the subject travels at its speed in the lane-change time",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s4",
+   "as": "definition",
+   "source": "DEF-NRS-484A-480-3",
+   "quote": "at least one flashing red warning lamp visible from the front"
+  }
+ ],
+ "residues": [
+  {
+   "span": "s2",
+   "why": "'including, without limitation' lists examples of a vehicle moving or preparing to move; the duty is the same whether or not the vehicle is arriving at or leaving the scene of a crash or other incident",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-320::vehicle, moving (kin.speed above p.halt_speed_tolerance). Some road user e, not the subject, a member of DEF-NRS-484A-020::authorized_emergency_vehicle or an ru.official_vehicle of kind regulatory_agency, shows a lit sig.warning_lamp red, flashing, facing front; e is moving (kin.speed above p.halt_speed_tolerance) or preparing to move (rel.visible from the subject and e's sig.hand_signal other than no_signal or sig.turn_indicator other than off); e lies ahead of the subject (rel.bearing longitudinal component positive) within p.emergency_approach_reach (rel.centre_distance). Not applicable where a dev.human_direction of role police_officer governs (dev.governs) a st.travel_region the subject occupies (rel.occupies).",
+ "obligation": "For every e selected as in the applicability for which that whole selection has held at every observation of the window behind of length p.emergency_lane_change_window, every st.lane Le that e occupies and every st.lane Ls that the subject occupies: Ls is not adjacent to Le, or the move is excused. Adjacent: Ls is the left or right neighbour of Le (st.lane_adjacency), or Ls and Le each have lane ordinal one (st.lane_adjacency ordinal) with designated directions (st.lane_direction) whose dot product is negative while some st.roadway is occupied (rel.occupies) by both the subject and e. Excused where env.ice_or_snow holds; or env.visibility is below the subject's kin.speed × p.emergency_lane_change_window; or no candidate lane is open and clear. A candidate lane C is a st.lane lying on (st.on_way) the same st.highway as Ls, whose designated direction has a positive dot product with Ls's, and which is not adjacent to Le in the sense above; C is open and clear where no dev.temporary_traffic_control governs it (dev.governs) and no road user u other than the subject occupying C has a rel.surface_gap to the subject below the subject's kin.speed × the headway (p.following_headway_ice where env.ice_or_snow holds, else p.following_headway_wet where env.wet_road or env.precipitation holds, else p.following_headway_dry).",
+ "params": [
+  "p.emergency_approach_reach",
+  "p.halt_speed_tolerance",
+  "p.emergency_lane_change_window",
+  "p.following_headway_dry",
+  "p.following_headway_wet",
+  "p.following_headway_ice"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "'the driver' of a vehicle is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "'preparing to move', defined as an indication that the vehicle is 'about to move', is read through the visible indications the definition lists and a lit turn indicator",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s1",
+   "why": "'visible to an approaching driver' is read as the vehicle being in the subject's line of sight (rel.visible)",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "s9",
+   "why": "the catch-all 'other conditions' is read only through the contracts named: a closure by temporary traffic control, the gap to traffic occupying the candidate lane, ice or snow, a wet surface or precipitation, and visibility"
+  },
+  {
+   "span": "s8",
+   "why": "adjacency across the centre of a two-way roadway is read only between the two leftmost lanes of opposite directions on one roadway; the vehicle's own lane is not adjacent to itself, so following it in its lane is not read as a breach of this paragraph"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Dry road, four lanes in the subject's direction. A police car (authorized emergency vehicle) with its red front lamp flashing moves in lane 1 ahead of the subject; the subject has been approaching it within the reach for longer than the lane-change window and stays in lane 2, the neighbour of lane 1, while lanes 3 and 4 are open and empty."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene, but the subject has moved to lane 3, which is not a neighbour of lane 1."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject drives in lane 2 of a four-lane carriageway; no emergency or regulatory-agency vehicle is in the scene. The duty binds the subject alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe lane adjacency, so whether the subject's lane neighbours the police car's lane, and which lanes are candidates, is unknown.",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Two lanes in the subject's direction; the police car moves in lane 1 and the subject in lane 2. The only lane not adjacent to lane 1 is lane 1 itself, occupied by the police car within the headway gap, so no candidate lane is clear: excused."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the road is covered in snow (env.ice_or_snow): excused."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the approach has lasted less than the lane-change window when the subject is observed in lane 2."
+  },
+  {
+   "name": "branch_4",
+   "expected": "violated",
+   "narrative": "Undivided two-way roadway, two lanes each way. A regulatory-agency official vehicle with its red front lamp flashing moves against the subject in the leftmost lane of its direction; the subject, approaching it head-on, drives in the leftmost lane of its own direction, while the right lane of its direction is open and empty."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.emergency_approach_reach",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "centre distance within which a driver approaching an emergency or enforcement vehicle that shows flashing warning lamps counts as approaching it: about the distance at which the lamps are conspicuous by day and a driver at an urban speed of 15 m/s has ten seconds to slow",
+   "source": "warning-lamp conspicuity and perception-reaction figures (as proposed this iteration by NRS_484B_267_2a)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "source speed resolution (as proposed this iteration by LVMC_11_12_070_B)"
+  },
+  {
+   "name": "p.emergency_lane_change_window",
+   "unit": "s",
+   "value": 6.0,
+   "convention": "the time from the onset of an approach to an emergency or enforcement vehicle until a driver has moved one lane over: a perception-reaction time of about 1.5 s plus one lane change of about 4 s",
+   "source": "AASHTO Green Book perception-reaction time; naturalistic lane-change duration studies"
+  },
+  {
+   "name": "p.following_headway_dry",
+   "unit": "s",
+   "value": 2.0,
+   "convention": "time headway a following driver keeps on a dry surface: the two-second rule of driver manuals",
+   "source": "driver manuals (as proposed this iteration by NRS_484B_127_1)"
+  },
+  {
+   "name": "p.following_headway_wet",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time headway a following driver keeps on a wet surface or in rain: the two-second rule lengthened by a second",
+   "source": "driver manuals (as proposed this iteration by NRS_484B_127_1)"
+  },
+  {
+   "name": "p.following_headway_ice",
+   "unit": "s",
+   "value": 6.0,
+   "convention": "time headway a following driver keeps on an icy or snow-covered surface: the tripled following time driver manuals advise",
+   "source": "driver manuals (as proposed this iteration by NRS_484B_127_1)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

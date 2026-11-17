@@ -1,0 +1,583 @@
+{
+ "verdict": "OK",
+ "details": [
+  "12 witnesses, 13 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "b"
+         },
+         {
+          "var": "subject"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "b"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "not": {
+          "body": {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "b"
+               }
+              ],
+              "derived": "drv_motion_complete_halt",
+              "params": [
+               {
+                "param": "p.halt_speed_tolerance"
+               }
+              ]
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "b"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "b"
+                     },
+                     {
+                      "var": "c"
+                     }
+                    ],
+                    "measure": "st_region_geometry_distance"
+                   },
+                   "rhs": {
+                    "param": "p.stop_point_tolerance"
+                   }
+                  }
+                 ]
+                },
+                {
+                 "and": [
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "b"
+                       },
+                       {
+                        "var": "l"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     },
+                     {
+                      "cmp": "ge",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "b"
+                        },
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "l"
+                        }
+                       ],
+                       "params": [],
+                       "quantity": "prim_region_offset_along"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "travel_region"
+                   },
+                   "var": "l"
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "p"
+                       },
+                       {
+                        "lit": "DEF-NRS-484A-165::pedestrian"
+                       }
+                      ],
+                      "atom": "ru_aggregate",
+                      "params": []
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "p"
+                       },
+                       {
+                        "var": "c"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     }
+                    ]
+                   },
+                   "exists_user": "p"
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "crosswalk"
+              },
+              "var": "c"
+             }
+            ]
+           }
+          },
+          "holds_for": "time",
+          "length": {
+           "param": "p.overtake_window"
+          },
+          "subject": "subject"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "b"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_30_030",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-030"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "d3",
+     "why": "The pass's observations are read from the one after the last observation at which b was ahead of the subject with headings aligned, up to the recognition: the language has no next-observation operator to single out that last aligned-ahead observation from the earlier ones of its run, so the act's first observation, at which b is still ahead of the subject with a gap between them, is not read for the trigger."
+    }
+   ],
+   "obligation": {
+    "not": {
+     "body": {
+      "and": [
+       {
+        "not": {
+         "same": [
+          {
+           "var": "b"
+          },
+          {
+           "var": "subject"
+          }
+         ]
+        }
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "b"
+           },
+           {
+            "lit": "DEF-NRS-484A-320::vehicle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "derived": "drv_interaction_overtake_pass",
+            "params": [
+             {
+              "param": "p.overtake_window"
+             },
+             {
+              "param": "p.overtake_same_direction_cos"
+             }
+            ]
+           },
+           {
+            "not": {
+             "body": {
+              "not": {
+               "and": [
+                {
+                 "and": [
+                  {
+                   "cmp": "gt",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   "rhs": {
+                    "param": "p.halt_speed_tolerance"
+                   }
+                  },
+                  {
+                   "until": [
+                    {
+                     "not": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "var": "b"
+                         },
+                         {
+                          "lit": "ahead"
+                         }
+                        ],
+                        "atom": "rel_bearing",
+                        "params": []
+                       },
+                       {
+                        "and": [
+                         {
+                          "cmp": "lt",
+                          "lhs": {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "b"
+                            }
+                           ],
+                           "measure": "rel_longitudinal_overlap"
+                          },
+                          "rhs": {
+                           "lit": {
+                            "den": 1,
+                            "num": 0
+                           },
+                           "unit": "metre"
+                          }
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "b"
+                           }
+                          ],
+                          "atom": "rel_same_direction",
+                          "params": [
+                           {
+                            "param": "p.overtake_same_direction_cos"
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "rises": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "var": "b"
+                         },
+                         {
+                          "lit": "behind"
+                         }
+                        ],
+                        "atom": "rel_bearing",
+                        "params": []
+                       },
+                       {
+                        "cmp": "lt",
+                        "lhs": {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "var": "b"
+                          }
+                         ],
+                         "measure": "rel_longitudinal_overlap"
+                        },
+                        "rhs": {
+                         "lit": {
+                          "den": 1,
+                          "num": 0
+                         },
+                         "unit": "metre"
+                        }
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "b"
+                    }
+                   ],
+                   "derived": "drv_motion_complete_halt",
+                   "params": [
+                    {
+                     "param": "p.halt_speed_tolerance"
+                    }
+                   ]
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "b"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       },
+                       {
+                        "cmp": "le",
+                        "lhs": {
+                         "args": [
+                          {
+                           "var": "b"
+                          },
+                          {
+                           "var": "c"
+                          }
+                         ],
+                         "measure": "st_region_geometry_distance"
+                        },
+                        "rhs": {
+                         "param": "p.stop_point_tolerance"
+                        }
+                       }
+                      ]
+                     },
+                     {
+                      "and": [
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "b"
+                            },
+                            {
+                             "var": "l"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          },
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "b"
+                             },
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "var": "l"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           },
+                           "rhs": {
+                            "lit": {
+                             "den": 1,
+                             "num": 0
+                            },
+                            "unit": "metre"
+                           }
+                          }
+                         ]
+                        },
+                        "exists_region": {
+                         "lit": "travel_region"
+                        },
+                        "var": "l"
+                       },
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "p"
+                            },
+                            {
+                             "lit": "DEF-NRS-484A-165::pedestrian"
+                            }
+                           ],
+                           "atom": "ru_aggregate",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "p"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          }
+                         ]
+                        },
+                        "exists_user": "p"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "crosswalk"
+                   },
+                   "var": "c"
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             "holds_for": "time",
+             "length": {
+              "param": "p.overtake_window"
+             },
+             "subject": "subject"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "exists_user": "b"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "d3",
+    "why": "The pass's observations are read from the one after the last observation at which b was ahead of the subject with headings aligned, up to the recognition: the language has no next-observation operator to single out that last aligned-ahead observation from the earlier ones of its run, so the act's first observation, at which b is still ahead of the subject with a gap between them, is not read for the trigger."
+   }
+  ],
+  "context": "9ac0e4db6c21dd6339bcc8e4",
+  "candidate_digest": "9c3dca5033e6457b0622fab3de91ecd90acb0dbb823b1a19023e7aaf6026b6da"
+ }
+}

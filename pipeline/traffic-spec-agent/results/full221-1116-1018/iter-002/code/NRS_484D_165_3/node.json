@@ -1,0 +1,224 @@
+{
+ "node_id": "NRS_484D_165_3",
+ "law_refs": [
+  "NRS-484D-165-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "Whenever a vehicle is parked or stopped",
+   "role": "trigger"
+  },
+  {
+   "id": "t2",
+   "text": "upon the traveled portion of a highway or shoulder adjacent thereto,",
+   "role": "condition"
+  },
+  {
+   "id": "t3",
+   "text": "whether attended or unattended",
+   "role": "condition"
+  },
+  {
+   "id": "t4",
+   "text": "during the times mentioned",
+   "role": "condition"
+  },
+  {
+   "id": "t5",
+   "text": "in NRS 484D.100 [NRS-484D-100-1],",
+   "role": "reference"
+  },
+  {
+   "id": "t6",
+   "text": "and there is insufficient light to reveal any person or object within a distance of 1,000 feet upon such highway or roadway,",
+   "role": "condition"
+  },
+  {
+   "id": "t7",
+   "text": "such vehicle shall display lighted lamps",
+   "role": "obligation"
+  },
+  {
+   "id": "t8",
+   "text": "meeting the requirements of subsection 1 [(1) appended below].",
+   "role": "reference"
+  },
+  {
+   "id": "t9",
+   "text": "Every vehicle shall be equipped with one or more lamps which, when lighted, shall display a white or amber light visible from a distance of 500 feet to the front of the vehicle, and one or more lamps which, when lighted, shall display a red light visible from a distance of 500 feet to the rear of the vehicle.",
+   "role": "definitional"
+  },
+  {
+   "id": "t10",
+   "text": "The location of such lamps shall be such that at least one such lamp is installed as near as practicable to the side of the vehicle which is closest to passing traffic.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, one ru.aggregate atom. 'parked or stopped' is the vehicle at rest, drv.motion.complete_halt ('The road user is at rest at the observation'), which covers a parked vehicle and one stopped for any time; as the index maps 'stopped or parked' (NRS_484B_450_1l)."
+  },
+  {
+   "span": "t2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.shoulder",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "'the traveled portion of a highway' is st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder' (as the index maps 'the paved or main-traveled part of the highway'); 'shoulder adjacent thereto' is st.shoulder, 'the part of the highway beside the roadway not intended for vehicular traffic', lying on the same highway (st.on_way, 'the public way (a highway region) a structure region lies on'; st.highway its kind, 'the entire public way between its boundary lines'). rel.occupies anchors the vehicle on either."
+  },
+  {
+   "span": "t4",
+   "atoms": [
+    "env.darkness",
+    "env.visibility"
+   ],
+   "derived": [],
+   "source_spans": [
+    "t5"
+   ],
+   "justification": "The times are borrowed from NRS-484D-100-1 (t5): '(a) At any time from one-half hour after sunset to one-half hour before sunrise; (b) At any other time when, because of insufficient light or unfavorable atmospheric conditions, persons and vehicles on the highway are not clearly discernible at a distance of 1,000 feet ahead;' read as env.darkness ('insufficient natural light; the boundary relative to sunset and sunrise is a reading parameter') or env.visibility ('visibility distance (fog, dust, smoke)') below the same 1,000-foot figure as t6. The third circumstance of that line, a device directing lamps on, is not borrowed: the condition t6 joins by 'and' entails time (b), so the times hold wherever t6 holds, whatever that circumstance is."
+  },
+  {
+   "span": "t6",
+   "atoms": [
+    "env.darkness",
+    "env.visibility"
+   ],
+   "derived": [],
+   "justification": "Insufficient light to reveal a person or object within 1,000 feet: env.darkness ('insufficient natural light') or env.visibility ('visibility distance (fog, dust, smoke)') below the law's figure, a literal; as the index maps the like words of LVMC_11_38_120_B_o2."
+  },
+  {
+   "span": "t7",
+   "atoms": [
+    "sig.position_lamp"
+   ],
+   "derived": [],
+   "source_spans": [
+    "t8"
+   ],
+   "justification": "The lamps subsection 1 (t8) describes are borrowed from the appended text: 'one or more lamps which, when lighted, shall display a white or amber light visible from a distance of 500 feet to the front of the vehicle, and one or more lamps which, when lighted, shall display a red light visible from a distance of 500 feet to the rear of the vehicle'. These are the parking lamps to the front and the tail lamps to the rear: sig.position_lamp, 'position, parking, cowl or tail lamps lit (the lamps a vehicle shows without its headlamps)'. Their colour, reach and location are residues (t9, t10)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "t5",
+   "as": "definition",
+   "source": "NRS-484D-100-1",
+   "why": "The words borrow only the periods NRS 484D.100 names (darkness from a half hour after sunset to a half hour before sunrise; other times when insufficient light or atmospheric conditions make persons and vehicles not discernible at 1,000 feet) to say when this duty arises; nothing turns on whether that line's lamp duty applies to this vehicle or is complied with, and that line itself excepts parked vehicles, so composing it would read its exception, not its times.",
+   "quote": "(a) At any time from one-half hour after sunset to one-half hour before sunrise; (b) At any other time when, because of insufficient light or unfavorable atmospheric conditions, persons and vehicles on the highway are not clearly discernible at a distance of 1,000 feet ahead;"
+  },
+  {
+   "span": "t8",
+   "as": "definition",
+   "source": "NRS-484D-165-3",
+   "why": "The words borrow from the appended subsection 1 only its description of the lamps (front lamps showing white or amber, rear lamps showing red) to say which lamps the displayed lights are; the equipment duty of subsection 1 need not be complied with for this display duty to be judged, and it is no node of the corpus.",
+   "quote": "one or more lamps which, when lighted, shall display a white or amber light visible from a distance of 500 feet to the front of the vehicle, and one or more lamps which, when lighted, shall display a red light visible from a distance of 500 feet to the rear of the vehicle"
+  }
+ ],
+ "residues": [
+  {
+   "span": "t3",
+   "why": "'whether attended or unattended' covers both states: the duty is the same whether or not anyone attends the vehicle.",
+   "scope": "none"
+  },
+  {
+   "span": "t9",
+   "why": "The equipment duty and the lamps' colour (white or amber to the front, red to the rear) and reach (visible from 500 feet) describe the lamps the obligation requires displayed; no atom carries a lamp's colour, reach or fitment, so the rule reads only that the position lamps are lit."
+  },
+  {
+   "span": "t10",
+   "why": "The location of the lamps (one as near as practicable to the side closest to passing traffic) is a fitment requirement no atom carries; the rule does not read it."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of the vehicle aggregate, at rest (drv.motion.complete_halt, p.halt_speed_tolerance), its footprint overlaps a roadway or a shoulder lying on the same highway as a roadway, and at the observation env.darkness holds or env.visibility is below the literal 1,000 ft.",
+ "obligation": "The subject's position lamps are lit (sig.position_lamp) at the observation.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "t7",
+   "why": "The lamps the appended subsection describes are read as the position (parking and tail) lamps lit; their colour, reach and location are not read (residues on t9 and t10).",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car of the vehicle aggregate stands at rest on the roadway at night (env.darkness true), position lamps off."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but its position lamps are lit."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car stands at rest on the roadway by day, visibility 5,000 m."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car stands at rest on the roadway at night; the source does not observe position lamps.",
+   "masked": [
+    "sig.position_lamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A car stands at rest on the paved shoulder of the highway by day in fog, env.visibility 120 m, position lamps off."
+  }
+ ],
+ "literals": [
+  {
+   "span": "t6",
+   "text": "1,000 feet",
+   "value": 1000,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "sensor speed resolution of the acquisition standard"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

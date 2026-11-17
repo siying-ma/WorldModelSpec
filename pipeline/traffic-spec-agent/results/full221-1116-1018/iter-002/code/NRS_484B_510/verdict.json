@@ -1,0 +1,1026 @@
+{
+ "verdict": "OK",
+ "details": [
+  "13 witnesses, 27 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "z"
+        },
+        {
+         "lit": "restricted_parking"
+        }
+       ],
+       "atom": "st_curb_zone_kind",
+       "params": []
+      },
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "z"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "curb_zone"
+    },
+    "var": "z"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_510",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-510"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s1",
+     "why": "'A traffic signal displaying a red or yellow indication or flashing_red' is read as a steady red or yellow indication (circular_red, circular_yellow, red_arrow, yellow_arrow) or flashing_red; flashing_yellow and flashing_yellow_arrow, cautionary indications that require no halt, are not read as a device's direction to halt."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "z"
+          },
+          {
+           "lit": "restricted_parking"
+          }
+         ],
+         "atom": "st_curb_zone_kind",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "z"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           }
+          ],
+          "derived": "drv_motion_complete_halt",
+          "params": [
+           {
+            "param": "p.halt_speed_tolerance"
+           }
+          ]
+         }
+        },
+        {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "q"
+                },
+                {
+                 "var": "subject"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "q"
+                 },
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "atom": "rel_ahead_behind_in_lane",
+                "params": []
+               },
+               {
+                "cmp": "le",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "q"
+                  }
+                 ],
+                 "measure": "rel_surface_gap"
+                },
+                "rhs": {
+                 "param": "p.queue_halt_gap"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "exists_user": "q"
+          },
+          {
+           "or": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "ds"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  "exists_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "ds"
+                 },
+                 {
+                  "or": [
+                   {
+                    "body": {
+                     "args": [
+                      {
+                       "var": "dy"
+                      },
+                      {
+                       "var": "r"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    "exists_device": {
+                     "lit": "yield_sign"
+                    },
+                    "var": "dy"
+                   },
+                   {
+                    "or": [
+                     {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "dt"
+                          },
+                          {
+                           "var": "r"
+                          }
+                         ],
+                         "atom": "dev_governs",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "dt"
+                            },
+                            {
+                             "lit": "circular_red"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          },
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "dt"
+                              },
+                              {
+                               "lit": "circular_yellow"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "or": [
+                              {
+                               "args": [
+                                {
+                                 "var": "dt"
+                                },
+                                {
+                                 "lit": "flashing_red"
+                                }
+                               ],
+                               "atom": "dev_traffic_signal_shows",
+                               "params": []
+                              },
+                              {
+                               "or": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "dt"
+                                  },
+                                  {
+                                   "lit": "red_arrow(left)"
+                                  }
+                                 ],
+                                 "atom": "dev_traffic_signal_shows",
+                                 "params": []
+                                },
+                                {
+                                 "or": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "dt"
+                                    },
+                                    {
+                                     "lit": "red_arrow(right)"
+                                    }
+                                   ],
+                                   "atom": "dev_traffic_signal_shows",
+                                   "params": []
+                                  },
+                                  {
+                                   "or": [
+                                    {
+                                     "args": [
+                                      {
+                                       "var": "dt"
+                                      },
+                                      {
+                                       "lit": "red_arrow(straight)"
+                                      }
+                                     ],
+                                     "atom": "dev_traffic_signal_shows",
+                                     "params": []
+                                    },
+                                    {
+                                     "or": [
+                                      {
+                                       "args": [
+                                        {
+                                         "var": "dt"
+                                        },
+                                        {
+                                         "lit": "red_arrow(u_turn)"
+                                        }
+                                       ],
+                                       "atom": "dev_traffic_signal_shows",
+                                       "params": []
+                                      },
+                                      {
+                                       "or": [
+                                        {
+                                         "args": [
+                                          {
+                                           "var": "dt"
+                                          },
+                                          {
+                                           "lit": "yellow_arrow(left)"
+                                          }
+                                         ],
+                                         "atom": "dev_traffic_signal_shows",
+                                         "params": []
+                                        },
+                                        {
+                                         "or": [
+                                          {
+                                           "args": [
+                                            {
+                                             "var": "dt"
+                                            },
+                                            {
+                                             "lit": "yellow_arrow(right)"
+                                            }
+                                           ],
+                                           "atom": "dev_traffic_signal_shows",
+                                           "params": []
+                                          },
+                                          {
+                                           "or": [
+                                            {
+                                             "args": [
+                                              {
+                                               "var": "dt"
+                                              },
+                                              {
+                                               "lit": "yellow_arrow(straight)"
+                                              }
+                                             ],
+                                             "atom": "dev_traffic_signal_shows",
+                                             "params": []
+                                            },
+                                            {
+                                             "args": [
+                                              {
+                                               "var": "dt"
+                                              },
+                                              {
+                                               "lit": "yellow_arrow(u_turn)"
+                                              }
+                                             ],
+                                             "atom": "dev_traffic_signal_shows",
+                                             "params": []
+                                            }
+                                           ]
+                                          }
+                                         ]
+                                        }
+                                       ]
+                                      }
+                                     ]
+                                    }
+                                   ]
+                                  }
+                                 ]
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "exists_device": {
+                       "lit": "traffic_signal"
+                      },
+                      "var": "dt"
+                     },
+                     {
+                      "or": [
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "dr"
+                            },
+                            {
+                             "var": "r"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "dr"
+                              },
+                              {
+                               "lit": "flashing"
+                              }
+                             ],
+                             "atom": "dev_railway_signal_or_gate_lights",
+                             "params": []
+                            },
+                            {
+                             "or": [
+                              {
+                               "args": [
+                                {
+                                 "var": "dr"
+                                },
+                                {
+                                 "lit": "lowering"
+                                }
+                               ],
+                               "atom": "dev_railway_signal_or_gate_gate",
+                               "params": []
+                              },
+                              {
+                               "or": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "dr"
+                                  },
+                                  {
+                                   "lit": "down"
+                                  }
+                                 ],
+                                 "atom": "dev_railway_signal_or_gate_gate",
+                                 "params": []
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "dr"
+                                  },
+                                  {
+                                   "lit": "raising"
+                                  }
+                                 ],
+                                 "atom": "dev_railway_signal_or_gate_gate",
+                                 "params": []
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_device": {
+                         "lit": "railway_signal_or_gate"
+                        },
+                        "var": "dr"
+                       },
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "dh"
+                            },
+                            {
+                             "var": "r"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "dh"
+                              },
+                              {
+                               "lit": "police_officer"
+                              }
+                             ],
+                             "atom": "dev_human_direction_role",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "dh"
+                              },
+                              {
+                               "lit": "stop"
+                              }
+                             ],
+                             "atom": "dev_human_direction_indication",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_device": {
+                         "lit": "human_direction"
+                        },
+                        "var": "dh"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "travel_region"
+             },
+             "var": "r"
+            },
+            {
+             "or": [
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "dz"
+                   },
+                   {
+                    "lit": "parking_restricted"
+                   }
+                  ],
+                  "atom": "dev_zone_sign_kind",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "dz"
+                        },
+                        {
+                         "var": "rz"
+                        }
+                       ],
+                       "atom": "dev_governs",
+                       "params": []
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "rz"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      }
+                     ]
+                    },
+                    "exists_region": {
+                     "lit": "travel_region"
+                    },
+                    "var": "rz"
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "dz"
+                     },
+                     {
+                      "var": "subject"
+                     }
+                    ],
+                    "derived": "prim_conditions_hold",
+                    "params": []
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_device": {
+                "lit": "zone_sign"
+               },
+               "var": "dz"
+              },
+              {
+               "and": [
+                {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "atom": "ru_truck",
+                  "params": []
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "not": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     }
+                    ],
+                    "atom": "ru_trailer_or_combination",
+                    "params": []
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       }
+                      ],
+                      "derived": "drv_motion_parked",
+                      "params": [
+                       {
+                        "param": "p.halt_speed_tolerance"
+                       },
+                       {
+                        "param": "p.standing_min_duration"
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "or": [
+                        {
+                         "since": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            }
+                           ],
+                           "derived": "drv_motion_complete_halt",
+                           "params": [
+                            {
+                             "param": "p.halt_speed_tolerance"
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              }
+                             ],
+                             "derived": "drv_motion_complete_halt",
+                             "params": [
+                              {
+                               "param": "p.halt_speed_tolerance"
+                              }
+                             ]
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              }
+                             ],
+                             "atom": "sig_door_open",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "until": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            }
+                           ],
+                           "derived": "drv_motion_complete_halt",
+                           "params": [
+                            {
+                             "param": "p.halt_speed_tolerance"
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              }
+                             ],
+                             "derived": "drv_motion_complete_halt",
+                             "params": [
+                              {
+                               "param": "p.halt_speed_tolerance"
+                              }
+                             ]
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "subject"
+                              }
+                             ],
+                             "atom": "sig_door_open",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "not": {
+                        "since": [
+                         {
+                          "args": [
+                           {
+                            "var": "subject"
+                           }
+                          ],
+                          "derived": "drv_motion_complete_halt",
+                          "params": [
+                           {
+                            "param": "p.halt_speed_tolerance"
+                           }
+                          ]
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "subject"
+                             }
+                            ],
+                            "derived": "drv_motion_complete_halt",
+                            "params": [
+                             {
+                              "param": "p.halt_speed_tolerance"
+                             }
+                            ]
+                           },
+                           {
+                            "body": {
+                             "and": [
+                              {
+                               "not": {
+                                "same": [
+                                 {
+                                  "var": "o"
+                                 },
+                                 {
+                                  "var": "subject"
+                                 }
+                                ]
+                               }
+                              },
+                              {
+                               "and": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "o"
+                                  },
+                                  {
+                                   "lit": "DEF-NRS-484A-320::vehicle"
+                                  }
+                                 ],
+                                 "atom": "ru_aggregate",
+                                 "params": []
+                                },
+                                {
+                                 "and": [
+                                  {
+                                   "not": {
+                                    "args": [
+                                     {
+                                      "var": "o"
+                                     },
+                                     {
+                                      "var": "z"
+                                     }
+                                    ],
+                                    "atom": "rel_occupies",
+                                    "params": []
+                                   }
+                                  },
+                                  {
+                                   "and": [
+                                    {
+                                     "args": [
+                                      {
+                                       "var": "o"
+                                      }
+                                     ],
+                                     "derived": "drv_motion_complete_halt",
+                                     "params": [
+                                      {
+                                       "param": "p.halt_speed_tolerance"
+                                      }
+                                     ]
+                                    },
+                                    {
+                                     "and": [
+                                      {
+                                       "cmp": "le",
+                                       "lhs": {
+                                        "args": [
+                                         {
+                                          "var": "o"
+                                         },
+                                         {
+                                          "var": "z"
+                                         }
+                                        ],
+                                        "measure": "st_region_geometry_distance"
+                                       },
+                                       "rhs": {
+                                        "param": "p.zone_entry_wait_reach"
+                                       }
+                                      },
+                                      {
+                                       "body": {
+                                        "and": [
+                                         {
+                                          "args": [
+                                           {
+                                            "var": "dw"
+                                           },
+                                           {
+                                            "lit": "parking_restricted"
+                                           }
+                                          ],
+                                          "atom": "dev_zone_sign_kind",
+                                          "params": []
+                                         },
+                                         {
+                                          "and": [
+                                           {
+                                            "body": {
+                                             "and": [
+                                              {
+                                               "args": [
+                                                {
+                                                 "var": "dw"
+                                                },
+                                                {
+                                                 "var": "rw"
+                                                }
+                                               ],
+                                               "atom": "dev_governs",
+                                               "params": []
+                                              },
+                                              {
+                                               "args": [
+                                                {
+                                                 "var": "subject"
+                                                },
+                                                {
+                                                 "var": "rw"
+                                                }
+                                               ],
+                                               "atom": "rel_occupies",
+                                               "params": []
+                                              }
+                                             ]
+                                            },
+                                            "exists_region": {
+                                             "lit": "travel_region"
+                                            },
+                                            "var": "rw"
+                                           },
+                                           {
+                                            "args": [
+                                             {
+                                              "var": "dw"
+                                             },
+                                             {
+                                              "var": "o"
+                                             }
+                                            ],
+                                            "derived": "prim_conditions_hold",
+                                            "params": []
+                                           }
+                                          ]
+                                         }
+                                        ]
+                                       },
+                                       "exists_device": {
+                                        "lit": "zone_sign"
+                                       },
+                                       "var": "dw"
+                                      }
+                                     ]
+                                    }
+                                   ]
+                                  }
+                                 ]
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "exists_user": "o"
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "curb_zone"
+    },
+    "var": "z"
+   },
+   "residues": [
+    "'For any purpose or length of time' excludes no halt: every halt is within the prohibition whatever its purpose and length, so the duty is the same whether or not these words are read."
+   ],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s1",
+    "why": "'A traffic signal displaying a red or yellow indication or flashing_red' is read as a steady red or yellow indication (circular_red, circular_yellow, red_arrow, yellow_arrow) or flashing_red; flashing_yellow and flashing_yellow_arrow, cautionary indications that require no halt, are not read as a device's direction to halt."
+   }
+  ],
+  "context": "4d80078177a60fe401ce92fd",
+  "candidate_digest": "92f2ed20c5e13f86e54c92e057c741452338b814a1edced436fb1b81922e4e4b"
+ }
+}

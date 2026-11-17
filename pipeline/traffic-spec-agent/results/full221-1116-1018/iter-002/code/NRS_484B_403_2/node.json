@@ -1,0 +1,184 @@
+{
+ "node_id": "NRS_484B_403_2",
+ "law_refs": [
+  "NRS-484B-403-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If an official traffic-control device indicates that a U-turn is prohibited,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "the driver",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall obey the directions of the device.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "prim.conditions_hold",
+    "st.lane_enters",
+    "st.intersection",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "'official traffic-control device' uses DEF-NRS-484A-145: 'every sign, signal, marking and device ... placed or erected by a public authority or railroad for the purpose of regulating, warning or guiding traffic'. The law's own words 'indicates that a U-turn is prohibited' limit it to the members whose indication is that prohibition: dev.regulatory_sign, 'a point regulation by catalogue code ... no_u_turn ...', with code no_u_turn; a signal's arrows indicate stop or go, not a U-turn prohibition, and no marking of the ontology states one (disclosed in PLAN.md). The sign's 'conditions attribute ... read as that row says (unconditional when empty, unknown when absent)' is read through prim.conditions_hold ('the structured conditions of a device (dev.zone_sign, dev.regulatory_sign) hold at the observation for a road user'): the sign indicates the prohibition while its conditions hold. The sign directs the traffic of the travel regions it governs (dev.governs: 'the travel regions whose traffic the device controls', over st.travel_region): the subject is under it where its footprint overlaps such a region (rel.occupies), or overlaps an intersection (st.intersection) that a governed lane (st.lane) enters (st.lane_enters: 'a device governs a lane and the lane enters an intersection; which intersection a device controls is read through both') having entered that intersection from that lane. dev.regulatory_sign is 'not a stand-in for a manoeuvre': the U-turn is read by its concept (s3). 'official' is read by the sign's presence (observable_reading status)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'driver' (DEF-NRS-484A-080: 'every person who drives or is in actual physical control of a vehicle') is a relational role, read through the vehicle's controlled motion (observable_reading agency); the class it presupposes is the vehicle of that definition's words, carried by the run's admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), claimed as the aggregate and never expanded. The exclusion 'a relational role such as who drives or controls a vehicle — never membership' does not apply: the aggregate carries the vehicle's class only."
+  },
+  {
+   "span": "s3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.u_turn"
+   ],
+   "justification": "drv.motion.u_turn (definition DEF-NRS-484B-077): 'Road user a has turned “so as to proceed in the opposite direction”: its heading has reversed, “whether accomplished by one continuous movement or not”'. The direction of a no-U-turn sign is that no U-turn be made under it: 'obey the directions of the device' is the subject making no U-turn (the concept not holding at its recognition) where the sign governs it while the U-turn is under way. The concept 'says nothing of the way on which a turns', which s1 supplies."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle). The judged observation is one at which drv.motion.u_turn(subject; window p.vehicle_turn_window, u_turn_min p.u_turn_heading_min, yaw_tol p.turn_yaw_rate_tol) holds, i.e. a U-turn's recognition; the U-turn is under way at the observations of the window behind at which the subject's kin.yaw_rate exceeds p.turn_yaw_rate_tol in magnitude. The duty applies where, at some observation while the U-turn is under way, a dev.regulatory_sign s of code no_u_turn whose conditions hold for the subject there (prim.conditions_hold) governs (dev.governs) a travel region the subject's footprint overlaps (rel.occupies), or governs a lane l that enters (st.lane_enters) an intersection the subject's footprint overlaps, the subject having occupied l at the observation before it entered that intersection.",
+ "obligation": "drv.motion.u_turn(subject) with window p.vehicle_turn_window, u_turn_min p.u_turn_heading_min and yaw_tol p.turn_yaw_rate_tol does not hold at the judged observation: a U-turn made under a no-U-turn sign disobeys it. Where the window is truncated or a yaw rate in it is missing, the concept and its occasion are unknown.",
+ "params": [
+  "p.vehicle_turn_window",
+  "p.u_turn_heading_min",
+  "p.turn_yaw_rate_tol"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'official' is the legal status of the sign: the no-U-turn sign present and governing the subject's region is the evidence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "'the driver' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'obey the directions of the device' is read as making no U-turn under it: the only direction a no-U-turn sign gives.",
+   "kind": "reading"
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.u_turn",
+  "boundary": "window",
+  "window": "p.vehicle_turn_window",
+  "under_way": {
+   "words": "the observations of the window behind the recognition at which the subject's heading is turning",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "kin.yaw_rate: 'rate of change of heading'. drv.motion.u_turn is recognized where 'the heading has stopped turning'; the observations of its window at which the yaw-rate magnitude exceeds p.turn_yaw_rate_tol (the concept's own yaw_tol) are those at which the reversal is being made, which tells them from travel before it began; 'not a stand-in for road curvature — a vehicle yaws on a straight road whenever it manoeuvres'."
+  },
+  "spans": {
+   "s1": "some_moment"
+  }
+ },
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A dev.regulatory_sign of code no_u_turn with empty conditions governs the subject's approach lane; the subject begins turning in that lane, enters the intersection and reverses its heading (heading change in the reversal band, then yaw below tolerance)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same sign and lane; the subject drives straight through the intersection: no U-turn is recognized."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject makes a U-turn on a lane no no_u_turn sign governs; no sign governs the intersection or a lane entering it from which the subject came."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same as forbid, but the source declares kin.yaw_rate absent.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The no_u_turn sign's conditions state hours that do not include the time of the observation (prim.conditions_hold false throughout the U-turn); the subject makes the U-turn under it."
+  },
+  {
+   "name": "occasion_s1",
+   "expected": "violated",
+   "narrative": "The no_u_turn sign governs the lane the subject occupies as it begins turning; the subject completes the reversal on lanes the sign does not govern, so that the governed lane is overlapped only at the first observations while the U-turn is under way."
+  },
+  {
+   "name": "occasion_s1_outside",
+   "expected": "not_applicable",
+   "narrative": "The subject occupies the governed lane only before it begins turning; it continues past the sign's governed stretch and makes the whole U-turn later on lanes and an intersection the sign does not govern and did not enter from a governed lane."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.vehicle_turn_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of a turn by a motor vehicle at a junction or into or out of a driveway, from the start of its heading change to its end, including the crossing of opposing lanes",
+   "source": "proposed this iteration by NRS_484B_217_2"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "proposed this iteration by LVMC_11_40_080_o1"
+  },
+  {
+   "name": "p.turn_yaw_rate_tol",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "the yaw-rate magnitude at or below which a road user's heading counts as no longer turning: the yaw-rate noise floor of the source",
+   "source": "proposed this iteration by LVMC_11_40_080_o1"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

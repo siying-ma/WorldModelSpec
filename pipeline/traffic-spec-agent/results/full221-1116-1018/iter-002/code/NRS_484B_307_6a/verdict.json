@@ -1,0 +1,1930 @@
+{
+ "verdict": "OK",
+ "details": [
+  "12 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "c"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "atom": "st_lane_enters",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "s"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "atom": "dev_governs",
+           "params": []
+          },
+          {
+           "or": [
+            {
+             "since": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "c"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "c"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "s"
+                    },
+                    {
+                     "lit": "circular_yellow"
+                    }
+                   ],
+                   "atom": "dev_traffic_signal_shows",
+                   "params": []
+                  },
+                  {
+                   "not": {
+                    "or": [
+                     {
+                      "args": [
+                       {
+                        "var": "s"
+                       },
+                       {
+                        "lit": "circular_green"
+                       }
+                      ],
+                      "atom": "dev_traffic_signal_shows",
+                      "params": []
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "circular_red"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       },
+                       {
+                        "or": [
+                         {
+                          "args": [
+                           {
+                            "var": "s"
+                           },
+                           {
+                            "lit": "flashing_red"
+                           }
+                          ],
+                          "atom": "dev_traffic_signal_shows",
+                          "params": []
+                         },
+                         {
+                          "or": [
+                           {
+                            "args": [
+                             {
+                              "var": "s"
+                             },
+                             {
+                              "lit": "flashing_yellow"
+                             }
+                            ],
+                            "atom": "dev_traffic_signal_shows",
+                            "params": []
+                           },
+                           {
+                            "or": [
+                             {
+                              "args": [
+                               {
+                                "var": "s"
+                               },
+                               {
+                                "lit": "dark"
+                               }
+                              ],
+                              "atom": "dev_traffic_signal_shows",
+                              "params": []
+                             },
+                             {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "unknown"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "or": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "s"
+                                   },
+                                   {
+                                    "lit": "green_arrow(left)"
+                                   }
+                                  ],
+                                  "atom": "dev_traffic_signal_shows",
+                                  "params": []
+                                 },
+                                 {
+                                  "or": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "s"
+                                     },
+                                     {
+                                      "lit": "green_arrow(right)"
+                                     }
+                                    ],
+                                    "atom": "dev_traffic_signal_shows",
+                                    "params": []
+                                   },
+                                   {
+                                    "or": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "s"
+                                       },
+                                       {
+                                        "lit": "green_arrow(straight)"
+                                       }
+                                      ],
+                                      "atom": "dev_traffic_signal_shows",
+                                      "params": []
+                                     },
+                                     {
+                                      "or": [
+                                       {
+                                        "args": [
+                                         {
+                                          "var": "s"
+                                         },
+                                         {
+                                          "lit": "green_arrow(u_turn)"
+                                         }
+                                        ],
+                                        "atom": "dev_traffic_signal_shows",
+                                        "params": []
+                                       },
+                                       {
+                                        "or": [
+                                         {
+                                          "args": [
+                                           {
+                                            "var": "s"
+                                           },
+                                           {
+                                            "lit": "yellow_arrow(left)"
+                                           }
+                                          ],
+                                          "atom": "dev_traffic_signal_shows",
+                                          "params": []
+                                         },
+                                         {
+                                          "or": [
+                                           {
+                                            "args": [
+                                             {
+                                              "var": "s"
+                                             },
+                                             {
+                                              "lit": "yellow_arrow(right)"
+                                             }
+                                            ],
+                                            "atom": "dev_traffic_signal_shows",
+                                            "params": []
+                                           },
+                                           {
+                                            "or": [
+                                             {
+                                              "args": [
+                                               {
+                                                "var": "s"
+                                               },
+                                               {
+                                                "lit": "yellow_arrow(straight)"
+                                               }
+                                              ],
+                                              "atom": "dev_traffic_signal_shows",
+                                              "params": []
+                                             },
+                                             {
+                                              "or": [
+                                               {
+                                                "args": [
+                                                 {
+                                                  "var": "s"
+                                                 },
+                                                 {
+                                                  "lit": "yellow_arrow(u_turn)"
+                                                 }
+                                                ],
+                                                "atom": "dev_traffic_signal_shows",
+                                                "params": []
+                                               },
+                                               {
+                                                "or": [
+                                                 {
+                                                  "args": [
+                                                   {
+                                                    "var": "s"
+                                                   },
+                                                   {
+                                                    "lit": "red_arrow(left)"
+                                                   }
+                                                  ],
+                                                  "atom": "dev_traffic_signal_shows",
+                                                  "params": []
+                                                 },
+                                                 {
+                                                  "or": [
+                                                   {
+                                                    "args": [
+                                                     {
+                                                      "var": "s"
+                                                     },
+                                                     {
+                                                      "lit": "red_arrow(right)"
+                                                     }
+                                                    ],
+                                                    "atom": "dev_traffic_signal_shows",
+                                                    "params": []
+                                                   },
+                                                   {
+                                                    "or": [
+                                                     {
+                                                      "args": [
+                                                       {
+                                                        "var": "s"
+                                                       },
+                                                       {
+                                                        "lit": "red_arrow(straight)"
+                                                       }
+                                                      ],
+                                                      "atom": "dev_traffic_signal_shows",
+                                                      "params": []
+                                                     },
+                                                     {
+                                                      "or": [
+                                                       {
+                                                        "args": [
+                                                         {
+                                                          "var": "s"
+                                                         },
+                                                         {
+                                                          "lit": "red_arrow(u_turn)"
+                                                         }
+                                                        ],
+                                                        "atom": "dev_traffic_signal_shows",
+                                                        "params": []
+                                                       },
+                                                       {
+                                                        "or": [
+                                                         {
+                                                          "args": [
+                                                           {
+                                                            "var": "s"
+                                                           },
+                                                           {
+                                                            "lit": "flashing_yellow_arrow(left)"
+                                                           }
+                                                          ],
+                                                          "atom": "dev_traffic_signal_shows",
+                                                          "params": []
+                                                         },
+                                                         {
+                                                          "or": [
+                                                           {
+                                                            "args": [
+                                                             {
+                                                              "var": "s"
+                                                             },
+                                                             {
+                                                              "lit": "flashing_yellow_arrow(right)"
+                                                             }
+                                                            ],
+                                                            "atom": "dev_traffic_signal_shows",
+                                                            "params": []
+                                                           },
+                                                           {
+                                                            "or": [
+                                                             {
+                                                              "args": [
+                                                               {
+                                                                "var": "s"
+                                                               },
+                                                               {
+                                                                "lit": "flashing_yellow_arrow(straight)"
+                                                               }
+                                                              ],
+                                                              "atom": "dev_traffic_signal_shows",
+                                                              "params": []
+                                                             },
+                                                             {
+                                                              "args": [
+                                                               {
+                                                                "var": "s"
+                                                               },
+                                                               {
+                                                                "lit": "flashing_yellow_arrow(u_turn)"
+                                                               }
+                                                              ],
+                                                              "atom": "dev_traffic_signal_shows",
+                                                              "params": []
+                                                             }
+                                                            ]
+                                                           }
+                                                          ]
+                                                         }
+                                                        ]
+                                                       }
+                                                      ]
+                                                     }
+                                                    ]
+                                                   }
+                                                  ]
+                                                 }
+                                                ]
+                                               }
+                                              ]
+                                             }
+                                            ]
+                                           }
+                                          ]
+                                         }
+                                        ]
+                                       }
+                                      ]
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "rises": {
+              "not": {
+               "since": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "c"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "s"
+                      },
+                      {
+                       "lit": "circular_yellow"
+                      }
+                     ],
+                     "atom": "dev_traffic_signal_shows",
+                     "params": []
+                    },
+                    {
+                     "not": {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "circular_green"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       },
+                       {
+                        "or": [
+                         {
+                          "args": [
+                           {
+                            "var": "s"
+                           },
+                           {
+                            "lit": "circular_red"
+                           }
+                          ],
+                          "atom": "dev_traffic_signal_shows",
+                          "params": []
+                         },
+                         {
+                          "or": [
+                           {
+                            "args": [
+                             {
+                              "var": "s"
+                             },
+                             {
+                              "lit": "flashing_red"
+                             }
+                            ],
+                            "atom": "dev_traffic_signal_shows",
+                            "params": []
+                           },
+                           {
+                            "or": [
+                             {
+                              "args": [
+                               {
+                                "var": "s"
+                               },
+                               {
+                                "lit": "flashing_yellow"
+                               }
+                              ],
+                              "atom": "dev_traffic_signal_shows",
+                              "params": []
+                             },
+                             {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "dark"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "or": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "s"
+                                   },
+                                   {
+                                    "lit": "unknown"
+                                   }
+                                  ],
+                                  "atom": "dev_traffic_signal_shows",
+                                  "params": []
+                                 },
+                                 {
+                                  "or": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "s"
+                                     },
+                                     {
+                                      "lit": "green_arrow(left)"
+                                     }
+                                    ],
+                                    "atom": "dev_traffic_signal_shows",
+                                    "params": []
+                                   },
+                                   {
+                                    "or": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "s"
+                                       },
+                                       {
+                                        "lit": "green_arrow(right)"
+                                       }
+                                      ],
+                                      "atom": "dev_traffic_signal_shows",
+                                      "params": []
+                                     },
+                                     {
+                                      "or": [
+                                       {
+                                        "args": [
+                                         {
+                                          "var": "s"
+                                         },
+                                         {
+                                          "lit": "green_arrow(straight)"
+                                         }
+                                        ],
+                                        "atom": "dev_traffic_signal_shows",
+                                        "params": []
+                                       },
+                                       {
+                                        "or": [
+                                         {
+                                          "args": [
+                                           {
+                                            "var": "s"
+                                           },
+                                           {
+                                            "lit": "green_arrow(u_turn)"
+                                           }
+                                          ],
+                                          "atom": "dev_traffic_signal_shows",
+                                          "params": []
+                                         },
+                                         {
+                                          "or": [
+                                           {
+                                            "args": [
+                                             {
+                                              "var": "s"
+                                             },
+                                             {
+                                              "lit": "yellow_arrow(left)"
+                                             }
+                                            ],
+                                            "atom": "dev_traffic_signal_shows",
+                                            "params": []
+                                           },
+                                           {
+                                            "or": [
+                                             {
+                                              "args": [
+                                               {
+                                                "var": "s"
+                                               },
+                                               {
+                                                "lit": "yellow_arrow(right)"
+                                               }
+                                              ],
+                                              "atom": "dev_traffic_signal_shows",
+                                              "params": []
+                                             },
+                                             {
+                                              "or": [
+                                               {
+                                                "args": [
+                                                 {
+                                                  "var": "s"
+                                                 },
+                                                 {
+                                                  "lit": "yellow_arrow(straight)"
+                                                 }
+                                                ],
+                                                "atom": "dev_traffic_signal_shows",
+                                                "params": []
+                                               },
+                                               {
+                                                "or": [
+                                                 {
+                                                  "args": [
+                                                   {
+                                                    "var": "s"
+                                                   },
+                                                   {
+                                                    "lit": "yellow_arrow(u_turn)"
+                                                   }
+                                                  ],
+                                                  "atom": "dev_traffic_signal_shows",
+                                                  "params": []
+                                                 },
+                                                 {
+                                                  "or": [
+                                                   {
+                                                    "args": [
+                                                     {
+                                                      "var": "s"
+                                                     },
+                                                     {
+                                                      "lit": "red_arrow(left)"
+                                                     }
+                                                    ],
+                                                    "atom": "dev_traffic_signal_shows",
+                                                    "params": []
+                                                   },
+                                                   {
+                                                    "or": [
+                                                     {
+                                                      "args": [
+                                                       {
+                                                        "var": "s"
+                                                       },
+                                                       {
+                                                        "lit": "red_arrow(right)"
+                                                       }
+                                                      ],
+                                                      "atom": "dev_traffic_signal_shows",
+                                                      "params": []
+                                                     },
+                                                     {
+                                                      "or": [
+                                                       {
+                                                        "args": [
+                                                         {
+                                                          "var": "s"
+                                                         },
+                                                         {
+                                                          "lit": "red_arrow(straight)"
+                                                         }
+                                                        ],
+                                                        "atom": "dev_traffic_signal_shows",
+                                                        "params": []
+                                                       },
+                                                       {
+                                                        "or": [
+                                                         {
+                                                          "args": [
+                                                           {
+                                                            "var": "s"
+                                                           },
+                                                           {
+                                                            "lit": "red_arrow(u_turn)"
+                                                           }
+                                                          ],
+                                                          "atom": "dev_traffic_signal_shows",
+                                                          "params": []
+                                                         },
+                                                         {
+                                                          "or": [
+                                                           {
+                                                            "args": [
+                                                             {
+                                                              "var": "s"
+                                                             },
+                                                             {
+                                                              "lit": "flashing_yellow_arrow(left)"
+                                                             }
+                                                            ],
+                                                            "atom": "dev_traffic_signal_shows",
+                                                            "params": []
+                                                           },
+                                                           {
+                                                            "or": [
+                                                             {
+                                                              "args": [
+                                                               {
+                                                                "var": "s"
+                                                               },
+                                                               {
+                                                                "lit": "flashing_yellow_arrow(right)"
+                                                               }
+                                                              ],
+                                                              "atom": "dev_traffic_signal_shows",
+                                                              "params": []
+                                                             },
+                                                             {
+                                                              "or": [
+                                                               {
+                                                                "args": [
+                                                                 {
+                                                                  "var": "s"
+                                                                 },
+                                                                 {
+                                                                  "lit": "flashing_yellow_arrow(straight)"
+                                                                 }
+                                                                ],
+                                                                "atom": "dev_traffic_signal_shows",
+                                                                "params": []
+                                                               },
+                                                               {
+                                                                "args": [
+                                                                 {
+                                                                  "var": "s"
+                                                                 },
+                                                                 {
+                                                                  "lit": "flashing_yellow_arrow(u_turn)"
+                                                                 }
+                                                                ],
+                                                                "atom": "dev_traffic_signal_shows",
+                                                                "params": []
+                                                               }
+                                                              ]
+                                                             }
+                                                            ]
+                                                           }
+                                                          ]
+                                                         }
+                                                        ]
+                                                       }
+                                                      ]
+                                                     }
+                                                    ]
+                                                   }
+                                                  ]
+                                                 }
+                                                ]
+                                               }
+                                              ]
+                                             }
+                                            ]
+                                           }
+                                          ]
+                                         }
+                                        ]
+                                       }
+                                      ]
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_device": {
+       "lit": "traffic_signal"
+      },
+      "var": "s"
+     },
+     "exists_region": {
+      "lit": "travel_region"
+     },
+     "var": "c"
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-285::traffic"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-320::vehicle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_307_6a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-307-6a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "c"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "atom": "st_lane_enters",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "s"
+              },
+              {
+               "var": "c"
+              }
+             ],
+             "atom": "dev_governs",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "since": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "c"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "s"
+                      },
+                      {
+                       "lit": "circular_yellow"
+                      }
+                     ],
+                     "atom": "dev_traffic_signal_shows",
+                     "params": []
+                    },
+                    {
+                     "not": {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "circular_green"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       },
+                       {
+                        "or": [
+                         {
+                          "args": [
+                           {
+                            "var": "s"
+                           },
+                           {
+                            "lit": "circular_red"
+                           }
+                          ],
+                          "atom": "dev_traffic_signal_shows",
+                          "params": []
+                         },
+                         {
+                          "or": [
+                           {
+                            "args": [
+                             {
+                              "var": "s"
+                             },
+                             {
+                              "lit": "flashing_red"
+                             }
+                            ],
+                            "atom": "dev_traffic_signal_shows",
+                            "params": []
+                           },
+                           {
+                            "or": [
+                             {
+                              "args": [
+                               {
+                                "var": "s"
+                               },
+                               {
+                                "lit": "flashing_yellow"
+                               }
+                              ],
+                              "atom": "dev_traffic_signal_shows",
+                              "params": []
+                             },
+                             {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "dark"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "or": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "s"
+                                   },
+                                   {
+                                    "lit": "unknown"
+                                   }
+                                  ],
+                                  "atom": "dev_traffic_signal_shows",
+                                  "params": []
+                                 },
+                                 {
+                                  "or": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "s"
+                                     },
+                                     {
+                                      "lit": "green_arrow(left)"
+                                     }
+                                    ],
+                                    "atom": "dev_traffic_signal_shows",
+                                    "params": []
+                                   },
+                                   {
+                                    "or": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "s"
+                                       },
+                                       {
+                                        "lit": "green_arrow(right)"
+                                       }
+                                      ],
+                                      "atom": "dev_traffic_signal_shows",
+                                      "params": []
+                                     },
+                                     {
+                                      "or": [
+                                       {
+                                        "args": [
+                                         {
+                                          "var": "s"
+                                         },
+                                         {
+                                          "lit": "green_arrow(straight)"
+                                         }
+                                        ],
+                                        "atom": "dev_traffic_signal_shows",
+                                        "params": []
+                                       },
+                                       {
+                                        "or": [
+                                         {
+                                          "args": [
+                                           {
+                                            "var": "s"
+                                           },
+                                           {
+                                            "lit": "green_arrow(u_turn)"
+                                           }
+                                          ],
+                                          "atom": "dev_traffic_signal_shows",
+                                          "params": []
+                                         },
+                                         {
+                                          "or": [
+                                           {
+                                            "args": [
+                                             {
+                                              "var": "s"
+                                             },
+                                             {
+                                              "lit": "yellow_arrow(left)"
+                                             }
+                                            ],
+                                            "atom": "dev_traffic_signal_shows",
+                                            "params": []
+                                           },
+                                           {
+                                            "or": [
+                                             {
+                                              "args": [
+                                               {
+                                                "var": "s"
+                                               },
+                                               {
+                                                "lit": "yellow_arrow(right)"
+                                               }
+                                              ],
+                                              "atom": "dev_traffic_signal_shows",
+                                              "params": []
+                                             },
+                                             {
+                                              "or": [
+                                               {
+                                                "args": [
+                                                 {
+                                                  "var": "s"
+                                                 },
+                                                 {
+                                                  "lit": "yellow_arrow(straight)"
+                                                 }
+                                                ],
+                                                "atom": "dev_traffic_signal_shows",
+                                                "params": []
+                                               },
+                                               {
+                                                "or": [
+                                                 {
+                                                  "args": [
+                                                   {
+                                                    "var": "s"
+                                                   },
+                                                   {
+                                                    "lit": "yellow_arrow(u_turn)"
+                                                   }
+                                                  ],
+                                                  "atom": "dev_traffic_signal_shows",
+                                                  "params": []
+                                                 },
+                                                 {
+                                                  "or": [
+                                                   {
+                                                    "args": [
+                                                     {
+                                                      "var": "s"
+                                                     },
+                                                     {
+                                                      "lit": "red_arrow(left)"
+                                                     }
+                                                    ],
+                                                    "atom": "dev_traffic_signal_shows",
+                                                    "params": []
+                                                   },
+                                                   {
+                                                    "or": [
+                                                     {
+                                                      "args": [
+                                                       {
+                                                        "var": "s"
+                                                       },
+                                                       {
+                                                        "lit": "red_arrow(right)"
+                                                       }
+                                                      ],
+                                                      "atom": "dev_traffic_signal_shows",
+                                                      "params": []
+                                                     },
+                                                     {
+                                                      "or": [
+                                                       {
+                                                        "args": [
+                                                         {
+                                                          "var": "s"
+                                                         },
+                                                         {
+                                                          "lit": "red_arrow(straight)"
+                                                         }
+                                                        ],
+                                                        "atom": "dev_traffic_signal_shows",
+                                                        "params": []
+                                                       },
+                                                       {
+                                                        "or": [
+                                                         {
+                                                          "args": [
+                                                           {
+                                                            "var": "s"
+                                                           },
+                                                           {
+                                                            "lit": "red_arrow(u_turn)"
+                                                           }
+                                                          ],
+                                                          "atom": "dev_traffic_signal_shows",
+                                                          "params": []
+                                                         },
+                                                         {
+                                                          "or": [
+                                                           {
+                                                            "args": [
+                                                             {
+                                                              "var": "s"
+                                                             },
+                                                             {
+                                                              "lit": "flashing_yellow_arrow(left)"
+                                                             }
+                                                            ],
+                                                            "atom": "dev_traffic_signal_shows",
+                                                            "params": []
+                                                           },
+                                                           {
+                                                            "or": [
+                                                             {
+                                                              "args": [
+                                                               {
+                                                                "var": "s"
+                                                               },
+                                                               {
+                                                                "lit": "flashing_yellow_arrow(right)"
+                                                               }
+                                                              ],
+                                                              "atom": "dev_traffic_signal_shows",
+                                                              "params": []
+                                                             },
+                                                             {
+                                                              "or": [
+                                                               {
+                                                                "args": [
+                                                                 {
+                                                                  "var": "s"
+                                                                 },
+                                                                 {
+                                                                  "lit": "flashing_yellow_arrow(straight)"
+                                                                 }
+                                                                ],
+                                                                "atom": "dev_traffic_signal_shows",
+                                                                "params": []
+                                                               },
+                                                               {
+                                                                "args": [
+                                                                 {
+                                                                  "var": "s"
+                                                                 },
+                                                                 {
+                                                                  "lit": "flashing_yellow_arrow(u_turn)"
+                                                                 }
+                                                                ],
+                                                                "atom": "dev_traffic_signal_shows",
+                                                                "params": []
+                                                               }
+                                                              ]
+                                                             }
+                                                            ]
+                                                           }
+                                                          ]
+                                                         }
+                                                        ]
+                                                       }
+                                                      ]
+                                                     }
+                                                    ]
+                                                   }
+                                                  ]
+                                                 }
+                                                ]
+                                               }
+                                              ]
+                                             }
+                                            ]
+                                           }
+                                          ]
+                                         }
+                                        ]
+                                       }
+                                      ]
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "rises": {
+                "not": {
+                 "since": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "c"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "s"
+                        },
+                        {
+                         "lit": "circular_yellow"
+                        }
+                       ],
+                       "atom": "dev_traffic_signal_shows",
+                       "params": []
+                      },
+                      {
+                       "not": {
+                        "or": [
+                         {
+                          "args": [
+                           {
+                            "var": "s"
+                           },
+                           {
+                            "lit": "circular_green"
+                           }
+                          ],
+                          "atom": "dev_traffic_signal_shows",
+                          "params": []
+                         },
+                         {
+                          "or": [
+                           {
+                            "args": [
+                             {
+                              "var": "s"
+                             },
+                             {
+                              "lit": "circular_red"
+                             }
+                            ],
+                            "atom": "dev_traffic_signal_shows",
+                            "params": []
+                           },
+                           {
+                            "or": [
+                             {
+                              "args": [
+                               {
+                                "var": "s"
+                               },
+                               {
+                                "lit": "flashing_red"
+                               }
+                              ],
+                              "atom": "dev_traffic_signal_shows",
+                              "params": []
+                             },
+                             {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "flashing_yellow"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "or": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "s"
+                                   },
+                                   {
+                                    "lit": "dark"
+                                   }
+                                  ],
+                                  "atom": "dev_traffic_signal_shows",
+                                  "params": []
+                                 },
+                                 {
+                                  "or": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "s"
+                                     },
+                                     {
+                                      "lit": "unknown"
+                                     }
+                                    ],
+                                    "atom": "dev_traffic_signal_shows",
+                                    "params": []
+                                   },
+                                   {
+                                    "or": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "s"
+                                       },
+                                       {
+                                        "lit": "green_arrow(left)"
+                                       }
+                                      ],
+                                      "atom": "dev_traffic_signal_shows",
+                                      "params": []
+                                     },
+                                     {
+                                      "or": [
+                                       {
+                                        "args": [
+                                         {
+                                          "var": "s"
+                                         },
+                                         {
+                                          "lit": "green_arrow(right)"
+                                         }
+                                        ],
+                                        "atom": "dev_traffic_signal_shows",
+                                        "params": []
+                                       },
+                                       {
+                                        "or": [
+                                         {
+                                          "args": [
+                                           {
+                                            "var": "s"
+                                           },
+                                           {
+                                            "lit": "green_arrow(straight)"
+                                           }
+                                          ],
+                                          "atom": "dev_traffic_signal_shows",
+                                          "params": []
+                                         },
+                                         {
+                                          "or": [
+                                           {
+                                            "args": [
+                                             {
+                                              "var": "s"
+                                             },
+                                             {
+                                              "lit": "green_arrow(u_turn)"
+                                             }
+                                            ],
+                                            "atom": "dev_traffic_signal_shows",
+                                            "params": []
+                                           },
+                                           {
+                                            "or": [
+                                             {
+                                              "args": [
+                                               {
+                                                "var": "s"
+                                               },
+                                               {
+                                                "lit": "yellow_arrow(left)"
+                                               }
+                                              ],
+                                              "atom": "dev_traffic_signal_shows",
+                                              "params": []
+                                             },
+                                             {
+                                              "or": [
+                                               {
+                                                "args": [
+                                                 {
+                                                  "var": "s"
+                                                 },
+                                                 {
+                                                  "lit": "yellow_arrow(right)"
+                                                 }
+                                                ],
+                                                "atom": "dev_traffic_signal_shows",
+                                                "params": []
+                                               },
+                                               {
+                                                "or": [
+                                                 {
+                                                  "args": [
+                                                   {
+                                                    "var": "s"
+                                                   },
+                                                   {
+                                                    "lit": "yellow_arrow(straight)"
+                                                   }
+                                                  ],
+                                                  "atom": "dev_traffic_signal_shows",
+                                                  "params": []
+                                                 },
+                                                 {
+                                                  "or": [
+                                                   {
+                                                    "args": [
+                                                     {
+                                                      "var": "s"
+                                                     },
+                                                     {
+                                                      "lit": "yellow_arrow(u_turn)"
+                                                     }
+                                                    ],
+                                                    "atom": "dev_traffic_signal_shows",
+                                                    "params": []
+                                                   },
+                                                   {
+                                                    "or": [
+                                                     {
+                                                      "args": [
+                                                       {
+                                                        "var": "s"
+                                                       },
+                                                       {
+                                                        "lit": "red_arrow(left)"
+                                                       }
+                                                      ],
+                                                      "atom": "dev_traffic_signal_shows",
+                                                      "params": []
+                                                     },
+                                                     {
+                                                      "or": [
+                                                       {
+                                                        "args": [
+                                                         {
+                                                          "var": "s"
+                                                         },
+                                                         {
+                                                          "lit": "red_arrow(right)"
+                                                         }
+                                                        ],
+                                                        "atom": "dev_traffic_signal_shows",
+                                                        "params": []
+                                                       },
+                                                       {
+                                                        "or": [
+                                                         {
+                                                          "args": [
+                                                           {
+                                                            "var": "s"
+                                                           },
+                                                           {
+                                                            "lit": "red_arrow(straight)"
+                                                           }
+                                                          ],
+                                                          "atom": "dev_traffic_signal_shows",
+                                                          "params": []
+                                                         },
+                                                         {
+                                                          "or": [
+                                                           {
+                                                            "args": [
+                                                             {
+                                                              "var": "s"
+                                                             },
+                                                             {
+                                                              "lit": "red_arrow(u_turn)"
+                                                             }
+                                                            ],
+                                                            "atom": "dev_traffic_signal_shows",
+                                                            "params": []
+                                                           },
+                                                           {
+                                                            "or": [
+                                                             {
+                                                              "args": [
+                                                               {
+                                                                "var": "s"
+                                                               },
+                                                               {
+                                                                "lit": "flashing_yellow_arrow(left)"
+                                                               }
+                                                              ],
+                                                              "atom": "dev_traffic_signal_shows",
+                                                              "params": []
+                                                             },
+                                                             {
+                                                              "or": [
+                                                               {
+                                                                "args": [
+                                                                 {
+                                                                  "var": "s"
+                                                                 },
+                                                                 {
+                                                                  "lit": "flashing_yellow_arrow(right)"
+                                                                 }
+                                                                ],
+                                                                "atom": "dev_traffic_signal_shows",
+                                                                "params": []
+                                                               },
+                                                               {
+                                                                "or": [
+                                                                 {
+                                                                  "args": [
+                                                                   {
+                                                                    "var": "s"
+                                                                   },
+                                                                   {
+                                                                    "lit": "flashing_yellow_arrow(straight)"
+                                                                   }
+                                                                  ],
+                                                                  "atom": "dev_traffic_signal_shows",
+                                                                  "params": []
+                                                                 },
+                                                                 {
+                                                                  "args": [
+                                                                   {
+                                                                    "var": "s"
+                                                                   },
+                                                                   {
+                                                                    "lit": "flashing_yellow_arrow(u_turn)"
+                                                                   }
+                                                                  ],
+                                                                  "atom": "dev_traffic_signal_shows",
+                                                                  "params": []
+                                                                 }
+                                                                ]
+                                                               }
+                                                              ]
+                                                             }
+                                                            ]
+                                                           }
+                                                          ]
+                                                         }
+                                                        ]
+                                                       }
+                                                      ]
+                                                     }
+                                                    ]
+                                                   }
+                                                  ]
+                                                 }
+                                                ]
+                                               }
+                                              ]
+                                             }
+                                            ]
+                                           }
+                                          ]
+                                         }
+                                        ]
+                                       }
+                                      ]
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "not": {
+          "and": [
+           {
+            "rises": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "s"
+               },
+               {
+                "lit": "circular_red"
+               }
+              ],
+              "atom": "dev_traffic_signal_shows",
+              "params": []
+             },
+             {
+              "not": {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "s"
+                  },
+                  {
+                   "lit": "green_arrow(left)"
+                  }
+                 ],
+                 "atom": "dev_traffic_signal_shows",
+                 "params": []
+                },
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "s"
+                    },
+                    {
+                     "lit": "green_arrow(right)"
+                    }
+                   ],
+                   "atom": "dev_traffic_signal_shows",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "s"
+                      },
+                      {
+                       "lit": "green_arrow(straight)"
+                      }
+                     ],
+                     "atom": "dev_traffic_signal_shows",
+                     "params": []
+                    },
+                    {
+                     "or": [
+                      {
+                       "args": [
+                        {
+                         "var": "s"
+                        },
+                        {
+                         "lit": "green_arrow(u_turn)"
+                        }
+                       ],
+                       "atom": "dev_traffic_signal_shows",
+                       "params": []
+                      },
+                      {
+                       "or": [
+                        {
+                         "args": [
+                          {
+                           "var": "s"
+                          },
+                          {
+                           "lit": "flashing_yellow_arrow(left)"
+                          }
+                         ],
+                         "atom": "dev_traffic_signal_shows",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "lit": "flashing_yellow_arrow(right)"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          },
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "flashing_yellow_arrow(straight)"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "flashing_yellow_arrow(u_turn)"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "forall_device": {
+       "lit": "traffic_signal"
+      },
+      "var": "s"
+     },
+     "forall_region": {
+      "lit": "travel_region"
+     },
+     "var": "c"
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [
+    "The words state what the steady yellow indication tells the traffic facing it. They impose no duty and set no condition of the duty in s6, which the rule carries in full."
+   ],
+   "surrogate": false
+  },
+  "context": "5f15ab0e156040bd84cda53d",
+  "candidate_digest": "63d661a84b3305270eefbee90628bc81e4ee5162184bd7e4dca2694043aa4f79"
+ }
+}

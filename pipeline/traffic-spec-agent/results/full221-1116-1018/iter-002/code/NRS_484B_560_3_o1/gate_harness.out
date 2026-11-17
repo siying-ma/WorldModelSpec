@@ -1,0 +1,73 @@
+'TrafficSpec.Rules.NRS_484B_560_3_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_560_3_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_560_3_o1","intentions":[],"laws":["NRS-484B-560-3"],"narrowings":[],"operationalizations":[{"concepts":["prim.region_lateral_offset","st.region_geometry","st.road_edge"],"params":["p.pullover_edge_gap"],"standard":"as far to the right of the highway as possible","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"flashing"}],"atom":"dev_railway_signal_or_gate_lights","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"lowering"}],"atom":"dev_railway_signal_or_gate_gate","params":[]},{"args":[{"var":"d"},{"lit":"down"}],"atom":"dev_railway_signal_or_gate_gate","params":[]}]}]}]},"exists_device":{"lit":"railway_signal_or_gate"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"or":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"d"},{"lit":"railroad_flagger"}],"atom":"dev_human_direction_role","params":[]}]},{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"d"}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.railroad_crossing_approach_reach"}},"exists_region":{"lit":"railway_crossing"},"var":"c"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_560_3_o1","intentions":[],"laws":["NRS-484B-560-3"],"narrowings":[],"obligation":{"body":{"and":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"e"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pullover_edge_gap"}}]}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"exists_region":{"lit":"highway"},"var":"h"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"flashing"}],"atom":"dev_railway_signal_or_gate_lights","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"lowering"}],"atom":"dev_railway_signal_or_gate_gate","params":[]},{"args":[{"var":"d"},{"lit":"down"}],"atom":"dev_railway_signal_or_gate_gate","params":[]}]}]}]},"exists_device":{"lit":"railway_signal_or_gate"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"or":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"d"},{"lit":"railroad_flagger"}],"atom":"dev_human_direction_role","params":[]}]},{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"d"}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.railroad_crossing_approach_reach"}},"exists_region":{"lit":"railway_crossing"},"var":"c"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_560_3_o1","intentions":[],"laws":["NRS-484B-560-3"],"narrowings":[],"obligation":{"body":{"and":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"e"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pullover_edge_gap"}}]}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"exists_region":{"lit":"highway"},"var":"h"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_travel_region,rel_occupies,dev_railway_signal_or_gate,dev_governs,dev_railway_signal_or_gate_lights,dev_railway_signal_or_gate_gate,dev_stop_sign,dev_traffic_signal,dev_traffic_signal_shows,dev_human_direction,dev_human_direction_role,dev_human_direction_indication,st_railway_crossing,st_region_geometry_distance,st_highway,st_road_edge,st_on_way,prim_region_lateral_offset
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?d
+OCC	d,r
+OCC	d
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,r
+OCC	?d
+OCC	d,r
+OCC	d
+OCC	?d
+OCC	d,r
+OCC	d
+OCC	d
+OCC	d
+OCC	?c
+OCC	subject,c
+OCC	?h
+OCC	subject,h
+OCC	?e
+OCC	e,h
+OCC	subject
+OCC	e
+OCC	subject,e
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	100
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	20
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	19
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	15
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	14
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	18
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	19
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	19
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	18
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	19
+TIME	witnesses	161
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_560_3_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_560_3_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_560_3_o1	17	8
+TIME	adequacy_start	7
+TIME	adequacy	1858
+DONE

@@ -1,0 +1,437 @@
+{
+ "node_id": "NRS_484B_603_1_o1",
+ "law_refs": [
+  "NRS-484B-603-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The fact that the speed of a vehicle is lower than the prescribed limits",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "does not relieve",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "a driver",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "from the duty to decrease speed",
+   "role": "standard"
+  },
+  {
+   "id": "s5",
+   "text": "when approaching and crossing an intersection,",
+   "role": "trigger"
+  },
+  {
+   "id": "s6",
+   "text": "when approaching and going around a curve,",
+   "role": "trigger"
+  },
+  {
+   "id": "s7",
+   "text": "when approaching a hill crest,",
+   "role": "trigger"
+  },
+  {
+   "id": "s8",
+   "text": "when traveling upon any narrow or winding highway,",
+   "role": "trigger"
+  },
+  {
+   "id": "s9",
+   "text": "or when special hazards exist or may exist",
+   "role": "standard"
+  },
+  {
+   "id": "s10",
+   "text": "with respect to pedestrians or other traffic,",
+   "role": "condition"
+  },
+  {
+   "id": "s11",
+   "text": "or by reason of weather",
+   "role": "condition"
+  },
+  {
+   "id": "s12",
+   "text": "or other highway conditions,",
+   "role": "standard"
+  },
+  {
+   "id": "s13",
+   "text": "and speed must be decreased",
+   "role": "sibling"
+  },
+  {
+   "id": "s14",
+   "text": "as may be necessary to avoid colliding",
+   "role": "sibling"
+  },
+  {
+   "id": "s15",
+   "text": "with any person, vehicle or other conveyance",
+   "role": "sibling"
+  },
+  {
+   "id": "s16",
+   "text": "on or entering a highway",
+   "role": "sibling"
+  },
+  {
+   "id": "s17",
+   "text": "in compliance with legal requirements and the duty of all persons to use due care.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "The words keep the duty in force on the subject's speed: kin.speed is the 'magnitude of velocity' in m/s; the duty that is not relieved is a duty on that magnitude. Its 'Not a stand-in for' clauses do not concern speed itself."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a driver' is, by DEF-NRS-484A-080, 'every person who drives or is in actual physical control of a vehicle': the duty binds the vehicle the driver controls. 'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); ru.aggregate is 'membership of a legal aggregate', and it is not used for the relational role of driving, which is read through the vehicle's controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'approaching an intersection' (NRS_484B_250_1). Approaching: the subject occupies (rel.occupies, 'a road user's footprint overlaps a lane / region') a travel region (st.travel_region) whose entrance end is an intersection (st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end'); crossing: the subject occupies the intersection itself (st.intersection, 'the region where two roadways meet'). The occupancy is not a stand-in for geometry; lane_enters is not read from distance or velocity, as its contract requires."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.curvature",
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "A curve is the roadway's horizontal bend: st.curvature, 'horizontal curvature of the roadway at a point, as a magnitude (1/m, never negative)', read at the subject's place on the roadway it occupies (rel.occupies, st.roadway), standing clear of zero by the map's resolution p.curvature_resolution (a feature named without a measure is its presence). Going around it: that holds at the observation; approaching it: it holds at some observation of the window ahead whose length is p.curve_approach_reach of distance the subject travels (a .path window, which reads kin.path_length, 'distance travelled along the body's path'). Not kin.yaw_rate, which the ontology says is 'Not a stand-in for: road curvature'."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "kin.position",
+    "kin.velocity",
+    "st.crest",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'When approaching the crest of a grade' (NRS_484B_213_2a). st.crest is 'the place on a roadway's longitudinal profile where the slope changes from rising to falling in the direction of travel, carried as a region with a reference point and a boundary, so the ground distance from a road user to it is read through st.region_geometry'; approaching is the crest's reference point lying ahead of the subject's velocity (kin.position, kin.velocity) with the ground distance within p.crest_near_reach. st.crest is not the slope at a point (st.grade) nor the sight distance, which are not used for the place."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.lane",
+    "st.lane_width",
+    "st.curvature"
+   ],
+   "derived": [],
+   "justification": "Traveling upon a highway: the subject occupies a lane (rel.occupies, st.lane, 'a longitudinal strip of roadway for one line of vehicles') lying on a highway (st.on_way, 'the public way a structure region lies on'; st.highway, 'the entire public way between its boundary lines'). Narrow: st.lane_width, 'width of a lane at a point', of that lane at or below p.narrow_lane_width. Winding: st.curvature of the roadway at the subject's place clear of p.curvature_resolution."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.occupies",
+    "st.roadway",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "derived": [],
+   "justification": "'pedestrians' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); 'other traffic' is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel'). A hazard with respect to them is read through a pedestrian occupying a roadway (rel.occupies, st.roadway, 'the part of a highway improved for vehicular traffic') or a traffic road user whose centre approaches the subject's (prim.closest_approach_within, prim.closest_approach_distance). The primitives are 'Not a stand-in for: contact between bodies ... or the danger of a crash' alone: the danger is the operationalization of s9 that bounds them."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "env.precipitation",
+    "env.wet_road",
+    "env.ice_or_snow",
+    "env.visibility",
+    "st.sight_distance"
+   ],
+   "derived": [],
+   "justification": "Weather is read through env.precipitation ('rain or snow falling'), env.wet_road ('road surface wet, standing water'), env.ice_or_snow ('road surface icy or snow-covered') and env.visibility ('visibility distance (fog, dust, smoke)') below the sight distance the road offers at the subject's place (st.sight_distance, which is 'Not a stand-in for ... the clarity of the air (env.visibility)': the two are compared, never substituted)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s12",
+   "standard": "special hazards by reason of other highway conditions (the catch-all of the standard)",
+   "concepts": [
+    "st.obstruction",
+    "st.region_geometry",
+    "dev.temporary_traffic_control",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "kin.speed"
+   ],
+   "params": [
+    "p.driver_reaction_time",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice"
+   ],
+   "convention": "AASHTO stopping-distance model: a highway condition is a special hazard where an obstruction (st.obstruction, 'a physical object on or beside the roadway that is not a road user') lies within the subject's stopping distance D (the s4 model) of its body, the ground distance read through st.region_geometry, or where works or a closure are marked by dev.temporary_traffic_control ('cones, barricades, temporary signs and flashers marking works, a closure or an obstruction') governing (dev.governs) a travel region the subject occupies (rel.occupies, st.travel_region).",
+   "surrogate": true
+  },
+  {
+   "span": "s4",
+   "standard": "the duty to decrease speed: the speed to which the driver must come where a condition of the line holds",
+   "concepts": [
+    "kin.speed",
+    "st.sight_distance",
+    "env.visibility",
+    "st.curvature",
+    "rel.surface_gap",
+    "env.wet_road",
+    "env.precipitation",
+    "env.ice_or_snow"
+   ],
+   "params": [
+    "p.driver_reaction_time",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice",
+    "p.curve_lateral_accel_max"
+   ],
+   "convention": "AASHTO stopping-sight-distance model and curve side-friction model: the stopping distance D = v times p.driver_reaction_time plus v squared over twice the surface deceleration (p.following_decel_ice on ice or snow, else p.following_decel_wet on a wet road or in precipitation, else p.following_decel_dry) must not exceed the sight distance at the subject's place, nor the visibility where it is shorter, nor the surface gap to a road user in predicted conflict; on a bend v squared times the curvature must not exceed p.curve_lateral_accel_max. The bound moves with the speed, the surface, the sight, the visibility, the curvature and the gap.",
+   "surrogate": true
+  },
+  {
+   "span": "s9",
+   "standard": "special hazards exist or may exist",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.occupies",
+    "st.roadway",
+    "st.region_geometry",
+    "kin.speed",
+    "env.visibility",
+    "st.sight_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.driver_reaction_time",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice"
+   ],
+   "convention": "Traffic-conflict technique: a hazard exists with respect to a road user whose centre comes within p.conflict_centre_clearance of the subject's within p.conflict_horizon under constant velocities; a hazard may exist where a pedestrian occupies a roadway; by reason of weather where rain or snow falls, the road is wet, icy or snow-covered, or the visibility is below the sight distance at the subject's place; by reason of highway conditions where an obstruction lies within the subject's stopping distance (the s4 model) or a temporary traffic-control device governs the subject's region.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s1",
+   "why": "The words say a speed below the posted limits does not relieve the duty; the duty is the same whether the speed is below or above the limits, so the clause imposes no observable condition.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and, at the observation, at least one condition holds: (a) it occupies an intersection, or a travel region whose entrance end is an intersection; (b) it occupies a roadway whose curvature at its place exceeds p.curvature_resolution, or does so at some observation within the next p.curve_approach_reach of distance it travels (a .path window ahead); (c) a crest lies ahead of its velocity within p.crest_near_reach of its body; (d) it occupies a lane on a highway whose width is at or below p.narrow_lane_width or whose roadway curvature at its place exceeds p.curvature_resolution; (e) a pedestrian occupies a roadway, or some traffic road user other than the subject has a closest approach to it within p.conflict_horizon at a centre distance at or below p.conflict_centre_clearance; (f) rain or snow falls, the road is wet, icy or snow-covered, or the visibility is below the sight distance at its place; (g) an obstruction lies within the stopping distance D of its body, or a temporary traffic-control device governs a travel region it occupies.",
+ "obligation": "At every such observation the subject's speed v keeps its stopping distance D = v*p.driver_reaction_time + v*v/(2*a), with a = p.following_decel_ice where the road is icy or snow-covered, else p.following_decel_wet where it is wet or rain or snow falls, else p.following_decel_dry, at or below the sight distance at its place and at or below the visibility; where the roadway curvature at its place exceeds p.curvature_resolution, v*v*curvature is at or below p.curve_lateral_accel_max; and for every road user in predicted conflict (condition e), D is at or below the surface gap between the two bodies. Otherwise the duty is violated.",
+ "params": [
+  "p.driver_reaction_time",
+  "p.following_decel_dry",
+  "p.following_decel_wet",
+  "p.following_decel_ice",
+  "p.curve_lateral_accel_max",
+  "p.curvature_resolution",
+  "p.curve_approach_reach",
+  "p.crest_near_reach",
+  "p.narrow_lane_width",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'a driver' is read through the vehicle's controlled motion: the duty binds the vehicle's speed whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "'decrease speed' is read as reaching the speed the condition requires (stopping within the sight distance, the visibility and the gap to a road user in conflict; the curve's lateral acceleration bound), not as a deceleration act of a set amount: a vehicle already at such a speed complies.",
+   "kind": "reading"
+  },
+  {
+   "span": "s12",
+   "why": "The catch-all 'other highway conditions' is read only through obstructions within the stopping distance and temporary traffic-control devices governing the subject's region.",
+   "kind": "reading"
+  },
+  {
+   "span": "s9",
+   "why": "Hazards that 'may exist' are read only through a pedestrian on a roadway; other potential hazards are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies a lane that enters an intersection on a dry, straight roadway with no precipitation; the sight distance at its place is 40 m and the visibility is long; it travels at 20 m/s, so its stopping distance at the dry deceleration exceeds 40 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same approach at 10 m/s: the stopping distance at the dry deceleration is below the 40 m sight distance and the visibility; no road user is in conflict."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car travels on a dry, straight, wide-laned roadway between intersections, no crest ahead within reach, no pedestrian on the roadway, no road user in conflict, no obstruction or temporary traffic control, visibility longer than the sight distance."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe the sight distance at the car's place; the curvature is zero and no road user is in conflict, so the verdict turns on the unobserved sight distance.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A car on a roadway with curvature 0.01 1/m (a 100 m radius) at 20 m/s on a dry road with long sight distance: v squared times curvature exceeds the curve lateral-acceleration bound."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A car approaches an intersection at 13 m/s on an icy road with a 60 m sight distance: its stopping distance at the ice deceleration exceeds 60 m, though at the dry deceleration it would not."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A car on a dry straight road at 15 m/s with long sight distance; a pedestrian ahead walks so that its centre comes within the conflict clearance of the car's within the conflict horizon, and the surface gap is 20 m, shorter than the car's stopping distance."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.driver_reaction_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "perception-reaction time of an alert driver to an expected hazard in the stopping-distance model",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping sight distance"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "unit": "m/s^2",
+   "value": 6.0,
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "vehicle braking friction tables (accident reconstruction practice)"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "vehicle braking friction tables (accident reconstruction practice)"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.0,
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "vehicle braking friction tables (accident reconstruction practice)"
+  },
+  {
+   "name": "p.curve_lateral_accel_max",
+   "unit": "m/s^2",
+   "value": 3.0,
+   "convention": "the lateral acceleration a passenger vehicle sustains on a curve within comfortable side friction on a dry or wet paved surface (about 0.3 g)",
+   "source": "AASHTO Green Book horizontal curve side-friction factors"
+  },
+  {
+   "name": "p.curvature_resolution",
+   "unit": "1/m",
+   "value": 0.0005,
+   "convention": "the horizontal curvature at or below which a mapped roadway reads as straight: the curvature resolution of map centrelines (a radius of about two kilometres)",
+   "source": "HD map centreline accuracy"
+  },
+  {
+   "name": "p.curve_approach_reach",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "the distance a road user travels ahead within which a bend it reaches counts as one it is approaching: about the stopping sight distance at 90 km/h, the distance over which a driver must already be slowing for the bend",
+   "source": "AASHTO Green Book stopping sight distance and horizontal curve warning placement (MUTCD Table 2C-4)"
+  },
+  {
+   "name": "p.crest_near_reach",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "the ground distance from a road user's body to a crest within which the road user is on the approach to or near the crest: the length of a crest vertical curve over which forward sight is restricted, about the stopping sight distance at 90 km/h",
+   "source": "AASHTO Green Book crest vertical curves and stopping sight distance"
+  },
+  {
+   "name": "p.narrow_lane_width",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "the lane width at or below which a highway's lane counts as narrow: below the 3.3 to 3.6 m design lane width at which a passenger car and a truck meet with comfortable lateral clearance",
+   "source": "AASHTO Green Book, lane width"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique (Hyden; time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger car design dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

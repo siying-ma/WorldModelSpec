@@ -1,0 +1,224 @@
+{
+ "node_id": "NRS_484B_413_3",
+ "law_refs": [
+  "NRS-484B-413-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A driver",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not stop",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "or suddenly decrease the speed",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "without first giving an appropriate signal",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "to the driver of any vehicle immediately to the rear.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'A driver' is the relational role of DEF-NRS-484A-080, read through the vehicle's controlled motion (agency reading): the binder is the vehicle, the admitted aggregate DEF-NRS-484A-320::vehicle; same mapping as the index row 'a driver'."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "dev.governs",
+    "dev.human_direction",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.traffic_signal",
+    "dev.railway_signal_or_gate",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stop' is here a stopping the clause prohibits, so DEF-NRS-484A-260 applies ('when prohibited, any halting, even momentarily, of a vehicle'): the onset of drv.motion.complete_halt ('at rest at the observation'), the observation at which it holds and did not at the previous one. The definition's exclusion, which the concept does not make, is carried beside it: 'except when necessary to avoid conflict with other traffic' -- a road user ahead in the same lane (rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane') within p.queue_halt_gap of body gap (rel.surface_gap, 'distance between the nearest points of two bodies'); 'or in compliance with the directions of a police officer or official traffic-control device' -- the subject occupies (rel.occupies) an st.travel_region governed (dev.governs) by a dev.stop_sign, a dev.yield_sign, a dev.traffic_signal showing a red indication, a dev.railway_signal_or_gate flashing or with gate lowering or down, or a dev.human_direction of role police_officer indicating stop. dev.governs is not a stand-in for a position; it reads which device controls the region occupied."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, the subject's class."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "sig.brake_lamp",
+    "sig.hand_signal"
+   ],
+   "derived": [],
+   "justification": "The signal of a stop or a decrease of speed is the brake lamp ('brake lamps lit') or the arm signal (sig.hand_signal, 'meaning ... stop_or_slow'). sig.brake_lamp is not a stand-in for a halt or a deceleration, and is not used as one: the halt and the deceleration are read from kinematics, the lamp only as the signal other road users see. 'first' is read as shown at the onset of the halt or the deceleration or at some observation of the window of length p.stop_signal_lead_window behind it."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "derived": [],
+   "justification": "'any vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, read on the other road user; 'immediately to the rear' is that road user behind the subject in the same lane (rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane, along the lane direction') with the gap between bodies (rel.surface_gap) at most p.rear_signal_reach. rel.surface_gap is not a stand-in for an order of arrival; the order is read from rel.ahead_behind_in_lane. 'the driver of' is read through that vehicle (agency); no perception by that driver is read."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "suddenly",
+   "concepts": [
+    "kin.accel_longitudinal"
+   ],
+   "params": [
+    "p.sudden_decel_min"
+   ],
+   "convention": "a decrease of speed is sudden where the longitudinal deceleration exceeds the comfortable deceleration most drivers use when braking for an expected stop",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle. Engaged at an observation E at which either (a) drv.motion.complete_halt(subject; p.halt_speed_tolerance) holds and did not hold at the previous observation, and that halt is not excused under DEF-NRS-484A-260: no road user is ahead of the subject in the same lane (rel.ahead_behind_in_lane) with rel.surface_gap at most p.queue_halt_gap, and the subject occupies no st.travel_region governed (dev.governs) by a dev.stop_sign, a dev.yield_sign, a dev.traffic_signal showing circular_red, red_arrow or flashing_red, a dev.railway_signal_or_gate with lights flashing or gate lowering or down, or a dev.human_direction of role police_officer indicating stop; or (b) the subject's kin.accel_longitudinal is at or below minus p.sudden_decel_min and was not at the previous observation; and at E some other road user of the aggregate DEF-NRS-484A-320::vehicle is behind the subject in the same lane (rel.ahead_behind_in_lane) with rel.surface_gap at most p.rear_signal_reach.",
+ "obligation": "At E, or at some observation of the time window of length p.stop_signal_lead_window behind E, the subject showed sig.brake_lamp lit or a sig.hand_signal meaning stop_or_slow. Otherwise violated.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap",
+  "p.sudden_decel_min",
+  "p.rear_signal_reach",
+  "p.stop_signal_lead_window"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'A driver' is read through the vehicle's controlled motion: the duty binds the vehicle, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'an appropriate signal' is read as the brake lamps lit or the stop-or-slow arm signal; 'first' as shown at the onset or within the lead window behind it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject car halts mid-block in its lane with no road user ahead and no device or officer governing its lane; a car is 15 m behind it in the same lane; the brake lamps are not lit and no arm signal is given at any observation of the lead window or at the halt."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject car halts mid-block with a car 15 m behind in the same lane; its brake lamps are lit from 2 s before the halt."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car halts mid-block without any signal; no other road user is in the scene."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car halts mid-block with a car 15 m behind in the same lane; no arm signal is given, and sig.brake_lamp is not observed on this source.",
+   "masked": [
+    "sig.brake_lamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject car decelerates at 6 m/s^2 without halting while a car is 15 m behind it in the same lane; the brake lamps stay unlit and no arm signal is given."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The subject car halts in a lane governed by a stop sign, with a car 15 m behind, without any signal: the halt is excused under DEF-NRS-484A-260 and the deceleration stays below the sudden threshold."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of tracking sources"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "jam spacing of halted vehicle queues"
+  },
+  {
+   "name": "p.sudden_decel_min",
+   "unit": "m/s^2",
+   "value": 3.4,
+   "convention": "the longitudinal deceleration beyond which a decrease of speed counts as sudden: the comfortable deceleration most drivers use when braking for an expected stop",
+   "source": "AASHTO Green Book, deceleration rate for stopping sight distance (3.4 m/s^2)"
+  },
+  {
+   "name": "p.rear_signal_reach",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "the gap between bodies within which a following vehicle in the same lane is immediately to the rear of a vehicle: two seconds of headway at an urban speed of about 15 m/s",
+   "source": "two-second following rule of driver manuals"
+  },
+  {
+   "name": "p.stop_signal_lead_window",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "the time behind the onset of a halt or a sudden deceleration within which a stop or slow signal shown counts as given first for it: two perception-reaction times of an alert following driver",
+   "source": "AASHTO perception-reaction time of an alert driver to an expected cue (about 1.5 s)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

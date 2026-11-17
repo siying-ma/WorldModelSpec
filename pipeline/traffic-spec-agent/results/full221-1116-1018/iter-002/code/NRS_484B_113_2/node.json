@@ -1,0 +1,143 @@
+{
+ "node_id": "NRS_484B_113_2",
+ "law_refs": [
+  "NRS-484B-113-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "Shall not back into an intersection, on or over a crosswalk, or around a street corner.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a defined term whose admitted aggregate is DEF-NRS-484A-320::vehicle; 'driver' is a role read through the vehicle's controlled motion (agency narrowing)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.crosswalk",
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.moving_backward"
+   ],
+   "justification": "'back' is moving backward, drv.motion.moving_backward ('the component of a's velocity along a's heading ... below minus speed_tol'), read from kinematics as kin.gear's contract requires. 'into an intersection' is the footprint coming to overlap an intersection r (st.intersection, 'the region where two roadways meet'; rel.occupies true at the observation, false at the previous one) while backing; the crosswalk and the stop line are not stand-ins for it, as st.intersection's contract says. 'on or over a crosswalk' is the backing vehicle's footprint overlapping a st.crosswalk ('marked crossing, or the unmarked prolongation of sidewalks at an intersection'). 'around a street corner': the corner is where two streets meet; backing around it carries the vehicle through the area 'embraced within the prolongation ... of the lateral curb lines' of the meeting ways (DEF-NRS-484A-105), the st.intersection region, while its heading turns — read as backing with the footprint overlapping r, the heading having changed by at least the turn threshold since the backing within r began (Term.headingSince, integrated from kin.yaw_rate)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that is backing at the observation: drv.motion.moving_backward(subject) with speed_tol = p.halt_speed_tolerance.",
+ "obligation": "At the observation, none of: (a) for some intersection r (st.intersection), the subject's footprint overlaps r and did not at the previous observation (rel.occupies) — it backs into r; (b) for some crosswalk x (st.crosswalk), the footprint overlaps x (rel.occupies); (c) for some intersection r, the footprint overlaps r and the magnitude of Term.headingSince(subject, p.heading_since_step_carla_scene_graph, ψ) is at least p.turn_heading_min, where ψ = drv.motion.moving_backward(subject) and rel.occupies(subject, r): since it last began backing within r its heading has turned at least by the turn threshold — it backs around the corner.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_heading_min"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'back into an intersection' is read as the entry into the intersection while backing; backing straight out of an intersection the vehicle is already in is not backing into it."
+  },
+  {
+   "span": "s2",
+   "why": "'around a street corner' is read through the intersection region the corner bounds, with a heading change of at least p.turn_heading_min while backing within it; the city-limit qualifier of 'street' (DEF-NRS-484A-265) is not read, every intersection's corners being treated as street corners."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car backs at 2 m/s along a street and its footprint comes to overlap the intersection while backing."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car backs at 2 m/s mid-block, away from any intersection or crosswalk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car drives forward through an intersection and over its crosswalks without ever backing."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car's footprint comes to overlap an intersection while the source supplies no velocity, so whether it was backing is unknown.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A car backs over a marked mid-block crosswalk: its footprint overlaps the crosswalk while backing."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A car that overshot into the intersection backs straight out of it, heading unchanged, on an approach with no crosswalk: it is not entering the intersection and its heading has not turned."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A car standing within the intersection backs around the corner into the cross street, its heading turning 80 degrees while its footprint still overlaps the intersection."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "proposed this iteration by LVMC_11_40_080_o1; turning-movement classification in trajectory analysis"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,180 @@
+{
+ "node_id": "NRS_484B_223_3b",
+ "law_refs": [
+  "NRS-484B-223-3b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a highway has been designed to provide a single center lane to be used only for turning by traffic moving in both directions,",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "the following rules apply:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s3",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "must not travel more than 200 feet in a center turn lane",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "before making a left-hand turn from the highway.",
+   "role": "trigger"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.centre_turn_lane",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "st.centre_turn_lane: 'a single centre lane used only for turning by traffic in both directions'; 'center' (DEF-NRS-484A-040) places it on the line that indicates 'each portion of a highway allocated to traffic proceeding in the two opposite directions'. Occupied by the subject (rel.occupies). 'Traffic' is the admitted aggregate DEF-NRS-484A-285::traffic. 'Designed to provide' is the lane's presence (status)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate is 'true when the user carries an included class'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.centre_turn_lane",
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "The travel in the lane is the distance the subject travelled while its footprint continuously overlapped (rel.occupies) the st.centre_turn_lane c, a distance along its path (kin.path_length, 'distance travelled along the body's path'), written with Term.distanceWhile; it is compared with the literal 200 ft."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.centre_turn_lane"
+   ],
+   "derived": [
+    "drv.motion.left_turn"
+   ],
+   "justification": "The left-hand turn is drv.motion.left_turn, 'has completed a turn to the left', recognized at the observation its heading change settles; it is a turn from the highway made out of the centre turn lane: the subject occupied c (rel.occupies) at some observation of the turn window behind the recognition and no longer occupies c at it. The travel limit is read at the last observation of that window at which it occupied c."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "drv.motion.left_turn(subject) (window = p.vehicle_turn_window, turn_min = p.turn_heading_min, u_turn_min = p.u_turn_heading_min, yaw_tol = p.turn_yaw_rate_tol) holds at the observation, and for a centre turn lane c the subject occupied c at some observation of the window p.vehicle_turn_window behind and does not occupy c at this observation.",
+ "obligation": "At the last observation of that window at which the subject occupied c, the path length over which it had occupied c continuously (Term.distanceWhile subject (rel.occupies subject c)) is at most the literal 200 ft. Where that run in c began before the recording the distance is unknown.",
+ "params": [
+  "p.vehicle_turn_window",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min",
+  "p.turn_yaw_rate_tol"
+ ],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "the travel limited is the continuous run in the centre turn lane ending at the left turn; a run before an earlier exit from the lane is not added",
+   "kind": "reading"
+  },
+  {
+   "span": "s4",
+   "why": "'travel' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject enters the st.centre_turn_lane, travels 90 m in it continuously, and turns left by 85 degrees out of it into a driveway_or_alley_entrance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject travels 40 m in the centre turn lane and then turns left out of it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject drives straight in a through lane and makes no left turn."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject travels 90 m in the centre turn lane and leaves it, but kin.yaw_rate is not observed, so whether it turned left is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "literals": [
+  {
+   "span": "s4",
+   "text": "200 feet",
+   "value": 200,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.vehicle_turn_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of a turn by a motor vehicle at a junction or into or out of a driveway, from the start of its heading change to its end, including the crossing of opposing lanes",
+   "source": "AASHTO Green Book intersection sight distance (left-turn time gap 7.5 s) plus a margin"
+  },
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "geometric convention"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "geometric convention"
+  },
+  {
+   "name": "p.turn_yaw_rate_tol",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "the yaw-rate magnitude at or below which a road user's heading counts as no longer turning: the yaw-rate noise floor of the source",
+   "source": "source yaw-rate noise"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

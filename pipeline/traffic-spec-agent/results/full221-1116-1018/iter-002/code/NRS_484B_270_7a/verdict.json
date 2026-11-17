@@ -1,0 +1,250 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "or": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-025::bicycle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484B-017::electric_bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484B-018::electric_scooter"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-025::bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484B-017::electric_bicycle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484B-018::electric_scooter"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_270_7a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-270-7a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "m"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "m"
+            },
+            {
+             "lit": "DEF-NRS-484A-130::motor_vehicle"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          },
+          {
+           "cmp": "gt",
+           "lhs": {
+            "args": [
+             {
+              "var": "m"
+             }
+            ],
+            "measure": "kin_speed"
+           },
+           "rhs": {
+            "param": "p.halt_speed_tolerance"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "not": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "m"
+           },
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "ahead"
+           }
+          ],
+          "atom": "rel_bearing",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "cmp": "le",
+            "lhs": {
+             "args": [
+              {
+               "var": "m"
+              }
+             ],
+             "measure": "kin_accel_longitudinal"
+            },
+            "rhs": {
+             "neg": {
+              "param": "p.vehicle_evasive_decel"
+             }
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "m"
+               },
+               {
+                "var": "subject"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "m"
+                },
+                {
+                 "var": "subject"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_user": "m"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "d2d2b1d6183f7211e36271be",
+  "candidate_digest": "e5ba3b8a1bc1f31f222e8a9740612b2095a11a193d170045fbea73f53fb9d8bb"
+ }
+}

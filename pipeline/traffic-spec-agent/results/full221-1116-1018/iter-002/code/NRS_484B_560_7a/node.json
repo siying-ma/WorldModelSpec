@@ -1,0 +1,170 @@
+{
+ "node_id": "NRS_484B_560_7a",
+ "law_refs": [
+  "NRS-484B-560-7a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "It is unlawful for the driver of any vehicle:",
+   "role": "subject"
+  },
+  {
+   "id": "a2",
+   "text": "When crossing at grade any track or tracks of a railroad,",
+   "role": "trigger"
+  },
+  {
+   "id": "a3",
+   "text": "to fail to completely cross the track or tracks without stopping",
+   "role": "obligation"
+  },
+  {
+   "id": "a4",
+   "text": "due to insufficient: (1) Space for the vehicle on the opposite side of the railroad crossing; or (2) Undercarriage clearance of the vehicle.",
+   "role": "condition"
+  },
+  {
+   "id": "a5",
+   "text": "As used in this section, “completely cross” means to travel across a railroad track or tracks in such a manner that the trailing end of the vehicle is 15 feet or more past the nearest rail of the railroad track or tracks.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle, \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"; \"driver\" (DEF-NRS-484A-080, \"every person who drives or is in actual physical control of a vehicle\") is a role, read through the vehicle's controlled motion, not membership."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "rel.occupies",
+    "st.railway_crossing"
+   ],
+   "derived": [],
+   "justification": "Crossing at grade the track of a railroad: the subject's footprint overlaps (rel.occupies) a st.railway_crossing, \"level crossing of a railway with the roadway, and its nearest rail\". \"Railroad\" (DEF-NRS-484A-200) excludes streetcars; a streetcar line along a street forms no level crossing of a railway with the roadway, so the contract makes that exclusion. The crossing is under way from the observation the footprint overlaps the crossing until the subject has completely crossed (a5)."
+  },
+  {
+   "span": "a3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"without stopping\": drv.motion.complete_halt, \"The road user is at rest at the observation ... observed as its speed (kin.speed) at or below a tolerance the caller sets\" (p.halt_speed_tolerance). Failing to completely cross without stopping is a halt at an observation of the crossing before the subject has completely crossed. The concept says nothing of where the road user is; the place is read from a2 and a5."
+  },
+  {
+   "span": "a4",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "The causes the words name (no room beyond the crossing, the undercarriage hanging on the crossing) are why a vehicle comes to rest on the tracks; they are read through the conduct they explain, the halt before completely crossing (drv.motion.complete_halt), as the ontology reads a purpose by its conduct."
+  },
+  {
+   "span": "a5",
+   "atoms": [
+    "st.region_geometry",
+    "st.railway_crossing"
+   ],
+   "derived": [],
+   "justification": "\"the trailing end of the vehicle is 15 feet or more past the nearest rail\": st.region_geometry, \"the ground distance from a road user's body outline to it (zero when they overlap)\", from the subject's body to the st.railway_crossing whose outline carries \"its nearest rail\". While the subject has been within the literal 15 ft of the crossing at every observation since its footprint last overlapped it, its trailing end is not yet 15 ft past the rail; region_geometry is not a stand-in for occupancy, which a2 reads with rel.occupies."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle crossing a railroad crossing c and not yet completely across it: at this observation the ground distance from its body to c (st.region_geometry) is below the literal 15 ft, and has been below it at every observation since an observation (this one included) at which its footprint overlapped c (rel.occupies) — the past `since` of 'distance below 15 ft' over 'occupies c'.",
+ "obligation": "At every such observation the subject is not halted: drv.motion.complete_halt(subject) with speed_tol p.halt_speed_tolerance does not hold. A halt while it overlaps c, or after leaving c with its trailing end less than 15 ft past c, is a violation.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "a1",
+   "why": "\"the driver\" is read through the vehicle's controlled motion; whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a4",
+   "why": "The causes of the halt (insufficient space beyond the crossing, insufficient undercarriage clearance) are not observed; they are read through the halt before completely crossing they explain, so any halt in that stretch is judged.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "a3",
+   "why": "\"completely cross\", as the definition in this section states it, is read with the nearest rail as the outline of the mapped crossing region and the trailing end as the subject's body outline: the distance from body to crossing outline stands for the distance from the trailing end to the nearest rail.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject truck enters the railway crossing (rel.occupies), the queue ahead stops it, and it comes to rest (kin.speed 0) with its body 2 m past the crossing outline, below 15 ft."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject car traverses the crossing without halting and halts in the queue with its body 8 m past the crossing outline."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car never overlaps a railway crossing; it halts at an intersection far from any track."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car is on the crossing (rel.occupies true) but the source does not supply kin.speed, so whether it halts is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject car comes to rest while its footprint still overlaps the crossing."
+  }
+ ],
+ "literals": [
+  {
+   "span": "a5",
+   "text": "15 feet",
+   "value": 15,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of vehicle tracking sources"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

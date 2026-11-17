@@ -1,0 +1,141 @@
+'TrafficSpec.Rules.NRS_484B_507_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_507_1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_507_1","intentions":[],"laws":["NRS-484B-507-1"],"narrowings":[{"kind":"reading","span":"s1","why":"'A traffic signal displaying a red or yellow indication or flashing_red' is read as the circular indications circular_red and circular_yellow and flashing_red; a red or yellow arrow, which controls only the movement it points to, is not read as requiring the halt."}],"operationalizations":[{"concepts":["drv.motion.parked"],"params":["p.commercial_loading_max_halt","p.halt_speed_tolerance"],"standard":"expeditious","surrogate":false},{"concepts":["drv.motion.parked"],"params":["p.standing_min_duration","p.halt_speed_tolerance"],"standard":"temporarily","surrogate":false},{"concepts":["drv.motion.complete_halt","rel.occupies","st.region_geometry"],"params":["p.zone_entry_wait_reach","p.halt_speed_tolerance"],"standard":"does not interfere with","surrogate":false}],"residues":["'For any purpose or length of time' excludes no halt: every halt is within the prohibition whatever its purpose and length, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"freight_loading"}],"atom":"st_curb_zone_kind","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"zr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"zr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"zr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_507_1","intentions":[],"laws":["NRS-484B-507-1"],"narrowings":[{"kind":"reading","span":"s1","why":"'A traffic signal displaying a red or yellow indication or flashing_red' is read as the circular indications circular_red and circular_yellow and flashing_red; a red or yellow arrow, which controls only the movement it points to, is not read as requiring the halt."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"freight_loading"}],"atom":"st_curb_zone_kind","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"zr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"zr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"zr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]}]},{"implies":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"or":[{"body":{"and":[{"not":{"same":[{"var":"y"},{"var":"subject"}]}},{"and":[{"args":[{"var":"y"},{"var":"subject"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"y"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_halt_gap"}}]}]},"exists_user":"y"},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"cr"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"cd"},{"or":[{"body":{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"cd"},{"or":[{"body":{"and":[{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"cd"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"cd"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"cd"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"cd"},{"or":[{"body":{"and":[{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"cd"},{"lit":"flashing"}],"atom":"dev_railway_signal_or_gate_lights","params":[]},{"not":{"args":[{"var":"cd"},{"lit":"up"}],"atom":"dev_railway_signal_or_gate_gate","params":[]}}]}]},"exists_device":{"lit":"railway_signal_or_gate"},"var":"cd"},{"body":{"and":[{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"cd"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"cd"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"cd"}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cr"},{"or":[{"and":[{"or":[{"args":[{"var":"subject"}],"atom":"ru_truck","params":[]},{"args":[{"var":"subject"}],"atom":"ru_commercial_motor_vehicle","params":[]}]},{"and":[{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.commercial_loading_max_halt"}]}},{"or":[{"since":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]},{"until":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]}]}]},{"and":[{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.standing_min_duration"}]}},{"and":[{"or":[{"since":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]},{"until":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]},{"not":{"since":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"body":{"and":[{"not":{"same":[{"var":"w"},{"var":"subject"}]}},{"and":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"w"}],"atom":"ru_truck","params":[]},{"and":[{"not":{"args":[{"var":"w"},{"var":"z"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"w"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"cmp":"le","lhs":{"args":[{"var":"w"},{"var":"z"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.zone_entry_wait_reach"}}]}]}]}]}]},"exists_user":"w"}]}]}}]}]}]}]}]}]}]},"forall_region":{"lit":"curb_zone"},"var":"z"},"residues":["'For any purpose or length of time' excludes no halt: every halt is within the prohibition whatever its purpose and length, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"freight_loading"}],"atom":"st_curb_zone_kind","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"zr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"zr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"zr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_507_1","intentions":[],"laws":["NRS-484B-507-1"],"narrowings":[{"kind":"reading","span":"s1","why":"'A traffic signal displaying a red or yellow indication or flashing_red' is read as the circular indications circular_red and circular_yellow and flashing_red; a red or yellow arrow, which controls only the movement it points to, is not read as requiring the halt."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"z"},{"lit":"freight_loading"}],"atom":"st_curb_zone_kind","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"zr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"zr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"zr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]}]},{"implies":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"or":[{"body":{"and":[{"not":{"same":[{"var":"y"},{"var":"subject"}]}},{"and":[{"args":[{"var":"y"},{"var":"subject"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"y"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_halt_gap"}}]}]},"exists_user":"y"},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"cr"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"cd"},{"or":[{"body":{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"cd"},{"or":[{"body":{"and":[{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"cd"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"cd"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"cd"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"cd"},{"or":[{"body":{"and":[{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"cd"},{"lit":"flashing"}],"atom":"dev_railway_signal_or_gate_lights","params":[]},{"not":{"args":[{"var":"cd"},{"lit":"up"}],"atom":"dev_railway_signal_or_gate_gate","params":[]}}]}]},"exists_device":{"lit":"railway_signal_or_gate"},"var":"cd"},{"body":{"and":[{"args":[{"var":"cd"},{"var":"cr"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"cd"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"cd"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"cd"}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cr"},{"or":[{"and":[{"or":[{"args":[{"var":"subject"}],"atom":"ru_truck","params":[]},{"args":[{"var":"subject"}],"atom":"ru_commercial_motor_vehicle","params":[]}]},{"and":[{"not":{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.commercial_loading_max_halt"},"subject":"subject"}},{"or":[{"since":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]},{"until":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]}]}]},{"and":[{"not":{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.standing_min_duration"},"subject":"subject"}},{"and":[{"or":[{"since":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]},{"until":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]},{"not":{"since":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"body":{"and":[{"not":{"same":[{"var":"w"},{"var":"subject"}]}},{"and":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"w"}],"atom":"ru_truck","params":[]},{"and":[{"not":{"args":[{"var":"w"},{"var":"z"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"w"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"args":[{"var":"w"},{"var":"z"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.zone_entry_wait_reach"}}]}]}]}]}]},"exists_user":"w"}]}]}}]}]}]}]}]}]}]},"forall_region":{"lit":"curb_zone"},"var":"z"},"residues":["'For any purpose or length of time' excludes no halt: every halt is within the prohibition whatever its purpose and length, so the duty is the same whether or not these words are read."],"surrogate":false}
+ATOMS	ru_aggregate,st_curb_zone,rel_occupies,st_curb_zone_kind,dev_zone_sign,dev_zone_sign_kind,st_travel_region,dev_governs,prim_conditions_hold,drv_motion_complete_halt,rel_ahead_behind_in_lane,rel_surface_gap,dev_stop_sign,dev_yield_sign,dev_traffic_signal,dev_traffic_signal_shows,dev_railway_signal_or_gate,dev_railway_signal_or_gate_lights,dev_railway_signal_or_gate_gate,dev_human_direction,dev_human_direction_role,dev_human_direction_indication,ru_truck,ru_commercial_motor_vehicle,drv_motion_parked,sig_door_open,st_region_geometry_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-130::motor_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.door_open
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+MANIFEST	branch_11	
+MANIFEST	branch_12	
+MANIFEST	branch_13	
+MANIFEST	branch_14	
+OCC	subject
+OCC	?z
+OCC	subject,z
+OCC	z
+OCC	?zs
+OCC	zs
+OCC	?zr
+OCC	subject,zr
+OCC	zs,zr
+OCC	zs,subject
+OCC	?z
+OCC	subject,z
+OCC	z
+OCC	?zs
+OCC	zs
+OCC	?zr
+OCC	subject,zr
+OCC	zs,zr
+OCC	zs,subject
+OCC	subject
+OCC	?y
+OCC	y,subject
+OCC	y,subject
+OCC	subject,y
+OCC	?cr
+OCC	subject,cr
+OCC	?cd
+OCC	cd,cr
+OCC	?cd
+OCC	cd,cr
+OCC	?cd
+OCC	cd,cr
+OCC	cd
+OCC	cd
+OCC	cd
+OCC	?cd
+OCC	cd,cr
+OCC	cd
+OCC	cd
+OCC	?cd
+OCC	cd,cr
+OCC	cd
+OCC	cd
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?w
+OCC	w,subject
+OCC	w
+OCC	w
+OCC	w,z
+OCC	w
+OCC	w,z
+TIME	occurrences	1
+TIME	checks	16
+TIME	lint	381
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	46
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	60
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	37
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	32
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	50
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	28
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	60
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	41
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	42
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	42
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	42
+SCEN	branch_8	compliant	compliant	ok
+TIME	scenario:branch_8	42
+SCEN	branch_9	compliant	compliant	ok
+TIME	scenario:branch_9	43
+SCEN	branch_10	not_applicable	not_applicable	ok
+TIME	scenario:branch_10	41
+SCEN	branch_11	compliant	compliant	ok
+TIME	scenario:branch_11	61
+SCEN	branch_12	violated	violated	ok
+TIME	scenario:branch_12	276
+SCEN	branch_13	violated	violated	ok
+TIME	scenario:branch_13	72
+SCEN	branch_14	violated	violated	ok
+TIME	scenario:branch_14	49
+TIME	witnesses	1064
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_507_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_507_1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_507_1	51	17
+TIME	adequacy_start	18
+TIME	adequacy	32955
+DONE

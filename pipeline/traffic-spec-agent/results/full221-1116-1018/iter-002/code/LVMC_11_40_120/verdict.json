@@ -1,0 +1,713 @@
+{
+ "verdict": "OK",
+ "details": [
+  "14 witnesses, 14 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "derived": "drv_motion_complete_halt",
+       "params": [
+        {
+         "param": "p.halt_speed_tolerance"
+        }
+       ]
+      }
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "roadway"
+           },
+           "var": "r"
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "p"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "p"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "bicycle_lane_or_path"
+           },
+           "var": "p"
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "p"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "cmp": "ge",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "p"
+                  }
+                 ],
+                 "measure": "st_lane_width"
+                },
+                "rhs": {
+                 "param": "p.usable_path_width_min"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "var": "p"
+                       }
+                      ],
+                      "atom": "dev_governs",
+                      "params": []
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         },
+                         {
+                          "lit": "closed_to_traffic"
+                         }
+                        ],
+                        "atom": "dev_regulatory_sign_code",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         },
+                         {
+                          "lit": "bicycles_prohibited"
+                         }
+                        ],
+                        "atom": "dev_regulatory_sign_code",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_device": {
+                    "lit": "regulatory_sign"
+                   },
+                   "var": "d"
+                  }
+                 },
+                 {
+                  "not": {
+                   "body": {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "var": "p"
+                     }
+                    ],
+                    "atom": "dev_governs",
+                    "params": []
+                   },
+                   "exists_device": {
+                    "lit": "temporary_traffic_control"
+                   },
+                   "var": "d"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "bicycle_lane_or_path"
+           },
+           "var": "p"
+          },
+          {
+           "body": {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           "exists_region": {
+            "lit": "roadway"
+           },
+           "var": "r"
+          }
+         ]
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "highway"
+      },
+      "var": "h"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-025::bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-LVMC-11-02-082::electric_bicycle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-LVMC-11-02-083::electric_scooter"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_40_120",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-40-120"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "roadway"
+         },
+         "var": "r"
+        },
+        {
+         "and": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "p"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "cmp": "ge",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "p"
+                  }
+                 ],
+                 "measure": "st_lane_width"
+                },
+                "rhs": {
+                 "param": "p.usable_path_width_min"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "var": "p"
+                       }
+                      ],
+                      "atom": "dev_governs",
+                      "params": []
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         },
+                         {
+                          "lit": "closed_to_traffic"
+                         }
+                        ],
+                        "atom": "dev_regulatory_sign_code",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         },
+                         {
+                          "lit": "bicycles_prohibited"
+                         }
+                        ],
+                        "atom": "dev_regulatory_sign_code",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_device": {
+                    "lit": "regulatory_sign"
+                   },
+                   "var": "d"
+                  }
+                 },
+                 {
+                  "not": {
+                   "body": {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "var": "p"
+                     }
+                    ],
+                    "atom": "dev_governs",
+                    "params": []
+                   },
+                   "exists_device": {
+                    "lit": "temporary_traffic_control"
+                   },
+                   "var": "d"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "bicycle_lane_or_path"
+           },
+           "var": "p"
+          },
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "p"
+                },
+                {
+                 "var": "h"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "and": [
+                  {
+                   "cmp": "ge",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "p"
+                     }
+                    ],
+                    "measure": "st_lane_width"
+                   },
+                   "rhs": {
+                    "param": "p.usable_path_width_min"
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "d"
+                          },
+                          {
+                           "var": "p"
+                          }
+                         ],
+                         "atom": "dev_governs",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "closed_to_traffic"
+                            }
+                           ],
+                           "atom": "dev_regulatory_sign_code",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "bicycles_prohibited"
+                            }
+                           ],
+                           "atom": "dev_regulatory_sign_code",
+                           "params": []
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "exists_device": {
+                       "lit": "regulatory_sign"
+                      },
+                      "var": "d"
+                     }
+                    },
+                    {
+                     "not": {
+                      "body": {
+                       "args": [
+                        {
+                         "var": "d"
+                        },
+                        {
+                         "var": "p"
+                        }
+                       ],
+                       "atom": "dev_governs",
+                       "params": []
+                      },
+                      "exists_device": {
+                       "lit": "temporary_traffic_control"
+                      },
+                      "var": "d"
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "p"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               ]
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "bicycle_lane_or_path"
+            },
+            "var": "p"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l"
+             }
+            ],
+            "derived": "drv_motion_moving_across_carrier",
+            "params": [
+             {
+              "param": "p.halt_speed_tolerance"
+             },
+             {
+              "param": "p.rider_crossing_motion_cos"
+             }
+            ]
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "lane"
+         },
+         "var": "l"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "derived": "drv_motion_moving_across_carrier",
+              "params": [
+               {
+                "param": "p.halt_speed_tolerance"
+               },
+               {
+                "param": "p.rider_crossing_motion_cos"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "roadway"
+         },
+         "var": "r"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "f27356ae1c66f7627c51e83d",
+  "candidate_digest": "0587c7db26cf72abc0f22e6758f3ad5fa3739b3bb16614e88afd35037f8ddb07"
+ }
+}

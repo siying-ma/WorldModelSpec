@@ -1,0 +1,160 @@
+{
+ "node_id": "NRS_484B_307_6a",
+ "law_refs": [
+  "NRS-484B-307-6a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where the signal is a steady yellow signal alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Vehicular traffic facing the signal",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter,",
+   "role": "definitional"
+  },
+  {
+   "id": "s4",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s5",
+   "text": "such vehicular traffic",
+   "role": "subject"
+  },
+  {
+   "id": "s6",
+   "text": "must not enter the intersection",
+   "role": "obligation"
+  },
+  {
+   "id": "s7",
+   "text": "when the red signal is exhibited.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal, 'a signal head; state ∈ {circular_green, circular_yellow, circular_red, ...}; several states may be displayed at once': a steady yellow signal alone is circular_yellow and no other state (not flashing_yellow, a flashing indication, and no arrow beside it). Same atom as the index for the signal words of NRS_484B_307_2a."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Vehicular traffic': the admitted aggregates DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), claimed as ru.aggregate, never expanded. 'facing the signal': the subject occupies (rel.occupies) a travel region c (st.travel_region) whose entrance end is intersection i (st.lane_enters; st.intersection) and which the head governs (dev.governs, 'the travel regions whose traffic the device controls'). Not a stand-in: dev.governs is not a position, st.lane_enters not presence in i. Same words, same atoms as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'such vehicular traffic' refers back to s2: the same admitted aggregates DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle, the traffic that faced the yellow."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'enter the intersection': the subject's footprint comes to overlap (rel.occupies, 'a road user's footprint overlaps a lane / region') intersection i (st.intersection, 'the region where two roadways meet'), having not overlapped it at the previous observation. Not a stand-in: st.intersection is not the crosswalk or the stop line. As the index maps 'shall not enter or proceed through an intersection' (NRS_484B_270_4)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "dev.governs",
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "'when the red signal is exhibited': at the observation of the entry the head s that governs c (dev.governs) displays the steady red indication the yellow announced (dev.traffic_signal state circular_red), with no green arrow and no flashing yellow arrow beside it (narrowing on s6)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s3",
+   "why": "The words state what the steady yellow indication tells the traffic facing it. They impose no duty and set no condition of the duty in s6, which the rule carries in full."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of the classes traffic and vehicle, occupies at the judged observation, or occupied at the previous one, a travel region c whose entrance end is intersection i (st.lane_enters) and which a traffic signal head s governs (dev.governs); and s displayed a steady yellow alone (circular_yellow, no other state) at some observation since the subject has occupied c without interruption: it faced the yellow on this approach.",
+ "obligation": "The subject does not enter i while the red is exhibited: it is not the case that its footprint overlaps i at the judged observation, did not overlap i at the previous observation, and s displays circular_red at the judged observation with no green arrow and no flashing yellow arrow.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s6",
+   "why": "'the red signal' is read as the steady red indication the yellow precedes (circular_red). Where s displays a green arrow or a flashing yellow arrow beside the red, an entry for that arrow's movement is the arrow's signal (paragraphs 4 and 7), and this duty is not read on it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies lane c, which enters i and is governed by head s; s displays circular_yellow alone while the car is 30 m short of i at 14 m/s; s changes to circular_red alone 3 s later, and the car's footprint comes to overlap i 0.5 s after the red appears."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same yellow; the car's footprint comes to overlap i while s still displays circular_yellow alone."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "s displays circular_green alone at every observation while the car occupies c; the car enters i."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source does not record which intersection lane c enters: whether the car faces a signal of this intersection is unknown.",
+   "masked": [
+    "st.lane_enters"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

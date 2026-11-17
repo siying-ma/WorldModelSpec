@@ -1,0 +1,54 @@
+'TrafficSpec.Rules.LVMC_11_60_030_A4.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.LVMC_11_60_030_A4.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_60_030_A4","intentions":[],"laws":["LVMC-11-60-030-A4"],"narrowings":[],"operationalizations":[{"concepts":["kin.heading","rel.occupies","st.lane_direction","st.travel_region"],"params":["p.curb_parallel_cos"],"standard":"approximately parallel to the curb so as not to unduly impede the movement of other vehicular traffic","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"not":{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-150::tour_bus"}],"atom":"ru_aggregate","params":[]}},{"and":[{"or":[{"body":{"args":[{"var":"subject"},{"var":"stop"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"transit_stop"},"var":"stop"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"zone"}],"atom":"rel_occupies","params":[]},{"or":[{"args":[{"var":"zone"},{"lit":"bus_stop"}],"atom":"st_curb_zone_kind","params":[]},{"args":[{"var":"zone"},{"lit":"passenger_loading"}],"atom":"st_curb_zone_kind","params":[]}]}]},"exists_region":{"lit":"curb_zone"},"var":"zone"}]},{"and":[{"body":{"args":[{"var":"subject"},{"var":"street"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"street"},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-030::bus"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_60_030_A4","intentions":[],"laws":["LVMC-11-60-030-A4"],"narrowings":[],"obligation":{"and":[{"body":{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"curb"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":2500,"num":1143},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"curb"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"road_edge"},"var":"curb"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"carrier"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"carrier"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"carrier"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"param":"p.curb_parallel_cos"}}]},"exists_region":{"lit":"travel_region"},"var":"carrier"}]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"not":{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-150::tour_bus"}],"atom":"ru_aggregate","params":[]}},{"and":[{"or":[{"body":{"args":[{"var":"subject"},{"var":"stop"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"transit_stop"},"var":"stop"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"zone"}],"atom":"rel_occupies","params":[]},{"or":[{"args":[{"var":"zone"},{"lit":"bus_stop"}],"atom":"st_curb_zone_kind","params":[]},{"args":[{"var":"zone"},{"lit":"passenger_loading"}],"atom":"st_curb_zone_kind","params":[]}]}]},"exists_region":{"lit":"curb_zone"},"var":"zone"}]},{"and":[{"body":{"args":[{"var":"subject"},{"var":"street"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"street"},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-030::bus"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_60_030_A4","intentions":[],"laws":["LVMC-11-60-030-A4"],"narrowings":[],"obligation":{"and":[{"body":{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"curb"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":2500,"num":1143},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"curb"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"road_edge"},"var":"curb"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"carrier"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"carrier"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"carrier"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"param":"p.curb_parallel_cos"}}]},"exists_region":{"lit":"travel_region"},"var":"carrier"}]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_transit_stop,rel_occupies,st_curb_zone,st_curb_zone_kind,st_highway,drv_motion_complete_halt,sig_door_open,st_road_edge,st_region_geometry_distance,prim_region_lateral_offset,st_travel_region,kin_heading,st_lane_direction
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-030::bus	DEF-LVMC-11-02-150::tour_bus
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	subject
+OCC	subject
+OCC	?stop
+OCC	subject,stop
+OCC	?zone
+OCC	subject,zone
+OCC	zone
+OCC	zone
+OCC	?street
+OCC	subject,street
+OCC	subject
+OCC	subject
+OCC	?curb
+OCC	subject,curb
+OCC	subject
+OCC	curb
+OCC	?carrier
+OCC	subject,carrier
+OCC	subject
+OCC	carrier
+OCC	subject
+OCC	carrier
+LITERAL	1143/2500	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	54
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-030::bus, aggregate_unresolved:DEF-LVMC-11-02-150::tour_bus]
+TIME	scenario:forbid	15
+SCEN	permit	compliant	?	permit: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484A-030::bus, aggregate_unresolved:DEF-LVMC-11-02-150::tour_bus]
+TIME	scenario:permit	15
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	15
+SCEN	blind	unknown	?	blind: unknown for [aggregate_unresolved:DEF-NRS-484A-030::bus, aggregate_unresolved:DEF-LVMC-11-02-150::tour_bus], not for an atom the manifest masks
+TIME	scenario:blind	25
+SCEN	branch_1	violated	?	branch_1: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-030::bus, aggregate_unresolved:DEF-LVMC-11-02-150::tour_bus]
+TIME	scenario:branch_1	16
+SCEN	branch_2	compliant	?	branch_2: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484A-030::bus, aggregate_unresolved:DEF-LVMC-11-02-150::tour_bus]
+TIME	scenario:branch_2	14
+TIME	witnesses	100
+DONE_WITNESSES

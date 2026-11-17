@@ -1,0 +1,170 @@
+{
+ "node_id": "LVMC_11_52_340",
+ "law_refs": [
+  "LVMC-11-52-340"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The City Council may designate parking spaces upon City streets or in City parking facilities for the parking of City vehicles.",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "It is unlawful to park",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "other than a City vehicle",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "in any such space that has been duly posted or marked.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.parking_space"
+   ],
+   "derived": [],
+   "justification": "The designated space is the referent of 'such space' in s5. st.parking_space is a 'marked bay for standing or parking; ... designation in {general, disabled, disabled_side_lift, access_aisle, municipal, charging}': designation municipal is a bay reserved for the city's own vehicles, whether on a street or in a city parking facility (DEF-LVMC-11-02-050: a lot or garage 'which the City owns, operates or maintains'); the place of the bay restricts nothing beyond its municipal designation, which the Council makes only there."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'park' applies DEF-NRS-484A-155 'the standing of a vehicle, whether occupied or not, otherwise than temporarily for the purpose of and while actually engaged in loading or unloading'; drv.motion.parked denotes 'at rest at every observation of the window behind ... of length min_duration', a shorter halt 'is not denoted'. Same mapping as the index's 'It shall be unlawful for any person to park'."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is admitted as DEF-NRS-484A-320::vehicle; ru.aggregate is 'membership of a legal aggregate'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.official_vehicle"
+   ],
+   "derived": [],
+   "justification": "A City vehicle is one the incorporated city (DEF-NRS-484A-045) operates; ru.official_vehicle is 'a vehicle in official or contracted road service, identifiable by livery or equipment; kind in {..., municipal, ...}', and kind municipal is the city's own vehicle. 'Not a stand-in for: an emergency vehicle' is respected: the exception reads the municipal kind, not the emergency class."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "st.parking_space",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'such space' is the space s1 designates: a st.parking_space of designation municipal; 'duly posted or marked' is its posting or marking, whose presence on the road is the evidence of the designation. rel.occupies ('a road user's footprint overlaps a lane / region') anchors the vehicle in that space, not any municipal space of the scene."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle that is not a municipal official vehicle (ru.official_vehicle kind municipal does not hold), and its footprint overlaps a parking-space region of designation municipal (st.parking_space, rel.occupies) at the observation.",
+ "obligation": "For every parking-space region of designation municipal the subject occupies at the observation, the subject is not parked there (drv.motion.parked with p.halt_speed_tolerance, p.parking_min_duration).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "That the space was designated by the City Council and 'duly posted or marked' is read through the mapped municipal designation of the bay, the posting or marking on the road being the evidence of the designation.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "The definition's temporary halt for loading or unloading is read through the halt's duration (min_duration p.parking_min_duration); the loading purpose is not observed.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s2",
+   "why": "A City vehicle is recognized by its municipal livery or equipment (ru.official_vehicle kind municipal); a city-owned vehicle without such livery, or a city emergency vehicle the source labels only by its emergency class, is read as not a City vehicle, so the duty is applied to it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A private passenger car (vehicle aggregate, not ru.official_vehicle municipal) comes to rest in a st.parking_space of designation municipal and stays at rest there for ten minutes."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A private passenger car halts for thirty seconds in a municipal parking space to let a passenger out and then drives off; it is never parked there."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A ru.official_vehicle of kind municipal stays at rest for an hour in a municipal parking space."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "masked": [
+    "rel.occupies"
+   ],
+   "narrative": "A private passenger car stands at rest for ten minutes beside a municipal parking space; the source does not observe rel.occupies, so whether it is in the space is unknown."
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A private passenger car stays at rest for an hour in a parking space of designation general; it occupies no municipal space."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source's kinematic channel"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "municipal curbside management practice: passenger loading zone time limits"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

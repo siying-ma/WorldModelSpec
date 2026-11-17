@@ -1,0 +1,127 @@
+{
+ "node_id": "NRS_484D_165_4",
+ "law_refs": [
+  "NRS-484D-165-4"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Any lighted headlamps",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "upon a parked vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall be depressed or dimmed.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "sig.headlamp"
+   ],
+   "derived": [],
+   "justification": "sig.headlamp, 'headlamp state in {off, low_beam, high_beam}': lighted headlamps are a state other than off."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, one ru.aggregate atom. 'parked' is drv.motion.parked, 'Road user a is parked: \"the standing of a vehicle, whether occupied or not\", observed as a at rest at every observation of the window behind', as the index maps 'parked' (NRS_484B_473_2)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "sig.headlamp"
+   ],
+   "derived": [],
+   "justification": "Depressed or dimmed headlamps are the low beam: sig.headlamp state low_beam, not high_beam; as the index maps 'such lights shall be depressed or dimmed' (NRS_484B_473_2)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of the vehicle aggregate, drv.motion.parked holds for it (speed tolerance p.halt_speed_tolerance, duration p.parking_min_duration), and its headlamps are lit (sig.headlamp low_beam or high_beam) at the observation.",
+ "obligation": "The subject's headlamps are on low beam (sig.headlamp low_beam) at the observation.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration"
+ ],
+ "narrowings": [],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car of the vehicle aggregate has stood at rest at the curb for five minutes with its headlamps on high beam."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but the headlamps are on low beam."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car has stood at rest at the curb for five minutes with its headlamps off."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car has stood at rest at the curb for five minutes; the source does not observe headlamps.",
+   "masked": [
+    "sig.headlamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A car halts for twenty seconds in traffic with high beams on: a halt shorter than the parking duration is not parked."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "sensor speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "municipal passenger loading zone time limits"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

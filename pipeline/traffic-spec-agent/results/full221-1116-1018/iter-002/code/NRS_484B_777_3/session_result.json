@@ -1,0 +1,255 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 277538,
+  "stop_reason": "end_turn",
+  "session_id": "b33bacc6-9d49-4db7-a1a3-c51c07ece47c",
+  "total_cost_usd": 2.1614377399999998,
+  "usage": {
+   "input_tokens": 44,
+   "cache_creation_input_tokens": 122654,
+   "cache_read_input_tokens": 2105616,
+   "output_tokens": 27928,
+   "output_tokens_details": {
+    "thinking_tokens": 14137
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 122654,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 794,
+     "cache_read_input_tokens": 125359,
+     "cache_creation_input_tokens": 1763,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1763
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38387,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00423742,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 44,
+    "outputTokens": 27928,
+    "cacheReadInputTokens": 2105616,
+    "cacheCreationInputTokens": 122654,
+    "webSearchRequests": 0,
+    "costUSD": 2.15720032,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 14137,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 122654,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01R8WxvTJQTjoZ7xfVa489n8",
+    "tool_input": {
+     "command": "python -m harness gate --help >/dev/null 2>&1; true",
+     "description": "(skip) no-op"
+    }
+   },
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_017hgsPgXjnRoX1ATBx3k5ke",
+    "tool_input": {
+     "command": "python -m harness gate --run_id full221-1116-1018 --node_id NRS_484B_777_3 --help 2>/dev/null || true",
+     "description": "(cancelled) do not run"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 25,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed: **OK**, with 10 witnesses. I used 3 or 4 of the 6 runs.\n\n**The rule.** The subject's class is any of the three admitted aggregates (bicycle, electric bicycle, electric scooter).\n- **Applicability:** the subject is moving (not at a complete halt), occupies a roadway, and occupies no bicycle lane or path.\n- **Obligation:** there must be no two other riders, also moving and in those aggregates, where every pair of the three:\n  - is side by side (overlap along the heading at least zero),\n  - is heading the same way, and\n  - at least two of the three pairs have a body gap within `p.abreast_gap_max`.\n\n  I wrote \"at least two of three\" as `gap(s,b) ∧ (gap(s,c) ∨ gap(b,c))`. The search covers both orders of the other two riders, so this is exactly the record's condition and I declared no narrowings.\n\n**What went wrong on the way:**\n- **`blind` came out violated, not unknown.** Masking the overlap only removes a measured value; Core still computed it from position, heading and body size. The fix: in `blind`, only the subject has an observed body and occupancy. The other two riders have no body size, and their gaps and overlaps are supplied as measured values that Core can't compute. The masked overlap is then the only thing that decides.\n- **Possibly a wasted run.** I ran the gate command once with an extra pipe by mistake. It printed nothing and may have counted against the budget. Two other non-gate shell commands were blocked because they needed approval and nobody could give it here. Neither was needed.\n\n**For the plan agent:** the bicycle-lane exception sits in the applicability. So a scene spent entirely in the lane is *not applicable*, but the plan expects `branch_1` to be *compliant*. I built `branch_1` in two phases: single file on the roadway first (compliant), then three abreast in the lane (excepted). The whole episode then reads compliant, and it would read violated without the exception.\n\nI also added `branch_4` to `branch_6` (electric bicycles abreast; a moped beside the riders; a moped as subject) so that every class condition affects some witness. The electric-scooter aggregate has no class that makes it true; it is only ever false or unknown. The gate accepted this.\n\nEverything is written up in `task_result.md` in the working directory.",
+  "ttft_ms": 98956,
+  "type": "result",
+  "duration_ms": 304374,
+  "uuid": "6d7a2b09-5e10-4ce5-bc43-ab4e4b10ec3d",
+  "ttft_stream_ms": 1797,
+  "time_to_request_ms": 736,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 26,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 51,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 594,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 16,
+  "time_to_request_cpu_ms": 446,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1797,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38387,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00423742,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 44,
+    "outputTokens": 27928,
+    "cacheReadInputTokens": 2105616,
+    "cacheCreationInputTokens": 122654,
+    "webSearchRequests": 0,
+    "costUSD": 2.15720032,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 14137,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 122654,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

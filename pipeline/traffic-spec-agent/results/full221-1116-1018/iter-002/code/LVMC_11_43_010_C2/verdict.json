@@ -1,0 +1,254 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "args": [
+      {
+       "var": "subject"
+      },
+      {
+       "var": "r"
+      }
+     ],
+     "derived": "drv_motion_right_turn_through_region",
+     "params": [
+      {
+       "param": "p.heading_since_step_carla_scene_graph"
+      },
+      {
+       "param": "p.turn_heading_min"
+      },
+      {
+       "param": "p.u_turn_heading_min"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_43_010_C2",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-43-010-C2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "derived": "drv_motion_right_turn_through_region",
+       "params": [
+        {
+         "param": "p.heading_since_step_carla_scene_graph"
+        },
+        {
+         "param": "p.turn_heading_min"
+        },
+        {
+         "param": "p.u_turn_heading_min"
+        }
+       ]
+      },
+      {
+       "since": [
+        {
+         "and": [
+          {
+           "implies": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "body": {
+              "implies": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "l"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "cmp": "eq",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "l"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency_ordinal"
+                },
+                "rhs": {
+                 "args": [
+                  {
+                   "var": "l"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency_count"
+                }
+               }
+              ]
+             },
+             "forall_region": {
+              "lit": "lane"
+             },
+             "var": "l"
+            }
+           ]
+          },
+          {
+           "not": {
+            "rises": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           }
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "rises": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          },
+          {
+           "implies": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "body": {
+              "implies": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "l"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "cmp": "eq",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "l"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency_ordinal"
+                },
+                "rhs": {
+                 "args": [
+                  {
+                   "var": "l"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency_count"
+                }
+               }
+              ]
+             },
+             "forall_region": {
+              "lit": "lane"
+             },
+             "var": "l"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "fcdce2b680ef58f6083a0740",
+  "candidate_digest": "60dbe8136bcf339efd6f6cf8df70d5947212a9b7196007680553daccdbf364af"
+ }
+}

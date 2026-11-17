@@ -1,0 +1,42 @@
+'TrafficSpec.Rules.NRS_484D_165_4.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484D_165_4.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484D_165_4","intentions":[],"laws":["NRS-484D-165-4"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.parking_min_duration"}]},{"or":[{"args":[{"var":"subject"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},{"args":[{"var":"subject"},{"lit":"high_beam"}],"atom":"sig_headlamp","params":[]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484D_165_4","intentions":[],"laws":["NRS-484D-165-4"],"narrowings":[],"obligation":{"args":[{"var":"subject"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.parking_min_duration"},"subject":"subject"},{"or":[{"args":[{"var":"subject"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},{"args":[{"var":"subject"},{"lit":"high_beam"}],"atom":"sig_headlamp","params":[]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484D_165_4","intentions":[],"laws":["NRS-484D-165-4"],"narrowings":[],"obligation":{"args":[{"var":"subject"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_parked,sig_headlamp
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.headlamp
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	125
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	79
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	77
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	77
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	81
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	77
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	78
+TIME	witnesses	469
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484D_165_4.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484D_165_4.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484D_165_4	4	5
+TIME	adequacy_start	9
+TIME	adequacy	986
+DONE

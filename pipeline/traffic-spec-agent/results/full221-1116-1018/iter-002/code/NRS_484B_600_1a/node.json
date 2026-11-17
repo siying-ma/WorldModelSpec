@@ -1,0 +1,234 @@
+{
+ "node_id": "NRS_484B_600_1a",
+ "law_refs": [
+  "NRS-484B-600-1a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "p1",
+   "text": "It is unlawful for any person to drive or operate",
+   "role": "obligation"
+  },
+  {
+   "id": "p2",
+   "text": "a vehicle of any kind or character",
+   "role": "subject"
+  },
+  {
+   "id": "p3",
+   "text": "at:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "p4",
+   "text": "A rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "p1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "Mapping index: 'It is unlawful for any person to drive or operate' maps to kin.speed. To drive or operate is read through the vehicle's controlled motion, and the prohibited driving is driving at a speed: kin.speed 'magnitude of velocity' in m/s."
+  },
+  {
+   "span": "p2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Mapping index: 'a vehicle of any kind or character' maps to the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate 'membership of a legal aggregate', never expanded into classes."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "p4",
+   "standard": "a rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions",
+   "concepts": [
+    "kin.speed",
+    "kin.extent",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "env.wet_road",
+    "env.ice_or_snow",
+    "env.precipitation",
+    "env.visibility",
+    "env.darkness",
+    "rel.occupies",
+    "st.lane",
+    "st.lane_width",
+    "st.curvature",
+    "st.sight_distance"
+   ],
+   "params": [
+    "p.halt_speed_tolerance",
+    "p.driver_reaction_time",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice",
+    "p.curve_lateral_accel_max",
+    "p.lane_keeping_heading_error",
+    "p.lane_departure_time_min",
+    "p.low_beam_sight_reach"
+   ],
+   "convention": "stopping-sight-distance model (perception-reaction distance plus braking distance at the friction-limited deceleration of the surface) held within the distance available ahead: the sight distance of the place, the visibility of the air and, in darkness, the low-beam reach; for traffic, the assured-clear-distance model against the road user ahead in the lane, whose own braking distance is credited; for curves, the side-friction model (speed squared times curvature within the lateral acceleration the surface allows); for width, the time-to-line-crossing model (lateral drift at the uncorrected heading error times the speed, within the lateral margin the lane leaves the vehicle, for at least the minimum time to line crossing)",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject (vehicle aggregate) is moving: kin.speed above p.halt_speed_tolerance.",
+ "obligation": "With v the subject's speed, a the braking deceleration the surface allows (p.following_decel_ice where env.ice_or_snow holds; otherwise p.following_decel_wet where env.wet_road or env.precipitation holds; otherwise p.following_decel_dry: a Term.cond selection), and S = v·p.driver_reaction_time + v·v/(2a): (i) S is at most st.sight_distance at the subject's place and at most env.visibility, and, where env.darkness holds, at most p.low_beam_sight_reach; (ii) for every road user u ahead of the subject in its lane, whatever its class (DEF-NRS-484A-285 'traffic' counts 'pedestrians, ridden or herded animals, vehicles and other conveyances' using the highway, so any road user ahead in the lane is traffic) (rel.ahead_behind_in_lane), S is at most rel.surface_gap between them plus u's braking distance (u's speed squared over 2a); (iii) v·v·st.curvature at the subject's place is at most p.following_decel_ice where env.ice_or_snow holds and p.curve_lateral_accel_max otherwise; (iv) for every lane the subject's footprint overlaps, v·p.lane_keeping_heading_error·p.lane_departure_time_min is at most half of (st.lane_width of that lane minus the subject's width from kin.extent). No division reads a measured atom.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.driver_reaction_time",
+  "p.following_decel_dry",
+  "p.following_decel_wet",
+  "p.following_decel_ice",
+  "p.curve_lateral_accel_max",
+  "p.lane_keeping_heading_error",
+  "p.lane_departure_time_min",
+  "p.low_beam_sight_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "p1",
+   "why": "'drive or operate' is read through the vehicle's controlled motion, whoever or whatever controls it",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "p4",
+   "why": "the standard is the whole duty and is read through a policy model (surrogate): 'the traffic' only through the road users ahead in the subject's lane (crossing and adjacent traffic not read); 'surface' through wet and icy or snow-covered surface; 'width of the highway' through the width of the lane the subject occupies; 'the weather' through precipitation and visibility; the catch-all 'other highway conditions' only through sight distance, curvature and darkness, and no other condition",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Dry daylight road, the subject moving on a straight lane wide enough for it, no road user ahead; its speed is such that v·p.driver_reaction_time + v·v/(2·p.following_decel_dry) exceeds st.sight_distance at its place (a blind crest ahead)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Dry daylight road, straight wide lane, no road user ahead, a long st.sight_distance and env.visibility; the subject moves at a speed whose stopping distance is within them and whose lateral drift bound holds."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject stands at rest (kin.speed at or below p.halt_speed_tolerance)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but st.sight_distance is not observed on the source, and every other bound holds, so the verdict turns on the missing sight distance.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "env.ice_or_snow holds; the subject moves at a speed whose stopping distance on dry pavement would fit st.sight_distance but whose stopping distance with p.following_decel_ice exceeds it."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Dry road, ample sight, but on a bend where v·v·st.curvature exceeds p.curve_lateral_accel_max."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A road user u is ahead in the subject's lane, nearly stopped, and the subject's stopping distance exceeds the surface gap plus u's braking distance."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's vehicle-state estimates"
+  },
+  {
+   "name": "p.driver_reaction_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "perception-reaction time of an alert driver to an expected hazard in the stopping-distance model",
+   "source": "Johansson and Rumar brake-reaction studies; AASHTO Green Book"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "unit": "m/s^2",
+   "value": 6.0,
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "tyre-pavement friction tables (AASHTO; accident-reconstruction handbooks)"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "tyre-pavement friction tables (AASHTO; accident-reconstruction handbooks)"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.0,
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "tyre-pavement friction tables (AASHTO; accident-reconstruction handbooks)"
+  },
+  {
+   "name": "p.curve_lateral_accel_max",
+   "unit": "m/s^2",
+   "value": 3.0,
+   "convention": "the lateral acceleration a passenger vehicle sustains on a curve within comfortable side friction on a dry or wet paved surface (about 0.3 g)",
+   "source": "AASHTO Green Book side-friction factors for horizontal curves"
+  },
+  {
+   "name": "p.lane_keeping_heading_error",
+   "unit": "ratio",
+   "value": 0.03,
+   "convention": "the sine of the heading error (about 1.7 degrees) that a driver's lane keeping leaves uncorrected, so that the vehicle drifts laterally at that fraction of its speed",
+   "source": "lane-keeping and time-to-line-crossing studies (Godthelp)"
+  },
+  {
+   "name": "p.lane_departure_time_min",
+   "unit": "s",
+   "value": 1.0,
+   "convention": "the shortest time to line crossing a driver tolerates before correcting its lateral drift: the warning threshold of lane-departure warning systems",
+   "source": "ISO 17361 lane departure warning systems"
+  },
+  {
+   "name": "p.low_beam_sight_reach",
+   "unit": "m",
+   "value": 50.0,
+   "convention": "the distance ahead a passenger-car low beam lights the road in darkness enough to see an obstacle",
+   "source": "UNECE R112 / SAE J1383 low-beam photometry"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

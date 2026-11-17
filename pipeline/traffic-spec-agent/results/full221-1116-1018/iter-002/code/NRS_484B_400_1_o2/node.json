@@ -1,0 +1,206 @@
+{
+ "node_id": "NRS_484B_400_1_o2",
+ "law_refs": [
+  "NRS-484B-400-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "intends to turn",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "at an intersection and:",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "The turn is a right turn,",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "both the approach for the right turn and the right turn must be made from the right turn lane",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "if the highway has a right turn lane",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "as set forth in subsection 4 of NRS 484B.223 [NRS-484B-223-4a, NRS-484B-223-4b],",
+   "role": "reference"
+  },
+  {
+   "id": "s8",
+   "text": "or must be made from the extreme right lane.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.aggregate: 'membership of a legal aggregate'. The definitions table admits DEF-NRS-484A-320::vehicle for 'vehicle' (DEF-NRS-484A-320: 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway, except: (1) Devices moved by human power ...'); claimed as the aggregate, never expanded. 'driver' (DEF-NRS-484A-080: 'every person who drives or is in actual physical control of a vehicle') is a relational role read through the vehicle's controlled motion (observable_reading agency); the aggregate carries only the class."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.lane",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "st.intersection: 'the region where two roadways meet, bounded by the prolongation of their edges' (DEF-NRS-484A-105 'the area embraced within the prolongation or connection of the lateral curb lines ... of two highways which join one another'); i is the target region of the declared intention and the region whose entry ends the approach: the subject enters i at the observation e at which its footprint overlaps i (rel.occupies: 'a road user's footprint overlaps a lane / region') having not overlapped it at the observation before. Its approach is a carrier it occupies whose entrance end is i (st.lane_enters: 'the intersection region a directed approach carrier runs into at its entrance end'): a lane (st.lane) or, where no lane is mapped, a roadway the source records as a directed approach segment (st.roadway). st.intersection is 'not a stand-in for a crosswalk or a stop line'; st.lane_enters is 'not a stand-in for ... the subject's presence in the intersection', which rel.occupies reads."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "st.turn_lane",
+    "st.lane_enters",
+    "st.lane_direction",
+    "st.lane"
+   ],
+   "source_spans": [
+    "s7"
+   ],
+   "justification": "The words borrow subsection 4 of NRS 484B.223, which quotes: 'If a highway has been designed to provide a single right lane to be used only for turning'. In this node the alternative 'or must be made from the extreme right lane' governs where the highway has no such lane: no single st.turn_lane ('a lane designated only for turning; side ∈ {left, right}') of side right enters i (st.lane_enters) with its designated direction (st.lane_direction) aligned with that of the carrier the subject occupies entering i, the cosine at or above p.approach_lane_same_direction_cos. 'single' is kept: two such lanes leave the highway without a lane 'as set forth' there."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_enters",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "st.lane_adjacency: 'left / right neighbouring lane of the same direction; lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane, looking along the lane's direction'. The extreme right lane of the approach is the lane c entering i (st.lane_enters) whose ordinal equals the count of lanes in its direction; 'must be made from' it is the subject's footprint overlapping c (rel.occupies) at the observation before the entry into i. st.lane_adjacency is 'not a stand-in for the marking between two lanes', which is not read. Where the subject's approach is a roadway recorded as a directed approach segment and no lane entering i is mapped on it (st.roadway), that segment carries a single line of traffic and is itself the extreme right lane."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s2",
+   "id": "int.right_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the right at the target region, the plan's preparation for that turn included"
+  },
+  {
+   "span": "s4",
+   "id": "int.right_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the right at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [
+  {
+   "span": "s7",
+   "as": "definition",
+   "source": "NRS-484B-223-4a",
+   "quote": "If a highway has been designed to provide a single right lane to be used only for turning",
+   "why": "'as set forth in subsection 4' borrows only that subsection's description of the lane: a single right lane, provided by the highway's design, used only for turning (kept in s6 as exactly one right turn lane of the approach). Whether a right turn lane exists is a fact of the road, not a verdict: the lane is the right turn lane whether or not any vehicle in it complies with the subsection's duty to be driven there only to turn right, so that rule need not apply, hold or be complied with here."
+  },
+  {
+   "span": "s7",
+   "as": "definition",
+   "source": "NRS-484B-223-4b",
+   "quote": "If a highway has been designed to provide a single right lane to be used only for turning",
+   "why": "'as set forth in subsection 4' borrows only that subsection's description of the lane: a single right lane, provided by the highway's design, used only for turning (kept in s6 as exactly one right turn lane of the approach). Whether a right turn lane exists is a fact of the road, not a verdict: the lane is the right turn lane whether or not any vehicle in it complies with the subsection's duty not to travel through an intersection, so that rule need not apply, hold or be complied with here."
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle). The judged observation e is one at which the subject's footprint overlaps an intersection i (rel.occupies) and did not at the observation before (its entry). int.right_turn(subject, i) is declared true at the observation before e (s2 and s4). At the observation before e the subject occupies a carrier c that enters i (st.lane_enters c i; a lane, or a roadway directed approach segment), and the highway has no right turn lane (s6 with s7): there is not exactly one st.turn_lane of side right entering i whose designated direction (st.lane_direction) makes with c's a cosine at or above p.approach_lane_same_direction_cos. Whether the event occurred is unknown where the observation before e does not show the subject's place.",
+ "obligation": "At the observation before e, the subject's footprint overlaps (rel.occupies) the extreme right lane of its approach: a lane c entering i whose st.lane_adjacency ordinal equals the count of lanes in its direction; or, where the subject occupies no lane entering i, a roadway directed approach segment entering i. Occupying only lanes entering i of lower ordinal violates the duty; an unobserved ordinal or count makes it unknown where the verdict turns on it.",
+ "params": [
+  "p.approach_lane_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s8",
+   "why": "The approach and the turn 'made from the extreme right lane' are read at the observation before the entry into the intersection, where the approach ends and the turn begins; a lane change earlier on the approach is not a breach, and the turn is identified by the declared intention and the entry. An unlaned directed approach segment is read as a single line of traffic, itself the extreme right lane.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two lanes of the subject's direction enter the intersection and no right turn lane; the subject, with int.right_turn declared at the intersection, occupies the lane of ordinal 1 of 2 at the observation before it enters."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same layout; the subject occupies the lane of ordinal 2 of 2 at the observation before it enters, with int.right_turn declared."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Same layout; the subject enters from the lane of ordinal 1 with int.left_turn declared and no int.right_turn."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same as forbid, but the source declares st.lane_adjacency absent, so which lane is the extreme right lane is unknown.",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The approach is an unlaned roadway recorded as a directed approach segment entering the intersection; the subject occupies it at the observation before entry with int.right_turn declared."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A single right turn lane enters the intersection on the subject's approach: the right turn lane alternative (the sibling node) governs, not this one."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.approach_lane_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle (about twenty-five degrees) between the designated directions of two mapped lanes entering one intersection at which they count as lanes of the same approach carrying traffic the same way: the direction noise of map lane segments along a gently curving way, far below the angle between the legs of a junction",
+   "source": "map lane-direction noise; mirrors p.lane_opposed_direction_cos proposed this iteration by NRS_484B_307_8a_o2"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

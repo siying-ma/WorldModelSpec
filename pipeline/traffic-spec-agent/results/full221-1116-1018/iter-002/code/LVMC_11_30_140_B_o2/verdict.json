@@ -1,0 +1,498 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "derived": "drv_motion_complete_halt",
+       "params": [
+        {
+         "param": "p.halt_speed_tolerance"
+        }
+       ]
+      }
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "b"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "b"
+            }
+           ],
+           "atom": "ru_pedestrian_with_white_cane_or_guide_animal",
+           "params": []
+          },
+          {
+           "since": [
+            {
+             "not": {
+              "or": [
+               {
+                "rises": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "b"
+                  }
+                 ],
+                 "atom": "rel_contact",
+                 "params": []
+                }
+               },
+               {
+                "and": [
+                 {
+                  "rises": {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "measure": "rel_centre_distance"
+                   },
+                   "rhs": {
+                    "param": "p.blind_person_approach_reach"
+                   }
+                  }
+                 },
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "derived": "drv_motion_complete_halt",
+                   "params": [
+                    {
+                     "param": "p.halt_speed_tolerance"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                }
+               ],
+               "derived": "drv_motion_complete_halt",
+               "params": [
+                {
+                 "param": "p.halt_speed_tolerance"
+                }
+               ]
+              },
+              {
+               "since": [
+                "tt",
+                {
+                 "or": [
+                  {
+                   "rises": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "atom": "rel_contact",
+                    "params": []
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "rises": {
+                      "cmp": "le",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "b"
+                        }
+                       ],
+                       "measure": "rel_centre_distance"
+                      },
+                      "rhs": {
+                       "param": "p.blind_person_approach_reach"
+                      }
+                     }
+                    },
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       }
+                      ],
+                      "derived": "drv_motion_complete_halt",
+                      "params": [
+                       {
+                        "param": "p.halt_speed_tolerance"
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_user": "b"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484A-165::pedestrian"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            }
+           ],
+           "atom": "ru_pedestrian_with_white_cane_or_guide_animal",
+           "params": []
+          }
+         }
+        ]
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-320::vehicle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_30_140_B_o2",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-140-B"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "b"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "b"
+            }
+           ],
+           "atom": "ru_pedestrian_with_white_cane_or_guide_animal",
+           "params": []
+          },
+          {
+           "since": [
+            {
+             "not": {
+              "or": [
+               {
+                "rises": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "b"
+                  }
+                 ],
+                 "atom": "rel_contact",
+                 "params": []
+                }
+               },
+               {
+                "and": [
+                 {
+                  "rises": {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "measure": "rel_centre_distance"
+                   },
+                   "rhs": {
+                    "param": "p.blind_person_approach_reach"
+                   }
+                  }
+                 },
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "derived": "drv_motion_complete_halt",
+                   "params": [
+                    {
+                     "param": "p.halt_speed_tolerance"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                }
+               ],
+               "derived": "drv_motion_complete_halt",
+               "params": [
+                {
+                 "param": "p.halt_speed_tolerance"
+                }
+               ]
+              },
+              {
+               "since": [
+                "tt",
+                {
+                 "or": [
+                  {
+                   "rises": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "atom": "rel_contact",
+                    "params": []
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "rises": {
+                      "cmp": "le",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "b"
+                        }
+                       ],
+                       "measure": "rel_centre_distance"
+                      },
+                      "rhs": {
+                       "param": "p.blind_person_approach_reach"
+                      }
+                     }
+                    },
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       }
+                      ],
+                      "derived": "drv_motion_complete_halt",
+                      "params": [
+                       {
+                        "param": "p.halt_speed_tolerance"
+                       }
+                      ]
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "not": {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "b"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "derived": "prim_closest_approach_within",
+            "params": [
+             {
+              "param": "p.conflict_horizon"
+             }
+            ]
+           },
+           {
+            "cmp": "lt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "b"
+              }
+             ],
+             "params": [
+              {
+               "param": "p.conflict_horizon"
+              }
+             ],
+             "quantity": "prim_closest_approach_distance"
+            },
+            "rhs": {
+             "param": "p.conflict_centre_clearance"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_user": "b"
+   },
+   "residues": [
+    "'with wisdom' qualifies the person assisting, not the person protected; that the person assisted is wholly or partially blind and is being assisted is what identifies the protected person, and a helper's wisdom, a state of mind no trace shows, does not change that identification, so the duty owed to the person assisted is the same whether or not the helper's wisdom holds."
+   ],
+   "surrogate": true
+  },
+  "context": "aa5552548196111d09c50e44",
+  "candidate_digest": "42f4be74dcdf026a650f5747131c184a8cc5efde8c6de71a531e1671db345fac"
+ }
+}

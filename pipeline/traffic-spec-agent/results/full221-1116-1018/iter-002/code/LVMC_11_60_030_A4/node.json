@@ -1,0 +1,228 @@
+{
+ "node_id": "LVMC_11_60_030_A4",
+ "law_refs": [
+  "LVMC-11-60-030-A4"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-030::bus"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "The operator of a bus,",
+   "role": "subject"
+  },
+  {
+   "id": "c2",
+   "text": "other than a tour bus,",
+   "role": "exception"
+  },
+  {
+   "id": "c3",
+   "text": "shall: Enter a bus stop, bus stand, passenger loading zone or origin or destination point",
+   "role": "condition"
+  },
+  {
+   "id": "c4",
+   "text": "on a public street",
+   "role": "condition"
+  },
+  {
+   "id": "c5",
+   "text": "in such a manner that the bus when stopped to load or unload passengers or baggage",
+   "role": "trigger"
+  },
+  {
+   "id": "c6",
+   "text": "shall be in a position with the right-hand front wheel of such vehicle not farther than eighteen inches from the curb",
+   "role": "obligation"
+  },
+  {
+   "id": "c7",
+   "text": "and the bus approximately parallel to the curb so as not to unduly impede the movement of other vehicular traffic.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-030::bus"
+   ],
+   "derived": [],
+   "justification": "'bus' is admitted as DEF-NRS-484A-030::bus; ru.aggregate is 'membership of a legal aggregate'; 'the operator of' is a relational role, never membership."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "ru.aggregate=DEF-LVMC-11-02-150::tour_bus"
+   ],
+   "derived": [],
+   "justification": "'tour bus' is admitted as DEF-LVMC-11-02-150::tour_bus; ru.aggregate is 'membership of a legal aggregate'."
+  },
+  {
+   "span": "c3",
+   "atoms": [
+    "st.curb_zone",
+    "st.transit_stop",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "The places the bus enters: a bus stop is st.transit_stop ('a bus stop, bench, shelter or platform for public transport passengers') or st.curb_zone kind bus_stop ('a signed or marked length of curb'); a bus stand ('a fixed area in or adjacent to the highway to be occupied exclusively by buses', DEF-NRS-484A-035) and an origin or destination point are posted bus places, the signed bus zone, st.curb_zone kind bus_stop; a passenger loading zone is st.curb_zone kind passenger_loading. 'Enter' places the bus in it: rel.occupies anchors the bus to the zone it stands in."
+  },
+  {
+   "span": "c4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'street' applies DEF-NRS-484A-265 'the entire width between the boundary lines of every highway inside the territorial limits of a city when any part of such highway is open to the use of the public', which 'public' repeats; st.highway is 'the entire public way between its boundary lines', not the roadway alone. rel.occupies anchors the bus on it."
+  },
+  {
+   "span": "c5",
+   "atoms": [
+    "sig.door_open"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'when stopped' is the state of rest: drv.motion.complete_halt, 'at rest at the observation — \"complete cessation from movement\"' (DEF-NRS-484A-255). 'to load or unload passengers or baggage' is a purpose, read by the conduct it explains: a door open (sig.door_open, 'a door open; side in {traffic, curb}') through which passengers or baggage pass."
+  },
+  {
+   "span": "c6",
+   "atoms": [
+    "st.road_edge",
+    "st.region_geometry",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [],
+   "justification": "The curb is st.road_edge, 'curb or edge of the roadway'. Its distance from the bus is st.region_geometry, 'the ground distance from a road user's body outline to it (zero when they overlap)', compared with the stated eighteen inches; 'Not a stand-in for: occupancy' does not apply, a distance is read. That the curb is on the bus's right-hand side is prim.region_lateral_offset, 'the signed lateral offset (m, left positive) of a structure region from a road user': negative for a curb on the right. Same anchoring as the index's 'or at the curb' (st.region_geometry, st.road_edge)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "c7",
+   "standard": "approximately parallel to the curb so as not to unduly impede the movement of other vehicular traffic",
+   "concepts": [
+    "kin.heading",
+    "st.lane_direction",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "params": [
+    "p.curb_parallel_cos"
+   ],
+   "convention": "the bus counts as approximately parallel to the curb, and so not projecting across the adjacent travel lane, where the absolute cosine between its heading (kin.heading) and the designated direction (st.lane_direction) of a travel region it occupies (rel.occupies, st.travel_region), whose carriers run along the curb, is at least p.curb_parallel_cos, the bus-stop alignment tolerance of transit stop design guidance",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-030::bus"
+   ]
+  }
+ ],
+ "applicability": "The subject is a bus and not a tour bus; at the observation it is at rest (drv.motion.complete_halt with p.halt_speed_tolerance) with a door open (sig.door_open), and its footprint overlaps a bus stop, bus stand, passenger loading zone or origin or destination point (st.transit_stop; st.curb_zone of kind bus_stop or passenger_loading) on a street (st.highway).",
+ "obligation": "Some road edge lies on the subject's right (prim.region_lateral_offset negative) at a ground distance from the subject's body outline (st.region_geometry) of at most the stated eighteen inches; and for some travel region the subject occupies, the absolute cosine between the subject's heading and that region's designated direction is at least p.curb_parallel_cos.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.curb_parallel_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "c1",
+   "why": "'The operator of a bus' is read through the bus's own controlled motion, whoever or whatever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c3",
+   "why": "A bus stand and an origin or destination point are read through the posted bus zone on the road (st.curb_zone kind bus_stop), the posting being the evidence of their designation.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "c5",
+   "why": "The purpose of loading or unloading passengers or baggage is read through the halted bus having a door open.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "c6",
+   "why": "The right-hand front wheel is read through the bus's body outline: the wheel lies within the outline at its right side, so the body's ground distance to the curb on the right, with the bus parallel to the curb, is the wheel's distance less the tyre's small inset from the body side; a wheel's own position is not in the vocabulary. A bus whose body is within the stated distance but whose wheel is beyond it by less than that inset is read as compliant.",
+   "kind": "reading"
+  },
+  {
+   "span": "c7",
+   "why": "'so as not to unduly impede the movement of other vehicular traffic' is read only through the bus's alignment with the curb (and its curb distance in c6): the movement of actual other traffic is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A transit bus comes to rest in a st.curb_zone of kind bus_stop on a street, its curb-side door open, with its body 1.5 m from the road edge on its right and its heading along the lane direction."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A transit bus comes to rest in a st.curb_zone of kind bus_stop, door open, its body 0.2 m from the road edge on its right and its heading along the lane direction."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A transit bus drives through a bus-stop curb zone without halting, all doors closed."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "masked": [
+    "st.region_geometry"
+   ],
+   "narrative": "A transit bus comes to rest in a bus-stop curb zone with its door open; the source maps the road edge without its outline, so the distance from the bus's body to the curb is unknown."
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A transit bus comes to rest in a bus-stop curb zone with its door open, its front body 0.2 m from the road edge on its right but its heading thirty degrees off the lane direction, its rear swung out into the lane."
+  }
+ ],
+ "literals": [
+  {
+   "span": "c6",
+   "text": "eighteen inches",
+   "value": 18,
+   "unit": "in"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source's kinematic channel"
+  },
+  {
+   "name": "p.curb_parallel_cos",
+   "unit": "ratio",
+   "value": 0.97,
+   "convention": "cosine of the largest angle (about fourteen degrees) between a stopped bus's heading and its carrier's designated direction, in either sense, at which the bus counts as approximately parallel to the curb",
+   "source": "transit agency bus stop design guidance on bus alignment at the curb"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

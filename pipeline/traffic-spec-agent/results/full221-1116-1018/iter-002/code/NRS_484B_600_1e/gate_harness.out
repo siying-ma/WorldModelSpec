@@ -1,0 +1,34 @@
+'TrafficSpec.Rules.NRS_484B_600_1e.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_600_1e.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_600_1e","intentions":[],"laws":["NRS-484B-600-1e"],"narrowings":[],"operationalizations":[],"residues":["\"In any event\" states that the bound holds whatever other limit or circumstance applies; it adds no condition, and the duty is the same whether or not the words are read."],"surrogate":false}
+RULEJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_600_1e","intentions":[],"laws":["NRS-484B-600-1e"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":22352},"unit":"metre_per_second"}},"residues":["\"In any event\" states that the bound holds whatever other limit or circumstance applies; it adds no condition, and the duty is the same whether or not the words are read."],"surrogate":false}
+RULEXJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_600_1e","intentions":[],"laws":["NRS-484B-600-1e"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":22352},"unit":"metre_per_second"}},"residues":["\"In any event\" states that the bound holds whatever other limit or circumstance applies; it adds no condition, and the duty is the same whether or not the words are read."],"surrogate":false}
+ATOMS	ru_aggregate,kin_speed
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+OCC	subject
+OCC	subject
+LITERAL	22352/625	TrafficSpec.PUnit'.metrePerSecond
+TIME	occurrences	0
+TIME	checks	2
+TIME	lint	2
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	9
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	7
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	8
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	10
+TIME	witnesses	34
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_600_1e.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_600_1e.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_600_1e	1	3
+TIME	adequacy_start	4
+TIME	adequacy	34
+DONE

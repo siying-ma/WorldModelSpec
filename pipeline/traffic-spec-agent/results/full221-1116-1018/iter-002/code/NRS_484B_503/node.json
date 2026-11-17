@@ -1,0 +1,224 @@
+{
+ "node_id": "NRS_484B_503",
+ "law_refs": [
+  "NRS-484B-503"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person shall not stop, stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "s2",
+   "text": "for any purpose or period of time",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "except for the expeditious",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "loading or unloading of passengers",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "in any place marked as a passenger curb loading zone",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "during hours when the regulations applicable to such passenger curb loading zone are effective.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.governs",
+    "dev.human_direction",
+    "dev.railway_signal_or_gate",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.yield_sign",
+    "rel.ahead_behind_in_lane",
+    "rel.occupies",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' when prohibited is 'any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device' (DEF-NRS-484A-260, whose own scope 'when prohibited' these words meet); 'stand' is 'the halting of a vehicle, whether occupied or not' (DEF-NRS-484A-250) and 'park' 'the standing of a vehicle' (DEF-NRS-484A-155): together a halt, drv.motion.complete_halt ('at rest at the observation ... its speed at or below a tolerance', p.halt_speed_tolerance), as the mapping index reads 'shall not stop, stand or park a vehicle'. The definition's exclusions are carried beside it: a halt with another road user ahead in the same lane (rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane') within p.queue_halt_gap of the body (rel.surface_gap, 'distance between the nearest points of two bodies', not a centre distance) avoids conflict with other traffic; a halt on a travel region the subject occupies (rel.occupies, st.travel_region) governed (dev.governs) by a stop sign, a yield sign, a traffic signal showing red or yellow, a railway signal flashing or a gate not up, or a police officer's stop indication (dev.stop_sign, dev.yield_sign, dev.traffic_signal, dev.railway_signal_or_gate, dev.human_direction) complies with a device or an officer. 'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "sig.door_open"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "The purpose 'loading or unloading of passengers' is not observable and is read by the conduct it explains: during the halt (drv.motion.complete_halt) a door of the vehicle is open (sig.door_open, 'a door open; side in {traffic, curb}'), the act through which passengers board or alight. The passenger curb loading zone is 'reserved for the exclusive use of vehicles during the loading or unloading of passengers' (DEF-NRS-484B-033)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "'Passenger curb loading zone' is 'an area adjacent to a curb or edge of a highway reserved for the exclusive use of vehicles during the loading or unloading of passengers' (DEF-NRS-484B-033): st.curb_zone of kind passenger_loading, 'a signed or marked length of curb', which the subject's footprint overlaps (rel.occupies, 'a road user's footprint overlaps a lane / region (... curb zone ...)'). The marking is the evidence of the designation."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "prim.conditions_hold",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The hours of a curb zone are those its posting states: a zone sign of kind parking_restricted (dev.zone_sign, whose 'conditions attribute' is 'a list of time windows ...'; 'a legend read with no restriction is the empty set (unconditional)') governing (dev.governs) a travel region (st.travel_region) the subject occupies (rel.occupies); whether its hours hold now is prim.conditions_hold ('env.civil_time falls in one of its time windows'), never the sign itself (dev.zone_sign is 'not a stand-in for whether the condition holds now')."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "expeditious",
+   "concepts": [
+    "drv.motion.parked"
+   ],
+   "params": [
+    "p.standing_min_duration",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "curbside passenger pick-up dwell: a halt counts as expeditious loading or unloading while it has not lasted as long as a passenger pick-up dwell at the curb, i.e. while the subject is not at rest at every observation of a window of length p.standing_min_duration behind the observation (drv.motion.parked)",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s2",
+   "why": "'For any purpose or period of time' excludes no halt: every halt, whatever its purpose and length, is within the prohibition, so the duty is the same whether or not these words are read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) whose footprint overlaps (rel.occupies) a curb zone z of kind passenger_loading (st.curb_zone), and the zone's regulations are effective: every zone sign of kind parking_restricted (dev.zone_sign) that governs (dev.governs) a travel region (st.travel_region) the subject occupies has its conditions holding for the subject at the observation (prim.conditions_hold); where no such sign governs, the marked zone is read as effective at all hours.",
+ "obligation": "Wherever the subject occupies such a zone with its regulations effective (selected again as in the applicability), the subject is not halted (drv.motion.complete_halt with p.halt_speed_tolerance), except a halt that is (a) to avoid conflict with other traffic: some other road user is ahead of the subject in the same lane (rel.ahead_behind_in_lane) with a gap between bodies (rel.surface_gap) at most p.queue_halt_gap; or (b) in compliance with a device or an officer: a travel region the subject occupies is governed (dev.governs) by a stop sign, a yield sign, a traffic signal displaying a red or yellow indication or flashing_red, a railway signal or gate with lights flashing or gate not up, or a person in the role police_officer giving the indication stop; or (c) expeditious loading or unloading of passengers: the subject is not parked with min_duration p.standing_min_duration (drv.motion.parked with p.halt_speed_tolerance), and at some observation of the same halt, before or after the observation, a door of the subject is open (sig.door_open): the subject has stayed halted since an observation at which it was halted with a door open, or stays halted until an observation at which it is halted with a door open.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap",
+  "p.standing_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'A person shall not stop, stand or park a vehicle' is read on the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "The purpose of loading or unloading passengers is read by the conduct it explains: a door of the halted vehicle open during the halt.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s5",
+   "why": "'Marked as' a passenger curb loading zone is read from the presence of the curb zone of that kind on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s1",
+   "why": "'Other traffic' in the stop definition's exclusion is read as any road user ahead in the same lane, the conflict avoided being a halt in a queue.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car halts inside a passenger_loading curb zone that no sign governs, for longer than the standing duration, no door open; no road user ahead and no stop control governs its lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car halts in the zone, opens its curb-side door, and moves off before the standing duration has elapsed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car halts at a curb where there is no curb zone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car halts in the zone briefly, shorter than the standing duration, and the source does not observe its doors.",
+   "masked": [
+    "sig.door_open"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A car halts in the zone while a parking_restricted zone sign governing its lane posts hours that do not include the observation's time of day."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A car halts in the zone behind another car ahead in the same lane, within the queue gap, doors closed."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source (sensor or simulator specification)"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "HCM queue spacing of stopped vehicles"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "curbside passenger pick-up dwell observations (ITE curbside management practice)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

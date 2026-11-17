@@ -1,0 +1,131 @@
+{
+ "node_id": "NRS_484B_153_3",
+ "law_refs": [
+  "NRS-484B-153-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "A person",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "shall not leave open a door on the side of a vehicle which is closest to passing traffic",
+   "role": "obligation"
+  },
+  {
+   "id": "e3",
+   "text": "longer than is necessary for immediate loading or unloading of passengers or cargo.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The person who leaves the door open is read through the vehicle whose door it is: ru.aggregate DEF-NRS-484A-320::vehicle, the same mapping LVMC_11_22_010 gives 'A person'."
+  },
+  {
+   "span": "e2",
+   "atoms": [
+    "sig.door_open",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "sig.door_open: 'a door open; side ∈ {traffic, curb}'; 'the side of a vehicle which is closest to passing traffic' is side = traffic. 'leave open' is the door staying open over time, read by the standard's window."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "e3",
+   "standard": "longer than is necessary for immediate loading or unloading of passengers or cargo",
+   "concepts": [
+    "sig.door_open"
+   ],
+   "params": [
+    "p.traffic_side_door_max_open"
+   ],
+   "convention": "A traffic-side door left open at every observation of the window behind of length p.traffic_side_door_max_open has been open longer than immediate loading or unloading needs: the curbside dwell of a passenger pick-up or a hand-carried delivery.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle and its door on the side closest to passing traffic is open (sig.door_open side traffic).",
+ "obligation": "It is not the case that the subject's traffic-side door has been open at every observation of the window behind of length p.traffic_side_door_max_open (holdsFor time); violated where it has.",
+ "params": [
+  "p.traffic_side_door_max_open"
+ ],
+ "narrowings": [
+  {
+   "span": "e1",
+   "why": "'A person' who leaves the door open is read through the vehicle's traffic-side door state.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "e3",
+   "why": "Whether loading or unloading is going on, and whether of passengers or of cargo, is a purpose not observable; the time necessary is read as one duration bound on the door being continuously open.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car stopped at the curb keeps its traffic-side door open for five minutes."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car stopped at the curb opens its traffic-side door for 15 s while a passenger gets out, then closes it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car stopped at the curb with its traffic-side door closed and its curb-side door open."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car stopped at the curb; the source declares sig.door_open absent.",
+   "masked": [
+    "sig.door_open"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.traffic_side_door_max_open",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest time a traffic-side door stays open for immediate loading or unloading: a passenger pick-up or drop-off dwell at the curb",
+   "source": "curbside passenger-loading dwell studies"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

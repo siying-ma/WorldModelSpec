@@ -1,0 +1,69 @@
+'TrafficSpec.Rules.NRS_484B_293.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_293.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_293","intentions":[],"laws":["NRS-484B-293"],"narrowings":[],"operationalizations":[{"concepts":["prim.region_lateral_offset","rel.bearing","rel.occupies","rel.surface_gap","st.obstruction","st.region_geometry"],"params":["p.pedestrian_near_reach"],"standard":"whenever practicable","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"args":[{"var":"subject"},{"var":"cw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"crosswalk"},"var":"cw"},{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_293","intentions":[],"laws":["NRS-484B-293"],"narrowings":[],"obligation":{"body":{"implies":[{"args":[{"var":"subject"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"or":[{"cmp":"ge","lhs":{"sub":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"sub":[{"args":[{"var":"cw"},{"lit":"y"}],"measure":"st_region_geometry"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"sub":[{"args":[{"var":"cw"},{"lit":"x"}],"measure":"st_region_geometry"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]}]},"rhs":{"neg":{"mul":[{"param":"p.pedestrian_lateral_tolerance"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}},{"or":[{"body":{"and":[{"not":{"same":[{"var":"other"},{"var":"subject"}]}},{"and":[{"args":[{"var":"other"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"other"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"other"},{"lit":"right"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"other"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.pedestrian_near_reach"}}]}]}]}]},"exists_user":"other"},{"body":{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"obs"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"obs"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pedestrian_near_reach"}}]},"exists_region":{"lit":"obstruction"},"var":"obs"}]}]}]},"forall_region":{"lit":"crosswalk"},"var":"cw"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"args":[{"var":"subject"},{"var":"cw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"crosswalk"},"var":"cw"},{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_293","intentions":[],"laws":["NRS-484B-293"],"narrowings":[],"obligation":{"body":{"implies":[{"args":[{"var":"subject"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"or":[{"cmp":"ge","lhs":{"sub":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"sub":[{"args":[{"var":"cw"},{"lit":"y"}],"measure":"st_region_geometry"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"sub":[{"args":[{"var":"cw"},{"lit":"x"}],"measure":"st_region_geometry"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]}]},"rhs":{"neg":{"mul":[{"param":"p.pedestrian_lateral_tolerance"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}},{"or":[{"body":{"and":[{"not":{"same":[{"var":"other"},{"var":"subject"}]}},{"and":[{"args":[{"var":"other"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"other"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"other"},{"lit":"right"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"other"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.pedestrian_near_reach"}}]}]}]}]},"exists_user":"other"},{"body":{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"obs"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"obs"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pedestrian_near_reach"}}]},"exists_region":{"lit":"obstruction"},"var":"obs"}]}]}]},"forall_region":{"lit":"crosswalk"},"var":"cw"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_crosswalk,rel_occupies,drv_motion_complete_halt,kin_velocity,st_region_geometry,kin_position,kin_speed,rel_bearing,rel_surface_gap,st_obstruction,prim_region_lateral_offset,st_region_geometry_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.velocity
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	subject
+OCC	?cw
+OCC	subject,cw
+OCC	subject
+OCC	?cw
+OCC	subject,cw
+OCC	subject
+OCC	cw
+OCC	subject
+OCC	subject
+OCC	cw
+OCC	subject
+OCC	subject
+OCC	?other
+OCC	other,subject
+OCC	other,cw
+OCC	subject,other
+OCC	subject,other
+OCC	subject,other
+OCC	?obs
+OCC	subject
+OCC	obs
+OCC	subject,obs
+TIME	occurrences	0
+TIME	checks	6
+TIME	lint	33
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	12
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	9
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	8
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	13
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	20
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	9
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	15
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	13
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	10
+TIME	witnesses	109
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_293.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_293.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+ADEQ_SIZE	NRS_484B_293	10	8
+TIME	adequacy_start	15
+TIME	adequacy	807
+DONE

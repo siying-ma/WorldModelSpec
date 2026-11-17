@@ -1,0 +1,97 @@
+'TrafficSpec.Rules.LVMC_11_30_030.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_030.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_30_030","intentions":[],"laws":["LVMC-11-30-030"],"narrowings":[{"kind":"reading","span":"d3","why":"The pass's observations are read from the one after the last observation at which b was ahead of the subject with headings aligned, up to the recognition: the language has no next-observation operator to single out that last aligned-ahead observation from the earlier ones of its run, so the act's first observation, at which b is still ahead of the subject with a gap between them, is not read for the trigger."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"not":{"same":[{"var":"b"},{"var":"subject"}]}},{"and":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"not":{"body":{"not":{"and":[{"args":[{"var":"b"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"body":{"and":[{"or":[{"args":[{"var":"b"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"and":[{"body":{"and":[{"args":[{"var":"b"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"b"},{"var":"c"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"travel_region"},"var":"l"},{"body":{"and":[{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"p"},{"var":"c"}],"atom":"rel_occupies","params":[]}]},"exists_user":"p"}]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]},"exists_user":"b"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_30_030","intentions":[],"laws":["LVMC-11-30-030"],"narrowings":[{"kind":"reading","span":"d3","why":"The pass's observations are read from the one after the last observation at which b was ahead of the subject with headings aligned, up to the recognition: the language has no next-observation operator to single out that last aligned-ahead observation from the earlier ones of its run, so the act's first observation, at which b is still ahead of the subject with a gap between them, is not read for the trigger."}],"obligation":{"not":{"body":{"and":[{"not":{"same":[{"var":"b"},{"var":"subject"}]}},{"and":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"b"}],"derived":"drv_interaction_overtake_pass","params":[{"param":"p.overtake_window"},{"param":"p.overtake_same_direction_cos"}]},{"not":{"body":{"not":{"and":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"until":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"b"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}]}},{"rises":{"and":[{"args":[{"var":"subject"},{"var":"b"},{"lit":"behind"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}}]}]},{"and":[{"args":[{"var":"b"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"body":{"and":[{"or":[{"args":[{"var":"b"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"and":[{"body":{"and":[{"args":[{"var":"b"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"b"},{"var":"c"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"travel_region"},"var":"l"},{"body":{"and":[{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"p"},{"var":"c"}],"atom":"rel_occupies","params":[]}]},"exists_user":"p"}]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}]}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]}]},"exists_user":"b"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"not":{"same":[{"var":"b"},{"var":"subject"}]}},{"and":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"not":{"body":{"not":{"and":[{"cmp":"le","lhs":{"args":[{"var":"b"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"body":{"and":[{"or":[{"args":[{"var":"b"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"and":[{"body":{"and":[{"args":[{"var":"b"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"b"},{"var":"c"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"travel_region"},"var":"l"},{"body":{"and":[{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"p"},{"var":"c"}],"atom":"rel_occupies","params":[]}]},"exists_user":"p"}]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]},"exists_user":"b"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_30_030","intentions":[],"laws":["LVMC-11-30-030"],"narrowings":[{"kind":"reading","span":"d3","why":"The pass's observations are read from the one after the last observation at which b was ahead of the subject with headings aligned, up to the recognition: the language has no next-observation operator to single out that last aligned-ahead observation from the earlier ones of its run, so the act's first observation, at which b is still ahead of the subject with a gap between them, is not read for the trigger."}],"obligation":{"not":{"body":{"and":[{"not":{"same":[{"var":"b"},{"var":"subject"}]}},{"and":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"and":[{"rises":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"rises":{"not":{"since":[{"not":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}]}}},{"at_last":"time","body":"tt","length":{"param":"p.overtake_window"},"subject":"subject","when":{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}}]}]},{"not":{"body":{"not":{"and":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"until":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"b"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}]}},{"rises":{"and":[{"args":[{"var":"subject"},{"var":"b"},{"lit":"behind"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}}]}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"b"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"body":{"and":[{"or":[{"args":[{"var":"b"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"and":[{"body":{"and":[{"args":[{"var":"b"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"b"},{"var":"c"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},"exists_region":{"lit":"travel_region"},"var":"l"},{"body":{"and":[{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"p"},{"var":"c"}],"atom":"rel_occupies","params":[]}]},"exists_user":"p"}]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}]}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]}]},"exists_user":"b"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,kin_time,drv_motion_complete_halt,st_crosswalk,rel_occupies,st_region_geometry_distance,st_travel_region,prim_region_offset_along,drv_interaction_overtake_pass,kin_speed,rel_bearing,rel_longitudinal_overlap,rel_same_direction
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	occasion_d1	
+MANIFEST	occasion_d1_outside	
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+OCC	subject
+OCC	?b
+OCC	b,subject
+OCC	b
+OCC	subject
+OCC	b
+OCC	?c
+OCC	b,c
+OCC	b,c
+OCC	?l
+OCC	b,l
+OCC	b
+OCC	c
+OCC	l
+OCC	?p
+OCC	p
+OCC	p,c
+OCC	?b
+OCC	b,subject
+OCC	b
+OCC	subject,b
+OCC	subject
+OCC	subject
+OCC	subject,b
+OCC	subject
+OCC	b
+OCC	subject,b
+OCC	subject,b
+OCC	subject
+OCC	b
+OCC	b
+OCC	?c
+OCC	b,c
+OCC	b,c
+OCC	?l
+OCC	b,l
+OCC	b
+OCC	c
+OCC	l
+OCC	?p
+OCC	p
+OCC	p,c
+TIME	occurrences	0
+TIME	checks	7
+TIME	lint	2716
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	143
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	151
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	53
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	145
+SCEN	occasion_d1	violated	violated	ok
+TIME	scenario:occasion_d1	142
+SCEN	occasion_d1_outside	compliant	compliant	ok
+TIME	scenario:occasion_d1_outside	136
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	125
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	133
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	141
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	72
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	135
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	171
+TIME	witnesses	1547
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_30_030.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_030.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_30_030	23	11
+TIME	adequacy_start	27
+TIME	adequacy	28678
+DONE

@@ -1,0 +1,241 @@
+{
+ "node_id": "NRS_484B_407",
+ "law_refs": [
+  "NRS-484B-407"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not be turned so as to proceed in the opposite direction",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "upon any curve,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "or upon the approach to or near the crest of a grade,",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "where such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, one atom; same mapping as the index row 'A vehicle'."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.u_turn"
+   ],
+   "justification": "drv.motion.u_turn denotes a road user that 'has turned \"so as to proceed in the opposite direction\": its heading has reversed', the very words of the span; the reversal 'whether accomplished by one continuous movement or not' is denoted. 'be turned' by the one at the controls is read through the vehicle's controlled motion (agency reading)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.curvature"
+   ],
+   "derived": [],
+   "justification": "st.curvature is the 'horizontal curvature of the roadway at a point, as a magnitude (1/m, never negative): a bend to either hand has the same value'; 'any curve' names the feature without a size, so it is read as the curvature at the subject's place standing clear of zero, above p.curvature_resolution, which names only the source's resolution. rel.occupies of an st.roadway region ('the part of a highway improved for vehicular traffic') anchors the curve to the way the subject is upon. st.curvature is the road's geometry, not the vehicle's yaw (kin.yaw_rate is 'not a stand-in for road curvature')."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.crest",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "st.crest is 'the place on a roadway's longitudinal profile where the slope changes from rising to falling in the direction of travel, carried as a region with a reference point and a boundary, so the ground distance from a road user to it is read through st.region_geometry' -- 'the crest of a grade'. st.region_geometry gives 'the ground distance from a road user's body outline to it'; the approach to or nearness to the crest is that distance at most p.crest_near_reach. st.crest is not a stand-in for the slope at a point (st.grade) nor for the view (st.sight_distance), which s5 reads on its own."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "st.sight_distance"
+   ],
+   "derived": [],
+   "justification": "st.sight_distance is 'the distance along the road within which a vehicle at a point and another vehicle on the road could see each other ... both the view of approaching traffic from that point and its being seen by drivers approaching it, whether or not any road user is there': 'such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet' is that distance at the subject's place below 500 ft. It is not a stand-in for whether an actual road user saw another (rel.visible): the words state what could be seen at the place, whether or not another vehicle is present, so no other vehicle is quantified (perception reading)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle). The rule is engaged at an observation where, at that one observation, (i) the subject occupies an st.roadway region and st_curvature at its place exceeds p.curvature_resolution, or the ground distance (st.region_geometry) from its body to an st.crest region is at most p.crest_near_reach; and (ii) st.sight_distance at its place is below 500 ft. For a reversal of direction, it is engaged where (i) and (ii) hold together at some one observation while the reversal is under way (yaw rate magnitude above p.turn_yaw_rate_tol, within the act's window behind its recognition).",
+ "obligation": "drv.motion.u_turn(subject; window p.vehicle_turn_window, u_turn_min p.u_turn_heading_min, yaw_tol p.turn_yaw_rate_tol) does not rise: a reversal recognized where the rule is engaged is a violation; otherwise complied with.",
+ "params": [
+  "p.vehicle_turn_window",
+  "p.u_turn_heading_min",
+  "p.turn_yaw_rate_tol",
+  "p.curvature_resolution",
+  "p.crest_near_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'be turned' is read through the vehicle's controlled motion, whoever or whatever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'cannot be seen by the driver of any other vehicle approaching from either direction' is read through the sight distance of the subject's place (what could be seen at a place), not through any actual driver's perception.",
+   "kind": "observable_reading",
+   "category": "perception"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject vehicle on a roadway bend (curvature well above the resolution) where st.sight_distance is 100 m reverses its heading by about 180 degrees within 8 s, yaw rate observed."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "On the same bend with st.sight_distance 80 m the subject drives through without reversing; no other road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject reverses direction on a straight, level roadway (curvature at or below the resolution) with no crest within the reach and st.sight_distance 400 m."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject reverses direction on a roadway bend; st.sight_distance is not observed on this source, so whether the condition holds is unknown.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "occasion_s3",
+   "expected": "violated",
+   "narrative": "The subject begins its reversal on a straight stretch and the second half of the turn takes place where the roadway curves; sight distance is 100 m throughout; no crest near."
+  },
+  {
+   "name": "occasion_s3_outside",
+   "expected": "not_applicable",
+   "narrative": "The subject is on the bend (sight distance 100 m) only before the reversal begins; it makes the whole reversal on the straight stretch beyond, where sight distance is 400 m; no crest near."
+  },
+  {
+   "name": "occasion_s4",
+   "expected": "violated",
+   "narrative": "On a straight roadway the subject begins its reversal farther than the reach from a crest and ends it within the reach, where sight distance is 90 m."
+  },
+  {
+   "name": "occasion_s4_outside",
+   "expected": "not_applicable",
+   "narrative": "The subject passes within the reach of a crest (sight 90 m) before the reversal begins and makes the whole reversal on a straight level stretch far beyond it, where sight distance is 400 m."
+  },
+  {
+   "name": "occasion_s5",
+   "expected": "violated",
+   "narrative": "On a bend the subject begins its reversal where sight distance is 200 m, and during the turn moves to where it is 120 m."
+  },
+  {
+   "name": "occasion_s5_outside",
+   "expected": "not_applicable",
+   "narrative": "On a bend the subject passes a spot where sight distance is 120 m before the reversal begins, then makes the whole reversal where sight distance is 250 m."
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.u_turn",
+  "boundary": "window",
+  "window": "p.vehicle_turn_window",
+  "under_way": {
+   "words": "be turned so as to proceed in the opposite direction",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "kin.yaw_rate is the 'rate of change of heading'; its magnitude above p.turn_yaw_rate_tol tells an observation inside the reversal from one before it began, when the vehicle ran on the same bend or near the same crest without turning."
+  },
+  "spans": {
+   "s3": "some_moment",
+   "s4": "some_moment",
+   "s5": "some_moment"
+  }
+ },
+ "literals": [
+  {
+   "span": "s5",
+   "text": "500 feet",
+   "value": 500,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.vehicle_turn_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of a turn by a motor vehicle at a junction or into or out of a driveway, from the start of its heading change to its end, including the crossing of opposing lanes",
+   "source": "observed turning-manoeuvre durations of passenger cars at urban junctions"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "geometric convention separating a turn (about 90 degrees) from a reversal (about 180 degrees)"
+  },
+  {
+   "name": "p.turn_yaw_rate_tol",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "the yaw-rate magnitude at or below which a road user's heading counts as no longer turning: the yaw-rate noise floor of the source",
+   "source": "yaw-rate noise of vehicle inertial and tracking sources"
+  },
+  {
+   "name": "p.curvature_resolution",
+   "unit": "1/m",
+   "value": 0.0005,
+   "convention": "the horizontal curvature at or below which a mapped roadway reads as straight: the curvature resolution of map centrelines (a radius of about two kilometres)",
+   "source": "HD-map centreline curvature resolution"
+  },
+  {
+   "name": "p.crest_near_reach",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "the ground distance from a road user's body to a crest within which the road user is on the approach to or near the crest: the length of a crest vertical curve over which forward sight is restricted, about the stopping sight distance at 90 km/h",
+   "source": "AASHTO Green Book, stopping sight distance and crest vertical curve design"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

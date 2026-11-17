@@ -1,0 +1,234 @@
+{
+ "node_id": "NRS_484B_403_3",
+ "law_refs": [
+  "NRS-484B-403-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not make a U-turn",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "in a business district,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "except at an intersection",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "or on a divided highway",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "where an appropriate opening or crossing place exists.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed as one atom; ru.aggregate 'true when the user carries an included class'. 'The driver of' is the relational role DEF-NRS-484A-080 defines ('every person who drives or is in actual physical control of a vehicle'), which the aggregate is not a stand-in for: it is read through the vehicle's controlled motion (agency reading), so the binder is the vehicle whose conduct is judged. Same mapping as the index row 'The driver of a vehicle'."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.u_turn"
+   ],
+   "justification": "drv.motion.u_turn denotes a road user that 'has turned \"so as to proceed in the opposite direction\": its heading has reversed, \"whether accomplished by one continuous movement or not\"', the definition DEF-NRS-484B-077 ('the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not'). The concept 'says nothing of the way on which a turns', so the definition's 'upon a highway' is carried beside it: rel.occupies ('a road user's footprint overlaps a lane / region') of an st.highway region ('the entire public way between its boundary lines'); st.highway is not a stand-in for the roadway, and the definition names the highway, not the roadway. The index maps 'shall not make a U-turn' to drv.motion.u_turn alone; the highway anchor is added here because the defined word carries it (PLAN.md)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "st.intersection: 'the region where two roadways meet, bounded by the prolongation of their edges; a junction where an alley meets another way ... is no intersection', matching DEF-NRS-484A-105 ('the area embraced within the prolongation or connection of the lateral curb lines ... The junction of an alley with a street, road or highway shall not constitute an intersection'). It is not a stand-in for a crosswalk or a stop line, which the words do not name. rel.occupies anchors the subject's own intersection: 'at an intersection' is the reversal made with the footprint overlapping it."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.median_or_divider"
+   ],
+   "derived": [],
+   "justification": "DEF-NRS-484A-070: 'a highway divided into two or more roadways by means of a physical barrier or dividing section'. st.median_or_divider is the 'physical barrier or dividing section between roadways'; st.on_way ties it to 'the public way (a highway region) a structure region lies on'; rel.occupies anchors the subject on that st.highway. Same mapping as the index row 'driven upon a divided highway'. st.on_way is not a stand-in for nearness: the divider lies on the very way the subject occupies."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.median_or_divider"
+   ],
+   "derived": [],
+   "justification": "st.median_or_divider carries an 'opening attribute where a crossover exists': the opening or crossing place in the divider. rel.occupies of a divider region having that attribute is the reversal passing through the crossover. Same atoms as the index row 'except through an opening in the barrier or dividing section or space'. 'appropriate' is the legal status of a feature on the road: the opening's presence is its evidence (observable_reading, status)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s3",
+   "id": "asm.business_district",
+   "meaning": "the place of the road user at the observation lies in a business district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle). The rule is engaged at an observation where the reading declares asm.business_district for the subject's place there; for a reversal of direction, at the observation at which the reversal is recognized.",
+ "obligation": "At the observation at which drv.motion.u_turn(subject; window p.vehicle_turn_window, u_turn_min p.u_turn_heading_min, yaw_tol p.turn_yaw_rate_tol) rises while the subject occupies (rel.occupies) an st.highway region, one of the exceptions holds, else violated: (a) at every observation while the reversal is under way the subject occupies an st.intersection region; or (b) at every observation while it is under way the subject occupies an st.highway region on which (st.on_way) an st.median_or_divider region lies, and at some observation while it is under way the subject's footprint overlaps an st.median_or_divider region on that highway having the opening attribute. Where no reversal is recognized the duty is complied with.",
+ "params": [
+  "p.vehicle_turn_window",
+  "p.u_turn_heading_min",
+  "p.turn_yaw_rate_tol"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'The driver of a vehicle' is read through the vehicle's controlled motion: the duty binds the vehicle whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s6",
+   "why": "'an appropriate opening or crossing place' is read by the presence of a divider region carrying the opening attribute on the divided highway the subject occupies; its legal suitability is presumed from that presence.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "asm.business_district declared true; the subject vehicle on a two-way street mid-block, with no intersection and no divider anywhere near, reverses its heading by about 180 degrees within 8 s with its yaw rate observed throughout, occupying the highway region."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "asm.business_district declared true; the subject vehicle reverses its heading by about 180 degrees while its footprint overlaps an intersection region at every observation of the turn."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "asm.business_district declared false for every place of the trace; the subject vehicle makes a mid-block reversal of direction."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "asm.business_district declared true; the subject vehicle's heading reverses mid-block but kin.yaw_rate is not observed on this source, so neither the reversal nor its under-way observations can be decided.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "occasion_s4",
+   "expected": "violated",
+   "narrative": "In the business district the subject begins the reversal inside an intersection region and completes it mid-block beyond the intersection, so it occupies the intersection for part of the turn only; no divider."
+  },
+  {
+   "name": "occasion_s4_outside",
+   "expected": "compliant",
+   "narrative": "In the business district the subject approaches on a lane outside the intersection, enters it, and makes the whole reversal with its footprint overlapping the intersection at every observation while the turn is under way."
+  },
+  {
+   "name": "occasion_s5",
+   "expected": "violated",
+   "narrative": "In the business district the subject starts its reversal on a stretch whose way carries no divider and finishes it where a divider with an opening lies on the way, passing through the opening; it is on the divided highway for part of the turn only and occupies no intersection."
+  },
+  {
+   "name": "occasion_s5_outside",
+   "expected": "compliant",
+   "narrative": "In the business district the subject, having driven on an undivided stretch before, makes the whole reversal on a highway on which a divider lies, passing through the divider's opening mid-turn."
+  },
+  {
+   "name": "occasion_s6",
+   "expected": "compliant",
+   "narrative": "In the business district, on a divided highway throughout the reversal, the subject's footprint overlaps the divider region with the opening attribute during the middle part of the turn only."
+  },
+  {
+   "name": "occasion_s6_outside",
+   "expected": "violated",
+   "narrative": "In the business district, on a divided highway throughout, the subject drives through a divider opening region before beginning its reversal and then reverses within one roadway without overlapping any opening while the turn is under way; no intersection."
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.u_turn",
+  "boundary": "window",
+  "window": "p.vehicle_turn_window",
+  "under_way": {
+   "words": "make a U-turn",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "kin.yaw_rate is the 'rate of change of heading'; its magnitude above p.turn_yaw_rate_tol tells an observation inside the reversal from one before it began, when the vehicle ran straight on the same region. It is a reading of the road user's motion, not of a place."
+  },
+  "spans": {
+   "s4": "throughout",
+   "s5": "throughout",
+   "s6": "some_moment"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.vehicle_turn_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of a turn by a motor vehicle at a junction or into or out of a driveway, from the start of its heading change to its end, including the crossing of opposing lanes",
+   "source": "observed turning-manoeuvre durations of passenger cars at urban junctions"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "geometric convention separating a turn (about 90 degrees) from a reversal (about 180 degrees)"
+  },
+  {
+   "name": "p.turn_yaw_rate_tol",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "the yaw-rate magnitude at or below which a road user's heading counts as no longer turning: the yaw-rate noise floor of the source",
+   "source": "yaw-rate noise of vehicle inertial and tracking sources"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

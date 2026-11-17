@@ -1,0 +1,302 @@
+{
+ "verdict": "OK",
+ "details": [
+  "13 witnesses, 12 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "z"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "dev_governs",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "z"
+             },
+             {
+              "lit": "school_crossing"
+             }
+            ],
+            "atom": "dev_zone_sign_kind",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "z"
+                }
+               ],
+               "atom": "dev_zone_sign_end",
+               "params": []
+              }
+             },
+             {
+              "not": {
+               "or": [
+                {
+                 "not": {
+                  "asm": "asm.school_in_session_day"
+                 }
+                },
+                {
+                 "or": [
+                  {
+                   "asm": "asm.school_outside_operation_margin"
+                  },
+                  {
+                   "or": [
+                    {
+                     "and": [
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "b"
+                           },
+                           {
+                            "var": "r"
+                           }
+                          ],
+                          "atom": "dev_governs",
+                          "params": []
+                         },
+                         {
+                          "not": {
+                           "args": [
+                            {
+                             "var": "b"
+                            }
+                           ],
+                           "atom": "dev_inoperative",
+                           "params": []
+                          }
+                         }
+                        ]
+                       },
+                       "exists_device": {
+                        "lit": "speed_limit_beacon"
+                       },
+                       "var": "b"
+                      },
+                      {
+                       "and": [
+                        {
+                         "asm": "asm.pupils_in_class"
+                        },
+                        {
+                         "body": {
+                          "implies": [
+                           {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "b2"
+                               },
+                               {
+                                "var": "r"
+                               }
+                              ],
+                              "atom": "dev_governs",
+                              "params": []
+                             },
+                             {
+                              "not": {
+                               "args": [
+                                {
+                                 "var": "b2"
+                                }
+                               ],
+                               "atom": "dev_inoperative",
+                               "params": []
+                              }
+                             }
+                            ]
+                           },
+                           {
+                            "not": {
+                             "args": [
+                              {
+                               "var": "b2"
+                              }
+                             ],
+                             "atom": "dev_speed_limit_beacon_flashing",
+                             "params": []
+                            }
+                           }
+                          ]
+                         },
+                         "forall_device": {
+                          "lit": "speed_limit_beacon"
+                         },
+                         "var": "b2"
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "and": [
+                      {
+                       "not": {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "b"
+                            },
+                            {
+                             "var": "r"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "not": {
+                            "args": [
+                             {
+                              "var": "b"
+                             }
+                            ],
+                            "atom": "dev_inoperative",
+                            "params": []
+                           }
+                          }
+                         ]
+                        },
+                        "exists_device": {
+                         "lit": "speed_limit_beacon"
+                        },
+                        "var": "b"
+                       }
+                      },
+                      {
+                       "not": {
+                        "args": [
+                         {
+                          "var": "z"
+                         },
+                         {
+                          "var": "subject"
+                         }
+                        ],
+                        "derived": "prim_conditions_hold",
+                        "params": []
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "exists_device": {
+        "lit": "zone_sign"
+       },
+       "var": "z"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "travel_region"
+    },
+    "var": "r"
+   },
+   "assumptions": [
+    "asm.school_in_session_day",
+    "asm.school_outside_operation_margin",
+    "asm.pupils_in_class"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_363_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-363-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "cmp": "le",
+    "lhs": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "measure": "kin_speed"
+    },
+    "rhs": {
+     "lit": {
+      "den": 125,
+      "num": 1397
+     },
+     "unit": "metre_per_second"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "59e190dbc68fa32a68ece4ee",
+  "candidate_digest": "38b3520a27120627504fdde76ce17cc20869aec6704cdd4188c1d0c98f57d7a8"
+ }
+}

@@ -1,0 +1,234 @@
+{
+ "node_id": "NRS_484B_307_5a_o2",
+ "law_refs": [
+  "NRS-484B-307-5a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where the signal is a green straight-through arrow alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Vehicular traffic facing the signal",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "may proceed straight through, but must not turn right or left.",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "Such vehicular traffic",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "must yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s7",
+   "text": "to other vehicles",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "and to pedestrians",
+   "role": "condition"
+  },
+  {
+   "id": "s9",
+   "text": "lawfully within the intersection or an adjacent crosswalk at the time the signal is exhibited.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal, 'a signal head; state ∈ {..., green_arrow(dir), ...}; several states may be displayed at once': a green straight-through arrow alone is green_arrow(straight) and no other state. Same atom as the index for the signal words of NRS_484B_307_2a."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Vehicular traffic': the admitted aggregates DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), claimed as ru.aggregate, never expanded. 'facing the signal': the subject occupies (rel.occupies) a travel region c (st.travel_region) whose entrance end is intersection i (st.lane_enters; st.intersection) and which the head governs (dev.governs, 'the travel regions whose traffic the device controls'). Not a stand-in: dev.governs is not a position, st.lane_enters not presence in i. Same words, same atoms as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Such vehicular traffic' refers back to s2: the same admitted aggregates DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle, as the index maps 'Such vehicular traffic, including vehicles turning right or left,' (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "'must yield': kin.speed ('magnitude of velocity') tells a subject that moves on toward the other road user from one that holds back, and rel.contact ('the bodies of two road users ... touch or overlap (a collision)') is the crash precedence exists to avoid; not a stand-in for a near miss, which the operationalization of s6 reads by the closest approach. Same words, same atoms as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'other vehicles': road users of the admitted aggregate DEF-NRS-484A-320::vehicle other than the subject. Same words, same atom as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrians': the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'). Same words, same atom as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "dev.traffic_signal",
+    "rel.occupies",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'within the intersection or an adjacent crosswalk': the other road user's footprint overlaps (rel.occupies) intersection i (st.intersection) or a crosswalk (st.crosswalk, 'marked crossing, or the unmarked prolongation of sidewalks at an intersection') recorded as marking the entrance (st.entrance_of, 'the carrier whose entrance into an intersection a stop line or a crosswalk marks') of a travel region (st.travel_region) that enters i (st.lane_enters): the crosswalks of i's approaches. 'at the time the signal is exhibited': at the latest observation at which the head's display (dev.traffic_signal) became the green straight-through arrow alone. Not a stand-in: st.entrance_of is the recorded association, never a distance. Same words, same atoms as the index (NRS_484B_307_2a)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s6",
+   "standard": "the right-of-way: DEF-NRS-484A-210, 'the right of one vehicle or pedestrian to proceed in a lawful manner in preference to another vehicle or pedestrian approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other'",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: the danger of a crash is a closest approach of the two centres, under constant velocities, within the time-to-collision horizon (p.conflict_horizon) at a centre distance below the conflict clearance (p.conflict_centre_clearance); the subject grants precedence where, while its speed is above the halt tolerance (p.halt_speed_tolerance), no such approach to the other road user arises. Direction, speed and proximity, the factors the definition names, enter by degree through the constant-velocity extrapolation of both road users.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of the classes traffic and vehicle, faces traffic signal head s: it occupies a travel region c whose entrance end is intersection i (st.lane_enters) and which s governs (dev.governs), or it occupies i and has occupied it at every observation since it entered i from such a c; and s displays a green straight-through arrow alone (green_arrow(straight), no other state) at the judged observation.",
+ "obligation": "For every road user p other than the subject that is of the class vehicle or of the class pedestrian, whose footprint overlaps i or a crosswalk recorded as marking the entrance of a travel region that enters i at the judged observation, and overlapped one of them at the latest observation at which s's display became the green straight-through arrow alone: it is not the case that the subject's speed is above p.halt_speed_tolerance while the closest approach of the two centres lies within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance); and the subject's body does not touch p's (rel.contact).",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "'lawfully within' is read through the other road user's presence within the intersection or an adjacent crosswalk at the time the arrow is exhibited; whether its presence there is lawful is not judged, so the subject yields to every such road user. 'within the intersection or an adjacent crosswalk at the time' qualifies both the vehicles and the pedestrians.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Head s governing lane c, which enters i, changes to green_arrow(straight) alone while a pedestrian walks at 1.2 m/s in the crosswalk marking the entrance of the far-side approach of i; the car leaves its halt and proceeds straight at 8 m/s, the closest approach of the two centres lying 1.2 s ahead at 0.5 m, while the pedestrian is still in that crosswalk."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same arrow; no other road user is in the scene; the car proceeds straight through i. The duty binds the subject alone and is met."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "s displays circular_green alone while the car proceeds through i."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source does not record which carriers' entrances the pedestrian's crosswalk marks: whether it is an adjacent crosswalk is unknown.",
+   "masked": [
+    "st.entrance_of"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "As forbid, but the pedestrian was on the sidewalk when s's arrow came on and stepped into the crosswalk afterwards: it was not within the crosswalk at the time the signal was exhibited, so no yield is owed to it under this paragraph and the subject complies."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "proposed this iteration by LVMC_11_12_070_B; repeated unchanged"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "proposed this iteration by LVMC_11_12_070_B; repeated unchanged"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; repeated unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

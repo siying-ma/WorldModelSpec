@@ -1,0 +1,268 @@
+{
+ "node_id": "NRS_484B_270_2a_o2",
+ "law_refs": [
+  "NRS-484B-270-2a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "When overtaking or passing",
+   "role": "trigger"
+  },
+  {
+   "id": "a2",
+   "text": "a bicycle, an electric bicycle or an electric scooter",
+   "role": "trigger"
+  },
+  {
+   "id": "a3",
+   "text": "proceeding in the same direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "a4",
+   "text": "the driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "a5",
+   "text": "shall exercise due care and:",
+   "role": "sibling"
+  },
+  {
+   "id": "a6",
+   "text": "If there is more than one lane for traffic proceeding in the same direction,",
+   "role": "condition"
+  },
+  {
+   "id": "a7",
+   "text": "move the vehicle to the lane to the immediate left,",
+   "role": "obligation"
+  },
+  {
+   "id": "a8",
+   "text": "if the lane is available and moving into the lane is reasonably safe.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'overtaking or passing' a road user proceeding the same way is drv.interaction.overtake_pass(subject, r): 'a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'; it denotes the relative motion only, the lanes being read by a6 and a7. The pass is under way while the bodies are side by side (rel.longitudinal_overlap at or above zero; a projection, not a contact or a distance), within the window behind the pass's recognition."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'a bicycle' is DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride'), 'an electric bicycle' DEF-NRS-484B-017::electric_bicycle, 'an electric scooter' DEF-NRS-484B-018::electric_scooter ('a vehicle with handlebars and an electric motor that is designed to be ridden on'); each admitted aggregate claimed whole."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "rel.same_direction",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'proceeding' is the overtaken road user moving (kin.speed above the halt tolerance); 'in the same direction' is rel.same_direction ('headings aligned') between the subject and it, with the overtaking heading tolerance."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'a motor vehicle' is DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'). 'the driver' is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "a6",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "'more than one lane for traffic proceeding in the same direction' is the count of lanes in the direction of a lane the overtaken road user occupies (st.lane_adjacency, 'lane ordinal within the carriageway and the count of lanes in that direction'; not the marking between lanes) being more than the stated one, read on a lane (st.lane) the rider occupies (rel.occupies). 'traffic' names the users of those lanes; no membership is read, the direction being the lanes' own."
+  },
+  {
+   "span": "a7",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "rel.longitudinal_overlap",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the vehicle' is the subject (DEF-NRS-484A-320::vehicle, 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway', of which the motor vehicle is a member). 'the lane to the immediate left' is the left neighbouring lane of the same direction (st.lane_adjacency, 'left / right neighbouring lane of the same direction') of a lane (st.lane) the overtaken rider occupies (rel.occupies); 'move ... to' it is the subject's footprint overlapping that lane and not overlapping the rider's lane while the two are side by side (rel.longitudinal_overlap at or above zero), i.e. while it passes."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "a8",
+   "standard": "if the lane is available and moving into the lane is reasonably safe",
+   "concepts": [
+    "rel.occupies",
+    "st.lane_adjacency",
+    "rel.bearing",
+    "rel.surface_gap",
+    "kin.speed",
+    "dev.temporary_traffic_control",
+    "dev.governs",
+    "env.ice_or_snow",
+    "env.wet_road",
+    "env.precipitation"
+   ],
+   "params": [
+    "p.following_headway_dry",
+    "p.following_headway_wet",
+    "p.following_headway_ice"
+   ],
+   "convention": "gap acceptance at the start of the pass: at the last observation of the window behind at which the rider was ahead of the subject (rel.bearing longitudinal component positive, no shared length) with aligned headings, the lane to the rider's lane's immediate left exists (st.lane_adjacency), no temporary traffic control device governs it (available), and no road user other than the subject and the rider occupying it is nearer the subject's body (rel.surface_gap) than the subject's speed times the following headway for the surface: ice or snow, else wet road or precipitation, else dry (reasonably safe)",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-130::motor_vehicle. At the observation, drv.interaction.overtake_pass(subject, r) rises, with window p.overtake_window and same_dir_cos p.overtake_same_direction_cos, for some road user r, not the subject, a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, which at some observation of that window was moving (kin.speed above p.halt_speed_tolerance) with its heading aligned with the subject's (rel.same_direction, p.overtake_same_direction_cos); and at some observation of that window at which the two were side by side (rel.longitudinal_overlap at or above zero), r occupied a st.lane whose count of lanes in its direction (st.lane_adjacency count) is more than the literal one.",
+ "obligation": "For every such r (re-bound with its whole selection), unless the left lane was unavailable or unsafe at the pass's start: at every observation of the window behind of length p.overtake_window at which the subject and r are side by side (rel.longitudinal_overlap at or above zero), the subject occupies (rel.occupies) the left neighbour (st.lane_adjacency) of a st.lane r occupies, and occupies no lane r occupies. The pass's start is the last observation of the window at which r was ahead of the subject (rel.bearing longitudinal component positive, rel.longitudinal_overlap negative) with headings aligned (rel.same_direction, p.overtake_same_direction_cos); there the left lane is unavailable or unsafe where r's lane has no left neighbour, or a dev.temporary_traffic_control governs (dev.governs) that neighbour, or some road user u other than the subject and r occupying it has a rel.surface_gap to the subject below the subject's kin.speed × the headway (p.following_headway_ice where env.ice_or_snow holds, else p.following_headway_wet where env.wet_road or env.precipitation holds, else p.following_headway_dry).",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.halt_speed_tolerance",
+  "p.following_headway_dry",
+  "p.following_headway_wet",
+  "p.following_headway_ice"
+ ],
+ "narrowings": [
+  {
+   "span": "a4",
+   "why": "'the driver' of a motor vehicle is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a7",
+   "why": "'move the vehicle to the lane' is read as the subject wholly in the left lane, overlapping none of the rider's lanes, at every observation at which it is side by side with the rider"
+  },
+  {
+   "span": "a8",
+   "why": "'available' and 'reasonably safe' are read at the pass's start only, through closure by temporary traffic control and the time-headway gap to road users occupying the left lane"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Dry road with two lanes in one direction; a bicycle rides in the right lane; the left lane is open and empty. The subject car overtakes the bicycle staying in the right lane, side by side with it."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; the subject car moves wholly into the left lane before drawing alongside and stays there until the bicycle is behind it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car overtakes another car on a two-lane carriageway; no bicycle, electric bicycle or electric scooter is in the scene. The duty binds the subject alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe lane adjacency, so neither the lane count nor the left neighbour is known.",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "As in forbid, but at the pass's start a car occupies the left lane beside the subject, nearer than the subject's speed times the dry headway: the lane is not reasonably safe and the subject passes in the right lane."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The road has a single lane in the subject's direction; the subject passes a bicycle."
+  }
+ ],
+ "literals": [
+  {
+   "span": "a6",
+   "text": "one",
+   "value": 1,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "overtaking-duration figures (as proposed this iteration by LVMC_11_30_030)"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading figures (as proposed this iteration by LVMC_11_30_030)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "source speed resolution (as proposed this iteration by LVMC_11_12_070_B)"
+  },
+  {
+   "name": "p.following_headway_dry",
+   "unit": "s",
+   "value": 2.0,
+   "convention": "time headway a following driver keeps on a dry surface: the two-second rule of driver manuals",
+   "source": "driver manuals (as proposed this iteration by NRS_484B_127_1)"
+  },
+  {
+   "name": "p.following_headway_wet",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time headway a following driver keeps on a wet surface or in rain: the two-second rule lengthened by a second",
+   "source": "driver manuals (as proposed this iteration by NRS_484B_127_1)"
+  },
+  {
+   "name": "p.following_headway_ice",
+   "unit": "s",
+   "value": 6.0,
+   "convention": "time headway a following driver keeps on an icy or snow-covered surface: the tripled following time driver manuals advise",
+   "source": "driver manuals (as proposed this iteration by NRS_484B_127_1)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

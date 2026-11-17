@@ -1,0 +1,50 @@
+'TrafficSpec.Rules.LVMC_11_43_010_B_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_43_010_B_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_43_010_B_o1","intentions":[],"laws":["LVMC-11-43-010-B"],"narrowings":[],"operationalizations":[{"concepts":["prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.conflict_horizon","p.conflict_centre_clearance"],"standard":"the right-of-way: preference over another approaching 'under such circumstances of direction, speed and proximity as to give rise to the danger of a crash' (DEF-NRS-484A-210)","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"rises":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"roundabout"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_43_010_B_o1","intentions":[],"laws":["LVMC-11-43-010-B"],"narrowings":[],"obligation":{"body":{"implies":[{"rises":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"v"},{"var":"subject"}]}},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}]}]}]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"v"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"v"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"v"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}}]}]},"forall_user":"v"}]},"forall_region":{"lit":"roundabout"},"var":"r"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"rises":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"roundabout"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_43_010_B_o1","intentions":[],"laws":["LVMC-11-43-010-B"],"narrowings":[],"obligation":{"body":{"implies":[{"rises":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"v"},{"var":"subject"}]}},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}]}]}]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"v"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"v"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"v"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}}]}]},"forall_user":"v"}]},"forall_region":{"lit":"roundabout"},"var":"r"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_roundabout,rel_occupies,rel_contact,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.occupies
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?r
+OCC	subject,r
+OCC	?v
+OCC	v,subject
+OCC	v
+OCC	v,r
+OCC	v,r
+OCC	subject,v
+OCC	subject,v
+OCC	subject,v
+TIME	occurrences	1
+TIME	checks	4
+TIME	lint	27
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	15
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	13
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	8
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	43
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	8
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	10
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	9
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	9
+TIME	witnesses	115
+DONE_WITNESSES

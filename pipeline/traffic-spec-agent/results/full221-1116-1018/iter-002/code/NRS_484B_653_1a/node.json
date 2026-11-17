@@ -1,0 +1,195 @@
+{
+ "node_id": "NRS_484B_653_1a",
+ "law_refs": [
+  "NRS-484B-653-1a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "It is unlawful for a person to:",
+   "role": "obligation"
+  },
+  {
+   "id": "d2",
+   "text": "Drive a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "d3",
+   "text": "in willful or wanton disregard of the safety of persons or property",
+   "role": "standard"
+  },
+  {
+   "id": "d4",
+   "text": "on a highway",
+   "role": "condition"
+  },
+  {
+   "id": "d5",
+   "text": "or premises to which the public has access.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "kin.speed",
+    "kin.accel_longitudinal"
+   ],
+   "derived": [],
+   "justification": "The forbidden driving is read through the vehicle's motion: kin.speed ('magnitude of velocity') and kin.accel_longitudinal ('acceleration along heading, signed', 'Not a stand-in for: speed'), the magnitudes the operationalization of d3 bounds."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); 'Drive' is read through the vehicle's controlled motion (observable_reading agency), never as membership."
+  },
+  {
+   "span": "d4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'on a highway' (LVMC_11_16_090_A_o1): the subject's footprint overlaps (rel.occupies) a st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders', which is DEF-NRS-484A-095's 'entire width between the boundary lines of every way'; 'Not a stand-in for: the roadway', so the whole highway is read."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "d3",
+   "standard": "willful or wanton disregard of the safety of persons or property",
+   "concepts": [
+    "kin.speed",
+    "kin.accel_longitudinal",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.exhibition_speed_min",
+    "p.exhibition_accel_min",
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Exhibition-driving and traffic-conflict conventions: the driving shows disregard of the safety of persons or property where the vehicle travels at or above p.exhibition_speed_min (beyond any posted limit), or where it accelerates at p.exhibition_accel_min or more while another road user's centre is predicted to come within p.conflict_centre_clearance of its own within p.conflict_horizon (driving hard into a conflict).",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "d5",
+   "id": "asm.public_access_premises",
+   "meaning": "the place of the road user at the observation lies on premises to which the public has access, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (DEF-NRS-484A-320::vehicle) that occupies a highway, or whose place the reading declares to be premises to which the public has access (asm.public_access_premises).",
+ "obligation": "Violated where the subject's speed is at or above p.exhibition_speed_min, or where its longitudinal acceleration is at or above p.exhibition_accel_min while some road user other than the subject has a closest approach to it within p.conflict_horizon at a centre distance at or below p.conflict_centre_clearance. Otherwise compliant (a surrogate: its verdicts are evidence, not a legal conclusion on the driver's state of mind).",
+ "params": [
+  "p.exhibition_speed_min",
+  "p.exhibition_accel_min",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "d2",
+   "why": "'Drive' is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "d3",
+   "why": "'willful or wanton' is a state of mind and is read only through conduct (extreme speed, hard acceleration into a predicted conflict); 'persons or property' is read through other road users and the persons and property they carry; property that is no road user is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car on a highway travels at 50 m/s, above the exhibition speed."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car on a highway travels at 15 m/s with gentle acceleration; no road user is in predicted conflict with it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car on a private farm way, off any highway, with the reading declaring the place not premises to which the public has access."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car on a highway with no other road user in the scene, but the source does not supply its speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A car in a public parking lot (asm.public_access_premises true) accelerates at 5 m/s^2 toward a pedestrian whose centre is predicted to come within the conflict clearance within the conflict horizon."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A car alone on a highway at 25 m/s: no other road user in the scene, speed below the exhibition speed."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.exhibition_speed_min",
+   "unit": "m/s",
+   "value": 44.7,
+   "convention": "a speed of about 100 mph, beyond any posted limit in the jurisdiction",
+   "source": "Nevada posted speed limits (maximum 80 mph)"
+  },
+  {
+   "name": "p.exhibition_accel_min",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "harsh-acceleration threshold: a longitudinal acceleration of about 0.4 g, beyond ordinary driving",
+   "source": "naturalistic driving harsh-event thresholds"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique (Hyden; time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger car design dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

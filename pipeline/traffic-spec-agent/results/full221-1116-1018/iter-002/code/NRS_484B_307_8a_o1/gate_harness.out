@@ -1,0 +1,182 @@
+'TrafficSpec.Rules.NRS_484B_307_8a_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_8a_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_307_8a_o1","intentions":[],"laws":["NRS-484B-307-8a"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"body":{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]}]}]}}]}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"NRS_484B_307_8a_o1","intentions":[],"laws":["NRS-484B-307-8a"],"narrowings":[],"obligation":{"body":{"body":{"body":{"implies":[{"and":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]}]}]}}]}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"body":{"implies":[{"args":[{"var":"l"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"since":[{"and":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"l"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"l"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}}]}}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"body":{"implies":[{"args":[{"var":"xz"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"not":{"args":[{"var":"subject"},{"var":"xz"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"crosswalk"},"var":"xz"},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"l"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"l"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]}}]}}]},"forall_region":{"lit":"stop_line"},"var":"l"},{"implies":[{"not":{"body":{"args":[{"var":"l"},{"var":"c"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"l"}},{"and":[{"body":{"implies":[{"args":[{"var":"x"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"since":[{"and":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"x"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}}]}}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"body":{"implies":[{"args":[{"var":"xz"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"not":{"args":[{"var":"subject"},{"var":"xz"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"crosswalk"},"var":"xz"},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"x"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]}}]}}]},"forall_region":{"lit":"crosswalk"},"var":"x"},{"implies":[{"not":{"body":{"args":[{"var":"x"},{"var":"c"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"x"}},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"since":[{"and":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"i"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"i"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}}]}}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"body":{"implies":[{"args":[{"var":"xz"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"not":{"args":[{"var":"subject"},{"var":"xz"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"crosswalk"},"var":"xz"},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"i"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"i"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]}}]}}]}]}]}]}]},"forall_device":{"lit":"traffic_signal"},"var":"s"},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"body":{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]}]}]}}]}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"NRS_484B_307_8a_o1","intentions":[],"laws":["NRS-484B-307-8a"],"narrowings":[],"obligation":{"body":{"body":{"body":{"implies":[{"and":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]}]}]}}]}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"body":{"implies":[{"args":[{"var":"l"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"since":[{"and":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"l"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"l"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}}]}}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"body":{"implies":[{"args":[{"var":"xz"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"not":{"args":[{"var":"subject"},{"var":"xz"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"crosswalk"},"var":"xz"},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"l"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"l"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]}}]}}]},"forall_region":{"lit":"stop_line"},"var":"l"},{"implies":[{"not":{"body":{"args":[{"var":"l"},{"var":"c"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"l"}},{"and":[{"body":{"implies":[{"args":[{"var":"x"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"since":[{"and":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"x"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}}]}}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"body":{"implies":[{"args":[{"var":"xz"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"not":{"args":[{"var":"subject"},{"var":"xz"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"crosswalk"},"var":"xz"},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"x"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]}}]}}]},"forall_region":{"lit":"crosswalk"},"var":"x"},{"implies":[{"not":{"body":{"args":[{"var":"x"},{"var":"c"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"x"}},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"since":[{"and":[{"not":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"i"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"i"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"rises":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}}]}}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"body":{"implies":[{"args":[{"var":"xz"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"not":{"args":[{"var":"subject"},{"var":"xz"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"crosswalk"},"var":"xz"},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"i"},{"var":"c"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"i"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]}}]}}]}]}]}]}]},"forall_device":{"lit":"traffic_signal"},"var":"s"},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,st_travel_region,dev_traffic_signal,rel_occupies,st_lane_enters,dev_governs,dev_traffic_signal_shows,st_stop_line,st_entrance_of,prim_region_offset_along,st_region_geometry_distance,drv_motion_complete_halt,st_crosswalk
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-285::traffic	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	history_boundary	
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+BOUNDARY	history_boundary
+OCC	subject
+OCC	subject
+OCC	?i
+OCC	?c
+OCC	?s
+OCC	subject,i
+OCC	subject,i
+OCC	subject,c
+OCC	c,i
+OCC	s,c
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	?i
+OCC	?c
+OCC	?s
+OCC	subject,i
+OCC	subject,i
+OCC	subject,c
+OCC	c,i
+OCC	s,c
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	?l
+OCC	l,c
+OCC	subject,i
+OCC	subject,c
+OCC	subject,l
+OCC	subject
+OCC	l
+OCC	c
+OCC	subject,l
+OCC	subject,i
+OCC	subject,i
+OCC	subject,c
+OCC	subject
+OCC	subject,c
+OCC	subject,i
+OCC	?xz
+OCC	xz,c
+OCC	subject,xz
+OCC	subject
+OCC	l
+OCC	c
+OCC	subject,l
+OCC	?l
+OCC	l,c
+OCC	?x
+OCC	x,c
+OCC	subject,i
+OCC	subject,c
+OCC	subject,x
+OCC	subject
+OCC	x
+OCC	c
+OCC	subject,x
+OCC	subject,i
+OCC	subject,i
+OCC	subject,c
+OCC	subject
+OCC	subject,c
+OCC	subject,i
+OCC	?xz
+OCC	xz,c
+OCC	subject,xz
+OCC	subject
+OCC	x
+OCC	c
+OCC	subject,x
+OCC	?x
+OCC	x,c
+OCC	subject,i
+OCC	subject,c
+OCC	subject,i
+OCC	subject
+OCC	i
+OCC	c
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	subject,c
+OCC	subject
+OCC	subject,c
+OCC	subject,i
+OCC	?xz
+OCC	xz,c
+OCC	subject,xz
+OCC	subject
+OCC	i
+OCC	c
+OCC	subject,i
+TIME	occurrences	0
+TIME	checks	12
+TIME	lint	142
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	51
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	52
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	34
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	53
+SCEN	history_boundary	unknown	unknown	ok
+TIME	scenario:history_boundary	40
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	45
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	49
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	50
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	49
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	44
+TIME	witnesses	467
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_307_8a_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_8a_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_307_8a_o1	105	8
+TIME	adequacy_start	18
+TIME	adequacy	11254
+DONE

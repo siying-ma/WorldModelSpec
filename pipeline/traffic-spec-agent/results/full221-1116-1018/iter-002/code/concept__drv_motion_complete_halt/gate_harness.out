@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.complete_halt.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.complete_halt.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.complete_halt.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tol"}},"contract":"The road user is at rest at the observation — \"complete cessation from movement\" — observed as its speed (kin.speed) at or below a tolerance the caller sets for the source's speed resolution. It denotes a state at one observation: it says nothing of how long the road user stays at rest, where it is, or why. Not denoted: a slowing whose sampled speed stays above the tolerance.","definition":"DEF-NRS-484A-255","id":"drv.motion.complete_halt","kind":"formula","narrowings":[],"params":[{"name":"speed_tol","unit":"metre_per_second"}],"residues":["the scope of the definition (a stop that a law requires) is decided by the law that calls the concept, not by the state observed"],"supersedes":null}
+ATOMS	kin_speed
+READS	kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tol"}}
+WITNESS	holds	drv.motion.complete_halt@w
+WITNESS	fails	drv.motion.complete_halt@w
+WITNESS	blind	drv.motion.complete_halt@w
+OCC	a
+INST	drv.motion.complete_halt@w	ok
+TIME	checks	4
+TIME	lint	1
+SCEN	holds	drv.motion.complete_halt@w	compliant	compliant	ok
+TIME	scenario:drv.motion.complete_halt@w/holds	9
+SCEN	fails	drv.motion.complete_halt@w	violated	violated	ok
+TIME	scenario:drv.motion.complete_halt@w/fails	7
+SCEN	blind	drv.motion.complete_halt@w	unknown	unknown	ok
+TIME	scenario:drv.motion.complete_halt@w/blind	11
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.complete_halt.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.complete_halt.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.complete_halt.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.complete_halt@w	1	2
+TIME	adequacy_start	12
+TIME	adequacy	30
+DONE

@@ -1,0 +1,438 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 14 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "derived": "drv_motion_moving_across_carrier",
+             "params": [
+              {
+               "param": "p.halt_speed_tolerance"
+              },
+              {
+               "param": "p.crossing_motion_cos"
+              }
+             ]
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "k"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "k"
+                 }
+                ],
+                "derived": "drv_motion_moving_across_carrier",
+                "params": [
+                 {
+                  "param": "p.halt_speed_tolerance"
+                 },
+                 {
+                  "param": "p.crossing_motion_cos"
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "lane"
+             },
+             "var": "k"
+            }
+           ]
+          },
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "lit": "pedestrians_prohibited"
+                }
+               ],
+               "atom": "dev_regulatory_sign_code",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              }
+             ]
+            },
+            "exists_device": {
+             "lit": "regulatory_sign"
+            },
+            "var": "d"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "roadway"
+      },
+      "var": "r"
+     },
+     {
+      "body": {
+       "cmp": "le",
+       "lhs": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "g"
+         }
+        ],
+        "measure": "st_region_geometry_distance"
+       },
+       "rhs": {
+        "param": "p.grade_separation_reach"
+       }
+      },
+      "exists_region": {
+       "lit": "pedestrian_grade_separation"
+      },
+      "var": "g"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_30_060_B",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-060-B"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "r"
+                   }
+                  ],
+                  "derived": "drv_motion_moving_across_carrier",
+                  "params": [
+                   {
+                    "param": "p.halt_speed_tolerance"
+                   },
+                   {
+                    "param": "p.crossing_motion_cos"
+                   }
+                  ]
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "k"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "k"
+                      }
+                     ],
+                     "derived": "drv_motion_moving_across_carrier",
+                     "params": [
+                      {
+                       "param": "p.halt_speed_tolerance"
+                      },
+                      {
+                       "param": "p.crossing_motion_cos"
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_region": {
+                   "lit": "lane"
+                  },
+                  "var": "k"
+                 }
+                ]
+               },
+               {
+                "not": {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "lit": "pedestrians_prohibited"
+                     }
+                    ],
+                    "atom": "dev_regulatory_sign_code",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "var": "r"
+                     }
+                    ],
+                    "atom": "dev_governs",
+                    "params": []
+                   }
+                  ]
+                 },
+                 "exists_device": {
+                  "lit": "regulatory_sign"
+                 },
+                 "var": "d"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "args": [
+             {
+              "var": "v"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "roadway"
+         },
+         "var": "r"
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "v"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        },
+        {
+         "not": {
+          "and": [
+           {
+            "cmp": "gt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              }
+             ],
+             "measure": "kin_speed"
+            },
+            "rhs": {
+             "param": "p.halt_speed_tolerance"
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "v"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "v"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "v"
+   },
+   "residues": [
+    "Section 11.30.070 is no node of this run's library, neither accepted nor planned, so no rule can be composed; the condition under which it suspends this section is stated in this text's own words, 'when pedestrians are prohibited from crossing at certain designated places', carried by g8. Conditions of 11.30.070 those words do not state are not read; reported to the operator."
+   ],
+   "surrogate": false
+  },
+  "context": "f9d5516c310d8eac84d1a709",
+  "candidate_digest": "6b87ac90c7b227717569584fe91c490d76886c6b7a071a13c3e0f3ad5dc48afb"
+ }
+}

@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 78503,
+  "stop_reason": "end_turn",
+  "session_id": "191937bc-0118-4694-b86d-d89ca7ded1a7",
+  "total_cost_usd": 0.66483384,
+  "usage": {
+   "input_tokens": 8,
+   "cache_creation_input_tokens": 47650,
+   "cache_read_input_tokens": 146456,
+   "output_tokens": 9509,
+   "output_tokens_details": {
+    "thinking_tokens": 2619
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 47650,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 861,
+     "cache_read_input_tokens": 51022,
+     "cache_creation_input_tokens": 1096,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1096
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 36772,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004060320000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 8,
+    "outputTokens": 9509,
+    "cacheReadInputTokens": 146456,
+    "cacheCreationInputTokens": 47650,
+    "webSearchRequests": 0,
+    "costUSD": 0.66077352,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2619,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 47650,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 5,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on its first run (1 of the 6-run budget used): 8 witnesses passed and the rule calls no other rules.\n\n**Rule** (`library/TrafficSpec/Rules/LVMC_11/LVMC_11_40_130.lean`)\n- **Who it covers:** the subject is a member of `DEF-NRS-484A-025::bicycle`.\n- **When it applies:** the bicycle's speed is above `p.halt_speed_tolerance`.\n- **Obligation:** speed × speed ≤ 2 × deceleration × (distance seen − speed × `p.bicycle_reaction_time`). Writing it as a product keeps the measured speed and visibility out of any divisor. Since a rule's only allowed literal is zero, the factor 2 is written as a term added to itself.\n- **Deceleration:** a selection by `Term.cond`: the ice value on ice or snow; otherwise the wet value on a wet road or in precipitation; otherwise the dry value.\n- **Distance seen:** the record says to use visibility, or in darkness the smaller of visibility and the headlamp reach. I wrote this as two checks: the bound must hold at visibility, and in darkness also at the headlamp reach. A longer distance only makes the bound easier to meet, so this says exactly what the record says. I declared no narrowings.\n\n**Witnesses** (`library/TrafficSpecWitness/LVMC_11/LVMC_11_40_130.lean`): one bicycle rides east for three instants, with every environment field the rule reads set.\n\n| Witness | Scene | Expected |\n|---|---|---|\n| `forbid` | 6 m/s, dense fog, 10 m visibility | violated |\n| `permit` | 5 m/s, dry road, daylight, 200 m visibility | compliant |\n| `idle` | bicycle at rest | not applicable |\n| `blind` | visibility masked | unknown |\n| `branch_1` | ice, 40 m visibility; the dry stopping distance would fit | violated |\n| `branch_2` (added) | wet road, 29 m visibility; dry would comply | violated |\n| `branch_3` (added) | precipitation only, road not flagged wet; dry would comply | violated |\n| `branch_4` (added) | darkness, 200 m visibility; the 30 m headlamp reach decides | violated |\n\nI added `branch_2` to `branch_4` so that the wet-road, precipitation and darkness conditions each change at least one witness's verdict, as the gate requires.\n\n`task_result.md` is written in the working directory.",
+  "ttft_ms": 26234,
+  "type": "result",
+  "duration_ms": 87969,
+  "uuid": "96daa4e2-8005-487a-b111-5dbf10c5436a",
+  "ttft_stream_ms": 1263,
+  "time_to_request_ms": 306,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 28,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 21,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "init_frame_send": 4,
+   "engine_pickup": 6,
+   "loop_entry": 2,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 213,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 2,
+  "time_to_request_cpu_ms": 155,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 0,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1263,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 36772,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004060320000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 8,
+    "outputTokens": 9509,
+    "cacheReadInputTokens": 146456,
+    "cacheCreationInputTokens": 47650,
+    "webSearchRequests": 0,
+    "costUSD": 0.66077352,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2619,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 47650,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

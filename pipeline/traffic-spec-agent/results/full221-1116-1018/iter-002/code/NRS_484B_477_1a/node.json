@@ -1,0 +1,208 @@
+{
+ "node_id": "NRS_484B_477_1a",
+ "law_refs": [
+  "NRS-484B-477-1a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "Unless otherwise provided by ordinance of the local authority having jurisdiction,",
+   "role": "condition"
+  },
+  {
+   "id": "a2",
+   "text": "a person",
+   "role": "subject"
+  },
+  {
+   "id": "a3",
+   "text": "shall not: Stop, stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "a4",
+   "text": "within an alley",
+   "role": "condition"
+  },
+  {
+   "id": "a5",
+   "text": "in a business district",
+   "role": "condition"
+  },
+  {
+   "id": "a6",
+   "text": "except for the expeditious loading or unloading of goods.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a person ... a vehicle': the duty binds the vehicle the person stops, the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); ru.aggregate is 'membership of a legal aggregate'. Who controls the vehicle is read through its controlled motion."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "dev.governs",
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.railway_signal_or_gate",
+    "dev.human_direction",
+    "st.travel_region",
+    "rel.occupies",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' prohibited takes DEF-NRS-484A-260: 'any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device'; standing (DEF-NRS-484A-250) and parking (DEF-NRS-484A-155) are halts as well, so the three verbs are read as the halting they all are. Halting is drv.motion.complete_halt ('at rest at the observation'). The exception is read through its conduct: the subject occupies (rel.occupies) a travel region governed (dev.governs, 'the travel regions whose traffic the device controls') by a traffic signal, stop sign, yield sign, railway signal or gate, or a person directing traffic (dev.human_direction), or another road user is ahead of it in its lane (rel.ahead_behind_in_lane) within the queue spacing between bodies (rel.surface_gap). complete_halt says nothing of why the vehicle halts; the device and queue atoms carry that."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "rel.occupies",
+    "st.alley"
+   ],
+   "derived": [],
+   "justification": "'alley' (DEF-NRS-484A-015: a highway 'Within a city block set apart for public use', 'Which primarily services access to the rear entrance of abutting property') is st.alley, 'a narrow way within a block serving the rear of properties'; 'within' is rel.occupies, 'a road user's footprint overlaps a lane / region (... alley ...)'."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "a6",
+   "standard": "expeditious loading or unloading of goods",
+   "concepts": [
+    "drv.motion.parked"
+   ],
+   "params": [
+    "p.halt_speed_tolerance",
+    "p.parking_min_duration"
+   ],
+   "convention": "Loading or unloading is a purpose, read through the conduct it explains; 'expeditious' bounds how long that conduct may keep the vehicle standing. A halt counts as the expeditious loading or unloading the words except while the vehicle has not been at rest for longer than the temporary-halt bound of a loading zone (p.parking_min_duration): drv.motion.parked, at rest at every observation of that window behind, marks a halt beyond it.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "a1",
+   "id": "asm.local_alley_ordinance",
+   "meaning": "the alley at the place of the road user at the observation is one on which an ordinance of the local authority having jurisdiction regulates stopping, standing or parking by provisions of its own, as the map's reading records"
+  },
+  {
+   "span": "a5",
+   "id": "asm.business_district",
+   "meaning": "the place of the road user at the observation lies in a business district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies (rel.occupies) an alley region (st.alley); asm.business_district holds at its place; and asm.local_alley_ordinance does not hold (where it holds the duty does not arise).",
+ "obligation": "Violated where the subject is parked (drv.motion.parked with speed_tol p.halt_speed_tolerance and min_duration p.parking_min_duration: at rest at every observation of the window behind, so beyond an expeditious halt for loading or unloading) and its halt is not one in the stream of traffic: it occupies no travel region (st.travel_region) governed (dev.governs) by a traffic signal, stop sign, yield sign, railway signal or gate or a person directing traffic (dev.human_direction), and no road user is ahead of it in its lane (rel.ahead_behind_in_lane) with a gap between bodies (rel.surface_gap) at or below p.queue_halt_gap. Compliant otherwise.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration",
+  "p.queue_halt_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "a3",
+   "why": "The three verbs are read as the halting they all are, with the stopping definition's exception read through the device the subject's region is governed by and a queue ahead within the queue spacing; standing's and parking's own exceptions add no further excuse.",
+   "kind": "reading"
+  },
+  {
+   "span": "a6",
+   "why": "The purpose of the halt is not observed: any halt no longer than the temporary-halt bound is read as the excepted loading or unloading, and a longer one as not excepted, whatever the vehicle does.",
+   "kind": "reading"
+  },
+  {
+   "span": "a2",
+   "why": "The person is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A vehicle that drove into an alley (asm.business_district true, asm.local_alley_ordinance false) has been at rest (kin.speed 0) for 200 s; nobody ahead, no device governs its region."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same vehicle halts 30 s in the alley and drives on: at every observation it has moved within the 180 s window behind."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same long halt in an alley where asm.business_district is false."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe region occupancy, so whether the vehicle is in the alley is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As in forbid with asm.local_alley_ordinance declared true."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The vehicle stands 200 s in the alley 2 m behind another vehicle ahead of it in the same lane: a queue halt."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; reused unchanged"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "proposed this iteration by LVMC_11_40_170; reused unchanged"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "proposed this iteration by LVMC_11_52_030_A; reused unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

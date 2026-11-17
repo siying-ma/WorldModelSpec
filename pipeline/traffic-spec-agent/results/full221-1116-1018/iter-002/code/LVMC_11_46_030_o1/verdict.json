@@ -1,0 +1,1723 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 14 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "or": [
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "g"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "var": "g"
+             }
+            ],
+            "atom": "dev_governs",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               }
+              ],
+              "atom": "dev_crossing_warning_signal_active",
+              "params": []
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "g"
+                  },
+                  {
+                   "var": "w"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "w"
+                     }
+                    ],
+                    "atom": "st_on_way",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "gt",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "g"
+                        }
+                       ],
+                       "params": [],
+                       "quantity": "prim_region_offset_along"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "body": {
+                         "implies": [
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "c2"
+                              },
+                              {
+                               "var": "w"
+                              }
+                             ],
+                             "atom": "st_on_way",
+                             "params": []
+                            },
+                            {
+                             "cmp": "gt",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c2"
+                               },
+                               {
+                                "var": "g"
+                               }
+                              ],
+                              "params": [],
+                              "quantity": "prim_region_offset_along"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": 0
+                              },
+                              "unit": "metre"
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c2"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           },
+                           "rhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           }
+                          }
+                         ]
+                        },
+                        "forall_region": {
+                         "lit": "crosswalk"
+                        },
+                        "var": "c2"
+                       },
+                       {
+                        "rises": {
+                         "cmp": "lt",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 25,
+                           "num": 381
+                          },
+                          "unit": "metre"
+                         }
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "crosswalk"
+                 },
+                 "var": "c"
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "highway"
+              },
+              "var": "w"
+             }
+            ]
+           }
+          ]
+         },
+         "exists_device": {
+          "lit": "crossing_warning_signal"
+         },
+         "var": "d"
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "travel_region"
+      },
+      "var": "g"
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "g"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "var": "g"
+             }
+            ],
+            "atom": "dev_governs",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "lit": "stop"
+               }
+              ],
+              "atom": "dev_human_direction_indication",
+              "params": []
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "g"
+                  },
+                  {
+                   "var": "w"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "w"
+                     }
+                    ],
+                    "atom": "st_on_way",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "gt",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "g"
+                        }
+                       ],
+                       "params": [],
+                       "quantity": "prim_region_offset_along"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "body": {
+                         "implies": [
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "c2"
+                              },
+                              {
+                               "var": "w"
+                              }
+                             ],
+                             "atom": "st_on_way",
+                             "params": []
+                            },
+                            {
+                             "cmp": "gt",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c2"
+                               },
+                               {
+                                "var": "g"
+                               }
+                              ],
+                              "params": [],
+                              "quantity": "prim_region_offset_along"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": 0
+                              },
+                              "unit": "metre"
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c2"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           },
+                           "rhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           }
+                          }
+                         ]
+                        },
+                        "forall_region": {
+                         "lit": "crosswalk"
+                        },
+                        "var": "c2"
+                       },
+                       {
+                        "rises": {
+                         "cmp": "lt",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 25,
+                           "num": 381
+                          },
+                          "unit": "metre"
+                         }
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "crosswalk"
+                 },
+                 "var": "c"
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "highway"
+              },
+              "var": "w"
+             }
+            ]
+           }
+          ]
+         },
+         "exists_device": {
+          "lit": "human_direction"
+         },
+         "var": "d"
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "travel_region"
+      },
+      "var": "g"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_46_030_o1",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-46-030"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "and": [
+     {
+      "body": {
+       "implies": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "g"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "var": "g"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "d"
+               }
+              ],
+              "atom": "dev_crossing_warning_signal_active",
+              "params": []
+             }
+            ]
+           },
+           {
+            "body": {
+             "implies": [
+              {
+               "args": [
+                {
+                 "var": "g"
+                },
+                {
+                 "var": "w"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              {
+               "body": {
+                "implies": [
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "w"
+                     }
+                    ],
+                    "atom": "st_on_way",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "gt",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "g"
+                        }
+                       ],
+                       "params": [],
+                       "quantity": "prim_region_offset_along"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "body": {
+                         "implies": [
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "c2"
+                              },
+                              {
+                               "var": "w"
+                              }
+                             ],
+                             "atom": "st_on_way",
+                             "params": []
+                            },
+                            {
+                             "cmp": "gt",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c2"
+                               },
+                               {
+                                "var": "g"
+                               }
+                              ],
+                              "params": [],
+                              "quantity": "prim_region_offset_along"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": 0
+                              },
+                              "unit": "metre"
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c2"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           },
+                           "rhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           }
+                          }
+                         ]
+                        },
+                        "forall_region": {
+                         "lit": "crosswalk"
+                        },
+                        "var": "c2"
+                       },
+                       {
+                        "rises": {
+                         "cmp": "lt",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 25,
+                           "num": 381
+                          },
+                          "unit": "metre"
+                         }
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "and": [
+                   {
+                    "since": [
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         }
+                        ],
+                        "atom": "dev_crossing_warning_signal_active",
+                        "params": []
+                       },
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "g2"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "var": "g2"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            {
+                             "cmp": "gt",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c"
+                               },
+                               {
+                                "var": "g2"
+                               }
+                              ],
+                              "params": [],
+                              "quantity": "prim_region_offset_along"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": 0
+                              },
+                              "unit": "metre"
+                             }
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_region": {
+                         "lit": "travel_region"
+                        },
+                        "var": "g2"
+                       }
+                      ]
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         }
+                        ],
+                        "derived": "drv_motion_complete_halt",
+                        "params": [
+                         {
+                          "param": "p.halt_speed_tolerance"
+                         }
+                        ]
+                       },
+                       {
+                        "and": [
+                         {
+                          "cmp": "ge",
+                          "lhs": {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "measure": "st_region_geometry_distance"
+                          },
+                          "rhs": {
+                           "lit": {
+                            "den": 25,
+                            "num": 381
+                           },
+                           "unit": "metre"
+                          }
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "d"
+                             }
+                            ],
+                            "atom": "dev_crossing_warning_signal_active",
+                            "params": []
+                           },
+                           {
+                            "body": {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "var": "g2"
+                                }
+                               ],
+                               "atom": "rel_occupies",
+                               "params": []
+                              },
+                              {
+                               "and": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "var": "g2"
+                                  }
+                                 ],
+                                 "atom": "dev_governs",
+                                 "params": []
+                                },
+                                {
+                                 "cmp": "gt",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "c"
+                                   },
+                                   {
+                                    "var": "g2"
+                                   }
+                                  ],
+                                  "params": [],
+                                  "quantity": "prim_region_offset_along"
+                                 },
+                                 "rhs": {
+                                  "lit": {
+                                   "den": 1,
+                                   "num": 0
+                                  },
+                                  "unit": "metre"
+                                 }
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "exists_region": {
+                             "lit": "travel_region"
+                            },
+                            "var": "g2"
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "count": {
+                     "cmp": "lt",
+                     "lhs": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "c"
+                       }
+                      ],
+                      "measure": "st_region_geometry_distance"
+                     },
+                     "rhs": {
+                      "lit": {
+                       "den": 25,
+                       "num": 381
+                      },
+                      "unit": "metre"
+                     }
+                    },
+                    "n": 1,
+                    "op": "le",
+                    "since": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        }
+                       ],
+                       "derived": "drv_motion_complete_halt",
+                       "params": [
+                        {
+                         "param": "p.halt_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "cmp": "ge",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 25,
+                           "num": 381
+                          },
+                          "unit": "metre"
+                         }
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            }
+                           ],
+                           "atom": "dev_crossing_warning_signal_active",
+                           "params": []
+                          },
+                          {
+                           "body": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "g2"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             },
+                             {
+                              "and": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "d"
+                                 },
+                                 {
+                                  "var": "g2"
+                                 }
+                                ],
+                                "atom": "dev_governs",
+                                "params": []
+                               },
+                               {
+                                "cmp": "gt",
+                                "lhs": {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "var": "c"
+                                  },
+                                  {
+                                   "var": "g2"
+                                  }
+                                 ],
+                                 "params": [],
+                                 "quantity": "prim_region_offset_along"
+                                },
+                                "rhs": {
+                                 "lit": {
+                                  "den": 1,
+                                  "num": 0
+                                 },
+                                 "unit": "metre"
+                                }
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "exists_region": {
+                            "lit": "travel_region"
+                           },
+                           "var": "g2"
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 }
+                ]
+               },
+               "forall_region": {
+                "lit": "crosswalk"
+               },
+               "var": "c"
+              }
+             ]
+            },
+            "forall_region": {
+             "lit": "highway"
+            },
+            "var": "w"
+           }
+          ]
+         },
+         "forall_device": {
+          "lit": "crossing_warning_signal"
+         },
+         "var": "d"
+        }
+       ]
+      },
+      "forall_region": {
+       "lit": "travel_region"
+      },
+      "var": "g"
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "g"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "var": "g"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "lit": "stop"
+               }
+              ],
+              "atom": "dev_human_direction_indication",
+              "params": []
+             }
+            ]
+           },
+           {
+            "body": {
+             "implies": [
+              {
+               "args": [
+                {
+                 "var": "g"
+                },
+                {
+                 "var": "w"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              {
+               "body": {
+                "implies": [
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "w"
+                     }
+                    ],
+                    "atom": "st_on_way",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "gt",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "g"
+                        }
+                       ],
+                       "params": [],
+                       "quantity": "prim_region_offset_along"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "body": {
+                         "implies": [
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "c2"
+                              },
+                              {
+                               "var": "w"
+                              }
+                             ],
+                             "atom": "st_on_way",
+                             "params": []
+                            },
+                            {
+                             "cmp": "gt",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c2"
+                               },
+                               {
+                                "var": "g"
+                               }
+                              ],
+                              "params": [],
+                              "quantity": "prim_region_offset_along"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": 0
+                              },
+                              "unit": "metre"
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c2"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           },
+                           "rhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "var": "g"
+                             }
+                            ],
+                            "params": [],
+                            "quantity": "prim_region_offset_along"
+                           }
+                          }
+                         ]
+                        },
+                        "forall_region": {
+                         "lit": "crosswalk"
+                        },
+                        "var": "c2"
+                       },
+                       {
+                        "rises": {
+                         "cmp": "lt",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 25,
+                           "num": 381
+                          },
+                          "unit": "metre"
+                         }
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "and": [
+                   {
+                    "since": [
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         },
+                         {
+                          "lit": "stop"
+                         }
+                        ],
+                        "atom": "dev_human_direction_indication",
+                        "params": []
+                       },
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "g2"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "d"
+                              },
+                              {
+                               "var": "g2"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            {
+                             "cmp": "gt",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c"
+                               },
+                               {
+                                "var": "g2"
+                               }
+                              ],
+                              "params": [],
+                              "quantity": "prim_region_offset_along"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": 0
+                              },
+                              "unit": "metre"
+                             }
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_region": {
+                         "lit": "travel_region"
+                        },
+                        "var": "g2"
+                       }
+                      ]
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         }
+                        ],
+                        "derived": "drv_motion_complete_halt",
+                        "params": [
+                         {
+                          "param": "p.halt_speed_tolerance"
+                         }
+                        ]
+                       },
+                       {
+                        "and": [
+                         {
+                          "cmp": "ge",
+                          "lhs": {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "measure": "st_region_geometry_distance"
+                          },
+                          "rhs": {
+                           "lit": {
+                            "den": 25,
+                            "num": 381
+                           },
+                           "unit": "metre"
+                          }
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "d"
+                             },
+                             {
+                              "lit": "stop"
+                             }
+                            ],
+                            "atom": "dev_human_direction_indication",
+                            "params": []
+                           },
+                           {
+                            "body": {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "var": "g2"
+                                }
+                               ],
+                               "atom": "rel_occupies",
+                               "params": []
+                              },
+                              {
+                               "and": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "d"
+                                  },
+                                  {
+                                   "var": "g2"
+                                  }
+                                 ],
+                                 "atom": "dev_governs",
+                                 "params": []
+                                },
+                                {
+                                 "cmp": "gt",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "c"
+                                   },
+                                   {
+                                    "var": "g2"
+                                   }
+                                  ],
+                                  "params": [],
+                                  "quantity": "prim_region_offset_along"
+                                 },
+                                 "rhs": {
+                                  "lit": {
+                                   "den": 1,
+                                   "num": 0
+                                  },
+                                  "unit": "metre"
+                                 }
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "exists_region": {
+                             "lit": "travel_region"
+                            },
+                            "var": "g2"
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "count": {
+                     "cmp": "lt",
+                     "lhs": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "c"
+                       }
+                      ],
+                      "measure": "st_region_geometry_distance"
+                     },
+                     "rhs": {
+                      "lit": {
+                       "den": 25,
+                       "num": 381
+                      },
+                      "unit": "metre"
+                     }
+                    },
+                    "n": 1,
+                    "op": "le",
+                    "since": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        }
+                       ],
+                       "derived": "drv_motion_complete_halt",
+                       "params": [
+                        {
+                         "param": "p.halt_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "cmp": "ge",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 25,
+                           "num": 381
+                          },
+                          "unit": "metre"
+                         }
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "d"
+                            },
+                            {
+                             "lit": "stop"
+                            }
+                           ],
+                           "atom": "dev_human_direction_indication",
+                           "params": []
+                          },
+                          {
+                           "body": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "g2"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             },
+                             {
+                              "and": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "d"
+                                 },
+                                 {
+                                  "var": "g2"
+                                 }
+                                ],
+                                "atom": "dev_governs",
+                                "params": []
+                               },
+                               {
+                                "cmp": "gt",
+                                "lhs": {
+                                 "args": [
+                                  {
+                                   "var": "subject"
+                                  },
+                                  {
+                                   "var": "c"
+                                  },
+                                  {
+                                   "var": "g2"
+                                  }
+                                 ],
+                                 "params": [],
+                                 "quantity": "prim_region_offset_along"
+                                },
+                                "rhs": {
+                                 "lit": {
+                                  "den": 1,
+                                  "num": 0
+                                 },
+                                 "unit": "metre"
+                                }
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "exists_region": {
+                            "lit": "travel_region"
+                           },
+                           "var": "g2"
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 }
+                ]
+               },
+               "forall_region": {
+                "lit": "crosswalk"
+               },
+               "var": "c"
+              }
+             ]
+            },
+            "forall_region": {
+             "lit": "highway"
+            },
+            "var": "w"
+           }
+          ]
+         },
+         "forall_device": {
+          "lit": "human_direction"
+         },
+         "var": "d"
+        }
+       ]
+      },
+      "forall_region": {
+       "lit": "travel_region"
+      },
+      "var": "g"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "be0a89e59c332709010cdf6f",
+  "candidate_digest": "b446869f020b675aceaa8af16b3a959e1c5d9281e618267eb71aad10658f4463"
+ }
+}

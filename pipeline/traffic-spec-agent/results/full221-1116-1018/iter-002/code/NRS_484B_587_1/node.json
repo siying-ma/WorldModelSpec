@@ -1,0 +1,153 @@
+{
+ "node_id": "NRS_484B_587_1",
+ "law_refs": [
+  "NRS-484B-587-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "When official traffic-control devices are erected giving notice thereof,",
+   "role": "trigger"
+  },
+  {
+   "id": "c2",
+   "text": "a person shall not drive a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "c3",
+   "text": "onto or from any controlled-access highway",
+   "role": "obligation"
+  },
+  {
+   "id": "c4",
+   "text": "except at those entrances and exits which are indicated by such devices.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "dev.regulatory_sign"
+   ],
+   "derived": [],
+   "justification": "\"Official traffic-control device\" (DEF-NRS-484A-145) is \"every sign, signal, marking and device ... placed or erected by a public authority\"; the devices giving notice of where a controlled-access highway may be entered and left are dev.regulatory_sign, \"a point regulation by catalogue code\", with code entrance or exit; their erection is read from the presence of such a sign in the scene. A sign is \"not a stand-in for a manoeuvre or a road feature\": the sign is read, not the ramp."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle, \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"; \"a person ... drive\" is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "c3",
+   "atoms": [
+    "rel.occupies",
+    "st.controlled_access"
+   ],
+   "derived": [],
+   "justification": "\"Controlled-access highway\" (DEF-NRS-484A-060) is \"every highway to or from which ... persons have no legal right of access except at such points only\": st.controlled_access, \"a highway with access only at designated points, and its entrance and exit lanes\". Driving onto it is the observation at which the subject's footprint comes to overlap it (rel.occupies, which lists the controlled-access lane among its regions) having not overlapped it at the previous one; driving from it is the observation at which it ceases to overlap it, having overlapped it at the previous one."
+  },
+  {
+   "span": "c4",
+   "atoms": [
+    "dev.governs",
+    "dev.regulatory_sign",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "An entrance or exit indicated by such devices is a travel region (st.travel_region) governed (dev.governs, \"the travel regions whose traffic the device controls ... a lane, ... roadway, ... shoulder\") by a dev.regulatory_sign of code entrance (for driving onto) or exit (for driving from). The subject drives onto the highway at an indicated entrance where, at its entry, it occupies (rel.occupies) such an entrance-governed region; it drives from it at an indicated exit where, at the last observation it overlapped the highway, it occupied such an exit-governed region. dev.governs is never a controlled-access region itself, so the governed lane is read, and \"not a stand-in for a position\" is respected: no halt place is read from it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Some dev.regulatory_sign with code entrance or exit is present in the scene; the subject is a vehicle; and at this observation it enters a controlled-access highway ca (rises(rel.occupies(subject, ca))) or leaves it (rises(not rel.occupies(subject, ca))).",
+ "obligation": "At an entry into ca: the subject occupies some travel region r governed (dev.governs) by a dev.regulatory_sign of code entrance. At a departure from ca: at the previous observation the subject both occupied ca and occupied some travel region r governed by a dev.regulatory_sign of code exit; written as rises(not X) where X is 'occupies ca and occupies a region governed by an exit-coded regulatory sign', which at a departure (X false here) holds exactly when X held at the previous observation. Otherwise the duty is violated.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "c2",
+   "why": "\"a person ... drive\" is read through the vehicle's controlled motion; whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c1",
+   "why": "That entrance and exit signs are official and give notice of the controlled access is read from their presence in the scene.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "c4",
+   "why": "An entrance or exit indicated by the devices is read as a travel region an entrance- or exit-coded regulatory sign governs.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Entrance- and exit-coded regulatory signs govern the ramps; the subject car leaves a frontage road, crosses the verge, and its footprint comes to overlap the controlled-access region in a mainline lane no entrance sign governs."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject car enters the controlled-access region through a ramp lane governed by an entrance-coded regulatory sign."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car stays on a surface street; its footprint never overlaps a controlled-access region."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Entrance signs are present and the subject car enters the controlled-access region, but the source does not observe which regions the signs govern.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject car leaves the controlled-access region; at the previous observation it occupied an exit lane governed by an exit-coded regulatory sign."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The subject car leaves the controlled-access region across the shoulder from a mainline lane no exit sign governs."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "No entrance- or exit-coded regulatory sign is present in the scene; the subject car enters the controlled-access region across the verge."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

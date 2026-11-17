@@ -1,0 +1,121 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "cmp": "lt",
+       "lhs": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "c"
+         }
+        ],
+        "measure": "st_region_geometry_distance"
+       },
+       "rhs": {
+        "lit": {
+         "den": 250,
+         "num": 1143
+        },
+        "unit": "metre"
+       }
+      },
+      {
+       "since": [
+        {
+         "cmp": "lt",
+         "lhs": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "measure": "st_region_geometry_distance"
+         },
+         "rhs": {
+          "lit": {
+           "den": 250,
+           "num": 1143
+          },
+          "unit": "metre"
+         }
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "c"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "c"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_560_7a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-560-7a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "derived": "drv_motion_complete_halt",
+     "params": [
+      {
+       "param": "p.halt_speed_tolerance"
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "070c95d0650be53052c6920b",
+  "candidate_digest": "c7455f376033d67b24715e8729e3f3f9fb658c436eb9699a2e281a364dd45be0"
+ }
+}

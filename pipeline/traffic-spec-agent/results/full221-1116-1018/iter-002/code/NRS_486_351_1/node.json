@@ -1,0 +1,149 @@
+{
+ "node_id": "NRS_486_351_1",
+ "law_refs": [
+  "NRS-486-351-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-486-041::motorcycle",
+   "ru.aggregate=DEF-NRS-486-038::moped"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person,",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s2",
+   "text": "except a police officer in the performance of his or her duty,",
+   "role": "exception"
+  },
+  {
+   "id": "s3",
+   "text": "shall not drive a motorcycle or moped",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "between moving or stationary vehicles occupying adjacent traffic lanes.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.emergency_vehicle",
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "justification": "'police officer' (DEF-NRS-484A-180: 'every officer authorized to direct or regulate traffic or to make arrests for violations of traffic laws') is a person's role; the officer's vehicle is of the class ru.emergency_vehicle 'vehicle of a class the jurisdiction designates as emergency; kind in {police, fire, ambulance, other}', read with kind police, whose exclusion 'Not a stand-in for: a responding emergency vehicle' is respected: the class alone is not read as the officer's duty. 'in the performance of his or her duty' is read through the conduct that shows it, the police vehicle displaying its warning lamps: sig.warning_lamp 'a warning lamp lit', mode flashing or rotating; its exclusion 'Not a stand-in for: an audible warning' does not apply, no sound is read. Same atoms as the index mapping of '(d) In the performance of official duties;' (NRS_484B_270_3_o2)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-486-041::motorcycle",
+    "ru.aggregate=DEF-NRS-486-038::moped"
+   ],
+   "derived": [],
+   "justification": "'motorcycle' and 'moped' are the admitted aggregates DEF-NRS-486-041::motorcycle and DEF-NRS-486-038::moped, claimed as aggregates. 'A person ... shall not drive' is read through the vehicle's controlled motion (agency)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "rel.bearing",
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'moving or stationary' admits either motion state, so no motion is read. 'occupying adjacent traffic lanes': two vehicles v1, v2 occupy (rel.occupies, 'a road user's footprint overlaps a lane') lanes L1, L2 (st.lane, 'a longitudinal strip of roadway for one line of vehicles') that are adjacent: either neighbours per st.lane_adjacency ('left / right neighbouring lane of the same direction'), or both overlapped by the subject's footprint, which shows they touch whatever their directions. 'between': in the subject's frame v1 lies to its left and v2 to its right (rel.bearing, 'direction of b from a in a's frame (for on the right of ...)', by the sign of its lateral component) and the subject is side by side with each (rel.longitudinal_overlap at or above zero; 'a projection, so neither a contact nor a distance', read only as side-by-side position). The exclusion of st.lane_adjacency ('the marking between two lanes') does not apply. 'traffic lanes' are lanes; the traffic aggregate is not read by the word."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-486-041::motorcycle",
+    "ru.aggregate=DEF-NRS-486-038::moped"
+   ]
+  }
+ ],
+ "applicability": "The subject is of DEF-NRS-486-041::motorcycle or DEF-NRS-486-038::moped, and is not a police vehicle (ru.emergency_vehicle with kind police) displaying a warning lamp (sig.warning_lamp) in mode flashing or rotating, which is read as an officer in the performance of duty (exception s2).",
+ "obligation": "At every observation there are no two road users v1, v2, each other than the subject and of DEF-NRS-484A-320::vehicle, and no two distinct lanes L1, L2 such that v1 occupies L1, v2 occupies L2, L1 and L2 are adjacent (L2 is L1's neighbour per st.lane_adjacency, or the subject occupies both L1 and L2), v1 lies to the subject's left and v2 to its right by rel.bearing, and rel.longitudinal_overlap of the subject with v1 and with v2 is each at or above zero.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "A police officer in the performance of duty is read through conduct: a police vehicle displaying its warning lamps flashing or rotating. An officer on duty riding without lamps is not recognised and is held to the duty.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s3",
+   "why": "'A person ... shall not drive' is read through the vehicle's controlled motion; a motorcycle halted between vehicles in traffic is still driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "Lanes of opposite directions count as adjacent only where the subject's footprint overlaps both; a subject wholly within one lane between a vehicle in that lane and one in an opposing lane is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motorcycle straddles the line between same-direction lanes L1 and L2; a car in L1 lies to its left and a car in L2 to its right, each with longitudinal overlap 1 m with the motorcycle."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The motorcycle occupies L1 10 m behind a car in L1; a car in L2 lies to its right with overlap 1 m; nothing lies to its left."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a passenger car between two cars in adjacent lanes."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but rel.bearing is not observed.",
+   "masked": [
+    "rel.bearing"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A police motorcycle (ru.emergency_vehicle kind police) with blue sig.warning_lamp flashing rides between the two cars as in forbid."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A police motorcycle with no warning lamp lit rides between the two cars as in forbid."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The motorcycle rides alone on the highway; no other vehicle is in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

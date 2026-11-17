@@ -1,0 +1,176 @@
+{
+ "node_id": "NRS_484B_113_3",
+ "law_refs": [
+  "NRS-484B-113-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "Shall in every case yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "to moving traffic and pedestrians.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a defined term whose admitted aggregate is DEF-NRS-484A-320::vehicle; 'driver' is a role read through the vehicle's controlled motion (agency narrowing)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.contact"
+   ],
+   "derived": [
+    "drv.motion.moving_backward"
+   ],
+   "justification": "The line is subsection (3) of 'Limitations on backing': 'in every case' is every case of backing, drv.motion.moving_backward ('the component of a's velocity along a's heading ... below minus speed_tol'). To yield is to grant precedence: the backing vehicle does not keep backing into a danger of a crash with the road users of s4, and does not touch them (rel.contact: 'the bodies of two road users ... touch or overlap (a collision)')."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel'): the scene condition 'using any highway' is carried beside it as rel.occupies of a st.highway; 'moving' is the negation of drv.motion.complete_halt. 'pedestrians' is the admitted aggregate DEF-NRS-484A-165::pedestrian; since traffic already contains moving pedestrians, the words add pedestrians whether moving or not."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "the right-of-way (DEF-NRS-484A-210: circumstances of direction, speed and proximity giving rise to the danger of a crash unless one grants precedence)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: direction, speed and proximity give rise to the danger of a crash where, under constant velocities, the two road users approach each other within the time-to-collision threshold p.conflict_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance)",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that is backing at the observation: drv.motion.moving_backward(subject) with speed_tol = p.halt_speed_tolerance.",
+ "obligation": "At the observation, for every road user u other than the subject (not same) that is either moving traffic — ru.aggregate DEF-NRS-484A-285::traffic, occupying a highway (rel.occupies, st.highway), and not drv.motion.complete_halt(u) with p.halt_speed_tolerance — or a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian): not rel.contact(subject, u), and not [prim.closest_approach_within(subject, u, p.conflict_horizon) and prim.closest_approach_distance(subject, u, p.conflict_horizon) < p.conflict_centre_clearance].",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "The duty is read on a backing vehicle: the line is a subsection of the section limiting backing, and 'in every case' covers every case of backing; yielding is read as backing into no danger of a crash and no contact with the road users the words name."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car backs out of a driveway at 2 m/s while a pedestrian walks behind it; their centres are on a closest approach 1 s ahead at 0.5 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car backs along an empty street at 2 m/s; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car drives forward past a pedestrian on the sidewalk; it never backs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source supplies no velocity for the car, so whether it is backing is unknown.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car backs toward a parked car at rest 6 m behind it, closing at 1 m/s; the parked car is not moving traffic and not a pedestrian."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A car backs at 2 m/s toward a pedestrian standing still 2 m behind it: the closest approach is 1 s ahead at under 1 m."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "proposed this iteration by LVMC_11_12_070_B; traffic-conflict technique TTC thresholds"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "proposed this iteration by LVMC_11_12_070_B; passenger-car design dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

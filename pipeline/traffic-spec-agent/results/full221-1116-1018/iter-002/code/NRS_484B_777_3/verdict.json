@@ -1,0 +1,515 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "derived": "drv_motion_complete_halt",
+       "params": [
+        {
+         "param": "p.halt_speed_tolerance"
+        }
+       ]
+      }
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "rw"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "roadway"
+        },
+        "var": "rw"
+       },
+       {
+        "not": {
+         "body": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "bl"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "bicycle_lane_or_path"
+         },
+         "var": "bl"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-025::bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484B-017::electric_bicycle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484B-018::electric_scooter"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_777_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-777-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "body": {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "b"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "c"
+             },
+             {
+              "var": "subject"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "not": {
+              "same": [
+               {
+                "var": "b"
+               },
+               {
+                "var": "c"
+               }
+              ]
+             }
+            },
+            {
+             "and": [
+              {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "b"
+                  },
+                  {
+                   "lit": "DEF-NRS-484A-025::bicycle"
+                  }
+                 ],
+                 "atom": "ru_aggregate",
+                 "params": []
+                },
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "b"
+                    },
+                    {
+                     "lit": "DEF-NRS-484B-017::electric_bicycle"
+                    }
+                   ],
+                   "atom": "ru_aggregate",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "b"
+                    },
+                    {
+                     "lit": "DEF-NRS-484B-018::electric_scooter"
+                    }
+                   ],
+                   "atom": "ru_aggregate",
+                   "params": []
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "and": [
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "c"
+                    },
+                    {
+                     "lit": "DEF-NRS-484A-025::bicycle"
+                    }
+                   ],
+                   "atom": "ru_aggregate",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "c"
+                      },
+                      {
+                       "lit": "DEF-NRS-484B-017::electric_bicycle"
+                      }
+                     ],
+                     "atom": "ru_aggregate",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "c"
+                      },
+                      {
+                       "lit": "DEF-NRS-484B-018::electric_scooter"
+                      }
+                     ],
+                     "atom": "ru_aggregate",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "and": [
+                  {
+                   "not": {
+                    "args": [
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "derived": "drv_motion_complete_halt",
+                    "params": [
+                     {
+                      "param": "p.halt_speed_tolerance"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "c"
+                       }
+                      ],
+                      "derived": "drv_motion_complete_halt",
+                      "params": [
+                       {
+                        "param": "p.halt_speed_tolerance"
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "and": [
+                        {
+                         "cmp": "ge",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "b"
+                           }
+                          ],
+                          "measure": "rel_longitudinal_overlap"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 1,
+                           "num": 0
+                          },
+                          "unit": "metre"
+                         }
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "var": "b"
+                          }
+                         ],
+                         "atom": "rel_same_direction",
+                         "params": [
+                          {
+                           "param": "p.side_by_side_same_direction_cos"
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "and": [
+                          {
+                           "cmp": "ge",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c"
+                             }
+                            ],
+                            "measure": "rel_longitudinal_overlap"
+                           },
+                           "rhs": {
+                            "lit": {
+                             "den": 1,
+                             "num": 0
+                            },
+                            "unit": "metre"
+                           }
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "rel_same_direction",
+                           "params": [
+                            {
+                             "param": "p.side_by_side_same_direction_cos"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        {
+                         "and": [
+                          {
+                           "and": [
+                            {
+                             "cmp": "ge",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "b"
+                               },
+                               {
+                                "var": "c"
+                               }
+                              ],
+                              "measure": "rel_longitudinal_overlap"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": 0
+                              },
+                              "unit": "metre"
+                             }
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "b"
+                              },
+                              {
+                               "var": "c"
+                              }
+                             ],
+                             "atom": "rel_same_direction",
+                             "params": [
+                              {
+                               "param": "p.side_by_side_same_direction_cos"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "cmp": "le",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "b"
+                               }
+                              ],
+                              "measure": "rel_surface_gap"
+                             },
+                             "rhs": {
+                              "param": "p.abreast_gap_max"
+                             }
+                            },
+                            {
+                             "or": [
+                              {
+                               "cmp": "le",
+                               "lhs": {
+                                "args": [
+                                 {
+                                  "var": "subject"
+                                 },
+                                 {
+                                  "var": "c"
+                                 }
+                                ],
+                                "measure": "rel_surface_gap"
+                               },
+                               "rhs": {
+                                "param": "p.abreast_gap_max"
+                               }
+                              },
+                              {
+                               "cmp": "le",
+                               "lhs": {
+                                "args": [
+                                 {
+                                  "var": "b"
+                                 },
+                                 {
+                                  "var": "c"
+                                 }
+                                ],
+                                "measure": "rel_surface_gap"
+                               },
+                               "rhs": {
+                                "param": "p.abreast_gap_max"
+                               }
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_user": "c"
+     },
+     "exists_user": "b"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "a79668e9d2c1eb46e6f08b29",
+  "candidate_digest": "573825ddc96363d617770bcbde89b9bc5a997e8c9e1788b2abf602a05273e655"
+ }
+}

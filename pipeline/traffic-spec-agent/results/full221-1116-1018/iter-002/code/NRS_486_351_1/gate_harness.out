@@ -1,0 +1,82 @@
+'TrafficSpec.Rules.NRS_486_351_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_486_351_1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_486_351_1","intentions":[],"laws":["NRS-486-351-1"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"not":{"and":[{"args":[{"var":"subject"}],"atom":"ru_emergency_vehicle","params":[]},{"and":[{"args":[{"var":"subject"},{"lit":"police"}],"atom":"ru_emergency_vehicle_kind","params":[]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"red"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"args":[{"var":"subject"},{"lit":"white"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]}]}]}]}]}]}},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"NRS_486_351_1","intentions":[],"laws":["NRS-486-351-1"],"narrowings":[],"obligation":{"not":{"body":{"body":{"body":{"body":{"and":[{"and":[{"not":{"same":[{"var":"v1"},{"var":"subject"}]}},{"args":[{"var":"v1"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"and":[{"not":{"same":[{"var":"v2"},{"var":"subject"}]}},{"args":[{"var":"v2"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"not":{"same":[{"var":"l1"},{"var":"l2"}]}},{"and":[{"args":[{"var":"v1"},{"var":"l1"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"v2"},{"var":"l2"}],"atom":"rel_occupies","params":[]},{"and":[{"or":[{"or":[{"args":[{"var":"l1"},{"lit":"left"},{"var":"l2"}],"atom":"st_lane_adjacency","params":[]},{"args":[{"var":"l1"},{"lit":"right"},{"var":"l2"}],"atom":"st_lane_adjacency","params":[]}]},{"and":[{"args":[{"var":"subject"},{"var":"l1"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"l2"}],"atom":"rel_occupies","params":[]}]}]},{"and":[{"args":[{"var":"subject"},{"var":"v1"},{"lit":"left"}],"atom":"rel_bearing","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"v2"},{"lit":"right"}],"atom":"rel_bearing","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"v1"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"v2"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]}]}]}]}]},"exists_region":{"lit":"lane"},"var":"l2"},"exists_region":{"lit":"lane"},"var":"l1"},"exists_user":"v2"},"exists_user":"v1"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"not":{"and":[{"args":[{"var":"subject"}],"atom":"ru_emergency_vehicle","params":[]},{"and":[{"args":[{"var":"subject"},{"lit":"police"}],"atom":"ru_emergency_vehicle_kind","params":[]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"red"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"args":[{"var":"subject"},{"lit":"white"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]}]}]}]}]}]}},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-041::motorcycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-486-038::moped"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"NRS_486_351_1","intentions":[],"laws":["NRS-486-351-1"],"narrowings":[],"obligation":{"not":{"body":{"body":{"body":{"body":{"and":[{"and":[{"not":{"same":[{"var":"v1"},{"var":"subject"}]}},{"args":[{"var":"v1"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"and":[{"not":{"same":[{"var":"v2"},{"var":"subject"}]}},{"args":[{"var":"v2"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"not":{"same":[{"var":"l1"},{"var":"l2"}]}},{"and":[{"args":[{"var":"v1"},{"var":"l1"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"v2"},{"var":"l2"}],"atom":"rel_occupies","params":[]},{"and":[{"or":[{"or":[{"args":[{"var":"l1"},{"lit":"left"},{"var":"l2"}],"atom":"st_lane_adjacency","params":[]},{"args":[{"var":"l1"},{"lit":"right"},{"var":"l2"}],"atom":"st_lane_adjacency","params":[]}]},{"and":[{"args":[{"var":"subject"},{"var":"l1"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"l2"}],"atom":"rel_occupies","params":[]}]}]},{"and":[{"args":[{"var":"subject"},{"var":"v1"},{"lit":"left"}],"atom":"rel_bearing","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"v2"},{"lit":"right"}],"atom":"rel_bearing","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"v1"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"v2"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]}]}]}]}]},"exists_region":{"lit":"lane"},"var":"l2"},"exists_region":{"lit":"lane"},"var":"l1"},"exists_user":"v2"},"exists_user":"v1"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,ru_emergency_vehicle,ru_emergency_vehicle_kind,sig_warning_lamp,st_lane,rel_occupies,st_lane_adjacency,rel_bearing,rel_longitudinal_overlap
+COMPOSES	
+AGGREGATES	DEF-NRS-486-041::motorcycle	DEF-NRS-486-038::moped	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.bearing
+MANIFEST	branch_1	
+MANIFEST	branch_3	
+MANIFEST	branch_2	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?v1
+OCC	?v2
+OCC	?l1
+OCC	?l2
+OCC	v1,subject
+OCC	v1
+OCC	v2,subject
+OCC	v2
+OCC	l1,l2
+OCC	v1,l1
+OCC	v2,l2
+OCC	l1,l2
+OCC	l1,l2
+OCC	subject,l1
+OCC	subject,l2
+OCC	subject,v1
+OCC	subject,v2
+OCC	subject
+OCC	v1
+OCC	subject
+OCC	v2
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	83
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	40
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	37
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	39
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	41
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	38
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	38
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	10
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	38
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	37
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	38
+TIME	witnesses	356
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_486_351_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_486_351_1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_486_351_1	22	9
+TIME	adequacy_start	6
+TIME	adequacy	6041
+DONE

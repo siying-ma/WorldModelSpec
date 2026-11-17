@@ -1,0 +1,217 @@
+{
+ "node_id": "NRS_484B_213_2a",
+ "law_refs": [
+  "NRS-484B-213-2a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "must not be driven to the left side of the highway at any time:",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "When approaching the crest of a grade",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "or upon a curve in the highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "where the driver’s view is obstructed",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "within such distance as to create a hazard in the event another vehicle might approach from the opposite direction.",
+   "role": "standard"
+  },
+  {
+   "id": "s7",
+   "text": "Subsection 2 does not apply upon a one-way highway.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'A vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "prim.region_lateral_offset",
+    "st.centre_line",
+    "st.on_way",
+    "st.highway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'the left side of the highway' is the side beyond its center (DEF-NRS-484A-040: 'to indicate each portion of a highway allocated to traffic proceeding in the two opposite directions, and, if a line is not marked, it is an imaginary line in the highway equally distant from the edges'): an st.centre_line c, 'the marking, or the geometric centre, dividing the two directions', lying (st.on_way) on the st.highway the subject occupies (rel.occupies), with prim.region_lateral_offset(subject, c) ('signed lateral offset (m, left positive)') negative: c lies to the right of the subject's reference point. 'at any time' places the duty at every observation. 'driven' is read through controlled motion (agency)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.crest",
+    "st.region_geometry",
+    "kin.position",
+    "kin.velocity"
+   ],
+   "derived": [],
+   "justification": "'the crest of a grade' is st.crest, 'the place on a roadway's longitudinal profile where the slope changes from rising to falling in the direction of travel ... so the ground distance from a road user to it is read through st.region_geometry'; not st.grade, whose contract says it is 'Not a stand-in for: the place of a crest'. 'approaching' is the subject's velocity (kin.velocity) pointing toward the crest's reference point from its position (kin.position): the dot product of the velocity with the vector from the position to that point is positive; the crest is anchored to the subject by its ground distance (st.region_geometry), bounded in s6."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.curvature",
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'upon a curve in the highway': the subject occupies the st.highway (rel.occupies) and st.curvature, 'horizontal curvature of the roadway at a point, as a magnitude', at its point stands clear of zero by the source's resolution (p.curvature_resolution): a curve named without a size is its presence. Not kin.yaw_rate, which is 'Not a stand-in for: road curvature'."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "st.sight_distance"
+   ],
+   "derived": [],
+   "justification": "'the driver's view is obstructed': st.sight_distance at the subject's point, 'the distance along the road within which a vehicle at a point and another vehicle on the road could see each other ... whether or not any road user is there', short of the distance of s6. What the driver could see is read through the sight distance of the place (observable_reading, perception), not rel.visible, since the other vehicle is hypothetical."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.one_way_roadway"
+   ],
+   "derived": [],
+   "justification": "'upon a one-way highway': the subject occupies (rel.occupies) an st.one_way_roadway, 'roadway on which traffic is restricted to one direction'; there subsection 2 does not apply."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s6",
+   "standard": "within such distance as to create a hazard in the event another vehicle might approach from the opposite direction",
+   "concepts": [
+    "st.sight_distance",
+    "kin.speed",
+    "st.region_geometry"
+   ],
+   "params": [
+    "p.passing_sight_time"
+   ],
+   "convention": "Passing sight distance: the MUTCD minimum passing sight distance by prevailing speed (Table 3B-1), the warrant for a no-passing zone at a crest or curve, expressed as the time the subject's speed takes to cover it. The hazard distance is the subject's kin.speed times p.passing_sight_time; the view is obstructed within it where st.sight_distance at the subject's point is below it, and a crest is approached within it where its ground distance (st.region_geometry) is at most it. The bound moves with the subject's speed.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At an observation at which the subject, of DEF-NRS-484A-320::vehicle, occupies no st.one_way_roadway, st.sight_distance at its point is below the hazard distance (its kin.speed times p.passing_sight_time), and either (crest) for some st.crest k the subject's kin.velocity points toward k's reference point and the ground distance from the subject's body to k (st.region_geometry) is at most the hazard distance, or (curve) the subject occupies a highway and st.curvature at its point exceeds p.curvature_resolution.",
+ "obligation": "The subject is not on the left side of the highway: for every st.centre_line c lying (st.on_way) on a highway the subject occupies, prim.region_lateral_offset(subject, c) is not negative. Where it is negative for some such c, the duty is violated.",
+ "params": [
+  "p.passing_sight_time",
+  "p.curvature_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driven to the left side of the highway' is read as the subject's reference point lying beyond the centre line to its left.",
+   "kind": "reading"
+  },
+  {
+   "span": "s2",
+   "why": "'driven' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'the driver's view' is read through the sight distance of the subject's place, what could be seen from it, not through any driver's perception.",
+   "kind": "observable_reading",
+   "category": "perception"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject moves toward an st.crest whose ground distance is below its speed times p.passing_sight_time; st.sight_distance at its point is below that distance; its reference point lies left of the centre line of the highway it occupies."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same approach to the crest with the subject right of the centre line (prim.region_lateral_offset to the line positive)."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "On a straight, level two-way highway (curvature at resolution, no crest ahead, sight distance far above the bound), the subject drives left of the centre line."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject is left of the centre line approaching a crest; st.sight_distance is not observed.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "On a curve (st.curvature above p.curvature_resolution) with st.sight_distance below the subject's speed times p.passing_sight_time and no crest, the subject is left of the centre line."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The subject approaches a crest with short sight distance on an st.one_way_roadway, left of the roadway's geometric centre."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.passing_sight_time",
+   "unit": "s",
+   "value": 11.0,
+   "convention": "the MUTCD minimum passing sight distance (Table 3B-1, the warrant for a no-passing zone) divided by the prevailing speed it is tabulated for: about eleven seconds of travel across 25 to 70 mph; the sight distance or the clear distance a pass needs is the subject's speed times this time",
+   "source": "MUTCD 2009 Section 3B.02, Table 3B-1"
+  },
+  {
+   "name": "p.curvature_resolution",
+   "unit": "1/m",
+   "value": 0.0005,
+   "convention": "the horizontal curvature at or below which a mapped roadway reads as straight: the curvature resolution of map centrelines (a radius of about two kilometres)",
+   "source": "map centreline curvature resolution of the acquisition source"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

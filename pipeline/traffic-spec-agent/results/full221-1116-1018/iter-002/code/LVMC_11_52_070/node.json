@@ -1,0 +1,183 @@
+{
+ "node_id": "LVMC_11_52_070",
+ "law_refs": [
+  "LVMC-11-52-070"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "The City Traffic Engineer shall determine upon what streets angle parking shall be permitted,",
+   "role": "condition"
+  },
+  {
+   "id": "t2",
+   "text": "and shall provide signage or other markings to indicate where such parking is permitted.",
+   "role": "condition"
+  },
+  {
+   "id": "t3",
+   "text": "Where angle parking is permitted,",
+   "role": "condition"
+  },
+  {
+   "id": "t4",
+   "text": "no person shall stand or park a vehicle unless the front of the vehicle is pointed toward the direction of lawful traffic movement.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t1",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.parking_space",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The Traffic Engineer's determination of the streets where angle parking is permitted is a legal status no scene shows; the next words name its evidence, the signage or markings. It is read through them: a regulatory sign of code angle_parking (dev.regulatory_sign, \"a point regulation by catalogue code ... angle_parking\") governing (dev.governs, \"the travel regions whose traffic the device controls\") the travel region the vehicle occupies (rel.occupies, st.travel_region), or a marked parking bay (st.parking_space, \"marked bay for standing or parking; angle attribute\") whose angle stands clear of zero. The sign is a condition, not a manoeuvre (its not-a-stand-in clause)."
+  },
+  {
+   "span": "t2",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.parking_space",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"signage\" is the angle_parking regulatory sign (dev.regulatory_sign) governing (dev.governs) the travel region the vehicle occupies (rel.occupies, st.travel_region); \"other markings\" is a marked bay (st.parking_space, \"marked bay for standing or parking; angle attribute\") the vehicle occupies whose angle (st_parking_space_angle) stands clear of zero by more than the source's angle resolution. Their presence is the evidence of the permission they indicate."
+  },
+  {
+   "span": "t3",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.parking_space",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"Where angle parking is permitted\" is the place the signage or markings indicate: a travel region the vehicle occupies (rel.occupies, st.travel_region) that an angle_parking sign governs (dev.regulatory_sign, dev.governs), or that the vehicle occupies together with an angled marked bay (st.parking_space with its angle clear of zero). Presence of the feature, no size bound: the angle is read only against the source's resolution."
+  },
+  {
+   "span": "t4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "kin.heading",
+    "st.lane_direction",
+    "rel.occupies",
+    "st.travel_region",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "\"no person shall stand or park a vehicle\" has the same words and meaning as the mapping index's \"No person shall stand or park a vehicle\" (LVMC_11_52_040_A): drv.motion.parked (\"Road user a is parked: \\\"the standing of a vehicle, whether occupied or not\\\"\") with the standing duration as its window, covering standing (DEF-NRS-484A-250, \"the halting of a vehicle ... otherwise than for the purpose of and while actually engaged in receiving or discharging passengers\") and parking (DEF-NRS-484A-155); \"a vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole. \"No person\" is read through the vehicle's controlled motion. \"unless the front ...\": same words as the mapping index's \"headed in the direction of lawful traffic movement\" (LVMC_11_52_040_A): \"the front of the vehicle\" points along kin.heading (\"direction the body points\"; not its velocity, so a standing vehicle has one); \"the direction of lawful traffic movement\" is the direction designated for traffic (ru.aggregate DEF-NRS-484A-285::traffic, claimed whole as the word's admitted aggregate) on the travel region the vehicle occupies: st.lane_direction (\"direction of travel designated for a structure a vehicle travels in\"), read on that region (rel.occupies, st.travel_region). \"pointed toward\" is a positive dot product of the heading with that direction."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), occupies (rel.occupies) a travel region r (st.travel_region) where angle parking is permitted: a regulatory sign of code angle_parking (dev.regulatory_sign) governs r (dev.governs), or the subject also occupies a parking space (st.parking_space) whose angle (st_parking_space_angle), in absolute value, exceeds p.parking_space_angle_resolution.",
+ "obligation": "Where the subject is parked (drv.motion.parked(subject; speed_tol = p.halt_speed_tolerance, min_duration = p.standing_min_duration)), for every travel region r it occupies that is selected as in the applicability (governed by an angle_parking sign, or occupied together with an angled parking space), the dot product of the subject's heading (kin_heading) with r's designated direction (st_lane_direction) is positive: the front of the vehicle points toward the direction of lawful traffic movement. A subject that is not parked complies. Where r carries no direction or the heading is unobserved, the verdict is unknown.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.standing_min_duration",
+  "p.parking_space_angle_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "t1",
+   "why": "The Traffic Engineer's determination is a legal status read through the signage or markings that display it: a determination no sign or marking displays is not read.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "t2",
+   "why": "The duty to provide signage or markings is the Engineer's and is not judged on a trace; the presence of the angle_parking sign or the angled marked bay is read as the indication of where angle parking is permitted.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "t4",
+   "why": "\"the direction of lawful traffic movement\" is read as the designated direction of the travel region the vehicle occupies at the angle-parking place; a vehicle wholly inside a bay that overlaps no travel region is not judged.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car has backed into an angled bay (angle 45 degrees) on a street whose lane carries an angle_parking sign; its rear overlaps the lane and its heading is opposite the lane's direction; it stays at rest for 5 minutes."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car stands for 5 minutes in the same angled bay with its heading 45 degrees off the lane's direction, pointing forward with traffic: the dot product with the lane's direction is positive."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car is parked parallel to the curb on a street with no angle_parking sign and no angled bay: the rule does not apply."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car is parked in an angled bay at an angle_parking sign, but the source does not supply headings (kin.heading absent): where its front points is unknown.",
+   "masked": [
+    "kin.heading"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car pulls into the angled bay heading against the lane's direction, halts 20 seconds to let a passenger out and leaves: it neither stands nor parks for the standing duration."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of object-tracking and vehicle-dynamics recordings"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "curbside passenger pick-up dwell-time studies"
+  },
+  {
+   "name": "p.parking_space_angle_resolution",
+   "unit": "deg",
+   "value": 5.0,
+   "convention": "the bay angle at or below which a mapped parking bay counts as parallel to the curb rather than angled: the source's angle resolution for mapped bays",
+   "source": "angle resolution of the source's map annotation"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

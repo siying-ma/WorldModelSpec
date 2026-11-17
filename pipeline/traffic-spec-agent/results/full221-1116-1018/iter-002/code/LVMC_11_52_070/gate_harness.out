@@ -1,0 +1,66 @@
+'TrafficSpec.Rules.LVMC_11_52_070.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_52_070.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_52_070","intentions":[],"laws":["LVMC-11-52-070"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"angle_parking"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"s"}],"measure":"st_parking_space_angle"}},"rhs":{"param":"p.parking_space_angle_resolution"}}]},"exists_region":{"lit":"parking_space"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_070","intentions":[],"laws":["LVMC-11-52-070"],"narrowings":[],"obligation":{"implies":[{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.standing_min_duration"}]},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"angle_parking"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"s"}],"measure":"st_parking_space_angle"}},"rhs":{"param":"p.parking_space_angle_resolution"}}]},"exists_region":{"lit":"parking_space"},"var":"s"}]}]},{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]},"forall_region":{"lit":"travel_region"},"var":"r"}]}]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"angle_parking"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"s"}],"measure":"st_parking_space_angle"}},"rhs":{"param":"p.parking_space_angle_resolution"}}]},"exists_region":{"lit":"parking_space"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_070","intentions":[],"laws":["LVMC-11-52-070"],"narrowings":[],"obligation":{"implies":[{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.standing_min_duration"},"subject":"subject"},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"angle_parking"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"s"}],"measure":"st_parking_space_angle"}},"rhs":{"param":"p.parking_space_angle_resolution"}}]},"exists_region":{"lit":"parking_space"},"var":"s"}]}]},{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]},"forall_region":{"lit":"travel_region"},"var":"r"}]}]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_travel_region,rel_occupies,dev_regulatory_sign,dev_regulatory_sign_code,dev_governs,st_parking_space,st_parking_space_angle,drv_motion_parked,kin_heading,st_lane_direction
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.heading
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?d
+OCC	d
+OCC	d,r
+OCC	?s
+OCC	subject,s
+OCC	s
+OCC	subject
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?d
+OCC	d
+OCC	d,r
+OCC	?s
+OCC	subject,s
+OCC	s
+OCC	subject
+OCC	r
+OCC	subject
+OCC	r
+TIME	occurrences	1
+TIME	checks	5
+TIME	lint	262
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	88
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	85
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	82
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	88
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	41
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	85
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	83
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	86
+TIME	witnesses	638
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_52_070.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_52_070.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_52_070	13	7
+TIME	adequacy_start	6
+TIME	adequacy	8372
+DONE

@@ -1,0 +1,916 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 12 names, composes NRS_484B_253_o1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "and": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c2"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "c2"
+             },
+             {
+              "var": "X"
+             }
+            ],
+            "atom": "st_lane_enters",
+            "params": []
+           },
+           {
+            "not": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "X"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "t"
+             },
+             {
+              "var": "subject"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "t"
+              },
+              {
+               "lit": "DEF-NRS-484A-320::vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "t"
+                },
+                {
+                 "var": "X"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "t"
+                  },
+                  {
+                   "var": "X"
+                  }
+                 ],
+                 "int": "int.left_turn"
+                },
+                {
+                 "and": [
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "since": [
+                       {
+                        "args": [
+                         {
+                          "var": "t"
+                         },
+                         {
+                          "var": "X"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       },
+                       {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "t"
+                           },
+                           {
+                            "var": "c1"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         },
+                         {
+                          "not": {
+                           "args": [
+                            {
+                             "var": "t"
+                            },
+                            {
+                             "var": "X"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          }
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "c1"
+                         },
+                         {
+                          "var": "X"
+                         }
+                        ],
+                        "atom": "st_lane_enters",
+                        "params": []
+                       },
+                       {
+                        "and": [
+                         {
+                          "cmp": "lt",
+                          "lhs": {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "c1"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "st_lane_direction"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "c2"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "st_lane_direction"
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "c1"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "st_lane_direction"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "c2"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "st_lane_direction"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          "rhs": {
+                           "neg": {
+                            "param": "p.oncoming_heading_cos"
+                           }
+                          }
+                         },
+                         {
+                          "since": [
+                           {
+                            "not": {
+                             "rises": {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "var": "c1"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            }
+                           },
+                           {
+                            "or": [
+                             {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "lit": "left"
+                               }
+                              ],
+                              "atom": "sig_turn_indicator",
+                              "params": []
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "lit": "left"
+                               }
+                              ],
+                              "atom": "sig_hand_signal",
+                              "params": []
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "travel_region"
+                   },
+                   "var": "c1"
+                  },
+                  {
+                   "since": [
+                    {
+                     "and": [
+                      {
+                       "cmp": "gt",
+                       "lhs": {
+                        "args": [
+                         {
+                          "var": "t"
+                         }
+                        ],
+                        "measure": "kin_speed"
+                       },
+                       "rhs": {
+                        "param": "p.halt_speed_tolerance"
+                       }
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "t"
+                        },
+                        {
+                         "var": "X"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      }
+                     ]
+                    },
+                    {
+                     "and": [
+                      {
+                       "rises": {
+                        "and": [
+                         {
+                          "cmp": "gt",
+                          "lhs": {
+                           "args": [
+                            {
+                             "var": "t"
+                            }
+                           ],
+                           "measure": "kin_speed"
+                          },
+                          "rhs": {
+                           "param": "p.halt_speed_tolerance"
+                          }
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "t"
+                           },
+                           {
+                            "var": "X"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "map": {
+                        "subject": "t"
+                       },
+                       "rule": "NRS_484B_253_o1"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "exists_user": "t"
+       }
+      ]
+     },
+     "exists_region": {
+      "lit": "travel_region"
+     },
+     "var": "c2"
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "X"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_253_o2",
+   "intentions": [
+    "int.left_turn"
+   ],
+   "laws": [
+    "NRS-484B-253"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "c2"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "c2"
+                },
+                {
+                 "var": "X"
+                }
+               ],
+               "atom": "st_lane_enters",
+               "params": []
+              },
+              {
+               "not": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "X"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "not": {
+              "same": [
+               {
+                "var": "t"
+               },
+               {
+                "var": "subject"
+               }
+              ]
+             }
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "t"
+                },
+                {
+                 "lit": "DEF-NRS-484A-320::vehicle"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "t"
+                  },
+                  {
+                   "var": "X"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "t"
+                    },
+                    {
+                     "var": "X"
+                    }
+                   ],
+                   "int": "int.left_turn"
+                  },
+                  {
+                   "and": [
+                    {
+                     "body": {
+                      "and": [
+                       {
+                        "since": [
+                         {
+                          "args": [
+                           {
+                            "var": "t"
+                           },
+                           {
+                            "var": "X"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "var": "c1"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           },
+                           {
+                            "not": {
+                             "args": [
+                              {
+                               "var": "t"
+                              },
+                              {
+                               "var": "X"
+                              }
+                             ],
+                             "atom": "rel_occupies",
+                             "params": []
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "c1"
+                           },
+                           {
+                            "var": "X"
+                           }
+                          ],
+                          "atom": "st_lane_enters",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "cmp": "lt",
+                            "lhs": {
+                             "add": [
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c1"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c2"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              },
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c1"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c2"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "rhs": {
+                             "neg": {
+                              "param": "p.oncoming_heading_cos"
+                             }
+                            }
+                           },
+                           {
+                            "since": [
+                             {
+                              "not": {
+                               "rises": {
+                                "args": [
+                                 {
+                                  "var": "t"
+                                 },
+                                 {
+                                  "var": "c1"
+                                 }
+                                ],
+                                "atom": "rel_occupies",
+                                "params": []
+                               }
+                              }
+                             },
+                             {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "t"
+                                 },
+                                 {
+                                  "lit": "left"
+                                 }
+                                ],
+                                "atom": "sig_turn_indicator",
+                                "params": []
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "t"
+                                 },
+                                 {
+                                  "lit": "left"
+                                 }
+                                ],
+                                "atom": "sig_hand_signal",
+                                "params": []
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     "exists_region": {
+                      "lit": "travel_region"
+                     },
+                     "var": "c1"
+                    },
+                    {
+                     "since": [
+                      {
+                       "and": [
+                        {
+                         "cmp": "gt",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "t"
+                           }
+                          ],
+                          "measure": "kin_speed"
+                         },
+                         "rhs": {
+                          "param": "p.halt_speed_tolerance"
+                         }
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "t"
+                          },
+                          {
+                           "var": "X"
+                          }
+                         ],
+                         "atom": "rel_occupies",
+                         "params": []
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "rises": {
+                          "and": [
+                           {
+                            "cmp": "gt",
+                            "lhs": {
+                             "args": [
+                              {
+                               "var": "t"
+                              }
+                             ],
+                             "measure": "kin_speed"
+                            },
+                            "rhs": {
+                             "param": "p.halt_speed_tolerance"
+                            }
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "var": "X"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           }
+                          ]
+                         }
+                        },
+                        {
+                         "map": {
+                          "subject": "t"
+                         },
+                         "rule": "NRS_484B_253_o1"
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "t"
+             }
+            ],
+            "atom": "rel_contact",
+            "params": []
+           }
+          },
+          {
+           "not": {
+            "and": [
+             {
+              "cmp": "gt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                }
+               ],
+               "measure": "kin_speed"
+              },
+              "rhs": {
+               "param": "p.halt_speed_tolerance"
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "t"
+                 }
+                ],
+                "derived": "prim_closest_approach_within",
+                "params": [
+                 {
+                  "param": "p.conflict_horizon"
+                 }
+                ]
+               },
+               {
+                "cmp": "lt",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "t"
+                  }
+                 ],
+                 "params": [
+                  {
+                   "param": "p.conflict_horizon"
+                  }
+                 ],
+                 "quantity": "prim_closest_approach_distance"
+                },
+                "rhs": {
+                 "param": "p.conflict_centre_clearance"
+                }
+               }
+              ]
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "forall_user": "t"
+     },
+     "forall_region": {
+      "lit": "travel_region"
+     },
+     "var": "c2"
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "X"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "f3af525e6a183fb4fe1f0da3",
+  "candidate_digest": "2d00c41b104d08aad55171fa53d3d616dea0fa24caf3021dc7c429c69f1443ea"
+ }
+}

@@ -1,0 +1,99 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 4 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "args": [
+      {
+       "var": "subject"
+      },
+      {
+       "var": "r"
+      }
+     ],
+     "atom": "rel_occupies",
+     "params": []
+    },
+    "exists_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_220_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-220-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "not": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "derived": "drv_motion_circulating_clockwise_about",
+        "params": [
+         {
+          "param": "p.halt_speed_tolerance"
+         },
+         {
+          "param": "p.roundabout_clockwise_sin_tol"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "5c97ca51e28302e3dac1e111",
+  "candidate_digest": "31bd604567091948eaa5ab4aeb326405009f6e65dbb989a272dbf274953b3466"
+ }
+}

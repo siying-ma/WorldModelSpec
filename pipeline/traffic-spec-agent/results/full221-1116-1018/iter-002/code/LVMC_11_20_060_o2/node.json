@@ -1,0 +1,258 @@
+{
+ "node_id": "LVMC_11_20_060_o2",
+ "law_refs": [
+  "LVMC-11-20-060"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "within a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "e3",
+   "text": "emerging or entering an alley, driveway or building",
+   "role": "condition"
+  },
+  {
+   "id": "e4",
+   "text": "shall stop such vehicle immediately prior to",
+   "role": "sibling"
+  },
+  {
+   "id": "e5",
+   "text": "driving onto a sidewalk or onto the sidewalk area extending across any alleyway or driveway",
+   "role": "trigger"
+  },
+  {
+   "id": "e6",
+   "text": "yielding",
+   "role": "obligation"
+  },
+  {
+   "id": "e7",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "e8",
+   "text": "to any pedestrian",
+   "role": "condition"
+  },
+  {
+   "id": "e9",
+   "text": "as may be necessary to avoid collision",
+   "role": "standard"
+  },
+  {
+   "id": "e10",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "e11",
+   "text": "upon entering the roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "e12",
+   "text": "shall yield",
+   "role": "sibling"
+  },
+  {
+   "id": "e13",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "e14",
+   "text": "to all vehicles approaching on said roadway",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'The driver of' is read through the vehicle's controlled motion (agency)."
+  },
+  {
+   "span": "e3",
+   "atoms": [
+    "st.driveway_or_alley_entrance",
+    "st.alley",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "As LVMC_11_20_060_o1: st.driveway_or_alley_entrance 'private road, alley or driveway meeting the highway', st.alley 'a narrow way within a block'; a building's vehicle access is a driveway (DEF-NRS-484A-190 'every way or place in private ownership and used for vehicular travel'); the subject occupies one (rel.occupies)."
+  },
+  {
+   "span": "e5",
+   "atoms": [
+    "st.sidewalk",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "The yielding accompanies driving onto the sidewalk: the duty runs while the subject occupies the sidewalk region s (st.sidewalk 'area for pedestrians between roadway and property line', whose exclusion 'a crosswalk' does not apply; rel.occupies 'a road user's footprint overlaps a lane / region (... sidewalk ...)'). While it waits before the sidewalk it is halted, and the stop itself is LVMC_11_20_060_o1's duty."
+  },
+  {
+   "span": "e6",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "To yield is not to proceed in preference: kin.speed 'magnitude of velocity' tells a subject still proceeding; rel.contact 'touch or overlap (a collision)' is precedence taken outright; its exclusion 'a near miss' is respected (the near conflict is bounded by the operationalizations)."
+  },
+  {
+   "span": "e8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian (ru.aggregate 'membership of a legal aggregate'); 'any' = every member present."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "e7",
+   "standard": "right-of-way: DEF-NRS-484A-210 'approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other'",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: danger of a crash where the constant-velocity closest approach of centres is below a centre clearance within a time-to-collision horizon",
+   "surrogate": false
+  },
+  {
+   "span": "e9",
+   "standard": "as may be necessary to avoid collision",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.contact"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: yielding is necessary exactly where a collision would follow under constant velocities, a closest approach below the centre clearance within the horizon",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "e2",
+   "id": "asm.business_or_residence_district",
+   "meaning": "the place of the road user at the observation lies in a business district or a residence district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "asm.business_or_residence_district holds; the subject, a vehicle, occupies a driveway-or-alley-entrance region or an alley region d (st.driveway_or_alley_entrance or st.alley), and occupies a sidewalk region s (st.sidewalk).",
+ "obligation": "For every road user p, other than the subject, that is a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian): not (the subject's kin.speed exceeds p.halt_speed_tolerance while prim.closest_approach_within(subject, p; p.conflict_horizon) holds with prim.closest_approach_distance(subject, p; p.conflict_horizon) below p.conflict_centre_clearance), and not rel.contact(subject, p).",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "e1",
+   "why": "'The driver' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "e7",
+   "why": "precedence is read as the subject not proceeding while a constant-velocity closest approach to the pedestrian falls below the centre clearance within the horizon, and never touching the pedestrian",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "District assumed; the subject crosses the sidewalk out of a driveway while a pedestrian walks toward its path; the closest approach falls below the clearance within the horizon and the subject keeps moving."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but the subject waits halted at the sidewalk edge until the pedestrian has passed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject travels on the roadway, nowhere near a driveway or sidewalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "District assumed; the subject crosses the sidewalk with a pedestrian approaching, but the subject's speed is not observed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "District assumed; the subject crosses the sidewalk out of a driveway with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hydén 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car dimensions (AASHTO design vehicle P: 5.8 m by 2.1 m)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed noise floor of vehicle odometry and tracked-object estimates"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

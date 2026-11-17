@@ -1,0 +1,153 @@
+{
+ "node_id": "NRS_484B_600_1c",
+ "law_refs": [
+  "NRS-484B-600-1c"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "It is unlawful for any person to drive or operate",
+   "role": "subject"
+  },
+  {
+   "id": "f2",
+   "text": "a vehicle of any kind or character",
+   "role": "subject"
+  },
+  {
+   "id": "f3",
+   "text": "at:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "f4",
+   "text": "A rate of speed greater than",
+   "role": "obligation"
+  },
+  {
+   "id": "f5",
+   "text": "that posted by a public authority",
+   "role": "condition"
+  },
+  {
+   "id": "f6",
+   "text": "for the particular portion of highway being traversed.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "\"drive or operate\" is read through the vehicle's controlled motion: kin.speed, \"magnitude of velocity\", the motion the duty judges; the same words map to kin.speed in the run's index."
+  },
+  {
+   "span": "f2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle of any kind or character\": the admitted aggregate DEF-NRS-484A-320::vehicle, \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\", whatever its class."
+  },
+  {
+   "span": "f4",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "The rate of speed is kin.speed, \"magnitude of velocity\" (m/s), compared strictly greater than the posted value."
+  },
+  {
+   "span": "f5",
+   "atoms": [
+    "dev.speed_limit_sign"
+   ],
+   "derived": [],
+   "justification": "The speed posted: dev.speed_limit_sign, \"sign stating a maximum or minimum speed, with value and unit\", of kind maximum, structure_maximum or zone, read as the value dev_speed_limit_sign_value (m/s). \"Public authority\" (DEF-NRS-484A-195, \"the Department of Transportation or the local authority having jurisdiction\") is the sign's legal source, read from the sign's presence."
+  },
+  {
+   "span": "f6",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The particular portion of highway being traversed is the travel region (st.travel_region) the subject's footprint overlaps (rel.occupies) that the sign governs (dev.governs, \"the travel regions whose traffic the device controls\"). dev.governs is \"not a stand-in for a position\": no halt place is read from it, only which portion the posting covers."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle whose footprint overlaps (rel.occupies) a travel region r governed (dev.governs) by a dev.speed_limit_sign of kind maximum, structure_maximum or zone.",
+ "obligation": "For every such sign d governing a travel region the subject occupies, kin.speed(subject) is not greater than dev_speed_limit_sign_value(d).",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "f1",
+   "why": "\"drive or operate\" is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "f5",
+   "why": "That the speed is posted by a public authority is read from the presence of the speed limit sign.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A maximum speed limit sign of 20.1 m/s governs the lane the subject car occupies; kin.speed is 24 m/s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same sign; kin.speed is 19 m/s."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No speed limit sign governs any region the subject car occupies."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A maximum sign governs the subject's lane; the source does not supply kin.speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "Only a minimum speed limit sign governs the subject's lane; the subject travels faster than its value."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

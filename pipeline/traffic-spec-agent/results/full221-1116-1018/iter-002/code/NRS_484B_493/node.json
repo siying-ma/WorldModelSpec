@@ -1,0 +1,182 @@
+{
+ "node_id": "NRS_484B_493",
+ "law_refs": [
+  "NRS-484B-493"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "When official traffic-control devices are erected giving notice thereof,",
+   "role": "trigger"
+  },
+  {
+   "id": "e2",
+   "text": "a person",
+   "role": "subject"
+  },
+  {
+   "id": "e3",
+   "text": "shall not stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "e4",
+   "text": "upon the left-hand side of a one-way",
+   "role": "condition"
+  },
+  {
+   "id": "e5",
+   "text": "street.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.travel_region",
+    "rel.occupies",
+    "prim.conditions_hold",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "'official traffic-control devices' (DEF-NRS-484A-145, 'every sign, signal, marking and device ... placed or erected by a public authority') 'giving notice thereof', notice that standing or parking is prohibited there, are a regulatory sign of code no_standing or no_parking (dev.regulatory_sign, 'a point regulation by catalogue code') whose conditions hold (prim.conditions_hold) governing (dev.governs) the travel region (st.travel_region) the subject occupies (rel.occupies), or a marked length of curb of kind no_parking or no_stopping (st.curb_zone, 'a signed or marked length of curb') the subject occupies. A sign is not a stand-in for a manoeuvre: it is read only as the notice of the place."
+  },
+  {
+   "span": "e2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a person ... a vehicle': the duty binds the vehicle the person stands or parks, the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); ru.aggregate is 'membership of a legal aggregate'."
+  },
+  {
+   "span": "e3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'stand' is DEF-NRS-484A-250, 'the halting of a vehicle, whether occupied or not, otherwise than for the purpose of and while actually engaged in receiving or discharging passengers', and every parking (DEF-NRS-484A-155) is such a standing; the standing is drv.motion.parked with the passenger-dwell bound as its window, a shorter halt being read as the receiving or discharging of passengers the definition leaves out (index: 'No person shall stand or park a vehicle' maps to drv.motion.parked)."
+  },
+  {
+   "span": "e4",
+   "atoms": [
+    "rel.occupies",
+    "st.one_way_roadway",
+    "st.road_edge",
+    "st.on_way",
+    "st.highway",
+    "st.region_geometry",
+    "prim.region_lateral_offset",
+    "kin.heading",
+    "st.lane_direction"
+   ],
+   "derived": [],
+   "justification": "'a one-way' way is the subject occupying (rel.occupies) a one-way roadway r (st.one_way_roadway, 'roadway on which traffic is restricted to one direction') lying on a highway h (st.on_way, st.highway). Its 'left-hand side' is the side to the left of r's designated direction (st.lane_direction): a road edge (st.road_edge) on h is on that side where its lateral offset from the subject (prim.region_lateral_offset, 'left positive', relative to the subject's heading) times the sign of the dot product of the subject's heading (kin.heading) with r's direction is positive. The subject stands upon the left-hand side where it lies nearer such a left edge than every right edge, by ground distance from its body (st.region_geometry). The offset is read only for its side; the distance is not a stand-in for occupancy."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "e5",
+   "id": "asm.within_incorporated_city",
+   "meaning": "the place of the road user at the observation lies within the territorial limits of an incorporated city, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, is in a place given notice of the prohibition: it occupies (rel.occupies) a travel region governed (dev.governs) by a regulatory sign of code no_standing or no_parking whose conditions hold (prim.conditions_hold), or a curb zone (st.curb_zone) of kind no_parking or no_stopping; it occupies a one-way roadway r (st.one_way_roadway) lying on a highway h (st.on_way, st.highway) inside an incorporated city (asm.within_incorporated_city, 'street' being a highway inside the territorial limits of a city, DEF-NRS-484A-265); and it is on r's left-hand side: with s the sign of kin.heading · d for r's designated direction d (st.lane_direction), some road edge eL (st.road_edge) lying on h with s times its lateral offset (prim.region_lateral_offset) positive lies nearer the subject's body (st.region_geometry) than every road edge eR lying on h with s times its offset negative.",
+ "obligation": "The subject is not standing: violated where drv.motion.parked holds for it (speed_tol p.halt_speed_tolerance, min_duration p.standing_min_duration), compliant where it does not.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.standing_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "e3",
+   "why": "Standing, a halt otherwise than for receiving or discharging passengers, is read through the halt's duration: a halt no longer than the passenger-dwell bound p.standing_min_duration is read as the excepted one.",
+   "kind": "reading"
+  },
+  {
+   "span": "e1",
+   "why": "Notice of the prohibition is read from the posted no_standing or no_parking sign or the no_parking or no_stopping curb marking at the subject's place.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "e2",
+   "why": "The person is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Inside an incorporated city (asm.within_incorporated_city true), a vehicle stands (kin.speed 0) for 90 s after driving in, heading along a one-way roadway's direction, its body 0.3 m from the left road edge and 8 m from the right, in a lane governed by a no_parking regulatory sign with empty conditions."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same vehicle halts 20 s at the left edge and drives on."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The vehicle stands 90 s at the right edge of the one-way roadway (0.3 m from the right edge, 8 m from the left)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe which regions the devices govern.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As in forbid but asm.within_incorporated_city is false: a one-way highway outside any city."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; reused unchanged"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "proposed this iteration by LVMC_11_52_040_A; reused unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

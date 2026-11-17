@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 278226,
+  "stop_reason": "end_turn",
+  "session_id": "e752bfce-1412-49ee-a3ae-c2a408c7b230",
+  "total_cost_usd": 2.04955157,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 135908,
+   "cache_read_input_tokens": 837040,
+   "output_tokens": 30205,
+   "output_tokens_details": {
+    "thinking_tokens": 17557
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 135908,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 717,
+     "cache_read_input_tokens": 138489,
+     "cache_creation_input_tokens": 1887,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1887
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43677,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004823170000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 30205,
+    "cacheReadInputTokens": 837040,
+    "cacheCreationInputTokens": 135908,
+    "webSearchRequests": 0,
+    "costUSD": 2.0447284000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 17557,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 135908,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the first run (13 witnesses, 17 names, 1 narrowing I declared). I used 1 of the 6 gate runs.\n\n**What the rule says**\n- **Who it applies to:** a motor-vehicle driver who has just finished passing a bicycle, electric bicycle or electric scooter (the rider). Within the 10-second window before that moment, the rider had to be moving in the same direction, and at some point while the two were side by side the rider's lane had to be one of more than one lane in that direction.\n- **What it requires:** whenever the car and the rider were side by side during that window, the car must be in the lane immediately left of the rider's lane, and in no lane the rider is in.\n- **When the car is excused:** the duty is waived if, at the start of the pass, that left lane didn't exist, was closed by temporary traffic control, or had another road user closer than the car's speed times the following headway. The headway depends on the surface: ice or snow, otherwise wet road or rain, otherwise dry.\n\n**Choices I made that the node left open**\n- **The rider's lane:** if the rider straddles lanes, I read \"the rider's lane\" at the start of the pass as *any* lane the rider is in. I declared this as a narrowing on a8.\n- **The literal \"one\":** I wrote it as `Units.ratio 1 1` tagged as a count, because `Units` has no count constructor. The gate accepted it.\n\n**Things the plan agent should know**\n- **The `idle` witness uses a moped, not the car the narrative describes.** In this run's reading, a car's membership in the electric-bicycle and electric-scooter definitions is unresolved. A car being passed would give \"unknown\" rather than \"not applicable\". A moped is a definite non-member of all three definitions, so I used that instead.\n- **No vehicle can ever count as an electric scooter.** The reading puts no road-user class inside the electric-scooter definition, so that part of the trigger can never be true in any witness.\n\nI added 7 extra witnesses (`branch_3` to `branch_9`) beyond the planned ones, so that every exception and every headway branch is exercised. The full write-up is in `task_result.md` in the working directory.",
+  "ttft_ms": 107457,
+  "type": "result",
+  "duration_ms": 316408,
+  "uuid": "3f7de3a4-36a7-4cec-bda7-979cae7fca99",
+  "ttft_stream_ms": 1415,
+  "time_to_request_ms": 313,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 40,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 17,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 37,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 7,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 175,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 25,
+  "time_to_request_cpu_ms": 191,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 11,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 11,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1415,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43677,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004823170000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 30205,
+    "cacheReadInputTokens": 837040,
+    "cacheCreationInputTokens": 135908,
+    "webSearchRequests": 0,
+    "costUSD": 2.0447284000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 17557,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 135908,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

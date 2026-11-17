@@ -1,0 +1,255 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 792870,
+  "stop_reason": "end_turn",
+  "session_id": "bd317385-49f3-4054-abc1-8e149972b4ef",
+  "total_cost_usd": 4.4903595,
+  "usage": {
+   "input_tokens": 44,
+   "cache_creation_input_tokens": 219889,
+   "cache_read_input_tokens": 3354002,
+   "output_tokens": 82372,
+   "output_tokens_details": {
+    "thinking_tokens": 57159
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 219889,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 953,
+     "cache_read_input_tokens": 222516,
+     "cache_creation_input_tokens": 1841,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1841
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46031,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00507826,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 44,
+    "outputTokens": 82372,
+    "cacheReadInputTokens": 3354002,
+    "cacheCreationInputTokens": 219889,
+    "webSearchRequests": 0,
+    "costUSD": 4.48528124,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 57159,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 219889,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01CQJRdAyJdK9R76zsN1qQEJ",
+    "tool_input": {
+     "command": "python -m harness gate --run_id full221-1116-1018 --node_id NRS_484B_213_1 --help 2>&1 | head -5; ls /scratch/fsw/portfolios/av/projects/av_alpamayo_reasoning/users/wcong/WorldModelSpec/.worktrees/full221-v2/pipeline/traffic-spec-agent/library/TrafficSpec/Core/*/",
+     "description": "List Core files"
+    }
+   },
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_017R1uo6oRQwRL8nTo8jNJpt",
+    "tool_input": {
+     "command": "python -m harness gate --run_id full221-1116-1018 --node_id NRS_484B_213_1 --dry-run",
+     "description": "(skip)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 33,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate now passes on NRS_484B_213_1 with **OK** (15 witnesses). That used all 6 gate runs. One of them was wasted by my mistake: I sent the gate command with `2>/dev/null; true` appended, it still ran, and it failed to build.\n\n**The rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_213_1.lean`)\n- **Applies when** the subject, a vehicle, is recognized overtaking and passing another vehicle b at the judged observation.\n- **Obligation:** at every observation of the act, a duty applies if the subject is on a highway it occupies that has a centre line and is two-lane, with the subject left of that centre line. The duty requires:\n  - sight distance at least the subject's speed × `p.passing_sight_time`;\n  - every oncoming road user of traffic at least that far away;\n  - neither b nor any oncoming vehicle in contact with the subject, or due to come closer than `p.conflict_centre_clearance` within `p.conflict_horizon`.\n- **The act's first observation:** the language has no \"next\" operator, so \"after the act began\" is a look-ahead `until`. That covers every observation of the act except its first. The duty at that first observation is checked from the observation after it, using `rises`. No observation before the act is read, and `occasion_s5_outside` checks this.\n- **Merged interference check:** b and oncoming vehicles are checked in one quantifier (\"u is b, or an oncoming vehicle\"). As two separate checks, contact with an oncoming vehicle could never decide a verdict at realistic speeds, because the distance check fails first. The gate flagged it as vacuous. The merged form says the same as the record.\n\n**Witnesses** (`library/TrafficSpecWitness/NRS_484B/NRS_484B_213_1.lean`): the 9 planned scenarios plus 6 of mine:\n- `branch_2`: passing within the lane, never left of the centre line.\n- `branch_3`: crossing the centre line on a four-lane road.\n- `branch_4`: a fast oncoming car beyond the required distance but on a collision course.\n- `branch_5`: passing b too closely.\n- `branch_6`: touching b's side.\n- `branch_7`: sight short only at the act's first observation.\n\nSight distance can't change over time on one structure, so where it varies the road is built as consecutive segments, each with its own sight distance.\n\n**Choices to know about** (none declared as narrowings; they're explained in the rule header and `task_result.md`):\n- Sight distance \"at the subject's point\" is read on the highway region the subject occupies.\n- \"Faster than b\" is measured along the subject's direction of travel, because kin.heading is not claimed.\n- \"Two-lane\" is written as: any two lanes on the highway have direction counts adding up to 2.\n\n`task_result.md` is in the working directory.",
+  "ttft_ms": 80147,
+  "type": "result",
+  "duration_ms": 1015409,
+  "uuid": "abeb86b0-4045-41fb-ad71-0906ee12e028",
+  "ttft_stream_ms": 972,
+  "time_to_request_ms": 341,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 28,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 13,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 34,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 210,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 2,
+   "client_creation": 9,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 19,
+  "time_to_request_cpu_ms": 279,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 6,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 973,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46031,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00507826,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 44,
+    "outputTokens": 82372,
+    "cacheReadInputTokens": 3354002,
+    "cacheCreationInputTokens": 219889,
+    "webSearchRequests": 0,
+    "costUSD": 4.48528124,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 57159,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 219889,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

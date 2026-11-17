@@ -1,0 +1,132 @@
+{
+ "node_id": "NRS_484B_600_1e",
+ "law_refs": [
+  "NRS-484B-600-1e"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "It is unlawful for any person to drive or operate",
+   "role": "subject"
+  },
+  {
+   "id": "g2",
+   "text": "a vehicle of any kind or character",
+   "role": "subject"
+  },
+  {
+   "id": "g3",
+   "text": "at:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g4",
+   "text": "In any event,",
+   "role": "condition"
+  },
+  {
+   "id": "g5",
+   "text": "a rate of speed greater than 80 miles per hour.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "\"drive or operate\" is read through the vehicle's controlled motion: kin.speed, \"magnitude of velocity\"; the same words map to kin.speed in the run's index."
+  },
+  {
+   "span": "g2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle of any kind or character\": the admitted aggregate DEF-NRS-484A-320::vehicle, \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\", whatever its class."
+  },
+  {
+   "span": "g5",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "The rate of speed is kin.speed, \"magnitude of velocity\" (m/s), compared strictly greater than the literal 80 mph."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "g4",
+   "why": "\"In any event\" states that the bound holds whatever other limit or circumstance applies; it adds no condition, and the duty is the same whether or not the words are read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle.",
+ "obligation": "kin.speed(subject) is not greater than the literal 80 mph.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "g1",
+   "why": "\"drive or operate\" is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject car's kin.speed is 38 m/s (about 85 mph)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject car's kin.speed is 33 m/s (about 74 mph)."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a pedestrian (not a vehicle) walking at 1.4 m/s."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car is moving; the source does not supply kin.speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "literals": [
+  {
+   "span": "g5",
+   "text": "80 miles per hour",
+   "value": 80,
+   "unit": "mph"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

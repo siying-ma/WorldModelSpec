@@ -1,0 +1,61 @@
+'TrafficSpec.Rules.LVMC_11_52_060.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.LVMC_11_52_060.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_52_060","intentions":[],"laws":["LVMC-11-52-060"],"narrowings":[],"operationalizations":[],"residues":["A trailer is itself \"a vehicle\" by its definition DEF-LVMC-11-02-170, so the duty binds its body through \"any vehicle\" whether or not it is attached; attachment adds no restriction."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.parking_min_duration"}]},{"body":{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-170::trailer"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"LVMC_11_52_060","intentions":[],"laws":["LVMC-11-52-060"],"narrowings":[],"obligation":{"body":{"implies":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"c"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"implies":[{"args":[{"var":"c_other"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"args":[{"var":"subject"},{"var":"c_other"}],"measure":"st_region_geometry_distance"}}]},"forall_region":{"lit":"road_edge"},"var":"c_other"}]},{"body":{"implies":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"add":[{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"length"}],"measure":"kin_extent"},{"abs":{"sub":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]}]}}]},{"mul":[{"args":[{"var":"subject"},{"lit":"width"}],"measure":"kin_extent"},{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}}]}]}]},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}}]},"forall_region":{"lit":"travel_region"},"var":"r"}]},"forall_region":{"lit":"road_edge"},"var":"c"}]},"forall_region":{"lit":"highway"},"var":"h"},"residues":["A trailer is itself \"a vehicle\" by its definition DEF-LVMC-11-02-170, so the duty binds its body through \"any vehicle\" whether or not it is attached; attachment adds no restriction."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.parking_min_duration"},"subject":"subject"},{"body":{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-170::trailer"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"LVMC_11_52_060","intentions":[],"laws":["LVMC-11-52-060"],"narrowings":[],"obligation":{"body":{"implies":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"c"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"implies":[{"args":[{"var":"c_other"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"args":[{"var":"subject"},{"var":"c_other"}],"measure":"st_region_geometry_distance"}}]},"forall_region":{"lit":"road_edge"},"var":"c_other"}]},{"body":{"implies":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"add":[{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"length"}],"measure":"kin_extent"},{"abs":{"sub":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]}]}}]},{"mul":[{"args":[{"var":"subject"},{"lit":"width"}],"measure":"kin_extent"},{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}}]}]}]},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}}]},"forall_region":{"lit":"travel_region"},"var":"r"}]},"forall_region":{"lit":"road_edge"},"var":"c"}]},"forall_region":{"lit":"highway"},"var":"h"},"residues":["A trailer is itself \"a vehicle\" by its definition DEF-LVMC-11-02-170, so the duty binds its body through \"any vehicle\" whether or not it is attached; attachment adds no restriction."],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_parked,st_highway,rel_occupies,st_road_edge,st_on_way,st_region_geometry_distance,st_travel_region,kin_extent,kin_heading,st_lane_direction
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-LVMC-11-02-170::trailer
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?h
+OCC	subject,h
+OCC	?h
+OCC	subject,h
+OCC	?c
+OCC	c,h
+OCC	?c_other
+OCC	c_other,h
+OCC	subject,c
+OCC	subject,c_other
+OCC	?r
+OCC	subject,r
+OCC	subject,c
+OCC	subject
+OCC	subject
+OCC	r
+OCC	subject
+OCC	r
+OCC	subject
+OCC	subject
+OCC	r
+OCC	subject
+OCC	r
+LITERAL	1143/250	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	816
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	483
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	480
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	480
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	184
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	471
+TIME	witnesses	2098
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_52_060.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.LVMC_11_52_060.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_52_060	8	4
+TIME	adequacy_start	15
+TIME	adequacy	16039
+DONE

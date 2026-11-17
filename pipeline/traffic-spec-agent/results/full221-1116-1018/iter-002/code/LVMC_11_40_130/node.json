@@ -1,0 +1,196 @@
+{
+ "node_id": "LVMC_11_40_130",
+ "law_refs": [
+  "LVMC-11-40-130"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It shall be unlawful for any person to operate",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "a bicycle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "at a speed greater than",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "is reasonable and prudent under the conditions then existing",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed: 'magnitude of velocity'. To operate a bicycle is read through its controlled motion (ontology, what is not an atom: 'operates' is read through the vehicle's controlled motion): the rule applies while the bicycle moves, its speed above the halt tolerance."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle"
+   ],
+   "derived": [],
+   "justification": "'bicycle' is admitted as the aggregate DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride ... except a moped'); ru.aggregate: 'membership of a legal aggregate'. Claimed as the aggregate, never expanded into classes."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed: 'magnitude of velocity', m/s; the speed the words compare with the reasonable and prudent bound. Not a stand-in for acceleration: none is read."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s4",
+   "standard": "a speed reasonable and prudent under the conditions then existing",
+   "concepts": [
+    "kin.speed",
+    "env.visibility",
+    "env.wet_road",
+    "env.precipitation",
+    "env.ice_or_snow",
+    "env.darkness"
+   ],
+   "params": [
+    "p.bicycle_reaction_time",
+    "p.bicycle_decel_dry",
+    "p.bicycle_decel_wet",
+    "p.bicycle_decel_ice",
+    "p.bicycle_lamp_reach"
+   ],
+   "convention": "bicycle stopping-sight-distance model: the distance travelled during the perception-reaction time plus the braking distance at a deceleration set by the surface does not exceed the distance ahead the rider can see; the surface (dry, wet or precipitation, ice or snow) selects the deceleration, and darkness caps the distance seen at the reach of a bicycle headlamp",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle"
+   ]
+  }
+ ],
+ "applicability": "The subject belongs to the aggregate DEF-NRS-484A-025::bicycle and moves: its speed (kin.speed) is above p.halt_speed_tolerance.",
+ "obligation": "At each such observation the subject's stopping distance does not exceed the distance it can see ahead. Stopping distance: speed times p.bicycle_reaction_time plus speed squared over twice the deceleration, where the deceleration is p.bicycle_decel_ice where env.ice_or_snow holds, else p.bicycle_decel_wet where env.wet_road or env.precipitation holds, else p.bicycle_decel_dry (a selection among bounds, Term.cond). Distance seen: env.visibility, and where env.darkness holds the smaller of env.visibility and p.bicycle_lamp_reach. Written as a product bound (speed squared at most twice the deceleration times the distance seen minus the reaction distance), so no measured atom is a divisor. Surrogate: its verdict is evidence, not a legal conclusion.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.bicycle_reaction_time",
+  "p.bicycle_decel_dry",
+  "p.bicycle_decel_wet",
+  "p.bicycle_decel_ice",
+  "p.bicycle_lamp_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'any person to operate' is read through the bicycle's controlled motion: a bicycle moving on the road is taken to be operated, whoever rides it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "The catch-all 'the conditions then existing' is read only through the contracts the operationalization names: visibility, the wet, precipitation and ice states of the surface, and darkness. Other conditions (the sight distance a bend or a crest leaves, the presence and density of pedestrians and other traffic, grade, the bicycle's own condition) are not read, so a speed made unreasonable only by them is not detected.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A bicycle rides fast in dense fog: env.visibility is far shorter than the reaction distance plus the dry braking distance at its speed."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A bicycle rides at a moderate speed on a dry road in daylight with long visibility and sight distance, its stopping distance well inside both."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The bicycle stands at rest at a signal: its speed is at the halt tolerance."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The bicycle rides at a speed whose verdict depends on the visibility, which the source does not observe.",
+   "masked": [
+    "env.visibility"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "On an icy road in light mist the bicycle rides at a speed whose stopping distance at the ice deceleration exceeds the visibility, though the dry stopping distance would not."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.bicycle_reaction_time",
+   "unit": "s",
+   "value": 2.5,
+   "convention": "perception-reaction time of a bicyclist in the stopping-sight-distance model",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), stopping sight distance"
+  },
+  {
+   "name": "p.bicycle_decel_dry",
+   "unit": "m/s^2",
+   "value": 3.1,
+   "convention": "braking deceleration of a bicycle on a dry paved surface in the stopping-sight-distance model (coefficient of friction about 0.32)",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), stopping sight distance"
+  },
+  {
+   "name": "p.bicycle_decel_wet",
+   "unit": "m/s^2",
+   "value": 1.6,
+   "convention": "braking deceleration of a bicycle on a wet surface in the stopping-sight-distance model (coefficient of friction about 0.16)",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), stopping sight distance"
+  },
+  {
+   "name": "p.bicycle_decel_ice",
+   "unit": "m/s^2",
+   "value": 0.5,
+   "convention": "braking deceleration on an icy or snow-covered surface (coefficient of friction about 0.05)",
+   "source": "winter road-surface friction measurements"
+  },
+  {
+   "name": "p.bicycle_lamp_reach",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "the distance ahead a bicycle headlamp lights the path in darkness, within which the rider can see an obstacle",
+   "source": "bicycle headlamp illumination ranges"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

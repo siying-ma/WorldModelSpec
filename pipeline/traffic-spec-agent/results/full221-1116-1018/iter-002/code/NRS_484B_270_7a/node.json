@@ -1,0 +1,184 @@
+{
+ "node_id": "NRS_484B_270_7a",
+ "law_refs": [
+  "NRS-484B-270-7a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "q1",
+   "text": "The operator of a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "q2",
+   "text": "shall not: Intentionally",
+   "role": "standard"
+  },
+  {
+   "id": "q4",
+   "text": "interfere with the movement",
+   "role": "obligation"
+  },
+  {
+   "id": "q3",
+   "text": "of a motor vehicle.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "q1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The three admitted aggregates DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle and DEF-NRS-484B-018::electric_scooter, claimed as ru.aggregate with their ids as the index maps 'a bicycle, an electric bicycle or an electric scooter'; 'the operator' is read through the device's controlled motion (observable_reading, agency), ru.aggregate being 'Not a stand-in for: ... a relational role'."
+  },
+  {
+   "span": "q3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'Motor vehicle' is admitted as DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter'), claimed as ru.aggregate, as the index maps 'any motor vehicle'."
+  },
+  {
+   "span": "q4",
+   "atoms": [
+    "rel.bearing",
+    "kin.accel_longitudinal",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "The movement of the motor vehicle is its motion: kin.speed 'magnitude of velocity' (the vehicle moving, above p.halt_speed_tolerance) and kin.accel_longitudinal 'acceleration along heading, signed', whose braking shows the movement disturbed; it is 'Not a stand-in for: speed', and it is read here as the change the interference forces, not as the speed. The rider interferes from in front of the vehicle's movement: rel.bearing, 'direction of b from a in a's frame', with the rider's bearing in the vehicle's frame pointing ahead. No exclusion applies."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "q2",
+   "standard": "intentionally interfere (intent, a state of mind, and the degree of interference)",
+   "concepts": [
+    "kin.accel_longitudinal",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.vehicle_evasive_decel",
+    "p.halt_speed_tolerance",
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: an interference with a vehicle's movement is a conflict in which the vehicle, with the rider ahead of it, brakes evasively — a deceleration beyond comfortable service braking while their closest approach lies within a time-to-collision horizon and below a centre clearance",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, read as operated.",
+ "obligation": "At every observation, for every road user m other than the subject that is a member of DEF-NRS-484A-130::motor_vehicle and moving (kin.speed above p.halt_speed_tolerance), it is not the case that: the subject lies ahead of m (the longitudinal component of the subject's rel.bearing in m's frame is positive), m's kin.accel_longitudinal is at or below the negative of p.vehicle_evasive_decel, and prim.closest_approach_within(m, subject) over p.conflict_horizon holds with prim.closest_approach_distance(m, subject) over p.conflict_horizon below p.conflict_centre_clearance. Surrogate: the verdict is evidence, not a legal conclusion.",
+ "params": [
+  "p.vehicle_evasive_decel",
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "q1",
+   "why": "'The operator' is read through the device's controlled motion; who controls it is not observed.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "q2",
+   "why": "Intent shows in no single observation: it is read only through the conduct that interferes — the rider ahead of a moving motor vehicle in a conflict that forces it to brake evasively — and a conflict the rider did not seek is not told apart; an interference that forces no evasive braking (a swerve only) is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A bicycle cuts in front of a moving car and slows; the car, with the bicycle ahead of it, brakes harder than p.vehicle_evasive_decel while their closest approach falls within p.conflict_horizon and below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A bicycle rides in a bicycle lane; a car passes it without braking and without a conflicting closest approach."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a car (not a member of the bicycle, electric bicycle or electric scooter aggregates)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "An electric scooter swerves in front of a moving car with a conflicting closest approach; the car's longitudinal acceleration is not observed on this source.",
+   "masked": [
+    "kin.accel_longitudinal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A bicycle rides on a path with no motor vehicle in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.vehicle_evasive_decel",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "the longitudinal deceleration of a motor vehicle at or beyond which its braking counts as an evasive reaction to another road user rather than ordinary speed control: about 0.4 g, above the comfortable deceleration of about 3.4 m/s^2",
+   "source": "AASHTO comfortable deceleration rate; traffic-conflict studies of evasive braking"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design vehicle dimensions (AASHTO)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,185 @@
+{
+ "node_id": "NRS_484B_223_4b",
+ "law_refs": [
+  "NRS-484B-223-4b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a highway has been designed to provide a single right lane to be used only for turning,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "a vehicle must:",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "While being driven in the right turn lane,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "not travel through an intersection.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "rel.occupies",
+    "st.turn_lane"
+   ],
+   "derived": [],
+   "justification": "st.turn_lane: 'a lane designated only for turning; side ∈ {left, right}' — 'a single right lane to be used only for turning' is a turn lane of side right; rel.occupies ('a road user's footprint overlaps a lane / region') anchors it to the lane the subject is in (bound with s3), so the configuration is the subject's own lane and not any turn lane of the scene. Same words, same atoms as NRS_484B_223_4a. 'A single right lane' is one lane, st.lane being 'a longitudinal strip of roadway for one line of vehicles', of which st.turn_lane is a refinement: the words describe the lane the highway provides, a lane designated only for turning on the right. 'Highway' (DEF-NRS-484A-095, not an aggregate) is the way the lane lies on; the lane kind alone decides the configuration."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle (DEF-NRS-484A-320: 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); ru.aggregate: 'membership of a legal aggregate: the atom's literal argument is an aggregate id'. Not a stand-in for a named class: the words name none. Same mapping as 'a vehicle must:' in NRS_484B_223_4a."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.turn_lane",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'Being driven in the right turn lane' is the subject's footprint overlapping (rel.occupies) the right turn lane L of s1; the intersection the duty concerns is the one L leads into: st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end — the carrier is an approach to that intersection' (a turn lane refines st.lane, a carrier the relation admits); st.intersection, 'the region where two roadways meet'. Not a stand-in for the lane a lane leads into (st.lane_connectivity) or a device's governance: the relation is the source's entry topology. 'Driven' is read through the vehicle's motion (agency reading)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.right_turn_through_region"
+   ],
+   "justification": "'Travel through an intersection' is a passage through X, from the subject's entry into X (its footprint comes to overlap X, rel.occupies) to its exit, that is not a turn: drv.motion.right_turn_through_region (proposed this iteration) 'has made a turn to the right through region r, recognized as it leaves r'; its not-denoted cases ('a passage through r whose heading change is above minus turn_min, such as one straight through or a turn to the left; a heading change of minus u_turn_min or less') are exactly the travel through that the turn-only lane forbids. The duty is therefore that, at the exit of a passage entered from the right turn lane, the concept holds."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At an observation at which the subject's footprint does not overlap an intersection X and overlapped it at the previous observation (its exit from X), where at some observation from its latest entry into X (the observation at which its footprint came to overlap X, having not overlapped it at the observation before) up to that exit, the subject's footprint overlapped a turn lane L of side right (st.turn_lane) that enters X (st.lane_enters L X): the passage was made while being driven in the right turn lane. At its entry the footprint overlaps both L and X.",
+ "obligation": "At that exit, drv.motion.right_turn_through_region(subject, X) holds, with step p.heading_since_step_carla_scene_graph, turn_min p.turn_heading_min and u_turn_min p.u_turn_heading_min: the passage through X from its entry to its exit was a turn to the right. A passage straight through, a turn to the left or a reversal is travel through the intersection and violates the duty. Where the entry was not observed, an interval between observations since it exceeds the step, or a yaw rate since it is missing, the verdict is unknown.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'being driven' is read through the vehicle's motion in the lane, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Subject (ru.aggregate vehicle) occupies a st.turn_lane of side right that enters intersection X (st.lane_enters); it enters X from that lane and leaves X on the far side with its heading change since entry (from kin.yaw_rate) near zero: right_turn_through_region does not hold at the exit."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Subject enters X from the right turn lane and leaves X with a heading change since entry of about a quarter turn to the right: right_turn_through_region holds at the exit."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Subject enters X from an ordinary st.lane (no turn lane) and passes straight through; its footprint never overlaps a right turn lane entering X."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Subject enters X from the right turn lane and leaves it; kin.yaw_rate is absent on the source, so the heading change since entry, and right_turn_through_region, are unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "occasion_s3",
+   "expected": "violated",
+   "narrative": "Subject's footprint overlaps the right turn lane L only at its entry into X (it overlaps L and X there), and only X afterwards; it passes straight through and exits: the condition held for part of the passage, and right_turn_through_region does not hold at the exit."
+  },
+  {
+   "name": "occasion_s3_outside",
+   "expected": "not_applicable",
+   "narrative": "Subject occupied the right turn lane L earlier but moved into the adjacent through lane before reaching X; its footprint does not overlap L at its entry or afterwards; it passes straight through X: the condition held only before the passage began."
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.right_turn_through_region",
+  "boundary": "event",
+  "onset": {
+   "words": "its entry into r",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The concept's act begins 'at the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation': the passage through the intersection begins at the entry."
+  },
+  "recognition": "The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r.",
+  "under_way": {
+   "words": "the heading change of a since its entry into r, integrated from its yaw rate, while its footprint overlaps r",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "An observation inside the passage is one since the entry at which the heading change is being integrated from kin.yaw_rate ('rate of change of heading') while the footprint overlaps X; before the entry no integration runs."
+  },
+  "spans": {
+   "s1": "at_recognition",
+   "s3": "some_moment"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "lane-change heading changes of a few degrees versus junction turns of about ninety degrees in naturalistic driving data"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "midpoint between a right-angle turn and a full reversal of direction"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

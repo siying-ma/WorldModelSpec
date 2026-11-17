@@ -1,0 +1,158 @@
+{
+ "node_id": "NRS_484B_490",
+ "law_refs": [
+  "NRS-484B-490"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "When official traffic-control devices are erected prohibiting parking upon a narrow highway,",
+   "role": "trigger"
+  },
+  {
+   "id": "d2",
+   "text": "a person",
+   "role": "subject"
+  },
+  {
+   "id": "d3",
+   "text": "shall not park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "d4",
+   "text": "upon any such highway.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "st.travel_region",
+    "rel.occupies",
+    "prim.conditions_hold"
+   ],
+   "derived": [],
+   "justification": "'official traffic-control devices' (DEF-NRS-484A-145, 'every sign, signal, marking and device ... placed or erected by a public authority') 'prohibiting parking upon a narrow highway' is the signed zone of kind narrow_highway (dev.zone_sign, 'a sign that begins or ends a signed zone along the road; kind ∈ {..., narrow_highway, ...}'), whose legend's conditions hold at the observation (prim.conditions_hold; dev.zone_sign is 'Not a stand-in for: whether the condition holds now — that is prim.conditions_hold'), governing (dev.governs, 'the travel regions whose traffic the device controls') the travel region (st.travel_region) the subject occupies (rel.occupies). The narrowness of the highway is the posting's designation, read from the sign (status), not a width the rule measures."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a person ... a vehicle': the duty binds the vehicle the person parks, the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); ru.aggregate is 'membership of a legal aggregate'."
+  },
+  {
+   "span": "d3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'park' is DEF-NRS-484A-155, 'the standing of a vehicle, whether occupied or not, otherwise than temporarily for the purpose of and while actually engaged in loading or unloading of merchandise or passengers', which drv.motion.parked denotes: at rest at every observation of the window behind of length min_duration, a shorter halt being the temporary one the definition leaves out (index: 'No person shall park' maps to drv.motion.parked)."
+  },
+  {
+   "span": "d4",
+   "atoms": [
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'upon any such highway' is the subject's footprint overlapping (rel.occupies) a travel region (st.travel_region) of the highway the posting governs: the same region the trigger binds, the device's dev.governs relation fixing it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies (rel.occupies) a travel region r (st.travel_region) that a zone sign (dev.zone_sign) of kind narrow_highway governs (dev.governs), the sign's conditions holding at the observation for the subject (prim.conditions_hold).",
+ "obligation": "The subject is not parked: violated where drv.motion.parked holds for it (speed_tol p.halt_speed_tolerance, min_duration p.parking_min_duration), compliant where it does not.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "d3",
+   "why": "Parking, a standing otherwise than temporarily for loading or unloading, is read through the halt's duration: a halt no longer than p.parking_min_duration is read as the temporary one.",
+   "kind": "reading"
+  },
+  {
+   "span": "d1",
+   "why": "The prohibition's legal status and the highway's designation as narrow are read from the posted narrow_highway zone sign.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "d2",
+   "why": "The person is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A vehicle that drove into a lane governed by a narrow_highway zone sign with an empty conditions set has stood there (kin.speed 0) for 200 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same vehicle halts 20 s in the governed lane and drives on."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The vehicle stands 200 s in a lane no narrow_highway zone sign governs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe which regions the devices govern.",
+   "masked": [
+    "dev.governs"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; reused unchanged"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "proposed this iteration by LVMC_11_40_170; reused unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

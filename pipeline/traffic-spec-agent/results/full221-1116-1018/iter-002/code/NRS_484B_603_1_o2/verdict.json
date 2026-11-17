@@ -1,0 +1,334 @@
+{
+ "verdict": "OK",
+ "details": [
+  "14 witnesses, 12 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "args": [
+     {
+      "var": "subject"
+     },
+     {
+      "lit": "DEF-NRS-484A-320::vehicle"
+     }
+    ],
+    "atom": "ru_aggregate",
+    "params": []
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_603_1_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-603-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "u"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "body": {
+          "args": [
+           {
+            "var": "u"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "highway"
+         },
+         "var": "r"
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "implies": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "u"
+              }
+             ],
+             "derived": "prim_closest_approach_within",
+             "params": [
+              {
+               "param": "p.conflict_horizon"
+              }
+             ]
+            },
+            {
+             "cmp": "le",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "u"
+               }
+              ],
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ],
+              "quantity": "prim_closest_approach_distance"
+             },
+             "rhs": {
+              "param": "p.conflict_centre_clearance"
+             }
+            }
+           ]
+          },
+          {
+           "or": [
+            {
+             "cmp": "le",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               }
+              ],
+              "measure": "kin_speed"
+             },
+             "rhs": {
+              "param": "p.halt_speed_tolerance"
+             }
+            },
+            {
+             "or": [
+              {
+               "cmp": "le",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "measure": "kin_accel_longitudinal"
+               },
+               "rhs": {
+                "neg": {
+                 "param": "p.speed_decrease_decel_min"
+                }
+               }
+              },
+              {
+               "cmp": "le",
+               "lhs": {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 }
+                ]
+               },
+               "rhs": {
+                "mul": [
+                 {
+                  "add": [
+                   {
+                    "sub": [
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "u"
+                       }
+                      ],
+                      "measure": "rel_surface_gap"
+                     },
+                     {
+                      "mul": [
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         }
+                        ],
+                        "measure": "kin_speed"
+                       },
+                       {
+                        "param": "p.driver_reaction_time"
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "sub": [
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "u"
+                       }
+                      ],
+                      "measure": "rel_surface_gap"
+                     },
+                     {
+                      "mul": [
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         }
+                        ],
+                        "measure": "kin_speed"
+                       },
+                       {
+                        "param": "p.driver_reaction_time"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "cond": {
+                   "args": [],
+                   "atom": "env_ice_or_snow",
+                   "params": []
+                  },
+                  "else": {
+                   "cond": {
+                    "or": [
+                     {
+                      "args": [],
+                      "atom": "env_wet_road",
+                      "params": []
+                     },
+                     {
+                      "args": [],
+                      "atom": "env_precipitation",
+                      "params": []
+                     }
+                    ]
+                   },
+                   "else": {
+                    "param": "p.following_decel_dry"
+                   },
+                   "then": {
+                    "param": "p.following_decel_wet"
+                   }
+                  },
+                  "then": {
+                   "param": "p.following_decel_ice"
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "not": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "u"
+             }
+            ],
+            "atom": "rel_contact",
+            "params": []
+           },
+           {
+            "cmp": "gt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              }
+             ],
+             "measure": "kin_speed"
+            },
+            "rhs": {
+             "param": "p.halt_speed_tolerance"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "u"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "f29fa9565243883aa4ef8bf9",
+  "candidate_digest": "32ca84e34ce4101db3027c6b4443eb31c147ab8d444febc63f91b4acc6755f63"
+ }
+}

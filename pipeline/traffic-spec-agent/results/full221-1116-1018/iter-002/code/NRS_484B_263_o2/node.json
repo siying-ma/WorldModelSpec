@@ -1,0 +1,232 @@
+{
+ "node_id": "NRS_484B_263_o2",
+ "law_refs": [
+  "NRS-484B-263"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "a2",
+   "text": "about to enter or exit a controlled-access highway",
+   "role": "trigger"
+  },
+  {
+   "id": "a3",
+   "text": "shall yield the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "a4",
+   "text": "to all vehicles approaching on the highway",
+   "role": "condition"
+  },
+  {
+   "id": "a5",
+   "text": "whose proximity constitutes an immediate hazard",
+   "role": "standard"
+  },
+  {
+   "id": "a6",
+   "text": "and shall continue to yield the right-of-way to that traffic",
+   "role": "obligation"
+  },
+  {
+   "id": "a7",
+   "text": "until the driver may proceed with reasonable safety.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate 'membership of a legal aggregate'. 'Driver' is a relational role read through the vehicle's controlled motion. Mapping index: 'The driver of a vehicle' maps to the same aggregate."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "rel.occupies",
+    "st.controlled_access",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "As in NRS_484B_263_o1: st.controlled_access 'a highway with access only at designated points, and its entrance and exit lanes' (DEF-NRS-484A-060 'no legal right of access except at such points only'); rel.occupies 'a road user's footprint overlaps a lane / region (... controlled-access lane ...)'. The entry is the rise of the subject's overlap with region c, the exit the rise of its absence after overlap; kin.speed tells the subject still moves. 'About to' is read by the movement itself."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.controlled_access",
+    "rel.bearing",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'that traffic' refers back to these words, so they keep their full qualification here: the admitted aggregate DEF-NRS-484A-320::vehicle; a footprint overlapping (rel.occupies) the same controlled-access region c; moving (kin.speed above the halt tolerance), with the subject ahead in its frame (rel.bearing 'direction of b from a in a's frame', longitudinal component positive)."
+  },
+  {
+   "span": "a6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "kin.speed",
+    "rel.contact",
+    "kin.time"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel'); 'that traffic' is the approaching vehicles of a4, so a road user the duty concerns carries both aggregates. The continuing yield is read like the yield (mapping index 'shall yield': kin.speed, rel.contact): while the subject moves, no contact (rel.contact 'touch or overlap (a collision)', not a stand-in for a near miss, which a5 and a7 carry). 'continue' places the duty after the entry or exit, read on the clock (kin.time 'instant of observation') through the time since that event."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "a5",
+   "standard": "proximity that constitutes an immediate hazard (the traffic the continuing yield concerns)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: closest approach of the two centres under constant velocities within the time-to-collision threshold at a centre distance below the collision clearance",
+   "surrogate": false
+  },
+  {
+   "span": "a7",
+   "standard": "until the driver may proceed with reasonable safety",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.time"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.merge_window"
+   ],
+   "convention": "the subject may proceed with reasonable safety once no approaching vehicle of that traffic is in a traffic-conflict (closest approach within the time-to-collision threshold below the collision clearance); the continuing duty is read over the merge or diverge that follows the entry or exit, whose duration is the time an acceleration or deceleration lane is run",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject (vehicle aggregate) is moving (kin.speed above p.halt_speed_tolerance), and there is a controlled-access region c whose latest entry or exit by the subject (the latest rise of the subject's overlap with c, or of its non-overlap with c after overlapping it) lies strictly before this observation and no more than p.merge_window before it (Term.sinceRise of that event above zero and at most p.merge_window).",
+ "obligation": "For every such region c (re-bound with that selection): for every other road user v of the traffic aggregate and of the vehicle aggregate that is moving (kin.speed above p.halt_speed_tolerance), whose footprint overlaps c, and in whose frame the subject lies ahead (longitudinal component of rel.bearing from v to the subject positive): the subject and v are not in contact, and it is not the case that their closest approach falls within p.conflict_horizon at a centre distance below p.conflict_centre_clearance.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.merge_window"
+ ],
+ "narrowings": [
+  {
+   "span": "a1",
+   "why": "'driver' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a2",
+   "why": "'about to enter or exit' is read by the entry into or exit from the controlled-access region as the source maps it, as in NRS_484B_263_o1",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "a6",
+   "why": "the continuing yield is judged at the observations that follow the entry or exit within the merge window; once that window has run the subject is taken to have merged or diverged, and its later conduct is judged by the following and lane rules, not by this one",
+   "kind": "reading"
+  },
+  {
+   "span": "a7",
+   "why": "'reasonable safety' is read through the same traffic-conflict bound as the immediate hazard: the subject may proceed once no approaching vehicle of that traffic is in such a conflict with it",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject entered controlled-access region c a short time ago (within p.merge_window, after the entry observation) and keeps moving; vehicle v (traffic and vehicle aggregates) moves on c with the subject ahead of it and their closest approach falls within p.conflict_horizon below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but every vehicle on c is far behind: no closest approach within p.conflict_horizon, no contact."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject entered c long before, more than p.merge_window ago, and travels within it; v closes from behind."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.bearing is not observed, so whether v approaches the subject is unknown while the closest approach is a conflict.",
+   "masked": [
+    "rel.bearing"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Within p.merge_window after its entry into c, the subject moves and no other road user is in the scene: the duty binds the subject alone and is met."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's vehicle-state estimates"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (Hyden; FHWA Surrogate Safety Assessment Model)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.merge_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the time an entering or exiting vehicle takes, after coming onto or leaving the controlled-access highway, to complete its merge into or diverge from the highway's traffic: an acceleration or deceleration lane of about 250 m run at about 25 m/s",
+   "source": "AASHTO Green Book acceleration and deceleration lane lengths"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

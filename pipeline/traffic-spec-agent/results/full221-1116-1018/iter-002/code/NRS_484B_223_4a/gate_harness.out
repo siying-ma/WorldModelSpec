@@ -1,0 +1,40 @@
+'TrafficSpec.Rules.NRS_484B_223_4a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_223_4a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_223_4a","intentions":["int.right_turn"],"laws":["NRS-484B-223-4a"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"t"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"turn_lane"},"var":"t"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_223_4a","intentions":["int.right_turn"],"laws":["NRS-484B-223-4a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"t"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"atom":"rel_occupies","params":[]}]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"int":"int.right_turn"},"exists_region":{"lit":"intersection"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"int":"int.right_turn"},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"r"}]}]},"forall_region":{"lit":"turn_lane"},"var":"t"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"t"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"turn_lane"},"var":"t"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_223_4a","intentions":["int.right_turn"],"laws":["NRS-484B-223-4a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"t"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"subject"},{"var":"t"}],"atom":"rel_occupies","params":[]}]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"int":"int.right_turn"},"exists_region":{"lit":"intersection"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"r"}],"int":"int.right_turn"},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"r"}]}]},"forall_region":{"lit":"turn_lane"},"var":"t"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_turn_lane,st_turn_lane_side,rel_occupies,st_intersection,st_driveway_or_alley_entrance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.turn_lane
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	subject
+OCC	?t
+OCC	t
+OCC	subject,t
+OCC	?t
+OCC	t
+OCC	subject,t
+OCC	?r
+OCC	?r
+TIME	occurrences	0
+TIME	checks	2
+TIME	lint	49
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	9
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	8
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	8
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	14
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	7
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	8
+TIME	witnesses	54
+DONE_WITNESSES

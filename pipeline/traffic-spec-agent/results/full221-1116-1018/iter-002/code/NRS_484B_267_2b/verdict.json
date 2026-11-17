@@ -1,0 +1,678 @@
+{
+ "verdict": "OK",
+ "details": [
+  "16 witnesses, 20 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "e"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "e"
+              },
+              {
+               "lit": "DEF-NRS-484A-020::authorized_emergency_vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "e"
+                }
+               ],
+               "atom": "ru_official_vehicle",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "e"
+                },
+                {
+                 "lit": "regulatory_agency"
+                }
+               ],
+               "atom": "ru_official_vehicle_kind",
+               "params": []
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "e"
+              },
+              {
+               "lit": "red"
+              },
+              {
+               "lit": "flashing"
+              }
+             ],
+             "atom": "sig_warning_lamp",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "or": [
+                {
+                 "cmp": "gt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "e"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 "rhs": {
+                  "param": "p.halt_speed_tolerance"
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "e"
+                    }
+                   ],
+                   "atom": "rel_visible",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "e"
+                       },
+                       {
+                        "lit": "no_signal"
+                       }
+                      ],
+                      "atom": "sig_hand_signal",
+                      "params": []
+                     }
+                    },
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "e"
+                       },
+                       {
+                        "lit": "off"
+                       }
+                      ],
+                      "atom": "sig_turn_indicator",
+                      "params": []
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "and": [
+                {
+                 "cmp": "gt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 "rhs": {
+                  "param": "p.halt_speed_tolerance"
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "e"
+                      },
+                      {
+                       "lit": "ahead"
+                      }
+                     ],
+                     "atom": "rel_bearing",
+                     "params": []
+                    },
+                    {
+                     "cmp": "ge",
+                     "lhs": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "e"
+                       }
+                      ],
+                      "measure": "rel_longitudinal_overlap"
+                     },
+                     "rhs": {
+                      "lit": {
+                       "den": 1,
+                       "num": 0
+                      },
+                      "unit": "metre"
+                     }
+                    }
+                   ]
+                  },
+                  {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "e"
+                     }
+                    ],
+                    "measure": "rel_centre_distance"
+                   },
+                   "rhs": {
+                    "param": "p.emergency_approach_reach"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_user": "e"
+     },
+     {
+      "not": {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "d"
+           },
+           {
+            "lit": "police_officer"
+           }
+          ],
+          "atom": "dev_human_direction_role",
+          "params": []
+         },
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "d"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "dev_governs",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "travel_region"
+          },
+          "var": "r"
+         }
+        ]
+       },
+       "exists_device": {
+        "lit": "human_direction"
+       },
+       "var": "d"
+      }
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_267_2b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-267-2b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "e"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "e"
+              },
+              {
+               "lit": "DEF-NRS-484A-020::authorized_emergency_vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "e"
+                }
+               ],
+               "atom": "ru_official_vehicle",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "e"
+                },
+                {
+                 "lit": "regulatory_agency"
+                }
+               ],
+               "atom": "ru_official_vehicle_kind",
+               "params": []
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "e"
+              },
+              {
+               "lit": "red"
+              },
+              {
+               "lit": "flashing"
+              }
+             ],
+             "atom": "sig_warning_lamp",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "or": [
+                {
+                 "cmp": "gt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "e"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 "rhs": {
+                  "param": "p.halt_speed_tolerance"
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "e"
+                    }
+                   ],
+                   "atom": "rel_visible",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "e"
+                       },
+                       {
+                        "lit": "no_signal"
+                       }
+                      ],
+                      "atom": "sig_hand_signal",
+                      "params": []
+                     }
+                    },
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "e"
+                       },
+                       {
+                        "lit": "off"
+                       }
+                      ],
+                      "atom": "sig_turn_indicator",
+                      "params": []
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "and": [
+                {
+                 "cmp": "gt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 "rhs": {
+                  "param": "p.halt_speed_tolerance"
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "e"
+                      },
+                      {
+                       "lit": "ahead"
+                      }
+                     ],
+                     "atom": "rel_bearing",
+                     "params": []
+                    },
+                    {
+                     "cmp": "ge",
+                     "lhs": {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "e"
+                       }
+                      ],
+                      "measure": "rel_longitudinal_overlap"
+                     },
+                     "rhs": {
+                      "lit": {
+                       "den": 1,
+                       "num": 0
+                      },
+                      "unit": "metre"
+                     }
+                    }
+                   ]
+                  },
+                  {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "e"
+                     }
+                    ],
+                    "measure": "rel_centre_distance"
+                   },
+                   "rhs": {
+                    "param": "p.emergency_approach_reach"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "e"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "e"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "e"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "implies": [
+            {
+             "cmp": "ge",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "e"
+               }
+              ],
+              "measure": "rel_longitudinal_overlap"
+             },
+             "rhs": {
+              "lit": {
+               "den": 1,
+               "num": 0
+              },
+              "unit": "metre"
+             }
+            },
+            {
+             "cmp": "ge",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "e"
+               }
+              ],
+              "measure": "rel_surface_gap"
+             },
+             "rhs": {
+              "param": "p.emergency_pass_clearance"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "e"
+   },
+   "residues": [
+    "illustrative: arriving at or leaving a scene are instances of moving or preparing to move, which t4 already reads; the duty is the same whether or not the vehicle is arriving at or leaving a scene"
+   ],
+   "surrogate": true
+  },
+  "context": "18a3d127785ded5d3ebe9008",
+  "candidate_digest": "e62154323d8d5f527f7458ceeb35607622be5dfccdc9e87f58acc59628a4cc3a"
+ }
+}

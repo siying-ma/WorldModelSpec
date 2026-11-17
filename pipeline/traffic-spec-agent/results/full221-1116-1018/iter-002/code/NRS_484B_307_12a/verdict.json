@@ -1,0 +1,647 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 12 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "l"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "highway"
+         },
+         "var": "h"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "var": "l"
+             }
+            ],
+            "atom": "dev_governs",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "lit": "green_down_arrow"
+               }
+              ],
+              "atom": "dev_lane_control_signal_state",
+              "params": []
+             },
+             {
+              "cmp": "gt",
+              "lhs": {
+               "add": [
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "dev_position"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_heading"
+                  }
+                 ]
+                },
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "dev_position"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "kin_heading"
+                  }
+                 ]
+                }
+               ]
+              },
+              "rhs": {
+               "add": [
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_position"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_heading"
+                  }
+                 ]
+                },
+                {
+                 "mul": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "kin_position"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "kin_heading"
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "exists_device": {
+          "lit": "lane_control_signal"
+         },
+         "var": "d"
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "lane"
+      },
+      "var": "l"
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l2"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d2"
+               },
+               {
+                "var": "l2"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "not": {
+                 "args": [
+                  {
+                   "var": "d2"
+                  },
+                  {
+                   "lit": "dark"
+                  }
+                 ],
+                 "atom": "dev_lane_control_signal_state",
+                 "params": []
+                }
+               },
+               {
+                "cmp": "gt",
+                "lhs": {
+                 "add": [
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "d2"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "dev_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  },
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "d2"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "dev_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "rhs": {
+                 "add": [
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "kin_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  },
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "exists_device": {
+          "lit": "lane_control_signal"
+         },
+         "var": "d2"
+        },
+        "exists_region": {
+         "lit": "lane"
+        },
+        "var": "l2"
+       },
+       {
+        "not": {
+         "args": [
+          {
+           "var": "subject"
+          }
+         ],
+         "derived": "drv_motion_complete_halt",
+         "params": [
+          {
+           "param": "p.halt_speed_tolerance"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_307_12a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-307-12a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "implies": [
+       {
+        "and": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l2"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d2"
+               },
+               {
+                "var": "l2"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "not": {
+                 "args": [
+                  {
+                   "var": "d2"
+                  },
+                  {
+                   "lit": "dark"
+                  }
+                 ],
+                 "atom": "dev_lane_control_signal_state",
+                 "params": []
+                }
+               },
+               {
+                "cmp": "gt",
+                "lhs": {
+                 "add": [
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "d2"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "dev_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  },
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "d2"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "dev_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "rhs": {
+                 "add": [
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "kin_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  },
+                  {
+                   "mul": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_position"
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_heading"
+                    }
+                   ]
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            }
+           ],
+           "derived": "drv_motion_complete_halt",
+           "params": [
+            {
+             "param": "p.halt_speed_tolerance"
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "args": [
+         {
+          "var": "d2"
+         },
+         {
+          "lit": "green_down_arrow"
+         }
+        ],
+        "atom": "dev_lane_control_signal_state",
+        "params": []
+       }
+      ]
+     },
+     "forall_device": {
+      "lit": "lane_control_signal"
+     },
+     "var": "d2"
+    },
+    "forall_region": {
+     "lit": "lane"
+    },
+    "var": "l2"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "db68923f20d4264320a6d337",
+  "candidate_digest": "6c9522fc6168992a723cf0a652d821a833b78468c8e6d436749791bfd2dd51d8"
+ }
+}

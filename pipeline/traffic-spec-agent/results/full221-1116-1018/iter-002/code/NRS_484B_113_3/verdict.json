@@ -1,0 +1,205 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "args": [
+     {
+      "var": "subject"
+     }
+    ],
+    "derived": "drv_motion_moving_backward",
+    "params": [
+     {
+      "param": "p.halt_speed_tolerance"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_113_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-113-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "other"
+           }
+          ]
+         }
+        },
+        {
+         "or": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "other"
+              },
+              {
+               "lit": "DEF-NRS-484A-285::traffic"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "other"
+                 },
+                 {
+                  "var": "way"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               "exists_region": {
+                "lit": "highway"
+               },
+               "var": "way"
+              },
+              {
+               "not": {
+                "args": [
+                 {
+                  "var": "other"
+                 }
+                ],
+                "derived": "drv_motion_complete_halt",
+                "params": [
+                 {
+                  "param": "p.halt_speed_tolerance"
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "args": [
+            {
+             "var": "other"
+            },
+            {
+             "lit": "DEF-NRS-484A-165::pedestrian"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "other"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        },
+        {
+         "not": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "other"
+             }
+            ],
+            "derived": "prim_closest_approach_within",
+            "params": [
+             {
+              "param": "p.conflict_horizon"
+             }
+            ]
+           },
+           {
+            "cmp": "lt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "other"
+              }
+             ],
+             "params": [
+              {
+               "param": "p.conflict_horizon"
+              }
+             ],
+             "quantity": "prim_closest_approach_distance"
+            },
+            "rhs": {
+             "param": "p.conflict_centre_clearance"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "other"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "0339d52548932a8e8722f0be",
+  "candidate_digest": "c6c74e30cd718a59e27725170fde6062448dae857a824b8b355b60a2ff443992"
+ }
+}

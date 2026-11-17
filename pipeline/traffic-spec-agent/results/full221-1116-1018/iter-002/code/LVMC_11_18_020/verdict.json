@@ -1,0 +1,803 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 20 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "and": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "c"
+           },
+           {
+            "var": "j"
+           }
+          ],
+          "atom": "st_lane_enters",
+          "params": []
+         }
+        ]
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "d"
+              },
+              {
+               "lit": "school_crossing"
+              }
+             ],
+             "atom": "dev_zone_sign_kind",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "d"
+              },
+              {
+               "var": "c"
+              }
+             ],
+             "atom": "dev_governs",
+             "params": []
+            }
+           ]
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "cw"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "st_entrance_of",
+              "params": []
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "not": {
+                  "same": [
+                   {
+                    "var": "o"
+                   },
+                   {
+                    "var": "subject"
+                   }
+                  ]
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "o"
+                      }
+                     ],
+                     "atom": "ru_pedestrian",
+                     "params": []
+                    },
+                    {
+                     "or": [
+                      {
+                       "args": [
+                        {
+                         "var": "o"
+                        }
+                       ],
+                       "atom": "ru_bicycle",
+                       "params": []
+                      },
+                      {
+                       "or": [
+                        {
+                         "args": [
+                          {
+                           "var": "o"
+                          }
+                         ],
+                         "atom": "ru_electric_bicycle",
+                         "params": []
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "o"
+                          }
+                         ],
+                         "atom": "ru_electric_scooter",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "o"
+                      },
+                      {
+                       "var": "cw"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "or": [
+                      {
+                       "body": {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "var": "ow"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       },
+                       "exists_region": {
+                        "lit": "one_way_roadway"
+                       },
+                       "var": "ow"
+                      },
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "cw"
+                           },
+                           {
+                            "var": "w"
+                           }
+                          ],
+                          "atom": "st_on_way",
+                          "params": []
+                         },
+                         {
+                          "body": {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "cl"
+                              },
+                              {
+                               "var": "w"
+                              }
+                             ],
+                             "atom": "st_on_way",
+                             "params": []
+                            },
+                            {
+                             "or": [
+                              {
+                               "and": [
+                                {
+                                 "cmp": "gt",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "cl"
+                                   }
+                                  ],
+                                  "params": [],
+                                  "quantity": "prim_region_lateral_offset"
+                                 },
+                                 "rhs": {
+                                  "lit": {
+                                   "den": 1,
+                                   "num": 0
+                                  },
+                                  "unit": "metre"
+                                 }
+                                },
+                                {
+                                 "cmp": "lt",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "o"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "rel_bearing"
+                                 },
+                                 "rhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "cl"
+                                   }
+                                  ],
+                                  "params": [],
+                                  "quantity": "prim_region_lateral_offset"
+                                 }
+                                }
+                               ]
+                              },
+                              {
+                               "and": [
+                                {
+                                 "cmp": "lt",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "cl"
+                                   }
+                                  ],
+                                  "params": [],
+                                  "quantity": "prim_region_lateral_offset"
+                                 },
+                                 "rhs": {
+                                  "lit": {
+                                   "den": 1,
+                                   "num": 0
+                                  },
+                                  "unit": "metre"
+                                 }
+                                },
+                                {
+                                 "cmp": "gt",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "o"
+                                   },
+                                   {
+                                    "lit": "y"
+                                   }
+                                  ],
+                                  "measure": "rel_bearing"
+                                 },
+                                 "rhs": {
+                                  "args": [
+                                   {
+                                    "var": "subject"
+                                   },
+                                   {
+                                    "var": "cl"
+                                   }
+                                  ],
+                                  "params": [],
+                                  "quantity": "prim_region_lateral_offset"
+                                 }
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          "exists_region": {
+                           "lit": "centre_line"
+                          },
+                          "var": "cl"
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "highway"
+                       },
+                       "var": "w"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_user": "o"
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "crosswalk"
+           },
+           "var": "cw"
+          }
+         ]
+        },
+        "exists_device": {
+         "lit": "zone_sign"
+        },
+        "var": "d"
+       }
+      ]
+     },
+     "exists_region": {
+      "lit": "intersection"
+     },
+     "var": "j"
+    },
+    "exists_region": {
+     "lit": "travel_region"
+    },
+    "var": "c"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_18_020",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-18-020"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "body": {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "var": "j"
+               }
+              ],
+              "atom": "st_lane_enters",
+              "params": []
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "lit": "school_crossing"
+                 }
+                ],
+                "atom": "dev_zone_sign_kind",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "var": "c"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               }
+              ]
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "cw"
+                 },
+                 {
+                  "var": "c"
+                 }
+                ],
+                "atom": "st_entrance_of",
+                "params": []
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "not": {
+                    "same": [
+                     {
+                      "var": "o"
+                     },
+                     {
+                      "var": "subject"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "or": [
+                      {
+                       "args": [
+                        {
+                         "var": "o"
+                        }
+                       ],
+                       "atom": "ru_pedestrian",
+                       "params": []
+                      },
+                      {
+                       "or": [
+                        {
+                         "args": [
+                          {
+                           "var": "o"
+                          }
+                         ],
+                         "atom": "ru_bicycle",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "o"
+                            }
+                           ],
+                           "atom": "ru_electric_bicycle",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "o"
+                            }
+                           ],
+                           "atom": "ru_electric_scooter",
+                           "params": []
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "o"
+                        },
+                        {
+                         "var": "cw"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "or": [
+                        {
+                         "body": {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "ow"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         },
+                         "exists_region": {
+                          "lit": "one_way_roadway"
+                         },
+                         "var": "ow"
+                        },
+                        {
+                         "body": {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "cw"
+                             },
+                             {
+                              "var": "w"
+                             }
+                            ],
+                            "atom": "st_on_way",
+                            "params": []
+                           },
+                           {
+                            "body": {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "cl"
+                                },
+                                {
+                                 "var": "w"
+                                }
+                               ],
+                               "atom": "st_on_way",
+                               "params": []
+                              },
+                              {
+                               "or": [
+                                {
+                                 "and": [
+                                  {
+                                   "cmp": "gt",
+                                   "lhs": {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "var": "cl"
+                                     }
+                                    ],
+                                    "params": [],
+                                    "quantity": "prim_region_lateral_offset"
+                                   },
+                                   "rhs": {
+                                    "lit": {
+                                     "den": 1,
+                                     "num": 0
+                                    },
+                                    "unit": "metre"
+                                   }
+                                  },
+                                  {
+                                   "cmp": "lt",
+                                   "lhs": {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "var": "o"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "rel_bearing"
+                                   },
+                                   "rhs": {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "var": "cl"
+                                     }
+                                    ],
+                                    "params": [],
+                                    "quantity": "prim_region_lateral_offset"
+                                   }
+                                  }
+                                 ]
+                                },
+                                {
+                                 "and": [
+                                  {
+                                   "cmp": "lt",
+                                   "lhs": {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "var": "cl"
+                                     }
+                                    ],
+                                    "params": [],
+                                    "quantity": "prim_region_lateral_offset"
+                                   },
+                                   "rhs": {
+                                    "lit": {
+                                     "den": 1,
+                                     "num": 0
+                                    },
+                                    "unit": "metre"
+                                   }
+                                  },
+                                  {
+                                   "cmp": "gt",
+                                   "lhs": {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "var": "o"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "rel_bearing"
+                                   },
+                                   "rhs": {
+                                    "args": [
+                                     {
+                                      "var": "subject"
+                                     },
+                                     {
+                                      "var": "cl"
+                                     }
+                                    ],
+                                    "params": [],
+                                    "quantity": "prim_region_lateral_offset"
+                                   }
+                                  }
+                                 ]
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "exists_region": {
+                             "lit": "centre_line"
+                            },
+                            "var": "cl"
+                           }
+                          ]
+                         },
+                         "exists_region": {
+                          "lit": "highway"
+                         },
+                         "var": "w"
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_user": "o"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "not": {
+           "rises": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "cw"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          }
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "crosswalk"
+       },
+       "var": "cw"
+      },
+      "forall_device": {
+       "lit": "zone_sign"
+      },
+      "var": "d"
+     },
+     "forall_region": {
+      "lit": "intersection"
+     },
+     "var": "j"
+    },
+    "forall_region": {
+     "lit": "travel_region"
+    },
+    "var": "c"
+   },
+   "residues": [
+    "an authority given to the City Traffic Engineer to mark school crosswalks; it imposes nothing on a road user, and the duty's own words select the crosswalk by the School-Xing sign displayed for it (k5), so the duty is the same whether or not these words are read",
+    "an authority given to the City Traffic Engineer to mark or sign 'School-Xing' in advance of a crosswalk; the duty's own words read the sign displayed (k5), whoever placed it and at whatever set-back, so the duty is the same whether or not these words are read"
+   ],
+   "surrogate": false
+  },
+  "context": "67be0e73fd74b88dceeeedc8",
+  "candidate_digest": "0fe465221eaa8527b88df38d8303a920d74c7e950b56c775fc50b9f2e59a2466"
+ }
+}

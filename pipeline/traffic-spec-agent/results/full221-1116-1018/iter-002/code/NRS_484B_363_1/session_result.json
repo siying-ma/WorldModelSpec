@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 112941,
+  "stop_reason": "end_turn",
+  "session_id": "a4329afb-219b-42ad-91ab-e1fa8ba64799",
+  "total_cost_usd": 1.24601334,
+  "usage": {
+   "input_tokens": 16,
+   "cache_creation_input_tokens": 95784,
+   "cache_read_input_tokens": 556766,
+   "output_tokens": 12542,
+   "output_tokens_details": {
+    "thinking_tokens": 4099
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 95784,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 664,
+     "cache_read_input_tokens": 99181,
+     "cache_creation_input_tokens": 1071,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1071
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41967,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00463122,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 16,
+    "outputTokens": 12542,
+    "cacheReadInputTokens": 556766,
+    "cacheCreationInputTokens": 95784,
+    "webSearchRequests": 0,
+    "costUSD": 1.24138212,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4099,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 95784,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The rule and its witnesses for `NRS_484B_363_1` are written, and the gate returned **OK** on the first of the 6 allowed runs, with 14 witnesses passing.\n\n**Rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_363_1.lean`):\n- **Who it covers:** the subject belongs to the `DEF-NRS-484A-130::motor_vehicle` aggregate.\n- **When it applies:** some school zone sign that isn't an end sign governs a travel region the subject occupies. For that sign and region, none of the four exceptions holds:\n  - (a) it is not a school day;\n  - (b) it is within the half-hour margin outside school operation;\n  - (c) a working beacon covers the zone, pupils are in class, and no working beacon is flashing;\n  - (d) no working beacon covers the zone and the sign's posted conditions don't hold now.\n- **The duty:** speed is at most 15 mph, written with `Units.mph 15`.\n- **Readings:** none of my own. The node already says the duty applies if any sign-and-region pair qualifies, and that \"not flashing\" is checked against every working beacon.\n\n**Witnesses** (`library/TrafficSpecWitness/NRS_484B/NRS_484B_363_1.lean`): the 8 planned scenarios, plus 6 I added so that every part of the formula changes at least one verdict:\n- the half-hour margin assumption is true (not applicable);\n- pupils are not in class (violated);\n- the beacon is inoperative, once outside the sign's posted hours (not applicable) and once inside them (violated);\n- the zone sign is an end sign (not applicable);\n- the zone sign is a speed zone instead of a school zone (not applicable).\n\nIn `branch_2` I set the time outside the sign's posted hours. That way, exception (d) is ruled out only because a working beacon covers the zone.\n\n`task_result.md` is written in the working directory.",
+  "ttft_ms": 8883,
+  "type": "result",
+  "duration_ms": 122697,
+  "uuid": "7b9be018-a109-456c-8128-c9c083683a32",
+  "ttft_stream_ms": 1228,
+  "time_to_request_ms": 388,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 64,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 15,
+   "input_hooks": 4,
+   "conversation_append": 1,
+   "transcript_persist": 51,
+   "tool_pool_refresh": 2,
+   "init_message": 4,
+   "init_frame_send": 8,
+   "engine_pickup": 11,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 3,
+   "request_announcements": 190,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 7,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 54,
+  "time_to_request_cpu_ms": 396,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 13,
+   "major_faults": 0,
+   "setup_ms": 1,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 6,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 6,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1228,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41967,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00463122,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 16,
+    "outputTokens": 12542,
+    "cacheReadInputTokens": 556766,
+    "cacheCreationInputTokens": 95784,
+    "webSearchRequests": 0,
+    "costUSD": 1.24138212,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4099,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 95784,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

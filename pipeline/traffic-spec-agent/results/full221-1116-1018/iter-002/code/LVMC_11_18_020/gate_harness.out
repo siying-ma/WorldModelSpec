@@ -1,0 +1,111 @@
+'TrafficSpec.Rules.LVMC_11_18_020.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_18_020.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_18_020","intentions":[],"laws":["LVMC-11-18-020"],"narrowings":[],"operationalizations":[],"residues":["an authority given to the City Traffic Engineer to mark school crosswalks; it imposes nothing on a road user, and the duty's own words select the crosswalk by the School-Xing sign displayed for it (k5), so the duty is the same whether or not these words are read","an authority given to the City Traffic Engineer to mark or sign 'School-Xing' in advance of a crosswalk; the duty's own words read the sign displayed (k5), whoever placed it and at whatever set-back, so the duty is the same whether or not these words are read"],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},{"body":{"and":[{"and":[{"args":[{"var":"d"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},{"body":{"and":[{"args":[{"var":"cw"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"body":{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"o"}],"atom":"ru_pedestrian","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_bicycle","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_electric_bicycle","params":[]},{"args":[{"var":"o"}],"atom":"ru_electric_scooter","params":[]}]}]}]},{"and":[{"args":[{"var":"o"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"ow"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"one_way_roadway"},"var":"ow"},{"body":{"and":[{"args":[{"var":"cw"},{"var":"w"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"cl"},{"var":"w"}],"atom":"st_on_way","params":[]},{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]}]}]},"exists_region":{"lit":"centre_line"},"var":"cl"}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]},"exists_user":"o"}]},"exists_region":{"lit":"crosswalk"},"var":"cw"}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]},"exists_region":{"lit":"intersection"},"var":"j"},"exists_region":{"lit":"travel_region"},"var":"c"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_18_020","intentions":[],"laws":["LVMC-11-18-020"],"narrowings":[],"obligation":{"body":{"body":{"body":{"body":{"implies":[{"and":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},{"and":[{"and":[{"args":[{"var":"d"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"cw"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"body":{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"o"}],"atom":"ru_pedestrian","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_bicycle","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_electric_bicycle","params":[]},{"args":[{"var":"o"}],"atom":"ru_electric_scooter","params":[]}]}]}]},{"and":[{"args":[{"var":"o"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"ow"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"one_way_roadway"},"var":"ow"},{"body":{"and":[{"args":[{"var":"cw"},{"var":"w"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"cl"},{"var":"w"}],"atom":"st_on_way","params":[]},{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]}]}]},"exists_region":{"lit":"centre_line"},"var":"cl"}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]},"exists_user":"o"}]}]}]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"cw"}],"atom":"rel_occupies","params":[]}}}]},"forall_region":{"lit":"crosswalk"},"var":"cw"},"forall_device":{"lit":"zone_sign"},"var":"d"},"forall_region":{"lit":"intersection"},"var":"j"},"forall_region":{"lit":"travel_region"},"var":"c"},"residues":["an authority given to the City Traffic Engineer to mark school crosswalks; it imposes nothing on a road user, and the duty's own words select the crosswalk by the School-Xing sign displayed for it (k5), so the duty is the same whether or not these words are read","an authority given to the City Traffic Engineer to mark or sign 'School-Xing' in advance of a crosswalk; the duty's own words read the sign displayed (k5), whoever placed it and at whatever set-back, so the duty is the same whether or not these words are read"],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},{"body":{"and":[{"and":[{"args":[{"var":"d"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},{"body":{"and":[{"args":[{"var":"cw"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"body":{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"o"}],"atom":"ru_pedestrian","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_bicycle","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_electric_bicycle","params":[]},{"args":[{"var":"o"}],"atom":"ru_electric_scooter","params":[]}]}]}]},{"and":[{"args":[{"var":"o"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"ow"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"one_way_roadway"},"var":"ow"},{"body":{"and":[{"args":[{"var":"cw"},{"var":"w"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"cl"},{"var":"w"}],"atom":"st_on_way","params":[]},{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]}]}]},"exists_region":{"lit":"centre_line"},"var":"cl"}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]},"exists_user":"o"}]},"exists_region":{"lit":"crosswalk"},"var":"cw"}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]},"exists_region":{"lit":"intersection"},"var":"j"},"exists_region":{"lit":"travel_region"},"var":"c"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_18_020","intentions":[],"laws":["LVMC-11-18-020"],"narrowings":[],"obligation":{"body":{"body":{"body":{"body":{"implies":[{"and":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},{"and":[{"and":[{"args":[{"var":"d"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"cw"},{"var":"c"}],"atom":"st_entrance_of","params":[]},{"body":{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"o"}],"atom":"ru_pedestrian","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_bicycle","params":[]},{"or":[{"args":[{"var":"o"}],"atom":"ru_electric_bicycle","params":[]},{"args":[{"var":"o"}],"atom":"ru_electric_scooter","params":[]}]}]}]},{"and":[{"args":[{"var":"o"},{"var":"cw"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"subject"},{"var":"ow"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"one_way_roadway"},"var":"ow"},{"body":{"and":[{"args":[{"var":"cw"},{"var":"w"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"cl"},{"var":"w"}],"atom":"st_on_way","params":[]},{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"o"},{"lit":"y"}],"measure":"rel_bearing"},"rhs":{"args":[{"var":"subject"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"}}]}]}]},"exists_region":{"lit":"centre_line"},"var":"cl"}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]},"exists_user":"o"}]}]}]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"cw"}],"atom":"rel_occupies","params":[]}}}]},"forall_region":{"lit":"crosswalk"},"var":"cw"},"forall_device":{"lit":"zone_sign"},"var":"d"},"forall_region":{"lit":"intersection"},"var":"j"},"forall_region":{"lit":"travel_region"},"var":"c"},"residues":["an authority given to the City Traffic Engineer to mark school crosswalks; it imposes nothing on a road user, and the duty's own words select the crosswalk by the School-Xing sign displayed for it (k5), so the duty is the same whether or not these words are read","an authority given to the City Traffic Engineer to mark or sign 'School-Xing' in advance of a crosswalk; the duty's own words read the sign displayed (k5), whoever placed it and at whatever set-back, so the duty is the same whether or not these words are read"],"surrogate":false}
+ATOMS	ru_aggregate,st_travel_region,st_intersection,rel_occupies,st_lane_enters,dev_zone_sign,dev_zone_sign_kind,dev_governs,st_crosswalk,st_entrance_of,ru_pedestrian,ru_bicycle,ru_electric_bicycle,ru_electric_scooter,st_one_way_roadway,st_highway,st_on_way,st_centre_line,prim_region_lateral_offset,rel_bearing
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.governs
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+OCC	subject
+OCC	?c
+OCC	?j
+OCC	subject,c
+OCC	c,j
+OCC	?d
+OCC	d
+OCC	d,c
+OCC	?cw
+OCC	cw,c
+OCC	?o
+OCC	o,subject
+OCC	o
+OCC	o
+OCC	o
+OCC	o
+OCC	o,cw
+OCC	?ow
+OCC	subject,ow
+OCC	?w
+OCC	cw,w
+OCC	?cl
+OCC	cl,w
+OCC	subject
+OCC	cl
+OCC	subject,o
+OCC	subject,cl
+OCC	subject
+OCC	cl
+OCC	subject,o
+OCC	subject,cl
+OCC	?c
+OCC	?j
+OCC	?d
+OCC	?cw
+OCC	subject,c
+OCC	c,j
+OCC	d
+OCC	d,c
+OCC	cw,c
+OCC	?o
+OCC	o,subject
+OCC	o
+OCC	o
+OCC	o
+OCC	o
+OCC	o,cw
+OCC	?ow
+OCC	subject,ow
+OCC	?w
+OCC	cw,w
+OCC	?cl
+OCC	cl,w
+OCC	subject
+OCC	cl
+OCC	subject,o
+OCC	subject,cl
+OCC	subject
+OCC	cl
+OCC	subject,o
+OCC	subject,cl
+OCC	subject,cw
+TIME	occurrences	1
+TIME	checks	11
+TIME	lint	200
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	28
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	29
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	19
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	29
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	26
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	26
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	25
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	26
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	26
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	27
+TIME	witnesses	261
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_18_020.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_18_020.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_18_020	35	9
+TIME	adequacy_start	6
+TIME	adequacy	8511
+DONE

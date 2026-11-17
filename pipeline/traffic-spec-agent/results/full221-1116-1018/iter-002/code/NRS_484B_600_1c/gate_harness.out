@@ -1,0 +1,51 @@
+'TrafficSpec.Rules.NRS_484B_600_1c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1c.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_600_1c","intentions":[],"laws":["NRS-484B-600-1c"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"or":[{"args":[{"var":"sign"},{"lit":"maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"or":[{"args":[{"var":"sign"},{"lit":"structure_maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"args":[{"var":"sign"},{"lit":"zone"}],"atom":"dev_speed_limit_sign_kind","params":[]}]}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"region"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sign"},{"var":"region"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"region"}]},"exists_device":{"lit":"speed_limit_sign"},"var":"sign"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_600_1c","intentions":[],"laws":["NRS-484B-600-1c"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"or":[{"args":[{"var":"sign"},{"lit":"maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"or":[{"args":[{"var":"sign"},{"lit":"structure_maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"args":[{"var":"sign"},{"lit":"zone"}],"atom":"dev_speed_limit_sign_kind","params":[]}]}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"region"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sign"},{"var":"region"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"region"}]},{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"args":[{"var":"sign"}],"measure":"dev_speed_limit_sign_value"}}]},"forall_device":{"lit":"speed_limit_sign"},"var":"sign"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"or":[{"args":[{"var":"sign"},{"lit":"maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"or":[{"args":[{"var":"sign"},{"lit":"structure_maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"args":[{"var":"sign"},{"lit":"zone"}],"atom":"dev_speed_limit_sign_kind","params":[]}]}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"region"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sign"},{"var":"region"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"region"}]},"exists_device":{"lit":"speed_limit_sign"},"var":"sign"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_600_1c","intentions":[],"laws":["NRS-484B-600-1c"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"or":[{"args":[{"var":"sign"},{"lit":"maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"or":[{"args":[{"var":"sign"},{"lit":"structure_maximum"}],"atom":"dev_speed_limit_sign_kind","params":[]},{"args":[{"var":"sign"},{"lit":"zone"}],"atom":"dev_speed_limit_sign_kind","params":[]}]}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"region"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sign"},{"var":"region"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"region"}]},{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"args":[{"var":"sign"}],"measure":"dev_speed_limit_sign_value"}}]},"forall_device":{"lit":"speed_limit_sign"},"var":"sign"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,dev_speed_limit_sign,dev_speed_limit_sign_kind,st_travel_region,rel_occupies,dev_governs,kin_speed,dev_speed_limit_sign_value
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+OCC	subject
+OCC	?sign
+OCC	sign
+OCC	sign
+OCC	sign
+OCC	?region
+OCC	subject,region
+OCC	sign,region
+OCC	?sign
+OCC	sign
+OCC	sign
+OCC	sign
+OCC	?region
+OCC	subject,region
+OCC	sign,region
+OCC	subject
+OCC	sign
+TIME	occurrences	0
+TIME	checks	3
+TIME	lint	23
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	10
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	9
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	9
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	12
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	8
+TIME	witnesses	48
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_600_1c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1c.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_600_1c	11	4
+TIME	adequacy_start	6
+TIME	adequacy	256
+DONE

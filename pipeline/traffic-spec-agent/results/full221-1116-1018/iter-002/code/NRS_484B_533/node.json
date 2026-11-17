@@ -1,0 +1,189 @@
+{
+ "node_id": "NRS_484B_533",
+ "law_refs": [
+  "NRS-484B-533"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not be permitted to stand",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "unattended",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "upon any perceptible grade",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "without stopping the engine and effectively setting the brake thereon and turning the front wheels to the curb or side of the highway.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway, except ...'), claimed as one atom."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stand' is 'the halting of a vehicle, whether occupied or not, otherwise than for the purpose of and while actually engaged in receiving or discharging passengers' (DEF-NRS-484A-250): a halt, drv.motion.complete_halt ('at rest at the observation ... its speed at or below a tolerance', p.halt_speed_tolerance). The definition's exclusion of passenger receiving is not carried: the duty reads only a vehicle with no person in it (s3), which no passenger is being received into while it stays so. 'Shall not be permitted' is read on the vehicle's conduct, whoever is in charge of it."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.occupant_count"
+   ],
+   "derived": [],
+   "justification": "'Unattended': no person is in or on the vehicle to attend it, ru.occupant_count, 'the number of persons in or on a vehicle (an integer attribute of a road user)', equal to none. A source that observes arrivals but not a total declares it absent, and the rule is then unknown."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.grade",
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'Upon any perceptible grade': the subject is on a highway (rel.occupies; st.highway, 'the entire public way between its boundary lines', which the words' 'side of the highway' names) at a place whose slope (st.grade, 'longitudinal slope of the roadway at a point'; not a stand-in for the place of a crest, which is not read) stands clear of zero: its magnitude exceeds p.grade_resolution. The words name the grade's presence, not a size: 'perceptible' is read as a slope the source resolves."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "kin.engine_running",
+    "kin.parking_brake",
+    "kin.steer_angle",
+    "prim.region_lateral_offset",
+    "st.road_edge",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'Stopping the engine': kin.engine_running, 'the vehicle's engine or motor is running, so that propulsion is available', must be false; it is 'not a stand-in for motion or a halt', and the halt is read separately (s2). 'Setting the brake thereon' on an unattended vehicle is the parking brake: kin.parking_brake, 'the parking brake (hand brake) is set'; not a stand-in for the service brake or the brake lamp, neither of which is read, since no person presses a pedal in an unattended vehicle. 'Turning the front wheels to the curb or side of the highway': kin.steer_angle, 'front-wheel steering angle' (not a stand-in for a path or a manoeuvre, and it is read as the wheels' position only), turned beyond p.steer_angle_resolution toward the side on which the nearest curb or edge lies. The curb or side is the road edge (st.road_edge, 'curb or edge of the roadway') lying on the subject's highway (st.on_way, 'the public way a structure region lies on'; st.highway) nearest the subject, and its side is the sign of its lateral offset (prim.region_lateral_offset, 'the signed lateral offset (m, left positive) of a structure region from a road user ... perpendicular to the road user's heading')."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that is halted (drv.motion.complete_halt with p.halt_speed_tolerance), with no person in or on it (ru.occupant_count equal to none), whose footprint overlaps (rel.occupies) a highway h (st.highway), and the magnitude of the grade at its place (st.grade) exceeds p.grade_resolution.",
+ "obligation": "At every observation at which the applicability holds, with h selected again as there: the engine is not running (kin.engine_running false); the parking brake is set (kin.parking_brake); and the front wheels are turned toward the curb or side: of the road edges (st.road_edge) lying on h (st.on_way), the one with the smallest absolute lateral offset from the subject (prim.region_lateral_offset) gives the side, and the steering angle (kin.steer_angle) exceeds p.steer_angle_resolution in magnitude and has the sign of that offset, both read left-positive.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.grade_resolution",
+  "p.steer_angle_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'Shall not be permitted to stand' is read on the vehicle's conduct: the duty binds the standing vehicle whoever is in charge of it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'Effectively setting the brake' is read as the parking brake set while the vehicle stays at rest; the brake's holding force is not observed.",
+   "kind": "reading"
+  },
+  {
+   "span": "s5",
+   "why": "The curb or side of the highway is read as the road edge nearest the vehicle, and the steering angle's sign is read left-positive, as kin.yaw_rate and prim.region_lateral_offset are; the direction the wheels should point for an uphill or downhill grade is not distinguished, the words not distinguishing it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car stands with no one in it on a clearly sloped street, its engine running, parking brake set, wheels turned toward the nearest curb."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car stands with no one in it on the same slope, engine off, parking brake set, front wheels turned toward the right-hand curb, which is the nearest road edge."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car stands with no one in it on a level street, its grade within the resolution."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in permit, but the source does not observe the parking brake.",
+   "masked": [
+    "kin.parking_brake"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A car stands unattended on the slope, engine off, parking brake set, front wheels straight."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A car stands on the slope with its driver inside."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source (sensor or simulator specification)"
+  },
+  {
+   "name": "p.grade_resolution",
+   "unit": "ratio",
+   "value": 0.005,
+   "convention": "the longitudinal slope at or below which a roadway reads as level: the grade resolution of map elevation profiles",
+   "source": "HD-map elevation profile accuracy specifications"
+  },
+  {
+   "name": "p.steer_angle_resolution",
+   "unit": "deg",
+   "value": 2.0,
+   "convention": "the front-wheel steering angle at or below which a parked vehicle's wheels read as straight: the steering-angle sensor resolution plus the play of a parked vehicle's wheels",
+   "source": "steering-angle sensor specifications (SAE J670 vehicle dynamics terminology)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

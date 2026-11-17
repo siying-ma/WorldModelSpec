@@ -1,0 +1,492 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 10 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "body": {
+       "body": {
+        "and": [
+         {
+          "rises": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "x"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         },
+         {
+          "and": [
+           {
+            "since": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "x"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "not": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "x"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "r"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "var": "r"
+                   }
+                  ],
+                  "atom": "dev_governs",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "exists_device": {
+        "lit": "stop_sign"
+       },
+       "var": "d"
+      },
+      "exists_region": {
+       "lit": "travel_region"
+      },
+      "var": "r"
+     },
+     "exists_region": {
+      "lit": "highway"
+     },
+     "var": "h"
+    },
+    "exists_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "x"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_557_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-557"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s5",
+     "why": "The search's end at the subject's previous exit from the crossing is read as including the exit observation itself (the first observation at which it no longer overlaps the crossing): a halt there in the zone counts, and the search does not pass it."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "body": {
+      "body": {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "rises": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "x"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           },
+           {
+            "and": [
+             {
+              "since": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "x"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "x"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "r"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "var": "r"
+                     }
+                    ],
+                    "atom": "dev_governs",
+                    "params": []
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "r"
+                 },
+                 {
+                  "var": "h"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "h"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "since": [
+           {
+            "or": [
+             {
+              "rises": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "x"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             },
+             {
+              "and": [
+               {
+                "and": [
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "x"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 },
+                 {
+                  "cmp": "le",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "x"
+                    }
+                   ],
+                   "measure": "st_region_geometry_distance"
+                  },
+                  "rhs": {
+                   "lit": {
+                    "den": 25,
+                    "num": 381
+                   },
+                   "unit": "metre"
+                  }
+                 }
+                ]
+               },
+               {
+                "not": {
+                 "rises": {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "x"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "and": [
+               {
+                "not": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "x"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               },
+               {
+                "cmp": "le",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "x"
+                  }
+                 ],
+                 "measure": "st_region_geometry_distance"
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 25,
+                  "num": 381
+                 },
+                 "unit": "metre"
+                }
+               }
+              ]
+             },
+             {
+              "and": [
+               {
+                "cmp": "ge",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "x"
+                  }
+                 ],
+                 "measure": "st_region_geometry_distance"
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 250,
+                  "num": 1143
+                 },
+                 "unit": "metre"
+                }
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "derived": "drv_motion_complete_halt",
+                "params": [
+                 {
+                  "param": "p.halt_speed_tolerance"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "forall_device": {
+        "lit": "stop_sign"
+       },
+       "var": "d"
+      },
+      "forall_region": {
+       "lit": "travel_region"
+      },
+      "var": "r"
+     },
+     "forall_region": {
+      "lit": "highway"
+     },
+     "var": "h"
+    },
+    "forall_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "x"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s5",
+    "why": "The search's end at the subject's previous exit from the crossing is read as including the exit observation itself (the first observation at which it no longer overlaps the crossing): a halt there in the zone counts, and the search does not pass it."
+   }
+  ],
+  "context": "4fd76e441e5d164e717d397a",
+  "candidate_digest": "ad6c1bd73043db0eb7fd34a157d5d2abf748e1464487d57a0498844e66de31f4"
+ }
+}

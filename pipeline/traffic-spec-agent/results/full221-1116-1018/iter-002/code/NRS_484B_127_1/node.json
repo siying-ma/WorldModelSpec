@@ -1,0 +1,189 @@
+{
+ "node_id": "NRS_484B_127_1",
+ "law_refs": [
+  "NRS-484B-127-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "f2",
+   "text": "shall not follow another vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "f3",
+   "text": "more closely than is reasonable and prudent, having due regard for the speed of such vehicles and the traffic upon and the condition of the highway.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.aggregate: 'membership of a legal aggregate'; 'vehicle' is admitted as DEF-NRS-484A-320::vehicle. 'Driver' is a relational role the contract excludes from membership; it is read through the vehicle's controlled motion. Same words as 'The driver of a vehicle' (LVMC_11_20_060_o1)."
+  },
+  {
+   "span": "f2",
+   "atoms": [
+    "rel.ahead_behind_in_lane",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'follow another vehicle': rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane, along the lane direction', with the other road user ahead of the subject; the other is a vehicle, ru.aggregate DEF-NRS-484A-320::vehicle, never a class list."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "f3",
+   "standard": "more closely than is reasonable and prudent, having due regard for the speed of such vehicles and the traffic upon and the condition of the highway",
+   "concepts": [
+    "rel.surface_gap",
+    "kin.speed",
+    "env.wet_road",
+    "env.precipitation",
+    "env.ice_or_snow"
+   ],
+   "params": [
+    "p.following_headway_dry",
+    "p.following_headway_wet",
+    "p.following_headway_ice",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice"
+   ],
+   "convention": "Car-following stopping-distance convention: the longitudinal component of the body gap to each vehicle ahead in the lane (rel.surface_gap) is at least the subject's speed times a time headway, plus the difference of the two vehicles' braking distances (subject speed squared minus the followed vehicle's speed squared, over twice a braking deceleration). The speeds of both vehicles enter the bound by degree; the condition of the highway selects the headway and the deceleration: icy or snow-covered surface (env.ice_or_snow) the _ice pair, else a wet surface or falling rain (env.wet_road or env.precipitation) the _wet pair, else the _dry pair. Headways from the driver-manual following-time rules; decelerations from tyre-road friction tables.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle).",
+ "obligation": "For every road user b that is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and is ahead of the subject in the same lane (rel.ahead_behind_in_lane): the longitudinal component of rel.surface_gap(subject, b) is at least speed(subject) × H + (speed(subject)² − speed(b)²) / (2 × D), where H and D are p.following_headway_ice and p.following_decel_ice where env.ice_or_snow holds, else p.following_headway_wet and p.following_decel_wet where env.wet_road or env.precipitation holds, else p.following_headway_dry and p.following_decel_dry (written with Term.cond). Violated at an observation where some such b is closer.",
+ "params": [
+  "p.following_headway_dry",
+  "p.following_headway_wet",
+  "p.following_headway_ice",
+  "p.following_decel_dry",
+  "p.following_decel_wet",
+  "p.following_decel_ice"
+ ],
+ "narrowings": [
+  {
+   "span": "f1",
+   "why": "'The driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "f3",
+   "why": "'the traffic upon … the highway' is read only through the followed vehicle and its speed, the part of the traffic the following distance answers to; the density of other traffic is not read. 'the condition of the highway' is read only through its surface (wet, icy or snow-covered, or rain falling); grade, curvature and surface damage are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Dry road; the subject car follows another car in its lane, both at 25 m/s, with a body gap of 15 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Dry road; the subject car follows another car in its lane, both at 25 m/s, with a body gap of 70 m."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a bicycle (a device moved by human power, outside the vehicle aggregate) riding close behind a car."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car follows another car in its lane; the source declares rel.surface_gap absent.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject car drives alone on the road: no vehicle is ahead of it in its lane."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Icy road (env.ice_or_snow true); both cars at 25 m/s with a body gap of 70 m, which meets the dry bound but not the icy one."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.following_headway_dry",
+   "unit": "s",
+   "value": 2.0,
+   "convention": "time headway a following driver keeps on a dry surface: the two-second rule of driver manuals",
+   "source": "state driver handbooks"
+  },
+  {
+   "name": "p.following_headway_wet",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time headway a following driver keeps on a wet surface or in rain: the two-second rule lengthened by a second",
+   "source": "state driver handbooks"
+  },
+  {
+   "name": "p.following_headway_ice",
+   "unit": "s",
+   "value": 6.0,
+   "convention": "time headway a following driver keeps on an icy or snow-covered surface: the tripled following time driver manuals advise",
+   "source": "state driver handbooks"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "unit": "m/s^2",
+   "value": 6.0,
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "AASHTO Green Book; tyre-road friction tables"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "AASHTO Green Book; tyre-road friction tables"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.0,
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "tyre-road friction tables"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,311 @@
+{
+ "node_id": "NRS_484B_267_2b",
+ "law_refs": [
+  "NRS-484B-267-2b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "Upon approaching",
+   "role": "trigger"
+  },
+  {
+   "id": "t2",
+   "text": "an authorized emergency vehicle",
+   "role": "condition"
+  },
+  {
+   "id": "t3",
+   "text": "or an official vehicle of a regulatory agency",
+   "role": "condition"
+  },
+  {
+   "id": "t4",
+   "text": "which is moving or preparing to move in any direction,",
+   "role": "condition"
+  },
+  {
+   "id": "t5",
+   "text": "including, without limitation, arriving at or leaving the scene of a crash or other incident,",
+   "role": "condition"
+  },
+  {
+   "id": "t6",
+   "text": "and making use of flashing lights meeting the requirements of",
+   "role": "condition"
+  },
+  {
+   "id": "t7",
+   "text": "subsection 3 of NRS 484A.480 [DEF-NRS-484A-480-3],",
+   "role": "reference"
+  },
+  {
+   "id": "t8",
+   "text": "the driver of any other vehicle shall,",
+   "role": "subject"
+  },
+  {
+   "id": "t9",
+   "text": "except when otherwise directed by a law enforcement officer:",
+   "role": "exception"
+  },
+  {
+   "id": "t10",
+   "text": "Proceed",
+   "role": "obligation"
+  },
+  {
+   "id": "t11",
+   "text": "with caution.",
+   "role": "standard"
+  },
+  {
+   "id": "t12",
+   "text": "As used in this section, “preparing to move” means any indication that is visible to an approaching driver that an authorized emergency vehicle or an official vehicle of a regulatory agency is about to move, including, without limitation: (a) A movement of the vehicle; or (b) The use of hand signals by the driver of the vehicle.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t1",
+   "atoms": [
+    "kin.speed",
+    "rel.bearing",
+    "rel.centre_distance"
+   ],
+   "derived": [],
+   "justification": "'approaching' the emergency vehicle: the subject moves (kin.speed above the halt tolerance) with the emergency vehicle ahead in its frame (rel.bearing 'direction of b from a in a's frame', longitudinal component positive), within the centre distance (rel.centre_distance 'Euclidean ground-plane distance between reference points') at which its lamps engage the driver; rel.centre_distance is not used as a clearance or an order of arrival."
+  },
+  {
+   "span": "t2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle"
+   ],
+   "derived": [],
+   "justification": "Admitted aggregate DEF-NRS-484A-020::authorized_emergency_vehicle ('a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'); ru.aggregate 'membership of a legal aggregate'; its conduct is carried by t4 and t6."
+  },
+  {
+   "span": "t3",
+   "atoms": [
+    "ru.official_vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.official_vehicle 'a vehicle in official or contracted road service ...; kind in {... regulatory_agency ...}', read with kind regulatory_agency; 'Not a stand-in for: an emergency vehicle' respected."
+  },
+  {
+   "span": "t4",
+   "atoms": [
+    "kin.speed",
+    "sig.hand_signal",
+    "sig.turn_indicator",
+    "rel.visible"
+   ],
+   "derived": [],
+   "justification": "'moving': the emergency vehicle's kin.speed above the halt tolerance. 'preparing to move', as t12 defines it: sig.hand_signal 'a driver's or rider's arm signal; meaning in {no_signal, ...}' other than no_signal, or sig.turn_indicator other than off (read as the indication, not the move it precedes), with the vehicle visible from the subject (rel.visible 'an unobstructed line of sight')."
+  },
+  {
+   "span": "t6",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "justification": "sig.warning_lamp 'a warning lamp lit; colour ..., mode ..., facing ...', read as colour red, mode flashing, facing front from the quoted requirement 'at least one flashing red warning lamp visible from the front'; not a stand-in for an audible warning.",
+   "source_spans": [
+    "t7"
+   ]
+  },
+  {
+   "span": "t8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Admitted aggregate DEF-NRS-484A-320::vehicle; 'any other' excludes the emergency vehicle itself; 'driver' read through the vehicle's controlled motion."
+  },
+  {
+   "span": "t9",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Mapping index: 'unless otherwise directed by a Police Officer' maps to dev.governs, dev.human_direction, rel.occupies, st.travel_region; read with role police_officer governing a travel region the subject occupies."
+  },
+  {
+   "span": "t10",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'Proceed': the subject continues to move, kin.speed 'magnitude of velocity' above the halt tolerance; the manner of proceeding is the standard t11."
+  },
+  {
+   "span": "t12",
+   "atoms": [
+    "kin.speed",
+    "sig.hand_signal",
+    "sig.turn_indicator",
+    "rel.visible"
+   ],
+   "derived": [],
+   "justification": "The definition of 'preparing to move' used by t4: 'any indication that is visible to an approaching driver' (rel.visible) 'that ... is about to move, including, without limitation: (a) A movement of the vehicle' (kin.speed) 'or (b) The use of hand signals' (sig.hand_signal); the open list also read through sig.turn_indicator."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "t11",
+   "standard": "with caution",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.contact",
+    "rel.surface_gap",
+    "rel.longitudinal_overlap"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.emergency_pass_clearance"
+   ],
+   "convention": "caution is read through the conduct it secures toward the emergency vehicle: no traffic-conflict with it (closest approach of the centres under constant velocities within the time-to-collision threshold below the collision clearance), no contact, and, while side by side with it, a gap between bodies of at least the lateral passing clearance",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "t7",
+   "as": "definition",
+   "source": "DEF-NRS-484A-480-3",
+   "quote": "at least one flashing red warning lamp visible from the front"
+  }
+ ],
+ "residues": [
+  {
+   "span": "t5",
+   "why": "illustrative: arriving at or leaving a scene are instances of moving or preparing to move, which t4 already reads; the duty is the same whether or not the vehicle is arriving at or leaving a scene",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "There is a road user e, not the subject, of the authorized-emergency-vehicle aggregate or an official vehicle of kind regulatory_agency, showing a lit warning lamp of colour red, mode flashing, facing front, that is moving (kin.speed above p.halt_speed_tolerance) or preparing to move (visible from the subject, rel.visible, with a hand signal other than no_signal or a turn indicator other than off); the subject is approaching e: it moves (kin.speed above p.halt_speed_tolerance), e lies ahead of it in its frame (rel.bearing longitudinal positive) or the two are side by side (rel.longitudinal_overlap at or above zero), and their centre distance is at most p.emergency_approach_reach. And no human_direction device of role police_officer governs a travel region the subject occupies.",
+ "obligation": "For every such e: the subject and e are not in contact; it is not the case that their closest approach falls within p.conflict_horizon at a centre distance below p.conflict_centre_clearance; and where rel.longitudinal_overlap of the subject and e is at or above zero, rel.surface_gap between them is at least p.emergency_pass_clearance.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.emergency_approach_reach",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.emergency_pass_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "t8",
+   "why": "'driver' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "t4",
+   "why": "'preparing to move' is defined (t12) as an indication 'visible to an approaching driver': read as the emergency vehicle being visible from the subject (rel.visible) while it gives the indication",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "t11",
+   "why": "caution, a standard of the driver's care, is read only through the clearance the subject keeps from the emergency vehicle; its speed is judged by NRS_484B_267_2a",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Ambulance e, moving with a lit red flashing front lamp, is ahead of the moving subject within p.emergency_approach_reach; the subject passes alongside it with rel.surface_gap below p.emergency_pass_clearance while rel.longitudinal_overlap is at or above zero."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but the subject passes with a gap of at least p.emergency_pass_clearance and no closest-approach conflict or contact."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "e's warning lamps are off as the subject approaches and passes."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but sig.warning_lamp is not observed, so whether the duty is engaged is unknown.",
+   "masked": [
+    "sig.warning_lamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject closes on e from behind in its lane; their closest approach falls within p.conflict_horizon below p.conflict_centre_clearance."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "e stands at rest with its lamps flashing, no hand signal and no turn indicator: it is neither moving nor preparing to move."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's vehicle-state estimates"
+  },
+  {
+   "name": "p.emergency_approach_reach",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "centre distance within which a driver approaching an emergency or enforcement vehicle that shows flashing warning lamps counts as approaching it: about the distance at which the lamps are conspicuous by day and a driver at an urban speed of 15 m/s has ten seconds to slow",
+   "source": "emergency warning-light conspicuity studies; move-over law guidance"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (Hyden; FHWA Surrogate Safety Assessment Model)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.emergency_pass_clearance",
+   "unit": "m",
+   "value": 1.5,
+   "convention": "the gap between bodies a driver keeps while passing alongside an emergency or enforcement vehicle: a lateral passing clearance of about half a lane's free width, leaving room for its crew and doors",
+   "source": "lateral passing-clearance conventions of driver manuals and move-over guidance"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,199 @@
+{
+ "node_id": "NRS_484B_633_2",
+ "law_refs": [
+  "NRS-484B-633-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "y1",
+   "text": "It is unlawful for any person to drive a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "y2",
+   "text": "over any bridge or other elevated structure constituting a part of a highway",
+   "role": "trigger"
+  },
+  {
+   "id": "y3",
+   "text": "at a speed which is greater than the maximum speed which can be maintained with safety to the bridge or structure,",
+   "role": "obligation"
+  },
+  {
+   "id": "y4",
+   "text": "when such structure is signposted as provided in this section",
+   "role": "condition"
+  },
+  {
+   "id": "y5",
+   "text": "[(3) appended below].",
+   "role": "boilerplate"
+  },
+  {
+   "id": "y6",
+   "text": "The Department of Transportation upon request from any local authority shall, or upon its own initiative may, conduct an investigation of any bridge or other elevated structure constituting a part of a highway constructed and maintained under the authority granted by chapter 408 of NRS,",
+   "role": "definitional"
+  },
+  {
+   "id": "y7",
+   "text": "and if it thereupon finds that such structure cannot with safety to itself withstand vehicles traveling at the speed otherwise permissible under chapters 484A to 484E, inclusive, of NRS,",
+   "role": "definitional"
+  },
+  {
+   "id": "y8",
+   "text": "the Department shall determine and declare the maximum speed of vehicles which such structure can safely withstand,",
+   "role": "definitional"
+  },
+  {
+   "id": "y9",
+   "text": "and shall cause or permit suitable signs stating such maximum speed to be erected and maintained",
+   "role": "definitional"
+  },
+  {
+   "id": "y10",
+   "text": "at a distance of 100 feet before each end of such structure.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "y1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); ru.aggregate is 'membership of a legal aggregate'. 'any person to drive' is read through the vehicle's controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "y2",
+   "atoms": [
+    "rel.occupies",
+    "st.elevated_structure",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "Driving over a bridge or other elevated structure: the subject's footprint overlaps (rel.occupies) a st.elevated_structure, 'bridge, viaduct or tunnel carrying the roadway', that lies on a highway (st.on_way, 'the public way (a highway region) a structure region lies on'; st.highway) — the structure 'constituting a part of a highway'."
+  },
+  {
+   "span": "y3",
+   "atoms": [
+    "kin.speed",
+    "dev.speed_limit_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The maximum speed which can be maintained with safety to the structure is the one the sign states: the value of a dev.speed_limit_sign of kind structure_maximum ('sign stating a maximum or minimum speed, with value and unit') governing (dev.governs) a travel region the subject occupies (rel.occupies, st.travel_region) while on the structure; greater than is kin.speed ('magnitude of velocity') above that value. The safety of the structure is the authority's determination (y8), not a judgement left to the driver, so the span is no standard."
+  },
+  {
+   "span": "y4",
+   "atoms": [
+    "dev.speed_limit_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Signposted: a dev.speed_limit_sign of kind structure_maximum governs (dev.governs, 'the travel regions whose traffic the device controls') a travel region the subject occupies (rel.occupies, st.travel_region) while on the structure; 'as provided in this section' is read from the sign's presence (observable_reading status). dev.governs is 'Not a stand-in for: a position', so the sign's distance from the structure is not read from it."
+  },
+  {
+   "span": "y9",
+   "atoms": [
+    "dev.speed_limit_sign",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "The suitable signs stating such maximum speed are dev.speed_limit_sign of kind structure_maximum, whose value is the declared maximum; their erection and maintenance are read from their presence and governance (dev.governs) of the structure's travel regions."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "y6",
+   "why": "The authority's investigation, on request or on its own initiative, of structures built under chapter 408 of NRS (outside the corpus) is the process behind the posting; the rule reads the posted sign as the evidence of it."
+  },
+  {
+   "span": "y7",
+   "why": "The authority's finding that the structure cannot withstand the otherwise permissible speeds (chapters 484A to 484E, no node of the corpus) is the reason for the posting; the rule reads the posted maximum, not the finding."
+  },
+  {
+   "span": "y8",
+   "why": "The authority's determination and declaration of the maximum speed is read through the value the posted sign states; the act of declaring is not observable."
+  },
+  {
+   "span": "y10",
+   "why": "The sign's placement before each end of the structure is the authority's duty; the rule reads the sign's governance of the structure's travel regions, not its distance from the ends, so the placement is not checked."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (DEF-NRS-484A-320::vehicle) occupying an elevated structure that lies on a highway, and a speed limit sign of kind structure_maximum governs a travel region the subject occupies.",
+ "obligation": "Re-binding every speed limit sign of kind structure_maximum governing a travel region the subject occupies while it occupies an elevated structure on a highway, the subject's speed is at or below that sign's value. Otherwise violated.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "y1",
+   "why": "'any person to drive' is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "y4",
+   "why": "'signposted as provided in this section' is read from the presence of a structure-maximum speed sign governing the travel region the subject occupies on the structure; the authority's investigation, declaration and placement are presumed from it.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A truck occupies a bridge lying on a highway; a structure_maximum speed sign of 11 m/s governs the bridge lane it occupies; its speed is 16 m/s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same truck on the same bridge at 10 m/s."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car on a bridge lying on a highway whose lanes no structure_maximum speed sign governs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe which regions the speed limit sign governs, so whether the bridge is signposted is unknown.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A car at 16 m/s on an ordinary roadway lane, off any elevated structure, though a structure_maximum sign governs the lane ahead of the bridge."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

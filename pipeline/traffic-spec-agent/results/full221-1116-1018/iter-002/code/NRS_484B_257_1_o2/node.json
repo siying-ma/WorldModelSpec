@@ -1,0 +1,294 @@
+{
+ "node_id": "NRS_484B_257_1_o2",
+ "law_refs": [
+  "NRS-484B-257-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a",
+   "text": "Except when traffic is being controlled by a police officer",
+   "role": "exception"
+  },
+  {
+   "id": "b",
+   "text": "or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "c",
+   "text": "When proper signs have been erected,",
+   "role": "trigger"
+  },
+  {
+   "id": "d",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "e",
+   "text": "shall stop or yield at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, then at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "j",
+   "text": "After having stopped or, in the event of a yield sign, slowed or stopped,",
+   "role": "condition"
+  },
+  {
+   "id": "k",
+   "text": "the driver shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "l",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "m",
+   "text": "to other vehicles which have entered the intersection from such through highway",
+   "role": "condition"
+  },
+  {
+   "id": "n",
+   "text": "or which are approaching so closely on such through highway as to constitute an immediate hazard",
+   "role": "standard"
+  },
+  {
+   "id": "o",
+   "text": "during the time such driver is moving across or within the intersection.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.governs",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Traffic' is the admitted aggregate DEF-NRS-484A-285::traffic, of which the subject is a member; 'being controlled by a police officer' is dev.human_direction of role police_officer ('a person directing traffic ... role ∈ {police_officer, ...}') governing (dev.governs) the subject's approach carrier c or X (st.travel_region), read at the subject's entry."
+  },
+  {
+   "span": "b",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "dev.inoperative"
+   ],
+   "derived": [],
+   "justification": "A dev.traffic_signal governing c or X (dev.governs) that is not dev.inoperative ('installed and uncovered but showing no valid indication'), read at the subject's entry."
+  },
+  {
+   "span": "c",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'Proper signs': a dev.stop_sign or dev.yield_sign governing (dev.governs) the carrier c the subject entered X from (rel.occupies, st.lane_enters) or X itself."
+  },
+  {
+   "span": "d",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Same mapping as 'The driver of a vehicle' in the index: the admitted aggregate DEF-NRS-484A-320::vehicle; 'driver' is the vehicle's controlled motion."
+  },
+  {
+   "span": "k",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "Same mapping as 'shall yield' in the index: the subject does not proceed (kin.speed above the halt tolerance) while the protected vehicle is in conflict, and does not collide with it (rel.contact)."
+  },
+  {
+   "span": "m",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.on_way",
+    "st.highway",
+    "dev.governs",
+    "dev.stop_sign",
+    "dev.yield_sign"
+   ],
+   "derived": [],
+   "justification": "'Other vehicles' are the admitted aggregate. 'Which have entered the intersection' is v's footprint overlapping X (rel.occupies) continuously since it occupied a carrier c2 entering X (st.lane_enters). 'Such through highway' (DEF-NRS-484A-275: 'every highway ... at the entrances to which vehicular traffic from intersecting highways is required by law to yield right-of-way to vehicles on such through highway in obedience to either an authorized stop sign or a yield sign') is a highway h_t that X lies on (st.on_way) on which c does not lie and none of whose carriers entering X is governed by a stop or yield sign (dev.governs); c2 lies on h_t."
+  },
+  {
+   "span": "o",
+   "atoms": [
+    "kin.speed",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'During the time such driver is moving across or within the intersection': the subject's footprint overlaps X (rel.occupies; st.intersection 'the region where two roadways meet') and its kin.speed ('magnitude of velocity') is above the halt tolerance."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "l",
+   "standard": "the right-of-way: precedence owed where 'circumstances of direction, speed and proximity ... give rise to the danger of a crash' (DEF-NRS-484A-210)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: a danger of a crash exists where, under constant velocities, the two centres approach within the time-to-collision threshold p.conflict_horizon to a centre distance below p.conflict_centre_clearance; the subject proceeds where its speed exceeds p.halt_speed_tolerance",
+   "surrogate": false
+  },
+  {
+   "span": "n",
+   "standard": "approaching so closely on the through highway as to constitute an immediate hazard",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.on_way"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: v, occupying a carrier entering X that lies on the through highway, is an immediate hazard where, under constant velocities, its centre and the subject's approach within the time-to-collision threshold p.conflict_horizon to a centre distance below p.conflict_centre_clearance",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "j",
+   "rule": "NRS_484B_257_1_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "compliance"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At every observation at which the subject's footprint overlaps an intersection X and has overlapped it continuously since its latest entry into X (having occupied at the observation before a carrier c with st.lane_enters(c, X)) and the subject is moving (kin.speed above p.halt_speed_tolerance): 'during the time such driver is moving across or within the intersection'; where at that entry observation a stop sign or yield sign governed c or X, no police officer's direction governed c or X and no traffic signal that was not inoperative governed c or X; and where NRS_484B_257_1_o1 (binder subject ↦ subject) was complied with at that entry observation: 'After having stopped or, in the event of a yield sign, slowed or stopped' — the act that rule searches for, read at the entry by a past operator.",
+ "obligation": "Re-binding X and c as in the applicability: for every other road user v of DEF-NRS-484A-320::vehicle that, for some highway h_t that X lies on (st.on_way X h_t), on which c does not lie and none of whose carriers entering X is governed by a stop sign or a yield sign (dev.governs) — the through highway — either (a) overlaps X continuously since an observation at which it occupied a carrier c2 entering X and lying on h_t, or (b) occupies such a carrier c2 and its closest approach to the subject lies within p.conflict_horizon at a centre distance below p.conflict_centre_clearance: the subject is not in contact with v (rel.contact), and it is not the case that the subject is moving (kin.speed above p.halt_speed_tolerance) while prim.closest_approach_within(subject, v; p.conflict_horizon) holds with prim.closest_approach_distance(subject, v; p.conflict_horizon) below p.conflict_centre_clearance.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "c",
+   "why": "'proper signs have been erected' is a legal status; a stop or yield sign present and governing the approach is its evidence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "d",
+   "why": "'the driver' is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A dev.stop_sign governs c; the subject halted at the stop line and entered X; v occupies X having entered from carrier c2 on a crossing highway whose carriers entering X carry no stop or yield sign; the subject moves across X with kin.speed above p.halt_speed_tolerance and its closest approach to v lies within p.conflict_horizon at a centre distance below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; v has cleared X before the subject moves; no closest approach to any through-highway vehicle falls within the bound while the subject moves."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No stop or yield sign governs c or X when the subject enters X."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject moves within X while v crosses from another highway on a conflicting path; dev.governs is absent, so whether a sign governs c, and which highway is the through highway, are unknown.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "After its stop the subject crosses X with no other road user in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The subject entered X without halting at its stop sign (NRS_484B_257_1_o1 violated at its entry) and moves across X in conflict with v: the duty follows the stop the words name; the omitted stop is judged by NRS_484B_257_1_o1."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "After its stop the subject moves within X; v approaches on carrier c2 of the through highway, not yet in X, with its closest approach to the subject within p.conflict_horizon below p.conflict_centre_clearance; the subject keeps moving."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channels"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique time-to-collision thresholds"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "design passenger-car dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

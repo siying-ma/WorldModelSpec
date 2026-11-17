@@ -1,0 +1,71 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 3 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "args": [
+     {
+      "var": "subject"
+     },
+     {
+      "lit": "traffic"
+     }
+    ],
+    "atom": "sig_door_open",
+    "params": []
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_153_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-153-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "traffic"
+       }
+      ],
+      "atom": "sig_door_open",
+      "params": []
+     },
+     "holds_for": "time",
+     "length": {
+      "param": "p.traffic_side_door_max_open"
+     },
+     "subject": "subject"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "3e461bf652129028144cb629",
+  "candidate_digest": "36a4b6051eb1144c12f8d8f2ef57c3ed161359e627b691c7b45798120a4ac6a4"
+ }
+}

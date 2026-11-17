@@ -1,0 +1,204 @@
+{
+ "node_id": "NRS_484B_310_1",
+ "law_refs": [
+  "NRS-484B-310-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Whenever an illuminated flashing red or yellow signal is used in conjunction with an official traffic-control device,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "it shall require obedience by vehicular traffic as follows:",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "When a red lens is illuminated with rapid intermittent flashes,",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "drivers of vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "shall stop before entering the nearest crosswalk in an intersection or at a limit line when marked, or, if none, then before entering the intersection,",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "and the right to proceed shall be subject to the rules applicable after making a required stop.",
+   "role": "reference"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal carries the states flashing_red and flashing_yellow of 'a signal head'; an illuminated flashing signal used as an official device is such a head present in the scene; its official status is read from its presence."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicular traffic' is the admitted aggregate DEF-NRS-484A-285::traffic limited to its vehicle members, the admitted aggregate DEF-NRS-484A-320::vehicle, as the index maps 'Such vehicular traffic' (NRS_484B_307_5a_o2)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "A red lens with rapid intermittent flashes is dev.traffic_signal state flashing_red. It applies to the subject where the head governs (dev.governs) the carrier c (st.travel_region) the subject occupies (rel.occupies) and enters intersection i through (st.lane_enters), or governs i itself."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'drivers of vehicles,' (NRS_484B_307_12a): the admitted aggregate DEF-NRS-484A-320::vehicle; the driver role is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "drv.motion.complete_halt",
+    "prim.region_offset_along",
+    "rel.occupies",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.intersection",
+    "st.lane_direction",
+    "st.lane_enters",
+    "st.region_geometry",
+    "st.stop_line"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "Reuses the index mapping of the parallel stop-before words (NRS_484B_307_8a_o1, NRS_484A_450_2). A stop is drv.motion.complete_halt ('complete cessation from movement', DEF-NRS-484A-255). The limit line is st.stop_line ('the transverse line marking where vehicles halt for a device'); the nearest crosswalk in the intersection is the st.crosswalk recorded as marking the subject's carrier's entrance (st.entrance_of, 'exactly that carrier's entrance'; the carrier enters i, st.lane_enters). The side of a mark is read along the carrier's direction (st.lane_direction, prim.region_offset_along); the distance through st.region_geometry; a halt overlapping the mark or i (rel.occupies) is not before entering it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s6",
+   "why": "The words subject the right to proceed after the stop to 'the rules applicable after making a required stop' without naming any rule of the corpus; this node judges the stop, and the proceeding is judged by those rules on their own terms."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is vehicular traffic (ru.aggregate traffic and vehicle). Judged at the observation at which the subject enters an intersection i (its footprint comes to overlap i, not having overlapped it at the previous observation) from a carrier c entering i (st.lane_enters) that it occupied at the previous observation, while a traffic signal head governing c or i (dev.governs) displays flashing_red at that entry observation.",
+ "obligation": "Act before an event (the ontology's approach convention). Event: the subject's entry into i through c. Place: where a stop line or a crosswalk is recorded as marking c's entrance (st.entrance_of), a halt (drv.motion.complete_halt with speed_tol p.halt_speed_tolerance) with the subject's body within p.stop_point_tolerance of such a mark (st.region_geometry), short of it along c's designated direction (sign of prim.region_offset_along along st.lane_direction) and not overlapping it nor i (rel.occupies); the crosswalk and the limit line are alternatives, and a halt at either discharges; where the marks' entrance lists are observed and neither a crosswalk nor a stop line marks c, a halt within p.stop_point_tolerance of i's edge at c's entrance end, not overlapping i. History bound: the search runs back from the entry and ends only at the approach start (the last observation before the entry at which the subject, on a carrier the mark marks, is outside the mark's stopping zone upstream: off it, short of it and farther from it than p.stop_point_tolerance; for several marks, outside the zone of each and short of each) or at the subject's previous entry into i; never at the recording's start or a distance travelled. A halt found discharges; either end reached without one violates; reaching neither is unknown. The entry is unknown where the observation before it is missing or does not place the subject on a mapped carrier; where a mark's association with c is unobserved, whether it governs is unknown, and the verdict is unknown only where it depends on it.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "'before entering the nearest crosswalk ... or at a limit line when marked' is read as two alternative places, each marking the subject's approach carrier: a halt within the stop-point tolerance short of either discharges; 'if none' is read where the source's complete entrance lists show neither marks the carrier.",
+   "kind": "reading"
+  },
+  {
+   "span": "s1",
+   "why": "The official status of the flashing signal is read through the head's presence in the scene.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "'drivers' is read through the vehicle's controlled motion, whoever or whatever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies approach lane c entering i; a stop line is recorded as marking c; the head governing c displays flashing_red. The car approaches from beyond the stopping zone and enters i without a halt (speed stays above the tolerance)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the car halts with its body within the tolerance short of the stop line, not overlapping it, then enters i."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The head governing c displays circular_green when the car enters i."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the head's state is not observed at the entry (dev.traffic_signal absent).",
+   "masked": [
+    "dev.traffic_signal"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the car already within the stop line's stopping zone on c, rolling slowly under a flashing red; it enters i. No halt is recorded and no earlier entry into i is recorded.",
+   "boundary": "the car's approach to the stop line on c before the recording began, where a halt may have been made"
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The source's entrance lists show no stop line and no crosswalk marking c; the car halts with its body within the tolerance of i's edge, not overlapping i, then enters under flashing red."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of automotive perception and simulator scene-graph sources"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "MUTCD stop line placement (4 ft before the crosswalk) plus a placement margin"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

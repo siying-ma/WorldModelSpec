@@ -1,0 +1,178 @@
+{
+ "node_id": "LVMC_11_52_040_A",
+ "law_refs": [
+  "LVMC-11-52-040-A"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except as otherwise provided in this Chapter:",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "No person shall stand or park a vehicle",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "in a roadway",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "other than parallel with the edge of the roadway headed in the direction of lawful traffic movement.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"Except as otherwise provided in this Chapter\": no node of the corpus states such a provision; what the Chapter otherwise provides for the position of a standing vehicle shows on the road as posted angle parking: a dev.regulatory_sign with code angle_parking (\"a point regulation by catalogue code ... angle_parking\") governing (dev.governs \"the travel regions whose traffic the device controls\") a travel region (st.travel_region) the subject occupies (rel.occupies). The sign is a condition, not a manoeuvre."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "\"a vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle, one atom. \"stand or park\": \"stand\" (DEF-NRS-484A-250, \"the halting of a vehicle, whether occupied or not, otherwise than for the purpose of and while actually engaged in receiving or discharging passengers\") and \"park\" (DEF-NRS-484A-155, \"the standing of a vehicle ... otherwise than temporarily\") both exclude a halt for a passenger or loading exchange; drv.motion.parked (\"at rest at every observation of the window behind the observation, of length min_duration ... A halt shorter than min_duration, which may be the temporary halt the definition leaves out, is not denoted\") carries the halt with that exclusion read through its length (observable_reading purpose). \"No person shall\" is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "\"in a roadway\" (DEF-NRS-484A-220, \"that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder\"): st.roadway \"the part of a highway improved for vehicular traffic, excluding shoulder\" at its whole extent; rel.occupies anchors the subject on it. Not the sidewalk."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "kin.heading",
+    "st.lane_direction",
+    "rel.occupies",
+    "st.travel_region",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "\"parallel with the edge of the roadway headed in the direction of lawful traffic movement\": the direction of lawful movement of traffic (the admitted aggregate DEF-NRS-484A-285::traffic, \"vehicles and other conveyances ... using any highway for purposes of travel\", whose lawful direction the carrier designates) is st.lane_direction \"direction of travel designated for a structure a vehicle travels in\" of the travel region (st.travel_region) the subject occupies (rel.occupies); the edge of the roadway runs along that direction, so a heading (kin.heading \"direction the body points\") aligned with it within a tolerance is both parallel with the edge and headed with traffic. The heading is not the direction of motion, and the ruling direction is the carrier's, not the vehicle's."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that stands or parks: drv_motion_parked(subject) with speed_tol p.halt_speed_tolerance and min_duration p.standing_min_duration, and it occupies a region of kind st.roadway (rel.occupies). Exception: some dev.regulatory_sign with code angle_parking governs (dev.governs) a travel region the subject occupies.",
+ "obligation": "For every travel region l (kind st.travel_region, not an intersection) the subject occupies that carries a designated direction, the subject's heading is aligned with it: kin_heading(subject) dot st_lane_direction(l) is at least p.parked_heading_cos (both read normalised). Unknown where an occupied carrier's direction or the heading is unobserved.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.standing_min_duration",
+  "p.parked_heading_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "What the Chapter otherwise provides is read through a posted angle_parking sign governing the subject's travel region; a provision that shows in no posted feature is not read.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "The definitions' exclusion of a halt for receiving or discharging passengers or for loading is read through the halt's length: a halt shorter than the standing duration is not standing; \"No person shall\" is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s4",
+   "why": "\"parallel with the edge of the roadway\" is read through the designated direction of the carrier the vehicle occupies, along which the edge runs, rather than through the edge's own outline; parallel within the heading tolerance."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A street whose roadway carries a curbside lane l (st.lane, direction east). The subject, a passenger car (ru.motor_vehicle), stands at rest in l for several minutes with its heading pointing west, against the lane's direction; no angle_parking sign governs l."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car stands at rest in l for several minutes with its heading east, along the lane's direction."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same car drives along l at a steady speed without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source supplies no designated direction for l (st.lane_direction absent).",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The car stands in l for several minutes with its heading pointing north, across the lane's direction."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As in branch_1, but a dev.regulatory_sign with code angle_parking governs l."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "curbside passenger pick-up and drop-off dwell times in curb management studies"
+  },
+  {
+   "name": "p.parked_heading_cos",
+   "unit": "ratio",
+   "value": 0.97,
+   "convention": "cosine of the largest angle (about fourteen degrees) between a standing vehicle's heading and its carrier's designated direction at which it counts as parallel with the edge and headed with traffic",
+   "source": "parallel-parking placement tolerance in curb parking practice"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

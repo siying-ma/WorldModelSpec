@@ -1,0 +1,34 @@
+'TrafficSpec.Rules.LVMC_11_40_180_A.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_40_180_A.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.fremont_street_main_to_seventh"],"binders":["subject"],"id":"LVMC_11_40_180_A","intentions":[],"laws":["LVMC-11-40-180-A"],"narrowings":[],"operationalizations":[],"residues":["The sentence directs the City to post signs; the riding prohibition of the first sentence holds whether or not the signs are posted, so the duty is the same either way."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"args":[{"var":"subject"},{"var":"sw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"sidewalk"},"var":"sw"},{"asm":"asm.fremont_street_main_to_seventh"}]},"assumptions":["asm.fremont_street_main_to_seventh"],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-082::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-083::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"LVMC_11_40_180_A","intentions":[],"laws":["LVMC-11-40-180-A"],"narrowings":[],"obligation":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},"residues":["The sentence directs the City to post signs; the riding prohibition of the first sentence holds whether or not the signs are posted, so the duty is the same either way."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"args":[{"var":"subject"},{"var":"sw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"sidewalk"},"var":"sw"},{"asm":"asm.fremont_street_main_to_seventh"}]},"assumptions":["asm.fremont_street_main_to_seventh"],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-082::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-083::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"LVMC_11_40_180_A","intentions":[],"laws":["LVMC-11-40-180-A"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"residues":["The sentence directs the City to post signs; the riding prohibition of the first sentence holds whether or not the signs are posted, so the duty is the same either way."],"surrogate":false}
+ATOMS	ru_aggregate,st_sidewalk,rel_occupies,drv_motion_complete_halt
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-025::bicycle	DEF-LVMC-11-02-082::electric_bicycle	DEF-LVMC-11-02-083::electric_scooter
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?sw
+OCC	subject,sw
+OCC	subject
+TIME	occurrences	0
+TIME	checks	3
+TIME	lint	22
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-LVMC-11-02-083::electric_scooter]
+TIME	scenario:forbid	10
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	8
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	8
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	11
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	8
+TIME	witnesses	45
+DONE_WITNESSES

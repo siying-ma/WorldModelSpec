@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 97072,
+  "stop_reason": "end_turn",
+  "session_id": "8f65b1b7-3158-4f10-9d9a-0451d36665d9",
+  "total_cost_usd": 0.76206647,
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 51103,
+   "cache_read_input_tokens": 297884,
+   "output_tokens": 11030,
+   "output_tokens_details": {
+    "thinking_tokens": 3219
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 51103,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 888,
+     "cache_read_input_tokens": 54305,
+     "cache_creation_input_tokens": 1266,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1266
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37179,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00410399,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 14,
+    "outputTokens": 11030,
+    "cacheReadInputTokens": 297884,
+    "cacheCreationInputTokens": 51103,
+    "webSearchRequests": 0,
+    "costUSD": 0.75796248,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3219,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 51103,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 8,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returns **OK** for NRS_484B_620_2: all 13 witnesses match their expected verdicts. I used 2 of the 6 gate runs.\n\n**Process note:** my first gate run was a mistake. I ran it on the harness's untouched files before editing, and I added a `| head -5` pipe to the command, which the rules don't allow. It returned `UNUSED_CLAIM`, as expected for the empty skeleton. The second run, after writing both files, returned OK.\n\n**The rule:**\n- **Who it applies to:** a vehicle that is a motor vehicle under DEF-NRS-484A-130.\n- **\"Upon the road\":** the place is not inside an incorporated city (`asm.within_incorporated_city` is false).\n- **\"In the speed zone\":** the vehicle occupies a travel region that lies on a highway. A speed-zone sign governs that region, and it is not an end-of-zone sign.\n- **When it applies:** both of the above hold, and a speed limit sign of kind zone or maximum governs that region.\n- **The duty:** for every such region and every zone or maximum speed limit sign governing it, the vehicle's speed is at or below the sign's value. The obligation repeats the region selection in full, so it judges the same regions as the applicability.\n\nI chose no readings of my own. The node's three recorded readings already cover the open points, so the rule adds none.\n\n**Witnesses:** besides the five planned (forbid, permit, idle, blind, branch_1), I added eight so that every condition changes some outcome:\n\n| Witness | Situation | Expected |\n|---|---|---|\n| branch_2 | the speed-zone sign is an end sign | not applicable |\n| branch_3 | the lane lies on no highway | not applicable |\n| branch_4 | the only speed limit sign is a minimum sign | not applicable |\n| branch_5 | the zone sign is a school-zone sign | not applicable |\n| branch_6 | the signs govern a lane the car isn't in | not applicable |\n| branch_7 | the vehicle is a bicycle | not applicable |\n| branch_8 | maximum sign 30 m/s and zone sign 20 m/s, car at 25 m/s | violated |\n| branch_9 | only a maximum sign of 20 m/s, car at 25 m/s | violated |\n\nFiles are in `results/full221-1116-1018/iter-002/code/NRS_484B_620_2/`:\n- task_result.md\n\nThe two Lean files are in `library/`:\n- TrafficSpec/Rules/NRS_484B/NRS_484B_620_2.lean\n- TrafficSpecWitness/NRS_484B/NRS_484B_620_2.lean",
+  "ttft_ms": 19056,
+  "type": "result",
+  "duration_ms": 118717,
+  "uuid": "f6a2330c-dfe4-4fa8-8ae6-3b645e2286ca",
+  "ttft_stream_ms": 1738,
+  "time_to_request_ms": 367,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 36,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 41,
+   "tool_pool_refresh": 3,
+   "init_message": 4,
+   "init_frame_send": 8,
+   "engine_pickup": 13,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 212,
+   "query_setup": 1,
+   "model_gates": 1,
+   "tool_schema_build": 9,
+   "message_normalization": 2,
+   "client_creation": 2,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 33,
+  "time_to_request_cpu_ms": 327,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 7,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1739,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37179,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00410399,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 14,
+    "outputTokens": 11030,
+    "cacheReadInputTokens": 297884,
+    "cacheCreationInputTokens": 51103,
+    "webSearchRequests": 0,
+    "costUSD": 0.75796248,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3219,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 51103,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

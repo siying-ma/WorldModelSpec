@@ -1,0 +1,59 @@
+'TrafficSpec.Rules.LVMC_11_30_090.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_090.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_30_090","intentions":[],"laws":["LVMC-11-30-090"],"narrowings":[{"kind":"reading","span":"s3","why":"The carriers of r (r itself, or an occupied st.lane on the same highway) are read existentially for compliance: moving across any one of them (drv.motion.moving_across_carrier) is crossing, not walking along; a moving pedestrian violates only where its motion is along every such carrier."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"sidewalk"},"var":"w"}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"roadway"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_30_090","intentions":[],"laws":["LVMC-11-30-090"],"narrowings":[{"kind":"reading","span":"s3","why":"The carriers of r (r itself, or an occupied st.lane on the same highway) are read existentially for compliance: moving across any one of them (drv.motion.moving_across_carrier) is crossing, not walking along; a moving pedestrian violates only where its motion is along every such carrier."}],"obligation":{"body":{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"sidewalk"},"var":"w"}]}]},{"or":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"or":[{"args":[{"var":"subject"},{"var":"r"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.crossing_motion_cos"}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"c"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.crossing_motion_cos"}]}]}]},"exists_region":{"lit":"lane"},"var":"c"}]}]}]},"forall_region":{"lit":"highway"},"var":"h"},"forall_region":{"lit":"roadway"},"var":"r"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"sidewalk"},"var":"w"}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"roadway"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_30_090","intentions":[],"laws":["LVMC-11-30-090"],"narrowings":[{"kind":"reading","span":"s3","why":"The carriers of r (r itself, or an occupied st.lane on the same highway) are read existentially for compliance: moving across any one of them (drv.motion.moving_across_carrier) is crossing, not walking along; a moving pedestrian violates only where its motion is along every such carrier."}],"obligation":{"body":{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"sidewalk"},"var":"w"}]}]},{"or":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]}]}]},"exists_region":{"lit":"lane"},"var":"c"}]}]}]},"forall_region":{"lit":"highway"},"var":"h"},"forall_region":{"lit":"roadway"},"var":"r"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_roadway,st_highway,rel_occupies,st_on_way,st_sidewalk,drv_motion_complete_halt,drv_motion_moving_across_carrier,st_lane
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.velocity
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	subject
+OCC	?r
+OCC	?h
+OCC	subject,r
+OCC	r,h
+OCC	?w
+OCC	w,h
+OCC	?r
+OCC	?h
+OCC	subject,r
+OCC	r,h
+OCC	?w
+OCC	w,h
+OCC	subject
+OCC	subject,r
+OCC	?c
+OCC	subject,c
+OCC	c,h
+OCC	subject,c
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	53
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	13
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	10
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	9
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	14
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	9
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	9
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	11
+TIME	witnesses	75
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_30_090.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_090.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_30_090	11	6
+TIME	adequacy_start	7
+TIME	adequacy	697
+DONE

@@ -1,0 +1,42 @@
+'TrafficSpec.Rules.NRS_484B_560_7a.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_560_7a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_560_7a","intentions":[],"laws":["NRS-484B-560-7a"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}},{"since":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"railway_crossing"},"var":"c"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_560_7a","intentions":[],"laws":["NRS-484B-560-7a"],"narrowings":[],"obligation":{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}},{"since":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"railway_crossing"},"var":"c"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_560_7a","intentions":[],"laws":["NRS-484B-560-7a"],"narrowings":[],"obligation":{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_railway_crossing,st_region_geometry_distance,rel_occupies,drv_motion_complete_halt
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+OCC	subject
+OCC	?c
+OCC	subject,c
+OCC	subject,c
+OCC	subject,c
+OCC	subject
+LITERAL	1143/250	TrafficSpec.PUnit'.metre
+LITERAL	1143/250	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	3
+TIME	lint	15
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	12
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	11
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	12
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	13
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	11
+TIME	witnesses	59
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_560_7a.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_560_7a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_560_7a	4	4
+TIME	adequacy_start	4
+TIME	adequacy	177
+DONE

@@ -1,0 +1,382 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "r"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "or": [
+          {
+           "args": [
+            {
+             "var": "r"
+            },
+            {
+             "lit": "DEF-NRS-484A-025::bicycle"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          },
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "r"
+              },
+              {
+               "lit": "DEF-NRS-484B-017::electric_bicycle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "r"
+              },
+              {
+               "lit": "DEF-NRS-484B-018::electric_scooter"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "rises": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "derived": "drv_interaction_overtake_pass",
+            "params": [
+             {
+              "param": "p.overtake_window"
+             },
+             {
+              "param": "p.overtake_same_direction_cos"
+             }
+            ]
+           }
+          },
+          {
+           "not": {
+            "body": {
+             "not": {
+              "and": [
+               {
+                "cmp": "gt",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "measure": "kin_speed"
+                },
+                "rhs": {
+                 "param": "p.halt_speed_tolerance"
+                }
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_same_direction",
+                "params": [
+                 {
+                  "param": "p.overtake_same_direction_cos"
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            "holds_for": "time",
+            "length": {
+             "param": "p.overtake_window"
+            },
+            "subject": "subject"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_270_2a_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-270-2a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "r"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "r"
+              },
+              {
+               "lit": "DEF-NRS-484A-025::bicycle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "r"
+                },
+                {
+                 "lit": "DEF-NRS-484B-017::electric_bicycle"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "r"
+                },
+                {
+                 "lit": "DEF-NRS-484B-018::electric_scooter"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "rises": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "derived": "drv_interaction_overtake_pass",
+              "params": [
+               {
+                "param": "p.overtake_window"
+               },
+               {
+                "param": "p.overtake_same_direction_cos"
+               }
+              ]
+             }
+            },
+            {
+             "not": {
+              "body": {
+               "not": {
+                "and": [
+                 {
+                  "cmp": "gt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "measure": "kin_speed"
+                  },
+                  "rhs": {
+                   "param": "p.halt_speed_tolerance"
+                  }
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "r"
+                   }
+                  ],
+                  "atom": "rel_same_direction",
+                  "params": [
+                   {
+                    "param": "p.overtake_same_direction_cos"
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              "holds_for": "time",
+              "length": {
+               "param": "p.overtake_window"
+              },
+              "subject": "subject"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_contact",
+           "params": []
+          }
+         },
+         {
+          "implies": [
+           {
+            "cmp": "ge",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "measure": "rel_longitudinal_overlap"
+            },
+            "rhs": {
+             "lit": {
+              "den": 1,
+              "num": 0
+             },
+             "unit": "metre"
+            }
+           },
+           {
+            "cmp": "ge",
+            "lhs": {
+             "args": [
+              {
+               "var": "r"
+              }
+             ],
+             "measure": "kin_accel_longitudinal"
+            },
+            "rhs": {
+             "neg": {
+              "param": "p.rider_evasive_decel"
+             }
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "holds_for": "time",
+       "length": {
+        "param": "p.overtake_window"
+       },
+       "subject": "subject"
+      }
+     ]
+    },
+    "forall_user": "r"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "2419d71595d95ee3ec050be8",
+  "candidate_digest": "7ca77d5f296f56e819049eeda6148ddfb62b56e83f01b0fb0944ba60a6eed236"
+ }
+}

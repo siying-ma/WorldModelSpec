@@ -1,0 +1,151 @@
+{
+ "node_id": "LVMC_11_30_090",
+ "law_refs": [
+  "LVMC-11-30-090"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where sidewalks are provided",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "it shall be unlawful for any pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "to walk along and upon an adjacent roadway",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.sidewalk",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'sidewalks' (DEF-NRS-484A-240: 'that portion of a highway between the curb lines or the lateral lines of a highway and the adjacent property lines intended for the use of pedestrians') is st.sidewalk, 'area for pedestrians between roadway and property line'; it is not read as a crosswalk, its exclusion. 'provided' is the sidewalk's presence on the map (an observable_reading of category status). The sidewalk is tied to the place of the duty by st.on_way ('the public way (a highway region) a structure region lies on'): the sidewalk lies on the highway (st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders') on which the roadway the pedestrian occupies lies. st.on_way is not read as nearness to a way, its exclusion: both regions are recorded as lying on that highway."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'any pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'), one atom, never expanded; same atoms as 'Any pedestrian' (LVMC_11_30_060_B). 'it shall be unlawful for' states the prohibition the obligation span describes."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier",
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'upon ... roadway' (DEF-NRS-484A-220: 'that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder') is the footprint overlapping st.roadway ('the part of a highway improved for vehicular traffic, excluding shoulder'; not the sidewalk, which is not read here): rel.occupies. 'adjacent' ties that roadway to the sidewalks of s1: the roadway lies on the same highway (st.on_way, st.highway). 'walk along' is moving (not drv.motion.complete_halt: the road user is not at rest) and not moving across the designated direction of the lane (st.lane) or roadway it occupies (not drv.motion.moving_across_carrier, 'Road user a moves across the designated direction of travel of carrier region r'): with the same tolerance that separates crossing from walking along in LVMC_11_30_050, motion within that angle of the direction of travel is along it. st.lane serves as a carrier of a direction only, never as a half of the roadway, its exclusion."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (ru.aggregate=DEF-NRS-484A-165::pedestrian) whose footprint overlaps a roadway r (rel.occupies, st.roadway) that lies on a highway h (st.on_way, st.highway) on which a sidewalk (st.sidewalk) also lies (st.on_way), read at the judged observation.",
+ "obligation": "At every such observation, for every roadway r the subject occupies that lies on a highway on which a sidewalk lies (re-bound with the whole selection), the subject does not walk along r: it is violated where the subject is not at rest (not drv.motion.complete_halt with speed_tol p.halt_speed_tolerance) and, for a lane or roadway carrier c of r that it occupies (st.lane on the same highway, or r itself), it is not moving across c (not drv.motion.moving_across_carrier with speed_tol p.halt_speed_tolerance and cos_max p.crossing_motion_cos); at rest or moving across the roadway is compliant.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "A sidewalk is 'provided' where the map records one lying on the same highway as the roadway the pedestrian occupies (st.on_way); its presence is the evidence that it was provided. A sidewalk on either side of the highway counts.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'walk along' is read as moving faster than p.halt_speed_tolerance and not across the occupied carrier's designated direction by more than the angle p.crossing_motion_cos sets; 'walk' is read for every member of the pedestrian aggregate (a person in a wheelchair included) as its motion. 'adjacent' is read as lying on the same highway as a sidewalk (st.on_way); no relation atom states adjacency more narrowly.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian (ru.pedestrian) walks at 1.4 m/s along a lane, velocity parallel to its st.lane_direction, footprint on the roadway; a st.sidewalk lies on the same st.highway (st.on_way)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "On the same roadway the pedestrian walks across the lane at right angles to its st.lane_direction (drv.motion.moving_across_carrier holds)."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian walks along a lane of a roadway whose highway carries no st.sidewalk (no sidewalk lies on it)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian moves on the roadway beside which a sidewalk lies; the source does not observe kin.velocity, so whether it moves along or across the lane is unknown.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A pedestrian stands at rest on the roadway (kin.speed at or below p.halt_speed_tolerance), a sidewalk lying on the same highway."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian walks along the sidewalk and occupies no roadway."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed quantisation of the acquisition standard's scene graph"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "pedestrian crossing-trajectory observation studies (FHWA pedestrian crossing behaviour)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 389616,
+  "stop_reason": "end_turn",
+  "session_id": "5c8db630-27d0-46d8-a9c8-62e10f2e69af",
+  "total_cost_usd": 2.2491074099999997,
+  "usage": {
+   "input_tokens": 24,
+   "cache_creation_input_tokens": 125538,
+   "cache_read_input_tokens": 999508,
+   "output_tokens": 41801,
+   "output_tokens_details": {
+    "thinking_tokens": 28190
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 125538,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 788,
+     "cache_read_input_tokens": 128129,
+     "cache_creation_input_tokens": 1877,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1877
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43075,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004753650000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 24,
+    "outputTokens": 41801,
+    "cacheReadInputTokens": 999508,
+    "cacheCreationInputTokens": 125538,
+    "webSearchRequests": 0,
+    "costUSD": 2.2443537599999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 28190,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 125538,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 15,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed: the rule and its witnesses for `NRS_484B_310_1` returned **OK**, with 10 witnesses. I used 2 of the 6 gate runs. The first run was wasted, because I ran it on the untouched skeleton and it just listed every claimed name as unused.\n\n**What the rule says**\n- **Who it applies to:** a road user in both the traffic and the vehicle groups the node names.\n- **When it applies:** at the moment the vehicle first overlaps an intersection, having been on a lane leading into it at the previous moment, while a signal controlling that lane or the intersection is flashing red.\n- **What it requires:** a full stop (speed at or below 0.1 m/s) within 2 m short of a stop line or crosswalk marking that lane, without overlapping the line or the intersection. If the map shows no such line or crosswalk for the lane, the stop is short of the intersection's edge instead.\n- **How far back it looks for the stop:** the search stops at the point where the vehicle was last on the approach and more than 2 m short of the line, or at an earlier time it was in the intersection. If the search reaches the start of the recording first, the result is unknown, never a violation.\n\n**Choices I made**\n- **One narrowing, on s5:** the node only says where the backward search stops when there is a stop line or crosswalk. For the \"if none\" case I used the same test against the intersection's edge. It is declared in `narrowings` and explained in the rule's header.\n- **Starting the search one step back:** at the moment of entry the vehicle is already in the intersection, so a stop can't count there. I wrote the rule so the search starts at the moment before entry.\n- **Vehicle on two approach lanes:** if those lanes would give different verdicts, the result is unknown, as the lane-entry definition requires. The rule never picks the lane that favours the driver.\n\n**Witnesses:** besides the six planned scenarios, I added four extra cases so every alternative in the rule is tested:\n- `branch_2`: crosswalk only, the car stops short of it (compliant).\n- `branch_3`: crosswalk only, no stop (violated).\n- `branch_4`: no line or crosswalk for the lane, no stop (violated).\n- `branch_5`: the signal controls the intersection rather than the lane, no stop (violated).\n\nThe report is in `task_result.md` in the working directory.",
+  "ttft_ms": 104265,
+  "type": "result",
+  "duration_ms": 430935,
+  "uuid": "be47fa08-da83-436f-b510-1133f33df0b3",
+  "ttft_stream_ms": 1303,
+  "time_to_request_ms": 339,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 29,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 15,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 54,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 190,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 22,
+  "time_to_request_cpu_ms": 329,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 8,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 8,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1303,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43075,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004753650000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 24,
+    "outputTokens": 41801,
+    "cacheReadInputTokens": 999508,
+    "cacheCreationInputTokens": 125538,
+    "webSearchRequests": 0,
+    "costUSD": 2.2443537599999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 28190,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 125538,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,200 @@
+{
+ "node_id": "LVMC_11_40_180_C_o2",
+ "law_refs": [
+  "LVMC-11-40-180-C"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "Whenever any person is riding a bicycle, electric bicycle, or electric scooter upon a sidewalk",
+   "role": "trigger"
+  },
+  {
+   "id": "c2",
+   "text": "such person shall yield",
+   "role": "sibling"
+  },
+  {
+   "id": "c3",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "c4",
+   "text": "to any pedestrian",
+   "role": "sibling"
+  },
+  {
+   "id": "c5",
+   "text": "and shall give audible signal",
+   "role": "obligation"
+  },
+  {
+   "id": "c6",
+   "text": "before overtaking and passing",
+   "role": "trigger"
+  },
+  {
+   "id": "c7",
+   "text": "such pedestrian",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter",
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "As in LVMC_11_40_180_C_o1: the three admitted aggregates; 'riding' read through controlled motion (not drv.motion.complete_halt); st.sidewalk 'area for pedestrians between roadway and property line', anchored by rel.occupies."
+  },
+  {
+   "span": "c5",
+   "atoms": [
+    "sig.horn",
+    "sig.siren"
+   ],
+   "derived": [],
+   "justification": "sig.horn: 'an ordinary horn ... sounding (audible)'; sig.siren: 'a siren, whistle or bell sounding (audible)' — a bicycle bell or a whistle is the latter, a horn the former; either sounding is an audible signal. Neither is read from a visible state ('no visible state stands in for it'); a source without audio declares them absent, and the rule is then unknown."
+  },
+  {
+   "span": "c6",
+   "atoms": [
+    "rel.bearing",
+    "rel.longitudinal_overlap",
+    "rel.same_direction"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "drv.interaction.overtake_pass: 'Road user a overtakes and passes road user b from the rear: a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'. 'before' is read with the same relations the concept states: the pedestrian ahead of the subject (rel.bearing longitudinal component positive, rel.longitudinal_overlap negative) with headings aligned (rel.same_direction), during the run of observations that ends at the act's onset."
+  },
+  {
+   "span": "c7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'such pedestrian' refers back to 'any pedestrian': the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot ...'), the road user b of the pass."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a bicycle, electric bicycle or electric scooter. For a pedestrian p of the scene (ru.aggregate=DEF-NRS-484A-165::pedestrian, not the subject), at the observation at which drv.interaction.overtake_pass(subject, p; p.overtake_window, p.overtake_same_direction_cos) holds (the pass is recognized), where at some observation while the pass was under way (from its onset to its recognition) the subject occupied an st.sidewalk region and was not at rest.",
+ "obligation": "Act before an event (rule 4c). Event: the onset of the pass, the last observation of the window behind at which p was ahead of the subject with headings aligned (rel.bearing longitudinal component positive, rel.longitudinal_overlap negative, rel.same_direction with p.overtake_same_direction_cos), read with atLast over p.overtake_window. Act: sig.horn or sig.siren sounding for the subject. Search: from the onset back through the run of observations at which p stays ahead of the subject; it ends at the observation at which that run began (p came to be ahead), which is the approach start, or at the recognition of a previous pass of p by the subject. A signal found in the search: compliant. The search reaching its start without a signal: violated. Where the run began before the recording, or the signal or the relations are unobserved at an observation the search crosses, without a signal found: unknown. A signal given while p is alongside or after it is behind does not discharge the duty.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "c1",
+   "why": "'any person is riding' is read through the device's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c5",
+   "why": "An audible signal is read as a horn, bell or whistle sounding (sig.horn, sig.siren); a spoken warning has no atom, so a rider who warns only by voice is read as giving no signal.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A bicycle rides on the sidewalk behind a pedestrian walking the same way, draws alongside and passes, and no horn, bell or whistle sounds while the pedestrian is ahead of it; the pedestrian came to be ahead within the recording."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same pass, with the bicycle's bell sounding while the pedestrian is still ahead of it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle rides on the sidewalk behind a pedestrian at the same pace and never passes."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same pass with no signal in the trace, from a source without audio that declares horn and bell absent.",
+   "masked": [
+    "sig.horn",
+    "sig.siren"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "An electric scooter begins the pass on the roadway edge and moves onto the sidewalk while alongside the pedestrian, completing the pass there without any signal."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "An electric scooter rides on the sidewalk, leaves it for the roadway before drawing alongside, and passes a pedestrian on the sidewalk from the roadway without signal: it is on the sidewalk only before the act began."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the pedestrian already ahead of the bicycle on the sidewalk; the bicycle passes without a signal in the recording, and the search reaches the start of the recording without reaching the observation at which the pedestrian came to be ahead.",
+   "boundary": "the run of observations with the pedestrian ahead of the rider begins before the recording"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "overtaking duration observations on urban streets"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading deviations"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

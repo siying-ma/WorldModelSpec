@@ -1,0 +1,315 @@
+{
+ "node_id": "NRS_484B_603_1_o2",
+ "law_refs": [
+  "NRS-484B-603-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The fact that the speed of a vehicle is lower than the prescribed limits",
+   "role": "sibling"
+  },
+  {
+   "id": "s2",
+   "text": "does not relieve",
+   "role": "sibling"
+  },
+  {
+   "id": "s3",
+   "text": "a driver",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "from the duty to decrease speed",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "when approaching and crossing an intersection,",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "when approaching and going around a curve,",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "when approaching a hill crest,",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "when traveling upon any narrow or winding highway,",
+   "role": "sibling"
+  },
+  {
+   "id": "s9",
+   "text": "or when special hazards exist or may exist",
+   "role": "sibling"
+  },
+  {
+   "id": "s10",
+   "text": "with respect to pedestrians or other traffic,",
+   "role": "sibling"
+  },
+  {
+   "id": "s11",
+   "text": "or by reason of weather",
+   "role": "sibling"
+  },
+  {
+   "id": "s12",
+   "text": "or other highway conditions,",
+   "role": "sibling"
+  },
+  {
+   "id": "s13",
+   "text": "and speed must be decreased",
+   "role": "obligation"
+  },
+  {
+   "id": "s14",
+   "text": "as may be necessary to avoid colliding",
+   "role": "standard"
+  },
+  {
+   "id": "s15",
+   "text": "with any person, vehicle or other conveyance",
+   "role": "condition"
+  },
+  {
+   "id": "s16",
+   "text": "on or entering a highway",
+   "role": "condition"
+  },
+  {
+   "id": "s17",
+   "text": "in compliance with legal requirements and the duty of all persons to use due care.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a driver' is, by DEF-NRS-484A-080, 'every person who drives or is in actual physical control of a vehicle': the duty binds the vehicle the driver controls, the admitted aggregate DEF-NRS-484A-320::vehicle. ru.aggregate is 'membership of a legal aggregate', not the relational role of driving, which is read through the vehicle's controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "kin.speed",
+    "kin.accel_longitudinal"
+   ],
+   "derived": [],
+   "justification": "Speed decreased: the subject's kin.speed ('magnitude of velocity') falling, observed as kin.accel_longitudinal ('acceleration along heading, signed') at or below minus p.speed_decrease_decel_min; kin.accel_longitudinal is 'Not a stand-in for: speed', and speed is read from kin.speed itself."
+  },
+  {
+   "span": "s15",
+   "atoms": [
+    "rel.contact",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The parties are 'any person, vehicle or other conveyance': the vehicle word claims its admitted aggregate DEF-NRS-484A-320::vehicle; persons (afoot or riding) and other conveyances cover every other road user, so the union leaves no class out and the rule quantifies over every road user of the scene other than the subject, whatever its class; the aggregate restricts nothing. Colliding with one is rel.contact, 'the bodies of two road users ... touch or overlap (a collision)', 'Not a stand-in for: a near miss'."
+  },
+  {
+   "span": "s16",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "The other road user is on or entering a highway: its footprint overlaps (rel.occupies, 'a road user's footprint overlaps a lane / region') a highway region (st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders', 'Not a stand-in for: the roadway': the words name the whole highway, so the whole highway is read). A road user entering the highway overlaps it from the observation its footprint reaches it."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s14",
+   "standard": "speed decreased as may be necessary to avoid colliding",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.contact",
+    "kin.accel_longitudinal",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.speed_decrease_decel_min",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "Traffic-conflict technique: a collision is to be avoided with a road user whose centre comes within p.conflict_centre_clearance of the subject's within p.conflict_horizon under constant velocities; the speed is being decreased where the longitudinal acceleration is at or below minus p.speed_decrease_decel_min, the source's acceleration resolution, or the subject is at rest (speed at or below p.halt_speed_tolerance); contact while the subject moves is a collision not avoided.",
+   "surrogate": true
+  },
+  {
+   "span": "s17",
+   "standard": "in compliance with legal requirements and the duty of all persons to use due care",
+   "concepts": [
+    "kin.speed",
+    "rel.surface_gap",
+    "env.wet_road",
+    "env.precipitation",
+    "env.ice_or_snow"
+   ],
+   "params": [
+    "p.driver_reaction_time",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice"
+   ],
+   "convention": "AASHTO stopping-distance model: due care is met toward a road user in predicted conflict where the subject's stopping distance D = v times p.driver_reaction_time plus v squared over twice the surface deceleration (p.following_decel_ice on ice or snow, else p.following_decel_wet on a wet road or in precipitation, else p.following_decel_dry) is at or below the surface gap between the bodies; the bound moves with speed, surface and gap.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle).",
+ "obligation": "For every road user u of the scene other than the subject that occupies a highway and whose closest approach to the subject lies within p.conflict_horizon at a centre distance at or below p.conflict_centre_clearance: the subject is at rest (speed at or below p.halt_speed_tolerance), or its longitudinal acceleration is at or below minus p.speed_decrease_decel_min, or its stopping distance D = v*p.driver_reaction_time + v*v/(2*a) (a = p.following_decel_ice on ice or snow, else p.following_decel_wet where wet or precipitating, else p.following_decel_dry) is at or below the surface gap between the two bodies. And for every road user u other than the subject occupying a highway, the subject is not in contact with u while its speed exceeds p.halt_speed_tolerance. Otherwise violated; with no such road user the subject complies.",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.speed_decrease_decel_min",
+  "p.halt_speed_tolerance",
+  "p.driver_reaction_time",
+  "p.following_decel_dry",
+  "p.following_decel_wet",
+  "p.following_decel_ice"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'a driver' is read through the vehicle's controlled motion: the duty binds the vehicle's speed whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s17",
+   "why": "'in compliance with legal requirements' is read as qualifying how the speed must be decreased and is read only through the due-care stopping-distance bound; other legal requirements are judged by their own rules, not here.",
+   "kind": "reading"
+  },
+  {
+   "span": "s14",
+   "why": "Avoidance is read through the predicted closest approach of centres under constant velocities and actual contact; a conflict the constant-velocity prediction does not show is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car at 15 m/s on a dry road holds its speed (zero longitudinal acceleration) while a pedestrian entering the highway ahead is predicted to come within the conflict clearance within the conflict horizon; the surface gap is 15 m, shorter than the car's stopping distance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same scene, but the car brakes at 4 m/s^2, its longitudinal acceleration below minus the decrease threshold."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a pedestrian walking on a sidewalk; it is no vehicle."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not supply the surface gap between the bodies; the car holds its speed, so whether its stopping distance fits the gap is unobserved.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car is alone on the highway at 25 m/s: no other road user is in the scene, so the duty is decided for the subject alone and met."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The car, moving at 5 m/s, touches a cyclist on the highway (rel.contact true)."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique (Hyden; time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger car design dimensions"
+  },
+  {
+   "name": "p.speed_decrease_decel_min",
+   "unit": "m/s^2",
+   "value": 0.3,
+   "convention": "the longitudinal deceleration at or beyond which a sampled acceleration counts as a decrease of speed rather than noise or rolling resistance: the acceleration resolution of the source",
+   "source": "IMU and trajectory acceleration resolution"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source"
+  },
+  {
+   "name": "p.driver_reaction_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "perception-reaction time of an alert driver to an expected hazard in the stopping-distance model",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping sight distance"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "unit": "m/s^2",
+   "value": 6.0,
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "vehicle braking friction tables (accident reconstruction practice)"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "vehicle braking friction tables (accident reconstruction practice)"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.0,
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "vehicle braking friction tables (accident reconstruction practice)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

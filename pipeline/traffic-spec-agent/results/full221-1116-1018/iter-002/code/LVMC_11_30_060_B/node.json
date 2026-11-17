@@ -1,0 +1,239 @@
+{
+ "node_id": "LVMC_11_30_060_B",
+ "law_refs": [
+  "LVMC-11-30-060-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "Any pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "g2",
+   "text": "crossing a roadway",
+   "role": "trigger"
+  },
+  {
+   "id": "g3",
+   "text": "at a point where a pedestrian tunnel or overhead pedestrian crossing has been provided",
+   "role": "condition"
+  },
+  {
+   "id": "g4",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "g5",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "g6",
+   "text": "to all vehicles upon the roadway",
+   "role": "condition"
+  },
+  {
+   "id": "g7",
+   "text": "The foregoing rules in this Section shall have no application under the conditions stated in Section 11.30.070",
+   "role": "reference"
+  },
+  {
+   "id": "g8",
+   "text": "when pedestrians are prohibited from crossing at certain designated places",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); one atom."
+  },
+  {
+   "span": "g2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "Same words and reading as LVMC_11_30_060_A's 'crossing a roadway': the pedestrian occupies a roadway r (rel.occupies; st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder') and moves across a carrier k it occupies (st.lane or the roadway): drv.motion.moving_across_carrier with cos_max p.crossing_motion_cos."
+  },
+  {
+   "span": "g3",
+   "atoms": [
+    "st.pedestrian_grade_separation",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "st.pedestrian_grade_separation, 'a pedestrian tunnel or overpass at a point on the highway', is exactly 'a pedestrian tunnel or overhead pedestrian crossing'; 'has been provided' is its presence. 'at a point where' places the pedestrian's crossing at that facility: st.region_geometry, 'the ground distance from a road user's body outline to it (zero when they overlap)', at most p.grade_separation_reach, the reach within which a crossing is made at the point the facility serves; the distance relates the pedestrian, a road user, to the region."
+  },
+  {
+   "span": "g4",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "Same words and meaning as the index's 'shall yield' -> kin.speed, rel.contact: not proceeding (kin.speed above p.halt_speed_tolerance) into a conflict, and no collision (rel.contact, 'the bodies of two road users ... touch or overlap')."
+  },
+  {
+   "span": "g6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "'all vehicles' are members v of DEF-NRS-484A-320::vehicle, quantified in the obligation; 'upon the roadway' is the roadway r the pedestrian crosses, re-bound in the obligation with its selection, and v occupies it (rel.occupies; st.roadway)."
+  },
+  {
+   "span": "g8",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "A place where pedestrians are prohibited from crossing is shown on the road by a posted prohibition: dev.regulatory_sign, 'a point regulation by catalogue code', code pedestrians_prohibited, governing (dev.governs, 'the travel regions whose traffic the device controls') the roadway r the pedestrian crosses. 'designated' is legal status, read through the sign's presence."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "g5",
+   "standard": "the right-of-way: precedence owed where direction, speed and proximity give rise to the danger of a crash",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: the defined right-of-way arises between road users 'approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash'; that danger is read as the two centres approaching under constant velocities within p.conflict_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "g7",
+   "why": "Section 11.30.070 is no node of this run's library, neither accepted nor planned, so no rule can be composed; the condition under which it suspends this section is stated in this text's own words, 'when pedestrians are prohibited from crossing at certain designated places', carried by g8. Conditions of 11.30.070 those words do not state are not read; reported to the operator."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-165::pedestrian; it occupies a roadway r and moves across a carrier k it occupies (drv.motion.moving_across_carrier with speed_tol p.halt_speed_tolerance and cos_max p.crossing_motion_cos); some pedestrian tunnel or overpass g (st.pedestrian_grade_separation) lies within p.grade_separation_reach of its body (st.region_geometry); and no dev.regulatory_sign of code pedestrians_prohibited governs (dev.governs) that roadway r.",
+ "obligation": "For every vehicle v (DEF-NRS-484A-320::vehicle) that occupies the roadway the subject occupies and crosses (re-bound with the same selection): the subject is not in contact with v (rel.contact), and it is not the case that the subject is moving (kin.speed above p.halt_speed_tolerance) while the subject's and v's centres, under constant velocities, approach within p.conflict_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos",
+  "p.grade_separation_reach",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "g4",
+   "why": "'shall yield' is read as not proceeding into a danger of a crash with a vehicle on the roadway: a pedestrian at rest yields, and one moving while no conflict is projected yields too.",
+   "kind": "reading"
+  },
+  {
+   "span": "g5",
+   "why": "the right-of-way's 'direction, speed and proximity' are read only through the constant-velocity closest approach of the two centres.",
+   "kind": "reading"
+  },
+  {
+   "span": "g8",
+   "why": "a place designated as one where pedestrians are prohibited from crossing is read through the presence of a pedestrians_prohibited regulatory sign governing the roadway crossed.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian crosses a roadway 10 m from a pedestrian overpass, walking at 1.4 m/s into the path of a car on that roadway whose projected closest approach is 1 m in 2 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A pedestrian crosses the roadway 10 m from the overpass at 1.4 m/s; no vehicle is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian crosses a roadway 300 m from any pedestrian tunnel or overpass."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian crosses the roadway near an overpass while a car approaches, but the source maps the overpass without its outline, so the distance to it is unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of road-user tracking in recorded and simulated traces"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "geometric convention separating walking along a roadway from crossing it, from pedestrian heading resolution"
+  },
+  {
+   "name": "p.grade_separation_reach",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "ground distance from a pedestrian's body to a pedestrian tunnel or overpass within which a roadway crossing is made at the point that facility serves: the facility's width plus the stair or ramp landings at either end",
+   "source": "AASHTO Guide for the Planning, Design and Operation of Pedestrian Facilities: overpass stairs and ramps landing within about 30 m of the crossing line"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique (Swedish TCT, Hydén 1987): time-to-collision thresholds of 1.5 to 3 s"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design vehicle dimensions (about 5.8 m by 2.1 m)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

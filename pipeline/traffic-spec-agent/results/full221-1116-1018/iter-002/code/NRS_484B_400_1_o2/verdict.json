@@ -1,0 +1,1363 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "rises": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "i"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      },
+      {
+       "rises": {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "not": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "int": "int.right_turn"
+            },
+            {
+             "or": [
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ],
+                    "atom": "st_lane_enters",
+                    "params": []
+                   },
+                   {
+                    "not": {
+                     "body": {
+                      "and": [
+                       {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "t"
+                           },
+                           {
+                            "lit": "right"
+                           }
+                          ],
+                          "atom": "st_turn_lane_side",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "var": "i"
+                             }
+                            ],
+                            "atom": "st_lane_enters",
+                            "params": []
+                           },
+                           {
+                            "cmp": "ge",
+                            "lhs": {
+                             "add": [
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "t"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              },
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "t"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "rhs": {
+                             "param": "p.approach_lane_same_direction_cos"
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "body": {
+                         "implies": [
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "u"
+                              },
+                              {
+                               "lit": "right"
+                              }
+                             ],
+                             "atom": "st_turn_lane_side",
+                             "params": []
+                            },
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "u"
+                                },
+                                {
+                                 "var": "i"
+                                }
+                               ],
+                               "atom": "st_lane_enters",
+                               "params": []
+                              },
+                              {
+                               "cmp": "ge",
+                               "lhs": {
+                                "add": [
+                                 {
+                                  "mul": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "u"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "c"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "mul": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "u"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "c"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               "rhs": {
+                                "param": "p.approach_lane_same_direction_cos"
+                               }
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "same": [
+                            {
+                             "var": "t"
+                            },
+                            {
+                             "var": "u"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "forall_region": {
+                         "lit": "turn_lane"
+                        },
+                        "var": "u"
+                       }
+                      ]
+                     },
+                     "exists_region": {
+                      "lit": "turn_lane"
+                     },
+                     "var": "t"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "lane"
+               },
+               "var": "c"
+              },
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ],
+                    "atom": "st_lane_enters",
+                    "params": []
+                   },
+                   {
+                    "not": {
+                     "body": {
+                      "and": [
+                       {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "t"
+                           },
+                           {
+                            "lit": "right"
+                           }
+                          ],
+                          "atom": "st_turn_lane_side",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "var": "i"
+                             }
+                            ],
+                            "atom": "st_lane_enters",
+                            "params": []
+                           },
+                           {
+                            "cmp": "ge",
+                            "lhs": {
+                             "add": [
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "t"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              },
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "t"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "c"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "rhs": {
+                             "param": "p.approach_lane_same_direction_cos"
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       {
+                        "body": {
+                         "implies": [
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "u"
+                              },
+                              {
+                               "lit": "right"
+                              }
+                             ],
+                             "atom": "st_turn_lane_side",
+                             "params": []
+                            },
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "u"
+                                },
+                                {
+                                 "var": "i"
+                                }
+                               ],
+                               "atom": "st_lane_enters",
+                               "params": []
+                              },
+                              {
+                               "cmp": "ge",
+                               "lhs": {
+                                "add": [
+                                 {
+                                  "mul": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "u"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "c"
+                                     },
+                                     {
+                                      "lit": "x"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   }
+                                  ]
+                                 },
+                                 {
+                                  "mul": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "u"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "c"
+                                     },
+                                     {
+                                      "lit": "y"
+                                     }
+                                    ],
+                                    "measure": "st_lane_direction"
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               "rhs": {
+                                "param": "p.approach_lane_same_direction_cos"
+                               }
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "same": [
+                            {
+                             "var": "t"
+                            },
+                            {
+                             "var": "u"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "forall_region": {
+                         "lit": "turn_lane"
+                        },
+                        "var": "u"
+                       }
+                      ]
+                     },
+                     "exists_region": {
+                      "lit": "turn_lane"
+                     },
+                     "var": "t"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "roadway"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_400_1_o2",
+   "intentions": [
+    "int.right_turn"
+   ],
+   "laws": [
+    "NRS-484B-400-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "rises": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        },
+        {
+         "rises": {
+          "or": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "i"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "int": "int.right_turn"
+              },
+              {
+               "or": [
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "c"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "c"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ],
+                      "atom": "st_lane_enters",
+                      "params": []
+                     },
+                     {
+                      "not": {
+                       "body": {
+                        "and": [
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "lit": "right"
+                             }
+                            ],
+                            "atom": "st_turn_lane_side",
+                            "params": []
+                           },
+                           {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "var": "i"
+                               }
+                              ],
+                              "atom": "st_lane_enters",
+                              "params": []
+                             },
+                             {
+                              "cmp": "ge",
+                              "lhs": {
+                               "add": [
+                                {
+                                 "mul": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "t"
+                                    },
+                                    {
+                                     "lit": "x"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  },
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "c"
+                                    },
+                                    {
+                                     "lit": "x"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  }
+                                 ]
+                                },
+                                {
+                                 "mul": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "t"
+                                    },
+                                    {
+                                     "lit": "y"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  },
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "c"
+                                    },
+                                    {
+                                     "lit": "y"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  }
+                                 ]
+                                }
+                               ]
+                              },
+                              "rhs": {
+                               "param": "p.approach_lane_same_direction_cos"
+                              }
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         {
+                          "body": {
+                           "implies": [
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "u"
+                                },
+                                {
+                                 "lit": "right"
+                                }
+                               ],
+                               "atom": "st_turn_lane_side",
+                               "params": []
+                              },
+                              {
+                               "and": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "u"
+                                  },
+                                  {
+                                   "var": "i"
+                                  }
+                                 ],
+                                 "atom": "st_lane_enters",
+                                 "params": []
+                                },
+                                {
+                                 "cmp": "ge",
+                                 "lhs": {
+                                  "add": [
+                                   {
+                                    "mul": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "u"
+                                       },
+                                       {
+                                        "lit": "x"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     },
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "c"
+                                       },
+                                       {
+                                        "lit": "x"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     }
+                                    ]
+                                   },
+                                   {
+                                    "mul": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "u"
+                                       },
+                                       {
+                                        "lit": "y"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     },
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "c"
+                                       },
+                                       {
+                                        "lit": "y"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 },
+                                 "rhs": {
+                                  "param": "p.approach_lane_same_direction_cos"
+                                 }
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "same": [
+                              {
+                               "var": "t"
+                              },
+                              {
+                               "var": "u"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          "forall_region": {
+                           "lit": "turn_lane"
+                          },
+                          "var": "u"
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "turn_lane"
+                       },
+                       "var": "t"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "lane"
+                 },
+                 "var": "c"
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "c"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "c"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ],
+                      "atom": "st_lane_enters",
+                      "params": []
+                     },
+                     {
+                      "not": {
+                       "body": {
+                        "and": [
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "lit": "right"
+                             }
+                            ],
+                            "atom": "st_turn_lane_side",
+                            "params": []
+                           },
+                           {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "var": "i"
+                               }
+                              ],
+                              "atom": "st_lane_enters",
+                              "params": []
+                             },
+                             {
+                              "cmp": "ge",
+                              "lhs": {
+                               "add": [
+                                {
+                                 "mul": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "t"
+                                    },
+                                    {
+                                     "lit": "x"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  },
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "c"
+                                    },
+                                    {
+                                     "lit": "x"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  }
+                                 ]
+                                },
+                                {
+                                 "mul": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "t"
+                                    },
+                                    {
+                                     "lit": "y"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  },
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "c"
+                                    },
+                                    {
+                                     "lit": "y"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  }
+                                 ]
+                                }
+                               ]
+                              },
+                              "rhs": {
+                               "param": "p.approach_lane_same_direction_cos"
+                              }
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         {
+                          "body": {
+                           "implies": [
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "u"
+                                },
+                                {
+                                 "lit": "right"
+                                }
+                               ],
+                               "atom": "st_turn_lane_side",
+                               "params": []
+                              },
+                              {
+                               "and": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "u"
+                                  },
+                                  {
+                                   "var": "i"
+                                  }
+                                 ],
+                                 "atom": "st_lane_enters",
+                                 "params": []
+                                },
+                                {
+                                 "cmp": "ge",
+                                 "lhs": {
+                                  "add": [
+                                   {
+                                    "mul": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "u"
+                                       },
+                                       {
+                                        "lit": "x"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     },
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "c"
+                                       },
+                                       {
+                                        "lit": "x"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     }
+                                    ]
+                                   },
+                                   {
+                                    "mul": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "u"
+                                       },
+                                       {
+                                        "lit": "y"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     },
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "c"
+                                       },
+                                       {
+                                        "lit": "y"
+                                       }
+                                      ],
+                                      "measure": "st_lane_direction"
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 },
+                                 "rhs": {
+                                  "param": "p.approach_lane_same_direction_cos"
+                                 }
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            {
+                             "same": [
+                              {
+                               "var": "t"
+                              },
+                              {
+                               "var": "u"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          "forall_region": {
+                           "lit": "turn_lane"
+                          },
+                          "var": "u"
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "turn_lane"
+                       },
+                       "var": "t"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "roadway"
+                 },
+                 "var": "c"
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "rises": {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "not": {
+           "or": [
+            {
+             "body": {
+              "and": [
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "st_lane_enters",
+                  "params": []
+                 }
+                ]
+               },
+               {
+                "cmp": "eq",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "c"
+                  },
+                  {
+                   "lit": "ordinal"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency"
+                },
+                "rhs": {
+                 "args": [
+                  {
+                   "var": "c"
+                  },
+                  {
+                   "lit": "count"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency"
+                }
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "lane"
+             },
+             "var": "c"
+            },
+            {
+             "and": [
+              {
+               "not": {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "c"
+                    },
+                    {
+                     "var": "i"
+                    }
+                   ],
+                   "atom": "st_lane_enters",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "lane"
+                },
+                "var": "c"
+               }
+              },
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "st_lane_enters",
+                  "params": []
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "roadway"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "93b89d57ef3701367b110b2c",
+  "candidate_digest": "5edd01b74849ad38e520913ed550bc5b93e8894a55b5451e341d3334afbdea0d"
+ }
+}

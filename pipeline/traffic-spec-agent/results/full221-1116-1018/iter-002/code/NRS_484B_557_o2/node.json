@@ -1,0 +1,235 @@
+{
+ "node_id": "NRS_484B_557_o2",
+ "law_refs": [
+  "NRS-484B-557"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The Department of Transportation, and local authorities with the approval of the Department of Transportation, may designate dangerous highway grade crossings of railroads",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "and erect official traffic-control devices at such crossings directing a stop.",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "When such stop signs are erected",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "the driver of any vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "shall stop within 50 feet but not less than 15 feet from the nearest track of such a grade crossing",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "and afterward may proceed only",
+   "role": "obligation"
+  },
+  {
+   "id": "s8",
+   "text": "upon exercising due care.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.railway_crossing",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "A 'highway grade crossing of a railroad' ('railroad' is 'a carrier of persons or property upon cars ... operated upon stationary rails', DEF-NRS-484A-200) is st.railway_crossing, 'level crossing of a railway with the roadway, and its nearest rail', lying on a highway (st.on_way, 'the public way a structure region lies on'; st.highway). The authority's designation of it as dangerous is evidenced by the stop sign erected for it."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.stop_sign"
+   ],
+   "derived": [],
+   "justification": "'Official traffic-control devices ... directing a stop' (DEF-NRS-484A-145) are stop signs: dev.stop_sign, 'regulatory sign requiring a full halt'; its presence is the evidence that it is official."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'When such stop signs are erected': the stop sign governs (dev.governs, 'the travel regions whose traffic the device controls'; not a stand-in for a position) a travel region (st.travel_region) the subject occupies (rel.occupies) on its approach, lying on the same highway as the crossing (st.on_way)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Driver' is 'every person who drives or is in actual physical control of a vehicle' (DEF-NRS-484A-080), read through the vehicle's controlled motion; 'any vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "st.region_geometry",
+    "rel.occupies",
+    "st.railway_crossing"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Afterward' refers to the stop: 'complete cessation from movement' (DEF-NRS-484A-255), drv.motion.complete_halt, whose contract quotes it, with p.halt_speed_tolerance. The referent is carried in full: the halt itself, at the place the span states, not compliance with the stop rule. The place of that halt: the ground distance from the subject's body to the crossing (st.region_geometry, 'the ground distance from a road user's body outline to it'), st.railway_crossing with 'its nearest rail', between the lower and the upper figure the span states (literals), the footprint not yet overlapping the crossing (rel.occupies)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.railway_crossing"
+   ],
+   "derived": [],
+   "justification": "'Proceed' after the halt is the subject's entry into the crossing: its footprint comes to overlap (rel.occupies, 'a road user's footprint overlaps a lane / region') the railway crossing (st.railway_crossing), and the duty runs while it occupies it."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s8",
+   "standard": "due care",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.contact",
+    "ru.rail_vehicle"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: proceeding across the crossing with due care is read by its outcome: from the entry and while the vehicle occupies the crossing, no rail vehicle (ru.rail_vehicle) approaches it within the conflict horizon (prim.closest_approach_within with p.conflict_horizon) to a centre distance below the collision clearance (prim.closest_approach_distance below p.conflict_centre_clearance), and the vehicle's body touches no road user (rel.contact)",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that has entered a railway crossing x (st.railway_crossing; its footprint overlaps x and did not at the previous observation) from a travel region r (st.travel_region) it occupied at the previous observation, governed (dev.governs) by a stop sign (dev.stop_sign), r and x lying on the same highway h (st.on_way, st.highway), and afterward: on that approach, searched back from the observation before the entry to the last observation at which it was farther than the upper literal of s5 from x or to its previous exit from x, it was halted (drv.motion.complete_halt with p.halt_speed_tolerance) at an observation at which it did not overlap x and its body's ground distance to x (st.region_geometry) lay between the lower and the upper literal of s5. The applicability holds at that entry and at every later observation while the subject occupies x without having left it; it is unknown where the search reaches the subject's first observation without a halt or either end.",
+ "obligation": "At every observation at which the applicability holds: no rail vehicle (ru.rail_vehicle) has a closest approach to the subject within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance), and the subject is in contact (rel.contact) with no road user.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "'The driver of any vehicle' is read on the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "The designation of the crossing as dangerous is read from the presence of a stop sign governing the approach to it.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "That the device is official and directs a stop is read from the presence of a stop sign.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s8",
+   "why": "Due care, a standard about the driver's state of mind, is read only through the outcome of the crossing: no conflict with a rail vehicle and no contact with any road user while on the crossing; the rule is a surrogate and its verdicts are evidence, not a legal conclusion.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car on a lane governed by a stop sign halts between the two figures from the crossing, then enters it while a train closes on it so that their closest approach within the conflict horizon lies below the clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car halts between the two figures, then enters and clears the crossing; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car enters a railway crossing from a lane that no stop sign governs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car halts between the two figures and enters the crossing; no train is present, a pedestrian stands on the crossing near its path, and the source does not observe contact.",
+   "masked": [
+    "rel.contact"
+   ]
+  }
+ ],
+ "literals": [
+  {
+   "span": "s5",
+   "text": "50 feet",
+   "value": 50,
+   "unit": "ft"
+  },
+  {
+   "span": "s5",
+   "text": "15 feet",
+   "value": 15,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source (sensor or simulator specification)"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Hyden, The Swedish Traffic Conflict Technique (1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO Green Book design passenger car dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

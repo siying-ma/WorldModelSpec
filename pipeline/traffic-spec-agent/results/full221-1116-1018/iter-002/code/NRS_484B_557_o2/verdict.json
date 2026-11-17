@@ -1,0 +1,399 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 14 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "h"
+         }
+        ],
+        "atom": "st_on_way",
+        "params": []
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "r"
+            },
+            {
+             "var": "h"
+            }
+           ],
+           "atom": "st_on_way",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "body": {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             "exists_device": {
+              "lit": "stop_sign"
+             },
+             "var": "d"
+            },
+            {
+             "since": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "x"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "x"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "rises": {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "x"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "not": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "r"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "since": [
+                        {
+                         "and": [
+                          {
+                           "not": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "x"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           }
+                          },
+                          {
+                           "cmp": "le",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "x"
+                             }
+                            ],
+                            "measure": "st_region_geometry_distance"
+                           },
+                           "rhs": {
+                            "lit": {
+                             "den": 25,
+                             "num": 381
+                            },
+                            "unit": "metre"
+                           }
+                          }
+                         ]
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            }
+                           ],
+                           "derived": "drv_motion_complete_halt",
+                           "params": [
+                            {
+                             "param": "p.halt_speed_tolerance"
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "not": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "x"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            },
+                            {
+                             "and": [
+                              {
+                               "cmp": "ge",
+                               "lhs": {
+                                "args": [
+                                 {
+                                  "var": "subject"
+                                 },
+                                 {
+                                  "var": "x"
+                                 }
+                                ],
+                                "measure": "st_region_geometry_distance"
+                               },
+                               "rhs": {
+                                "lit": {
+                                 "den": 250,
+                                 "num": 1143
+                                },
+                                "unit": "metre"
+                               }
+                              },
+                              {
+                               "cmp": "le",
+                               "lhs": {
+                                "args": [
+                                 {
+                                  "var": "subject"
+                                 },
+                                 {
+                                  "var": "x"
+                                 }
+                                ],
+                                "measure": "st_region_geometry_distance"
+                               },
+                               "rhs": {
+                                "lit": {
+                                 "den": 25,
+                                 "num": 381
+                                },
+                                "unit": "metre"
+                               }
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "travel_region"
+        },
+        "var": "r"
+       }
+      ]
+     },
+     "exists_region": {
+      "lit": "highway"
+     },
+     "var": "h"
+    },
+    "exists_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "x"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_557_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-557"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "and": [
+     {
+      "body": {
+       "implies": [
+        {
+         "args": [
+          {
+           "var": "v"
+          }
+         ],
+         "atom": "ru_rail_vehicle",
+         "params": []
+        },
+        {
+         "not": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "v"
+             }
+            ],
+            "derived": "prim_closest_approach_within",
+            "params": [
+             {
+              "param": "p.conflict_horizon"
+             }
+            ]
+           },
+           {
+            "cmp": "lt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "v"
+              }
+             ],
+             "params": [
+              {
+               "param": "p.conflict_horizon"
+              }
+             ],
+             "quantity": "prim_closest_approach_distance"
+            },
+            "rhs": {
+             "param": "p.conflict_centre_clearance"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "forall_user": "v"
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "u"
+           }
+          ]
+         }
+        },
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "u"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        }
+       ]
+      },
+      "forall_user": "u"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "676cf756d29c5719ef733159",
+  "candidate_digest": "ebd20d0a107e472a6be948bd45a3444241e920519534a7094f52e485b704206e"
+ }
+}

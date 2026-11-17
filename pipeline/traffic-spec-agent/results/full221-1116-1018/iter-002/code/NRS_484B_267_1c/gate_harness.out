@@ -1,0 +1,151 @@
+'TrafficSpec.Rules.NRS_484B_267_1c.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484B_267_1c.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_267_1c","intentions":[],"laws":["NRS-484B-267-1c"],"narrowings":[{"kind":"no_atom","span":"u4","why":"the record reads u4 (with the borrowed u5 words 'at least one flashing red warning lamp visible from the front') as sig.warning_lamp of colour red, mode flashing, facing front; the formula forms of sig_warning_lamp read only [track, colour] or [track, colour, mode] (Semantics.evalAtomE), so no atom of the surface carries 'facing front' / 'visible from the front'; the rule as written requires only a lit red flashing lamp of any facing, which is weaker than the condition the record states"}],"operationalizations":[{"concepts":["kin.speed","rel.bearing","rel.centre_distance"],"params":["p.halt_speed_tolerance","p.emergency_immediate_approach_reach"],"standard":"the immediate approach of the emergency or regulatory vehicle","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"rises":{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"pd"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"pr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"pd"},{"var":"pr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"pr"}]},"exists_device":{"lit":"human_direction"},"var":"pd"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_1c","intentions":[],"laws":["NRS-484B-267-1c"],"narrowings":[{"kind":"no_atom","span":"u4","why":"the record reads u4 (with the borrowed u5 words 'at least one flashing red warning lamp visible from the front') as sig.warning_lamp of colour red, mode flashing, facing front; the formula forms of sig_warning_lamp read only [track, colour] or [track, colour, mode] (Semantics.evalAtomE), so no atom of the surface carries 'facing front' / 'visible from the front'; the rule as written requires only a lit red flashing lamp of any facing, which is weaker than the condition the record states"}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"rises":{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}}]},{"until":[{"not":{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"behind"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"param":"p.curb_parallel_cos"}}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"and":[{"body":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"ro"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ro"},{"var":"h"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"ro"},{"or":[{"body":{"and":[{"args":[{"var":"g"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pullover_edge_gap"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},"exists_region":{"lit":"road_edge"},"var":"g"},{"body":{"and":[{"args":[{"var":"s"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]},{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"shoulder"},"var":"s"}]}]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"body":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"i"}},{"not":{"body":{"and":[{"args":[{"var":"subject"},{"var":"sp"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"sp"}],"atom":"st_shoulder_paved","params":[]},{"body":{"and":[{"args":[{"var":"dv"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"dv"},{"var":"sp"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"dv"}]}]},"exists_region":{"lit":"shoulder"},"var":"sp"}}]}]}]}]},{"until":[{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"param":"p.curb_parallel_cos"}}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"and":[{"body":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"ro"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ro"},{"var":"h"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"ro"},{"or":[{"body":{"and":[{"args":[{"var":"g"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pullover_edge_gap"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},"exists_region":{"lit":"road_edge"},"var":"g"},{"body":{"and":[{"args":[{"var":"s"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]},{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"shoulder"},"var":"s"}]}]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"body":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"i"}},{"not":{"body":{"and":[{"args":[{"var":"subject"},{"var":"sp"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"sp"}],"atom":"st_shoulder_paved","params":[]},{"body":{"and":[{"args":[{"var":"dv"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"dv"},{"var":"sp"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"dv"}]}]},"exists_region":{"lit":"shoulder"},"var":"sp"}}]}]}]}]},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"behind"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"forall_user":"e"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"rises":{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"pd"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"pr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"pd"},{"var":"pr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"pr"}]},"exists_device":{"lit":"human_direction"},"var":"pd"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_1c","intentions":[],"laws":["NRS-484B-267-1c"],"narrowings":[{"kind":"no_atom","span":"u4","why":"the record reads u4 (with the borrowed u5 words 'at least one flashing red warning lamp visible from the front') as sig.warning_lamp of colour red, mode flashing, facing front; the formula forms of sig_warning_lamp read only [track, colour] or [track, colour, mode] (Semantics.evalAtomE), so no atom of the surface carries 'facing front' / 'visible from the front'; the rule as written requires only a lit red flashing lamp of any facing, which is weaker than the condition the record states"}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"rises":{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}}]},{"until":[{"not":{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"behind"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"param":"p.curb_parallel_cos"}}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"and":[{"body":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"ro"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ro"},{"var":"h"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"ro"},{"or":[{"body":{"and":[{"args":[{"var":"g"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pullover_edge_gap"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},"exists_region":{"lit":"road_edge"},"var":"g"},{"body":{"and":[{"args":[{"var":"s"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]},{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"shoulder"},"var":"s"}]}]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"body":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"i"}},{"not":{"body":{"and":[{"args":[{"var":"subject"},{"var":"sp"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"sp"}],"atom":"st_shoulder_paved","params":[]},{"body":{"and":[{"args":[{"var":"dv"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"dv"},{"var":"sp"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"dv"}]}]},"exists_region":{"lit":"shoulder"},"var":"sp"}}]}]}]}]},{"until":[{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"param":"p.curb_parallel_cos"}}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"and":[{"body":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"ro"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ro"},{"var":"h"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"ro"},{"or":[{"body":{"and":[{"args":[{"var":"g"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pullover_edge_gap"}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},"exists_region":{"lit":"road_edge"},"var":"g"},{"body":{"and":[{"args":[{"var":"s"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]},{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"shoulder"},"var":"s"}]}]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"body":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"i"}},{"not":{"body":{"and":[{"args":[{"var":"subject"},{"var":"sp"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"sp"}],"atom":"st_shoulder_paved","params":[]},{"body":{"and":[{"args":[{"var":"dv"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"dv"},{"var":"sp"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"dv"}]}]},"exists_region":{"lit":"shoulder"},"var":"sp"}}]}]}]}]},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"behind"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"forall_user":"e"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,ru_official_vehicle_kind,sig_warning_lamp,kin_speed,rel_bearing,rel_centre_distance,dev_human_direction,dev_human_direction_role,st_travel_region,rel_occupies,dev_governs,rel_longitudinal_overlap,drv_motion_complete_halt,kin_heading,st_lane_direction,st_highway,st_on_way,st_road_edge,st_region_geometry_distance,prim_region_lateral_offset,st_shoulder,st_shoulder_paved,st_intersection,dev_regulatory_sign,dev_regulatory_sign_code
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-020::authorized_emergency_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.warning_lamp
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+MANIFEST	branch_11	
+MANIFEST	branch_12	
+MANIFEST	branch_13	
+MANIFEST	branch_14	
+OCC	subject
+OCC	?e
+OCC	e,subject
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e,subject
+OCC	e,subject
+OCC	?pd
+OCC	pd
+OCC	?pr
+OCC	subject,pr
+OCC	pd,pr
+OCC	?e
+OCC	e,subject
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e,subject
+OCC	e,subject
+OCC	e,subject
+OCC	e
+OCC	subject
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	subject
+OCC	r
+OCC	subject
+OCC	r
+OCC	?h
+OCC	?ro
+OCC	subject,ro
+OCC	ro,h
+OCC	?g
+OCC	g,h
+OCC	subject,g
+OCC	subject
+OCC	g
+OCC	?s
+OCC	s,h
+OCC	s
+OCC	subject,s
+OCC	?i
+OCC	subject,i
+OCC	?sp
+OCC	subject,sp
+OCC	sp
+OCC	?dv
+OCC	dv
+OCC	dv,sp
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	subject
+OCC	r
+OCC	subject
+OCC	r
+OCC	?h
+OCC	?ro
+OCC	subject,ro
+OCC	ro,h
+OCC	?g
+OCC	g,h
+OCC	subject,g
+OCC	subject
+OCC	g
+OCC	?s
+OCC	s,h
+OCC	s
+OCC	subject,s
+OCC	?i
+OCC	subject,i
+OCC	?sp
+OCC	subject,sp
+OCC	sp
+OCC	?dv
+OCC	dv
+OCC	dv,sp
+OCC	e,subject
+OCC	e
+OCC	subject
+TIME	occurrences	0
+TIME	checks	8
+TIME	lint	927
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	57
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	55
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	24
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	59
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	53
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	28
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	56
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	24
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	54
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	45
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	44
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	55
+SCEN	branch_9	violated	violated	ok
+TIME	scenario:branch_9	50
+SCEN	branch_10	violated	violated	ok
+TIME	scenario:branch_10	54
+SCEN	branch_11	not_applicable	not_applicable	ok
+TIME	scenario:branch_11	24
+SCEN	branch_12	not_applicable	not_applicable	ok
+TIME	scenario:branch_12	24
+SCEN	branch_13	not_applicable	not_applicable	ok
+TIME	scenario:branch_13	25
+SCEN	branch_14	compliant	compliant	ok
+TIME	scenario:branch_14	57
+TIME	witnesses	789
+DONE_WITNESSES

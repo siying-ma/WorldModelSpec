@@ -1,0 +1,72 @@
+'TrafficSpec.Rules.NRS_484B_557_o1.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_557_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_557_o1","intentions":[],"laws":["NRS-484B-557"],"narrowings":[{"kind":"reading","span":"s5","why":"The search's end at the subject's previous exit from the crossing is read as including the exit observation itself (the first observation at which it no longer overlaps the crossing): a halt there in the zone counts, and the search does not pass it."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"body":{"body":{"body":{"and":[{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"since":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]}]}]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"h"}],"atom":"st_on_way","params":[]}]}]}]},"exists_device":{"lit":"stop_sign"},"var":"d"},"exists_region":{"lit":"travel_region"},"var":"r"},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"railway_crossing"},"var":"x"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_557_o1","intentions":[],"laws":["NRS-484B-557"],"narrowings":[{"kind":"reading","span":"s5","why":"The search's end at the subject's previous exit from the crossing is read as including the exit observation itself (the first observation at which it no longer overlaps the crossing): a halt there in the zone counts, and the search does not pass it."}],"obligation":{"body":{"body":{"body":{"body":{"implies":[{"and":[{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"since":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]}]}]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"h"}],"atom":"st_on_way","params":[]}]}]}]},{"since":[{"or":[{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":25,"num":381},"unit":"metre"}}]},{"not":{"rises":{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}}}]}]},{"and":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":25,"num":381},"unit":"metre"}}]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}},{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}]}]}]}]},"forall_device":{"lit":"stop_sign"},"var":"d"},"forall_region":{"lit":"travel_region"},"var":"r"},"forall_region":{"lit":"highway"},"var":"h"},"forall_region":{"lit":"railway_crossing"},"var":"x"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"body":{"body":{"body":{"and":[{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"since":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]}]}]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"h"}],"atom":"st_on_way","params":[]}]}]}]},"exists_device":{"lit":"stop_sign"},"var":"d"},"exists_region":{"lit":"travel_region"},"var":"r"},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"railway_crossing"},"var":"x"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_557_o1","intentions":[],"laws":["NRS-484B-557"],"narrowings":[{"kind":"reading","span":"s5","why":"The search's end at the subject's previous exit from the crossing is read as including the exit observation itself (the first observation at which it no longer overlaps the crossing): a halt there in the zone counts, and the search does not pass it."}],"obligation":{"body":{"body":{"body":{"body":{"implies":[{"and":[{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"since":[{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]}]}]},{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"h"}],"atom":"st_on_way","params":[]}]}]}]},{"since":[{"or":[{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":25,"num":381},"unit":"metre"}}]},{"not":{"rises":{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}}}]}]},{"and":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":25,"num":381},"unit":"metre"}}]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"x"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}]}]}]}]},"forall_device":{"lit":"stop_sign"},"var":"d"},"forall_region":{"lit":"travel_region"},"var":"r"},"forall_region":{"lit":"highway"},"var":"h"},"forall_region":{"lit":"railway_crossing"},"var":"x"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_railway_crossing,st_highway,st_travel_region,dev_stop_sign,rel_occupies,dev_governs,st_on_way,st_region_geometry_distance,drv_motion_complete_halt
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	history_boundary	
+MANIFEST	branch_1	
+BOUNDARY	history_boundary
+OCC	subject
+OCC	?x
+OCC	?h
+OCC	?r
+OCC	?d
+OCC	subject,x
+OCC	subject,x
+OCC	subject,x
+OCC	subject,r
+OCC	d,r
+OCC	r,h
+OCC	x,h
+OCC	?x
+OCC	?h
+OCC	?r
+OCC	?d
+OCC	subject,x
+OCC	subject,x
+OCC	subject,x
+OCC	subject,r
+OCC	d,r
+OCC	r,h
+OCC	x,h
+OCC	subject,x
+OCC	subject,x
+OCC	subject,x
+OCC	subject,x
+OCC	subject,x
+OCC	subject,x
+OCC	subject,x
+OCC	subject
+LITERAL	381/25	TrafficSpec.PUnit'.metre
+LITERAL	381/25	TrafficSpec.PUnit'.metre
+LITERAL	1143/250	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	81
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	25
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	28
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	17
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	77
+SCEN	history_boundary	unknown	unknown	ok
+TIME	scenario:history_boundary	17
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	27
+TIME	witnesses	193
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_557_o1.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_557_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_557_o1	22	4
+TIME	adequacy_start	6
+TIME	adequacy	1110
+DONE

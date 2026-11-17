@@ -1,0 +1,179 @@
+{
+ "node_id": "NRS_484B_410_o2",
+ "law_refs": [
+  "NRS-484B-410"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person,",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "except when stopping, standing or parking where no parking is permitted,",
+   "role": "exception"
+  },
+  {
+   "id": "s3",
+   "text": "shall not start a vehicle which is stopped, standing or parked on a highway",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "nor enter upon a highway",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "unless and until such movement can be made with safety.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'A person' who enters upon a highway with a vehicle is read through the vehicle's controlled motion (agency reading): the binder is the vehicle, the admitted aggregate DEF-NRS-484A-320::vehicle; same mapping as the index row 'A person'."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone",
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.travel_region",
+    "prim.conditions_hold"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stopping, standing or parking' (DEF-NRS-484A-260 'any halting, even momentarily, of a vehicle'; DEF-NRS-484A-250 'the halting of a vehicle'; DEF-NRS-484A-155 'the standing of a vehicle') together denote every halt, drv.motion.complete_halt, read at the observation before the entry. 'where no parking is permitted': an st.curb_zone of kind no_parking, no_stopping or fire_lane or a curb painted red that the footprint overlaps (rel.occupies), or an st.travel_region it occupies governed (dev.governs) by a dev.regulatory_sign of code no_parking, no_standing or no_stopping whose conditions hold (prim.conditions_hold); the posted or painted feature is the evidence (status reading)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'enter upon a highway' is the observation at which the subject's footprint comes to overlap (rel.occupies, 'a road user's footprint overlaps a lane / region') an st.highway region ('the entire public way between its boundary lines', DEF-NRS-484A-095 'the entire width between the boundary lines of every way'), having overlapped no highway region at the previous observation. st.highway is not a stand-in for the roadway: the words name the highway."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "such movement can be made with safety",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: a movement is made with safety where, at its onset, no other road user's centre is predicted under constant velocities to come within the conflict centre clearance of the subject's centre within the time-to-collision horizon",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle. Engaged at an observation at which the subject enters upon a highway: it occupies an st.highway region here and occupied none at the previous observation; and the exception does not hold: at the previous observation the subject was not at rest (drv.motion.complete_halt with p.halt_speed_tolerance) in a place where no parking is permitted -- an st.curb_zone of kind no_parking, no_stopping or fire_lane or whose curb colour is red, or an st.travel_region governed (dev.governs) by a dev.regulatory_sign of code no_parking, no_standing or no_stopping whose conditions hold (prim.conditions_hold).",
+ "obligation": "At that observation no other road user of the scene, of any class (same excludes the subject), satisfies prim.closest_approach_within(subject, other; p.conflict_horizon) with prim.closest_approach_distance(subject, other; p.conflict_horizon) at or below p.conflict_centre_clearance. Where one does, violated.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'A person' who enters upon a highway is read through the vehicle's controlled motion: the duty binds the vehicle, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'where no parking is permitted' is read by the posted no-parking, no-standing or no-stopping sign whose conditions hold, or the marked or red-painted curb zone, the feature's presence being the evidence of the restriction.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "'with safety' is read only as the absence, at the entry, of a predicted near-collision with another road user; 'unless and until' is read at the entry observation, the entry being withheld until then.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject car leaves a private parking lot and its footprint first overlaps the highway region while a car on the highway 10 m away closes on it at 13 m/s, so their centres are predicted to meet within the horizon."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject car leaves a private parking lot onto the highway; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car is on the highway at every observation of the trace and never enters it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car moves from a parking lot toward the highway, but rel.occupies is not observed on this source, so the entry cannot be decided.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of tracking sources"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique (Hyden; time-to-collision thresholds of 1.5 to 3 s)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design dimensions (AASHTO design vehicle P)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

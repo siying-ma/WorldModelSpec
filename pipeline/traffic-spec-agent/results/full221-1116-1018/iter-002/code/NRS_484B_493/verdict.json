@@ -1,0 +1,496 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 18 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "asm": "asm.within_incorporated_city"
+     },
+     {
+      "and": [
+       {
+        "or": [
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "tr"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "sg"
+                 },
+                 {
+                  "var": "tr"
+                 }
+                ],
+                "atom": "dev_governs",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "sg"
+                     },
+                     {
+                      "lit": "no_standing"
+                     }
+                    ],
+                    "atom": "dev_regulatory_sign_code",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "sg"
+                     },
+                     {
+                      "lit": "no_parking"
+                     }
+                    ],
+                    "atom": "dev_regulatory_sign_code",
+                    "params": []
+                   }
+                  ]
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "sg"
+                   },
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "derived": "prim_conditions_hold",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_device": {
+              "lit": "regulatory_sign"
+             },
+             "var": "sg"
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "travel_region"
+          },
+          "var": "tr"
+         },
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "cz"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "cz"
+                },
+                {
+                 "lit": "no_parking"
+                }
+               ],
+               "atom": "st_curb_zone_kind",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "cz"
+                },
+                {
+                 "lit": "no_stopping"
+                }
+               ],
+               "atom": "st_curb_zone_kind",
+               "params": []
+              }
+             ]
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "curb_zone"
+          },
+          "var": "cz"
+         }
+        ]
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "ow"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "ow"
+               },
+               {
+                "var": "hw"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "el"
+                  },
+                  {
+                   "var": "hw"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "cmp": "gt",
+                   "lhs": {
+                    "mul": [
+                     {
+                      "add": [
+                       {
+                        "mul": [
+                         {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "lit": "x"
+                           }
+                          ],
+                          "measure": "kin_heading"
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "ow"
+                           },
+                           {
+                            "lit": "x"
+                           }
+                          ],
+                          "measure": "st_lane_direction"
+                         }
+                        ]
+                       },
+                       {
+                        "mul": [
+                         {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "lit": "y"
+                           }
+                          ],
+                          "measure": "kin_heading"
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "ow"
+                           },
+                           {
+                            "lit": "y"
+                           }
+                          ],
+                          "measure": "st_lane_direction"
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "var": "el"
+                       }
+                      ],
+                      "params": [],
+                      "quantity": "prim_region_lateral_offset"
+                     }
+                    ]
+                   },
+                   "rhs": {
+                    "lit": {
+                     "den": 1,
+                     "num": 0
+                    },
+                    "unit": "metre"
+                   }
+                  },
+                  {
+                   "body": {
+                    "implies": [
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "er"
+                         },
+                         {
+                          "var": "hw"
+                         }
+                        ],
+                        "atom": "st_on_way",
+                        "params": []
+                       },
+                       {
+                        "cmp": "lt",
+                        "lhs": {
+                         "mul": [
+                          {
+                           "add": [
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "ow"
+                                },
+                                {
+                                 "lit": "x"
+                                }
+                               ],
+                               "measure": "st_lane_direction"
+                              }
+                             ]
+                            },
+                            {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "subject"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "kin_heading"
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "ow"
+                                },
+                                {
+                                 "lit": "y"
+                                }
+                               ],
+                               "measure": "st_lane_direction"
+                              }
+                             ]
+                            }
+                           ]
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "er"
+                            }
+                           ],
+                           "params": [],
+                           "quantity": "prim_region_lateral_offset"
+                          }
+                         ]
+                        },
+                        "rhs": {
+                         "lit": {
+                          "den": 1,
+                          "num": 0
+                         },
+                         "unit": "metre"
+                        }
+                       }
+                      ]
+                     },
+                     {
+                      "cmp": "lt",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "el"
+                        }
+                       ],
+                       "measure": "st_region_geometry_distance"
+                      },
+                      "rhs": {
+                       "args": [
+                        {
+                         "var": "subject"
+                        },
+                        {
+                         "var": "er"
+                        }
+                       ],
+                       "measure": "st_region_geometry_distance"
+                      }
+                     }
+                    ]
+                   },
+                   "forall_region": {
+                    "lit": "road_edge"
+                   },
+                   "var": "er"
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "road_edge"
+              },
+              "var": "el"
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "highway"
+           },
+           "var": "hw"
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "one_way_roadway"
+        },
+        "var": "ow"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.within_incorporated_city"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_493",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-493"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "derived": "drv_motion_parked",
+     "params": [
+      {
+       "param": "p.halt_speed_tolerance"
+      },
+      {
+       "param": "p.standing_min_duration"
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "c8b4b878d4349ceb5ef4c06b",
+  "candidate_digest": "5d33ce07131a075cebcb65f11b85de1001349531adf785e93076f8eb20280acb"
+ }
+}

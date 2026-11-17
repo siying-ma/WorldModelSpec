@@ -1,0 +1,126 @@
+'TrafficSpec.Rules.LVMC_11_16_040.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.LVMC_11_16_040.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_16_040","intentions":[],"laws":["LVMC-11-16-040"],"narrowings":[],"operationalizations":[],"residues":["every intersection is, by DEF-NRS-484A-105, a junction of highways and streets; the words add no region beyond the intersection whose approach the condition measures, so the duty is the same whether or not they are read"],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"since":[{"args":[{"var":"subject"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"j"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"body":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"j"}],"measure":"st_sight_distance"},"rhs":{"args":[{"var":"subject"},{"var":"j"}],"measure":"st_region_geometry_distance"}},{"body":{"implies":[{"args":[{"var":"j"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"lit":{"den":25,"num":762},"unit":"metre"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"args":[{"var":"o"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"o"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"args":[{"var":"o"},{"var":"j"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":25,"num":762},"unit":"metre"}}]}]}]},{"args":[{"var":"subject"},{"var":"o"}],"atom":"rel_visible","params":[]}]},"forall_user":"o"}]}]},"forall_region":{"lit":"highway"},"var":"w"}]},"holds_for":"path","length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"subject"}},{"not":{"at_last":"path","body":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"ce"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ce"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"ce"},{"and":[{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},{"not":{"or":[{"body":{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]}}]},"forall_region":{"lit":"travel_region"},"var":"c"},{"body":{"and":[{"args":[{"var":"c2"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"or":[{"body":{"args":[{"var":"d"},{"var":"c2"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"c2"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"var":"c2"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c2"}]}]},"length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"subject","when":{"not":{"args":[{"var":"subject"},{"var":"j"}],"atom":"rel_occupies","params":[]}}}}]}]}]},{"not":{"or":[{"body":{"and":[{"not":{"args":[{"var":"d"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}},{"or":[{"args":[{"var":"d"},{"var":"j"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"or":[{"body":{"or":[{"args":[{"var":"d"},{"var":"j"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"body":{"or":[{"args":[{"var":"d"},{"var":"j"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},"exists_device":{"lit":"yield_sign"},"var":"d"}]}]}}]},"exists_region":{"lit":"intersection"},"var":"j"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_16_040","intentions":[],"laws":["LVMC-11-16-040"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":4191},"unit":"metre_per_second"}},"residues":["every intersection is, by DEF-NRS-484A-105, a junction of highways and streets; the words add no region beyond the intersection whose approach the condition measures, so the duty is the same whether or not they are read"],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"since":[{"args":[{"var":"subject"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"j"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"body":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"j"}],"measure":"st_sight_distance"},"rhs":{"args":[{"var":"subject"},{"var":"j"}],"measure":"st_region_geometry_distance"}},{"body":{"implies":[{"args":[{"var":"j"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"lit":{"den":25,"num":762},"unit":"metre"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"args":[{"var":"o"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"o"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"args":[{"var":"o"},{"var":"j"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":25,"num":762},"unit":"metre"}}]}]}]},{"args":[{"var":"subject"},{"var":"o"}],"atom":"rel_visible","params":[]}]},"forall_user":"o"}]}]},"forall_region":{"lit":"highway"},"var":"w"}]},"holds_for":"path","length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"subject"}},{"not":{"at_last":"path","body":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"ce"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ce"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"ce"},{"and":[{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]}]},{"not":{"or":[{"body":{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]}}]},"forall_region":{"lit":"travel_region"},"var":"c"},{"body":{"and":[{"args":[{"var":"c2"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"or":[{"body":{"args":[{"var":"d"},{"var":"c2"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"c2"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"d"},{"body":{"and":[{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"var":"c2"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c2"}]}]},"length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"subject","when":{"not":{"args":[{"var":"subject"},{"var":"j"}],"atom":"rel_occupies","params":[]}}}}]}]}]},{"not":{"or":[{"body":{"and":[{"not":{"args":[{"var":"d"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}},{"or":[{"args":[{"var":"d"},{"var":"j"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"or":[{"body":{"or":[{"args":[{"var":"d"},{"var":"j"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"body":{"or":[{"args":[{"var":"d"},{"var":"j"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},"exists_device":{"lit":"yield_sign"},"var":"d"}]}]}}]},"exists_region":{"lit":"intersection"},"var":"j"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_16_040","intentions":[],"laws":["LVMC-11-16-040"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":4191},"unit":"metre_per_second"}},"residues":["every intersection is, by DEF-NRS-484A-105, a junction of highways and streets; the words add no region beyond the intersection whose approach the condition measures, so the duty is the same whether or not they are read"],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,kin_path_length,st_sight_distance,st_region_geometry_distance,st_highway,st_on_way,st_sight_along_way,rel_visible,st_travel_region,st_lane_enters,dev_stop_sign,dev_governs,dev_yield_sign,dev_traffic_signal,dev_traffic_signal_shows,kin_speed
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.sight_along_way
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_9	
+MANIFEST	branch_11	
+MANIFEST	branch_12	
+MANIFEST	branch_13	
+MANIFEST	branch_15	
+OCC	subject
+OCC	?j
+OCC	subject,j
+OCC	subject,j
+OCC	subject
+OCC	j
+OCC	subject,j
+OCC	?w
+OCC	j,w
+OCC	subject,w
+OCC	?o
+OCC	o,subject
+OCC	o
+OCC	o,w
+OCC	o,j
+OCC	subject,o
+OCC	subject
+OCC	subject,j
+OCC	?ce
+OCC	subject,ce
+OCC	ce,j
+OCC	?c
+OCC	subject,c
+OCC	c,j
+OCC	?d
+OCC	d,c
+OCC	?d
+OCC	d,c
+OCC	?d
+OCC	d
+OCC	d,c
+OCC	?c2
+OCC	c2,j
+OCC	?d
+OCC	d,c2
+OCC	?d
+OCC	d,c2
+OCC	?d
+OCC	d
+OCC	d,c2
+OCC	?d
+OCC	d
+OCC	d,j
+OCC	?c
+OCC	c,j
+OCC	d,c
+OCC	?d
+OCC	d,j
+OCC	?c
+OCC	c,j
+OCC	d,c
+OCC	?d
+OCC	d,j
+OCC	?c
+OCC	c,j
+OCC	d,c
+OCC	subject
+LITERAL	762/25	TrafficSpec.PUnit'.metre
+LITERAL	762/25	TrafficSpec.PUnit'.metre
+LITERAL	762/25	TrafficSpec.PUnit'.metre
+LITERAL	762/25	TrafficSpec.PUnit'.metre
+LITERAL	4191/625	TrafficSpec.PUnit'.metrePerSecond
+TIME	occurrences	1
+TIME	checks	4
+TIME	lint	478
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	43
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	69
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	43
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	45
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	69
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	55
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	42
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	42
+SCEN	branch_5	not_applicable	not_applicable	ok
+TIME	scenario:branch_5	41
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	43
+SCEN	branch_9	not_applicable	not_applicable	ok
+TIME	scenario:branch_9	42
+SCEN	branch_11	not_applicable	not_applicable	ok
+TIME	scenario:branch_11	43
+SCEN	branch_12	not_applicable	not_applicable	ok
+TIME	scenario:branch_12	41
+SCEN	branch_13	not_applicable	not_applicable	ok
+TIME	scenario:branch_13	42
+SCEN	branch_15	violated	violated	ok
+TIME	scenario:branch_15	45
+TIME	witnesses	705
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_16_040.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.LVMC_11_16_040.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_16_040	34	14
+TIME	adequacy_start	15
+TIME	adequacy	19031
+DONE

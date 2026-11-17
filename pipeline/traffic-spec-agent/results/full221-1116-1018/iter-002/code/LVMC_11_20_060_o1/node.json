@@ -1,0 +1,216 @@
+{
+ "node_id": "LVMC_11_20_060_o1",
+ "law_refs": [
+  "LVMC-11-20-060"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "within a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "e3",
+   "text": "emerging or entering an alley, driveway or building",
+   "role": "condition"
+  },
+  {
+   "id": "e4",
+   "text": "shall stop such vehicle immediately prior to",
+   "role": "obligation"
+  },
+  {
+   "id": "e5",
+   "text": "driving onto a sidewalk or onto the sidewalk area extending across any alleyway or driveway",
+   "role": "trigger"
+  },
+  {
+   "id": "e6",
+   "text": "yielding",
+   "role": "sibling"
+  },
+  {
+   "id": "e7",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "e8",
+   "text": "to any pedestrian",
+   "role": "sibling"
+  },
+  {
+   "id": "e9",
+   "text": "as may be necessary to avoid collision",
+   "role": "sibling"
+  },
+  {
+   "id": "e10",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "e11",
+   "text": "upon entering the roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "e12",
+   "text": "shall yield",
+   "role": "sibling"
+  },
+  {
+   "id": "e13",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "e14",
+   "text": "to all vehicles approaching on said roadway",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'The driver of' is read through the vehicle's controlled motion (agency), which ru.aggregate's exclusion of 'who drives or controls a vehicle' requires."
+  },
+  {
+   "span": "e3",
+   "atoms": [
+    "st.driveway_or_alley_entrance",
+    "st.alley",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "st.driveway_or_alley_entrance 'private road, alley or driveway meeting the highway' and st.alley 'a narrow way within a block serving the rear of properties': the subject emerges from or enters one where its footprint overlaps it (rel.occupies) as it reaches the sidewalk. A building's vehicle access is a driveway: DEF-NRS-484A-190 'every way or place in private ownership and used for vehicular travel'. The exclusion 'which of them meets the highway there' does not matter: the words treat alley, driveway and building alike."
+  },
+  {
+   "span": "e4",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stop', required here, is DEF-NRS-484A-255 'complete cessation from movement' (DEF-NRS-484A-260 governs stopping 'when prohibited'), carried by drv.motion.complete_halt with p.halt_speed_tolerance. 'immediately prior to' places the halt outside the sidewalk s, its body within p.stop_point_tolerance of s, the ground distance st.region_geometry ('the ground distance from a road user's body outline to it') that the e5 element claims."
+  },
+  {
+   "span": "e5",
+   "atoms": [
+    "st.sidewalk",
+    "rel.occupies",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "st.sidewalk 'area for pedestrians between roadway and property line' (its exclusion 'a crosswalk' does not apply); the sidewalk area across a driveway or alley is the sidewalk region the source maps across the entrance. 'driving onto' is the observation at which rel.occupies(subject, s) rises; the distance of the body to s (st.region_geometry) places the halt the obligation searches for."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "e2",
+   "id": "asm.business_or_residence_district",
+   "meaning": "the place of the road user at the observation lies in a business district or a residence district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "asm.business_or_residence_district holds; the subject, a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), begins at this observation to occupy a sidewalk region s (st.sidewalk; rel.occupies(subject, s) here and not at the previous observation) while it occupies a driveway-or-alley-entrance region or an alley region d (st.driveway_or_alley_entrance or st.alley).",
+ "obligation": "Event: the entry onto s judged. Place: outside s (rel.occupies(subject, s) false) with the ground distance from the subject's body to s (st.region_geometry) at most p.stop_point_tolerance — the stop zone. Act: drv.motion.complete_halt(subject; p.halt_speed_tolerance) at an observation in the stop zone. Search: back from the observation before the entry through the unbroken run of observations at which the subject was in the stop zone (written as: (in the stop zone, or the entry observation itself) since (in the stop zone and halted)). The run ends at the last observation at which the subject was outside the zone upstream (farther than p.stop_point_tolerance from s and not on it) or on s (the previous entry onto s for the same s); nothing else ends it — not a change of carrier, a reverse within the zone, or speed noise. Met where a halt lies in the run; violated where the run ends at an observed observation outside the zone or on s with no halt; unknown where the run reaches the start of the recording without a halt, or where the speed, occupancy or distance is missing at an observation the verdict turns on. A halt before the previous entry onto s does not count for this entry.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "e1",
+   "why": "'The driver' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "e4",
+   "why": "'immediately prior' is read as a halt within p.stop_point_tolerance of the sidewalk, outside it, in the run of observations the subject spends in that zone before driving onto it",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "District assumed; the subject leaves a driveway and rolls onto the sidewalk at walking pace without its speed ever falling to the halt tolerance in the stop zone, having approached from beyond the zone."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but the subject halts within p.stop_point_tolerance of the sidewalk edge before driving onto it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The trace declares the area outside any business or residence district."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "District assumed; the subject's speed is not observed in the stop zone; it then drives onto the sidewalk.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject halts far up the driveway, outside the stop zone, then rolls through the zone onto the sidewalk without halting again."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the subject already in the stop zone, moving slowly; no halt is recorded before it drives onto the sidewalk, and the run reaches the start of the recording.",
+   "boundary": "the approach start: the last observation at which the subject was outside the stop zone upstream, which precedes the recording"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed noise floor of vehicle odometry and tracked-object estimates"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "MUTCD 3B.16 (stop line placed 4 ft in advance of a crosswalk) plus driver placement margin"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

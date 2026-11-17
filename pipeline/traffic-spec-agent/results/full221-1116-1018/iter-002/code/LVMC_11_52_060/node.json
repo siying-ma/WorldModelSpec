@@ -1,0 +1,180 @@
+{
+ "node_id": "LVMC_11_52_060",
+ "law_refs": [
+  "LVMC-11-52-060"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "ru.aggregate=DEF-LVMC-11-02-170::trailer"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "In no case shall any part of any vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "part of the load of such vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "or trailer",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "attached to such vehicle",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "project into the street more than fifteen feet measured on a line at right angles to the curb.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "kin.extent"
+   ],
+   "derived": [],
+   "justification": "\"any vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"), claimed whole and never expanded into classes. \"any part of\" the vehicle is any point of its body, whose size kin.extent carries (\"the body's size along its axes about the reference point\"), so the farthest point of the body is what the bound reads. \"In no case\" admits no exception."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-LVMC-11-02-170::trailer"
+   ],
+   "derived": [],
+   "justification": "\"trailer\" is the admitted aggregate DEF-LVMC-11-02-170::trailer (\"a vehicle, other than a commercial vehicle or recreational vehicle, that is without motor power, is designed and constructed to be drawn by a motor vehicle\"), claimed whole: the trailer is judged as a road user of its own, its body read by the same bound."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "kin.extent"
+   ],
+   "derived": [],
+   "justification": "\"part of the load of such vehicle\" is read through the outline the source reports for the vehicle's body, kin.extent (\"the body's size along its axes about the reference point\"): a load carried on the vehicle within that outline is judged with it; a load overhanging the reported outline is not seen, as the narrowing on span s5 discloses."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.road_edge",
+    "st.region_geometry",
+    "st.on_way",
+    "kin.heading",
+    "kin.extent",
+    "st.lane_direction",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "\"project\" states where a standing body stands out into the street, in a section of the chapter on stopping, standing and parking: it is read for a vehicle that stands in the street, drv.motion.parked (\"Road user a is parked: \\\"the standing of a vehicle, whether occupied or not\\\", observed as a at rest at every observation of the window behind the observation\"); the narrowing discloses the reading. \"street\" is DEF-NRS-484A-265 (\"the entire width between the boundary lines of every highway inside the territorial limits of a city\", not an aggregate): st.highway (\"the entire public way between its boundary lines, including sidewalks and shoulders\"); its \"not a stand-in for: the roadway\" clause is respected since the definition names the entire width; rel.occupies (\"a road user's footprint overlaps a lane / region\") anchors the vehicle on its own street, as the mapping index reads \"upon a street\"; the city limits are the ordinance's own territorial scope. \"more than fifteen feet\" is the stated figure (literal): the body's projection, the ground distance from the curb to its outline (st.region_geometry, \"the ground distance from a road user's body outline to it\") plus the body's own extent across the curb line (kin.extent, \"a formula reads the full length, width and height\"), is compared with it. \"the curb\" is st.road_edge (\"curb or edge of the roadway\") lying on the vehicle's street (st.on_way, \"the public way (a highway region) a structure region lies on\"); the curb the vehicle stands at is the road edge of that street nearest its body (st.region_geometry ground distance). \"on a line at right angles to the curb\": the curb runs along the designated direction of the travel region the vehicle occupies (st.lane_direction, \"direction of travel designated for a structure a vehicle travels in ... a roadway\"; rel.occupies; st.travel_region), so the body's extent at right angles to the curb is its length (kin.extent) times the absolute cross product of its heading (kin.heading, read normalised) with that direction plus its width times their absolute dot product. The sign of the direction does not matter. st.lane_direction is not used as a manoeuvre or a path: only its line is read; the narrowing on this span discloses the reading."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s4",
+   "why": "A trailer is itself \"a vehicle\" by its definition DEF-LVMC-11-02-170, so the duty binds its body through \"any vehicle\" whether or not it is attached; attachment adds no restriction.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "ru.aggregate=DEF-LVMC-11-02-170::trailer"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle or a trailer (ru.aggregate DEF-NRS-484A-320::vehicle or DEF-LVMC-11-02-170::trailer), is parked at the observation (drv.motion.parked(subject; speed_tol = p.halt_speed_tolerance, min_duration = p.parking_min_duration)) and its footprint overlaps a highway h (rel.occupies subject h, st.highway): it stands in a street.",
+ "obligation": "For every highway h the subject occupies (rel.occupies), every road edge c (st.road_edge) lying on h (st.on_way c h) whose ground distance from the subject's body (st_region_geometry_distance) is at most that of every other road edge lying on h (the curb the vehicle stands at), and every travel region r (st.travel_region) the subject occupies (rel.occupies): the ground distance from the subject's body to c, plus the subject's length (kin_extent length) times the absolute value of the cross product of its heading (kin_heading x, y) with r's designated direction (st_lane_direction x, y), plus its width (kin_extent width) times the absolute value of their dot product, is at most fifteen feet (literal 15 ft). Where r carries no direction, the heading or the geometry is unobserved, the sum is unknown.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "\"project\" is read for a vehicle that stands in the street, parked (at rest for p.parking_min_duration): a vehicle travelling or halted briefly in traffic is not judged, though the words name no state of motion; the section sits among the stopping, standing and parking rules and measures from the curb a vehicle stands at. A load is judged only within the body outline the source reports; a load overhanging that outline is not seen.",
+   "kind": "reading"
+  },
+  {
+   "span": "s5",
+   "why": "The curb's line is read as the designated direction of the travel region the vehicle occupies, and the curb as the road edge of its street nearest its body; the projection is the body-to-curb distance plus the body's extent across that line, which assumes the body lies on the street side of the curb.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A truck 10 m long is parked for 10 minutes at right angles to the curb of a two-lane street, 0.2 m from the curb; its heading is perpendicular to the roadway's direction, so its body reaches about 10.2 m into the street, beyond fifteen feet."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A passenger car 1.8 m wide is parked for 10 minutes parallel to the curb, 0.3 m from it, heading along the roadway's direction: its body reaches about 2.1 m into the street."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car travels at 12 m/s along the far lane of the street, 8 m from the curb: it is not parked, so the rule does not apply."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A truck is parked at right angles to the curb, but the source maps regions without their outline (st.region_geometry absent): the distance from the body to the curb is unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A detached trailer 8 m long is parked for 10 minutes at right angles to the curb, 0.1 m from it: as a vehicle in its own right its body reaches about 8.1 m into the street."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s5",
+   "text": "fifteen feet",
+   "value": 15,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of object-tracking and vehicle-dynamics recordings"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "municipal passenger loading zone time limits"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

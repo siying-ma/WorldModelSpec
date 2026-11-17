@@ -1,0 +1,39 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "kin.time"
+  ],
+  "refs": [
+   "drv.motion.complete_halt"
+  ],
+  "canonical_body": "{\"body\":{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p0\"}},\"holds_for\":\"time\",\"length\":{\"param\":\"$p1\"},\"subject\":\"$a0\"}",
+  "body_json": {
+   "body": {
+    "cmp": "le",
+    "lhs": {
+     "args": [
+      {
+       "var": "a"
+      }
+     ],
+     "measure": "kin_speed"
+    },
+    "rhs": {
+     "param": "speed_tol"
+    }
+   },
+   "holds_for": "time",
+   "length": {
+    "param": "min_duration"
+   },
+   "subject": "a"
+  },
+  "context": "0b24d50aeef5195ddbd94e58",
+  "candidate_digest": "bbb02c9b15e33910ea7a5b43da64c3949d30cb38c8c6fb37c034fba2eed02ccf"
+ }
+}

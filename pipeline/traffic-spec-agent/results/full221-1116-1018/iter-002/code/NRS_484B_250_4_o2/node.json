@@ -1,0 +1,273 @@
+{
+ "node_id": "NRS_484B_250_4_o2",
+ "law_refs": [
+  "NRS-484B-250-4"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "v",
+   "text": "When a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "t1",
+   "text": "enters an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "t2",
+   "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered,",
+   "role": "condition"
+  },
+  {
+   "id": "t3",
+   "text": "but is inoperative at the time the vehicle enters the intersection,",
+   "role": "condition"
+  },
+  {
+   "id": "dr",
+   "text": "the driver of the vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "o",
+   "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "p1",
+   "text": "After making such a stop,",
+   "role": "condition"
+  },
+  {
+   "id": "p2",
+   "text": "the driver shall proceed cautiously,",
+   "role": "standard"
+  },
+  {
+   "id": "p3",
+   "text": "yielding",
+   "role": "obligation"
+  },
+  {
+   "id": "p4",
+   "text": "to vehicles which have previously completed a stop",
+   "role": "condition"
+  },
+  {
+   "id": "p5",
+   "text": "or are within the intersection.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "v",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate: 'membership of a legal aggregate: the atom's literal argument is an aggregate id'."
+  },
+  {
+   "span": "t1",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The entry is the observation at which the subject's footprint comes to overlap X (rel.occupies, st.intersection), having occupied at the previous observation a carrier c that enters X (st.lane_enters: 'the intersection region a directed approach carrier runs into at its entrance end'); st.travel_region is c's kind."
+  },
+  {
+   "span": "t2",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal: 'a signal head; ... uncovered attribute for an installed head whose faces are not covered'; 'controlled by' is dev.governs ('the travel regions whose traffic the device controls ... or an intersection') on c or X."
+  },
+  {
+   "span": "t3",
+   "atoms": [
+    "dev.inoperative"
+   ],
+   "derived": [],
+   "justification": "dev.inoperative: 'a signal head installed and uncovered but showing no valid indication', read at the subject's entry observation, 'at the time the vehicle enters'."
+  },
+  {
+   "span": "dr",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'The driver of the vehicle' is the vehicle's controlled motion, read through the vehicle of the admitted aggregate."
+  },
+  {
+   "span": "p3",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "'yielding' maps as in the index: the subject does not proceed in preference to the other vehicle — its kin.speed ('magnitude of velocity') stays at or below the halt tolerance while the other is in conflict — and does not collide with it (rel.contact, 'the bodies of two road users ... touch or overlap (a collision)'). kin.speed is not a stand-in for acceleration; contact is not a near miss, which the standard bounds."
+  },
+  {
+   "span": "p4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Vehicles' is the admitted aggregate. 'Previously completed a stop' is another vehicle v's complete halt (drv.motion.complete_halt, DEF-NRS-484A-255 'complete cessation from movement') while occupying its own approach carrier c2 of X (rel.occupies, st.lane_enters) before entering X, its halt beginning before the subject's own halt on c: the order of stops at an intersection where every entrance is treated as stop-controlled."
+  },
+  {
+   "span": "p5",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'are within the intersection': v's footprint overlaps X (rel.occupies; st.intersection 'the region where two roadways meet')."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "p2",
+   "standard": "proceed cautiously: proceed without creating a danger of a crash with the vehicles the words name",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: the subject proceeds (kin.speed above p.halt_speed_tolerance) while, under constant velocities, its centre and the other vehicle's approach within the time-to-collision threshold p.conflict_horizon to a centre distance below p.conflict_centre_clearance — a present danger of a crash",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "p1",
+   "rule": "NRS_484B_250_4_o1",
+   "map": {
+    "subject": "subject"
+   },
+   "as": "compliance"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At every observation at which the subject's footprint overlaps an intersection X and has overlapped it continuously since its latest entry into X (the observation at which it came to overlap X, having occupied at the observation before a carrier c with st.lane_enters(c, X)), where at that entry observation a traffic signal governing c or X (dev.governs) was inoperative (dev.inoperative), and where NRS_484B_250_4_o1 (binder subject ↦ subject) was complied with at that entry observation: 'After making such a stop' — the stop that rule searches for, read at the entry by a past operator.",
+ "obligation": "Re-binding X and c as in the applicability: for every other road user v of DEF-NRS-484A-320::vehicle that either (a) occupies X, or (b) occupies a carrier c2 entering X (st.lane_enters c2 X), on which, without overlapping X, it came to a complete halt (drv.motion.complete_halt, p.halt_speed_tolerance) whose onset lies earlier than the onset of the subject's last halt on c before its entry (or the subject made none), having occupied c2 or X at every observation since: the subject is not in contact with v (rel.contact), and it is not the case that the subject is moving (kin.speed above p.halt_speed_tolerance) while prim.closest_approach_within(subject, v; p.conflict_horizon) holds with prim.closest_approach_distance(subject, v; p.conflict_horizon) below p.conflict_centre_clearance.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "p2",
+   "why": "'cautiously' is read only through the yielding the words join to it: proceeding without a present danger of a crash with the vehicles named; no further speed bound is read.",
+   "kind": "reading"
+  },
+  {
+   "span": "dr",
+   "why": "'the driver' is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject halted at the stop line of c (inoperative dev.traffic_signal governing c) and entered X; vehicle v occupies X crossing from the subject's right; the subject moves on with kin.speed above p.halt_speed_tolerance and its closest approach to v lies within p.conflict_horizon at a centre distance below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; the subject stays at rest just inside X until v has cleared, then proceeds with no closest approach to v below p.conflict_centre_clearance within p.conflict_horizon."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The signal governing c showed circular_green at the subject's entry: not inoperative."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "After its stop the subject is in X with v crossing on a conflicting path; kin.speed is absent, so whether the subject proceeds into the conflict is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "After its stop the subject crosses X with no other road user in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Vehicle v halted on its own approach after the subject's halt and still waits there; the subject crosses X and its closest approach to v is predicted below p.conflict_centre_clearance: v is not a vehicle that previously completed a stop and is not within X."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "The subject entered X without halting at the stop line (NRS_484B_250_4_o1 violated at its entry), then crosses X in conflict with v: the yielding duty follows 'such a stop', which was not made; the omitted stop is judged by NRS_484B_250_4_o1."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channels"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique time-to-collision thresholds"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "design passenger-car dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

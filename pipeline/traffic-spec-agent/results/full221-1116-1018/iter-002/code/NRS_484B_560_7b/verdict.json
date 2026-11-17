@@ -1,0 +1,493 @@
+{
+ "verdict": "OK",
+ "details": [
+  "13 witnesses, 20 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "rises": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "var": "c"
+       }
+      ],
+      "atom": "rel_occupies",
+      "params": []
+     }
+    },
+    "exists_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "c"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_560_7b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-560-7b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "rises": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "c"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "body": {
+             "implies": [
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "lit": "flashing"
+                   }
+                  ],
+                  "atom": "dev_railway_signal_or_gate_lights",
+                  "params": []
+                 }
+                },
+                {
+                 "not": {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "lit": "lowering"
+                     }
+                    ],
+                    "atom": "dev_railway_signal_or_gate_gate",
+                    "params": []
+                   },
+                   {
+                    "or": [
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "lit": "down"
+                       }
+                      ],
+                      "atom": "dev_railway_signal_or_gate_gate",
+                      "params": []
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "lit": "raising"
+                       }
+                      ],
+                      "atom": "dev_railway_signal_or_gate_gate",
+                      "params": []
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            "forall_device": {
+             "lit": "railway_signal_or_gate"
+            },
+            "var": "d"
+           },
+           {
+            "and": [
+             {
+              "body": {
+               "implies": [
+                {
+                 "args": [
+                  {
+                   "var": "d"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                },
+                {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "lit": "circular_red"
+                   }
+                  ],
+                  "atom": "dev_traffic_signal_shows",
+                  "params": []
+                 }
+                }
+               ]
+              },
+              "forall_device": {
+               "lit": "traffic_signal"
+              },
+              "var": "d"
+             },
+             {
+              "and": [
+               {
+                "body": {
+                 "implies": [
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "d"
+                      },
+                      {
+                       "var": "r"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "d"
+                      },
+                      {
+                       "lit": "police_officer"
+                      }
+                     ],
+                     "atom": "dev_human_direction_role",
+                     "params": []
+                    }
+                   ]
+                  },
+                  {
+                   "not": {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "lit": "stop"
+                     }
+                    ],
+                    "atom": "dev_human_direction_indication",
+                    "params": []
+                   }
+                  }
+                 ]
+                },
+                "forall_device": {
+                 "lit": "human_direction"
+                },
+                "var": "d"
+               },
+               {
+                "and": [
+                 {
+                  "body": {
+                   "implies": [
+                    {
+                     "args": [
+                      {
+                       "var": "d"
+                      },
+                      {
+                       "var": "r"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "body": {
+                      "implies": [
+                       {
+                        "args": [
+                         {
+                          "var": "q"
+                         }
+                        ],
+                        "atom": "ru_rail_vehicle",
+                        "params": []
+                       },
+                       {
+                        "not": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            },
+                            {
+                             "var": "q"
+                            }
+                           ],
+                           "derived": "prim_closest_approach_within",
+                           "params": [
+                            {
+                             "param": "p.conflict_horizon"
+                            }
+                           ]
+                          },
+                          {
+                           "cmp": "le",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "q"
+                             }
+                            ],
+                            "params": [
+                             {
+                              "param": "p.conflict_horizon"
+                             }
+                            ],
+                            "quantity": "prim_closest_approach_distance"
+                           },
+                           "rhs": {
+                            "param": "p.conflict_centre_clearance"
+                           }
+                          }
+                         ]
+                        }
+                       }
+                      ]
+                     },
+                     "forall_user": "q"
+                    }
+                   ]
+                  },
+                  "forall_device": {
+                   "lit": "yield_sign"
+                  },
+                  "var": "d"
+                 },
+                 {
+                  "body": {
+                   "implies": [
+                    {
+                     "args": [
+                      {
+                       "var": "d"
+                      },
+                      {
+                       "var": "r"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "rises": {
+                      "not": {
+                       "since": [
+                        {
+                         "and": [
+                          {
+                           "not": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           }
+                          },
+                          {
+                           "cmp": "le",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "subject"
+                             },
+                             {
+                              "var": "c"
+                             }
+                            ],
+                            "measure": "st_region_geometry_distance"
+                           },
+                           "rhs": {
+                            "param": "p.railroad_crossing_approach_reach"
+                           }
+                          }
+                         ]
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "subject"
+                            }
+                           ],
+                           "derived": "drv_motion_complete_halt",
+                           "params": [
+                            {
+                             "param": "p.halt_speed_tolerance"
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "not": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            },
+                            {
+                             "cmp": "le",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "subject"
+                               },
+                               {
+                                "var": "c"
+                               }
+                              ],
+                              "measure": "st_region_geometry_distance"
+                             },
+                             "rhs": {
+                              "param": "p.railroad_crossing_approach_reach"
+                             }
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     }
+                    }
+                   ]
+                  },
+                  "forall_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "d"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "travel_region"
+       },
+       "var": "r"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "c5833788bb9c1042adf0e2da",
+  "candidate_digest": "28eae700a0b568f0515f2470a44b197423bd40ede1b32ce24432bde40423867c"
+ }
+}

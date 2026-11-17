@@ -1,0 +1,991 @@
+{
+ "verdict": "OK",
+ "details": [
+  "18 witnesses, 27 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "z"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "z"
+          },
+          {
+           "lit": "freight_loading"
+          }
+         ],
+         "atom": "st_curb_zone_kind",
+         "params": []
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "zs"
+               },
+               {
+                "lit": "parking_restricted"
+               }
+              ],
+              "atom": "dev_zone_sign_kind",
+              "params": []
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "zr"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "zs"
+                  },
+                  {
+                   "var": "zr"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "travel_region"
+              },
+              "var": "zr"
+             }
+            ]
+           },
+           {
+            "args": [
+             {
+              "var": "zs"
+             },
+             {
+              "var": "subject"
+             }
+            ],
+            "derived": "prim_conditions_hold",
+            "params": []
+           }
+          ]
+         },
+         "forall_device": {
+          "lit": "zone_sign"
+         },
+         "var": "zs"
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "curb_zone"
+    },
+    "var": "z"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_507_1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-507-1"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s1",
+     "why": "'A traffic signal displaying a red or yellow indication or flashing_red' is read as the circular indications circular_red and circular_yellow and flashing_red; a red or yellow arrow, which controls only the movement it points to, is not read as requiring the halt."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "z"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "z"
+            },
+            {
+             "lit": "freight_loading"
+            }
+           ],
+           "atom": "st_curb_zone_kind",
+           "params": []
+          },
+          {
+           "body": {
+            "implies": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "zs"
+                 },
+                 {
+                  "lit": "parking_restricted"
+                 }
+                ],
+                "atom": "dev_zone_sign_kind",
+                "params": []
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "zr"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "zs"
+                    },
+                    {
+                     "var": "zr"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "travel_region"
+                },
+                "var": "zr"
+               }
+              ]
+             },
+             {
+              "args": [
+               {
+                "var": "zs"
+               },
+               {
+                "var": "subject"
+               }
+              ],
+              "derived": "prim_conditions_hold",
+              "params": []
+             }
+            ]
+           },
+           "forall_device": {
+            "lit": "zone_sign"
+           },
+           "var": "zs"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "implies": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          }
+         ],
+         "derived": "drv_motion_complete_halt",
+         "params": [
+          {
+           "param": "p.halt_speed_tolerance"
+          }
+         ]
+        },
+        {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "y"
+                },
+                {
+                 "var": "subject"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "y"
+                 },
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "atom": "rel_ahead_behind_in_lane",
+                "params": []
+               },
+               {
+                "cmp": "le",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "y"
+                  }
+                 ],
+                 "measure": "rel_surface_gap"
+                },
+                "rhs": {
+                 "param": "p.queue_halt_gap"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "exists_user": "y"
+          },
+          {
+           "or": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "cr"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "cd"
+                    },
+                    {
+                     "var": "cr"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  "exists_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "cd"
+                 },
+                 {
+                  "or": [
+                   {
+                    "body": {
+                     "args": [
+                      {
+                       "var": "cd"
+                      },
+                      {
+                       "var": "cr"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    "exists_device": {
+                     "lit": "yield_sign"
+                    },
+                    "var": "cd"
+                   },
+                   {
+                    "or": [
+                     {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "cd"
+                          },
+                          {
+                           "var": "cr"
+                          }
+                         ],
+                         "atom": "dev_governs",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "cd"
+                            },
+                            {
+                             "lit": "circular_red"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          },
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "cd"
+                              },
+                              {
+                               "lit": "circular_yellow"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "cd"
+                              },
+                              {
+                               "lit": "flashing_red"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "exists_device": {
+                       "lit": "traffic_signal"
+                      },
+                      "var": "cd"
+                     },
+                     {
+                      "or": [
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "cd"
+                            },
+                            {
+                             "var": "cr"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "cd"
+                              },
+                              {
+                               "lit": "flashing"
+                              }
+                             ],
+                             "atom": "dev_railway_signal_or_gate_lights",
+                             "params": []
+                            },
+                            {
+                             "not": {
+                              "args": [
+                               {
+                                "var": "cd"
+                               },
+                               {
+                                "lit": "up"
+                               }
+                              ],
+                              "atom": "dev_railway_signal_or_gate_gate",
+                              "params": []
+                             }
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_device": {
+                         "lit": "railway_signal_or_gate"
+                        },
+                        "var": "cd"
+                       },
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "cd"
+                            },
+                            {
+                             "var": "cr"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "cd"
+                              },
+                              {
+                               "lit": "police_officer"
+                              }
+                             ],
+                             "atom": "dev_human_direction_role",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "cd"
+                              },
+                              {
+                               "lit": "stop"
+                              }
+                             ],
+                             "atom": "dev_human_direction_indication",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_device": {
+                         "lit": "human_direction"
+                        },
+                        "var": "cd"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "travel_region"
+             },
+             "var": "cr"
+            },
+            {
+             "or": [
+              {
+               "and": [
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "atom": "ru_truck",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "atom": "ru_commercial_motor_vehicle",
+                   "params": []
+                  }
+                 ]
+                },
+                {
+                 "and": [
+                  {
+                   "not": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     }
+                    ],
+                    "derived": "drv_motion_parked",
+                    "params": [
+                     {
+                      "param": "p.halt_speed_tolerance"
+                     },
+                     {
+                      "param": "p.commercial_loading_max_halt"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "or": [
+                    {
+                     "since": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        }
+                       ],
+                       "derived": "drv_motion_complete_halt",
+                       "params": [
+                        {
+                         "param": "p.halt_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "derived": "drv_motion_complete_halt",
+                         "params": [
+                          {
+                           "param": "p.halt_speed_tolerance"
+                          }
+                         ]
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "atom": "sig_door_open",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "until": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        }
+                       ],
+                       "derived": "drv_motion_complete_halt",
+                       "params": [
+                        {
+                         "param": "p.halt_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "derived": "drv_motion_complete_halt",
+                         "params": [
+                          {
+                           "param": "p.halt_speed_tolerance"
+                          }
+                         ]
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "atom": "sig_door_open",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "and": [
+                {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "derived": "drv_motion_parked",
+                  "params": [
+                   {
+                    "param": "p.halt_speed_tolerance"
+                   },
+                   {
+                    "param": "p.standing_min_duration"
+                   }
+                  ]
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "or": [
+                    {
+                     "since": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        }
+                       ],
+                       "derived": "drv_motion_complete_halt",
+                       "params": [
+                        {
+                         "param": "p.halt_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "derived": "drv_motion_complete_halt",
+                         "params": [
+                          {
+                           "param": "p.halt_speed_tolerance"
+                          }
+                         ]
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "atom": "sig_door_open",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "until": [
+                      {
+                       "args": [
+                        {
+                         "var": "subject"
+                        }
+                       ],
+                       "derived": "drv_motion_complete_halt",
+                       "params": [
+                        {
+                         "param": "p.halt_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "derived": "drv_motion_complete_halt",
+                         "params": [
+                          {
+                           "param": "p.halt_speed_tolerance"
+                          }
+                         ]
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          }
+                         ],
+                         "atom": "sig_door_open",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "not": {
+                    "since": [
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       }
+                      ],
+                      "derived": "drv_motion_complete_halt",
+                      "params": [
+                       {
+                        "param": "p.halt_speed_tolerance"
+                       }
+                      ]
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         }
+                        ],
+                        "derived": "drv_motion_complete_halt",
+                        "params": [
+                         {
+                          "param": "p.halt_speed_tolerance"
+                         }
+                        ]
+                       },
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "not": {
+                            "same": [
+                             {
+                              "var": "w"
+                             },
+                             {
+                              "var": "subject"
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "w"
+                              },
+                              {
+                               "lit": "DEF-NRS-484A-130::motor_vehicle"
+                              }
+                             ],
+                             "atom": "ru_aggregate",
+                             "params": []
+                            },
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "w"
+                                }
+                               ],
+                               "atom": "ru_truck",
+                               "params": []
+                              },
+                              {
+                               "and": [
+                                {
+                                 "not": {
+                                  "args": [
+                                   {
+                                    "var": "w"
+                                   },
+                                   {
+                                    "var": "z"
+                                   }
+                                  ],
+                                  "atom": "rel_occupies",
+                                  "params": []
+                                 }
+                                },
+                                {
+                                 "and": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "w"
+                                    }
+                                   ],
+                                   "derived": "drv_motion_complete_halt",
+                                   "params": [
+                                    {
+                                     "param": "p.halt_speed_tolerance"
+                                    }
+                                   ]
+                                  },
+                                  {
+                                   "cmp": "le",
+                                   "lhs": {
+                                    "args": [
+                                     {
+                                      "var": "w"
+                                     },
+                                     {
+                                      "var": "z"
+                                     }
+                                    ],
+                                    "measure": "st_region_geometry_distance"
+                                   },
+                                   "rhs": {
+                                    "param": "p.zone_entry_wait_reach"
+                                   }
+                                  }
+                                 ]
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_user": "w"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "curb_zone"
+    },
+    "var": "z"
+   },
+   "residues": [
+    "'For any purpose or length of time' excludes no halt: every halt is within the prohibition whatever its purpose and length, so the duty is the same whether or not these words are read."
+   ],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s1",
+    "why": "'A traffic signal displaying a red or yellow indication or flashing_red' is read as the circular indications circular_red and circular_yellow and flashing_red; a red or yellow arrow, which controls only the movement it points to, is not read as requiring the halt."
+   }
+  ],
+  "context": "e79e2d9af7f14f160e50c427",
+  "candidate_digest": "3ec47585701fcea86ded3bbd6a4f97d0c27013916094d13be79589e141e4ed30"
+ }
+}

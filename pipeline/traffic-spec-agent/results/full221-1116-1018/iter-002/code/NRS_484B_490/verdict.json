@@ -1,0 +1,128 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "d"
+           },
+           {
+            "lit": "narrow_highway"
+           }
+          ],
+          "atom": "dev_zone_sign_kind",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "dev_governs",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "var": "subject"
+             }
+            ],
+            "derived": "prim_conditions_hold",
+            "params": []
+           }
+          ]
+         }
+        ]
+       },
+       "exists_device": {
+        "lit": "zone_sign"
+       },
+       "var": "d"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "travel_region"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_490",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-490"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "derived": "drv_motion_parked",
+     "params": [
+      {
+       "param": "p.halt_speed_tolerance"
+      },
+      {
+       "param": "p.parking_min_duration"
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "5380611e2091daadb35e1ace",
+  "candidate_digest": "f4915aba8e22ea35ae8b6d5865f8288cf6678d2b13e5722d31f664605771f047"
+ }
+}

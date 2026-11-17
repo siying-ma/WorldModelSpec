@@ -1,0 +1,210 @@
+{
+ "node_id": "NRS_484B_307_5a_o1",
+ "law_refs": [
+  "NRS-484B-307-5a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where the signal is a green straight-through arrow alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Vehicular traffic facing the signal",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "may proceed straight through, but must not turn right or left.",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "Such vehicular traffic",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "must yield",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "to other vehicles",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "and to pedestrians",
+   "role": "sibling"
+  },
+  {
+   "id": "s9",
+   "text": "lawfully within the intersection or an adjacent crosswalk at the time the signal is exhibited.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal, 'a signal head; state ∈ {..., green_arrow(dir), ...} with dir ∈ {left, right, straight, u_turn}; several states may be displayed at once': a green straight-through arrow alone is the head displaying green_arrow(straight) and no other state. Same atom as the index for the signal words of NRS_484B_307_2a and NRS_484B_307_4a_o1."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Vehicular traffic': the admitted aggregates DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel') and DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), both held, claimed as ru.aggregate and never expanded. 'facing the signal': the subject occupies (rel.occupies, 'a road user's footprint overlaps a lane / region') a travel region c (st.travel_region, the kinds 'a device can govern') whose entrance end is intersection i (st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end'; i of kind st.intersection) and which the head governs (dev.governs, 'the travel regions whose traffic the device controls'). Not a stand-in: dev.governs is not read as a position, st.lane_enters not as presence in the intersection. Same words, same atoms as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.left_turn_through_region",
+    "drv.motion.right_turn_through_region",
+    "drv.motion.u_turn_through_region"
+   ],
+   "justification": "The movement through intersection i (st.intersection) is the subject's passage from its entry (rel.occupies rising) to its exit. 'must not turn right or left': drv.motion.right_turn_through_region ('a turn to the right through region r, recognized as it leaves r') and drv.motion.left_turn_through_region ('a turn to the left through region r'); a reversal, drv.motion.u_turn_through_region ('turned so as to proceed in the opposite direction through region r'), is a turn to one hand carried past a right angle and is no movement 'straight through', so it is read with them (narrowing). 'may proceed straight through': a passage for which none of the three holds; the permission adds no duty. As the index maps the arrow movements of NRS_484B_307_4a_o1."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of the classes traffic and vehicle, has entered intersection i from a travel region c whose entrance end is i (st.lane_enters) and which a traffic signal head s governs (dev.governs): at the act's onset its footprint came to overlap i, having occupied c and not i at the observation before. At some observation of the passage, from that entry to the judged observation, s displayed a green straight-through arrow alone (green_arrow(straight) and no other state). The rule is judged at the passage's recognition: the observation at which the subject's footprint does not overlap i, having overlapped it at the previous observation.",
+ "obligation": "At that recognition none of drv.motion.left_turn_through_region, drv.motion.right_turn_through_region and drv.motion.u_turn_through_region holds for the subject and i (step = p.heading_since_step_carla_scene_graph, turn_min = p.turn_heading_min, u_turn_min = p.u_turn_heading_min): the passage was made straight through.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'turn right or left' is read as a passage through the intersection recognized as a right turn, a left turn or a reversal of direction (a U-turn turns to one hand beyond a right angle and is not straight through). A heading change below p.turn_heading_min, such as a lane change made inside the intersection, is read as straight through.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies lane c, recorded as entering intersection i and governed by head s displaying green_arrow(straight) alone; it enters i, its heading changes by +88 degrees inside i, and it leaves i while s still displays the arrow."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same arrow; the car passes through i with a heading change of 2 degrees and leaves it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "s displays circular_green alone from before the car's entry until after its exit; the car turns left through i."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source supplies no yaw rate for the car while it is inside i: which movement it made is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "occasion_s1",
+   "expected": "violated",
+   "narrative": "s displays green_arrow(straight) alone at the car's entry into i and changes to circular_yellow alone while the car is turning left inside i; the car leaves i with a heading change of +90 degrees: the arrow was displayed for part of the passage only."
+  },
+  {
+   "name": "occasion_s1_outside",
+   "expected": "not_applicable",
+   "narrative": "s displays green_arrow(straight) alone only while the car waits on c before its entry; from the entry to the exit s displays circular_green alone; the car turns left through i."
+  }
+ ],
+ "occasion": {
+  "act": [
+   "drv.motion.left_turn_through_region",
+   "drv.motion.right_turn_through_region",
+   "drv.motion.u_turn_through_region"
+  ],
+  "boundary": "event",
+  "onset": {
+   "words": "the subject's entry into the intersection from its approach",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The through-region acts begin, as their contracts state, 'at the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation: its entry into r'."
+  },
+  "recognition": "the observation at which the subject's footprint does not overlap the intersection, having overlapped it at the previous observation: its exit, where the through-region acts are recognized",
+  "under_way": {
+   "words": "the subject inside the intersection it entered, turning or holding its heading, from its entry to its exit",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "An observation inside the act is one from the entry on at which the subject still overlaps i and its heading change since the entry, integrated from kin.yaw_rate ('rate of change of heading'), is being accumulated; before the entry the integration has not begun, so the motion, not the place alone, tells the act from what preceded it."
+  },
+  "spans": {
+   "s1": "some_moment"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "proposed this iteration by LVMC_11_40_080_o1; repeated unchanged"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "proposed this iteration by LVMC_11_40_080_o1; repeated unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

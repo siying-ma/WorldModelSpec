@@ -1,0 +1,216 @@
+{
+ "node_id": "LVMC_11_40_120",
+ "law_refs": [
+  "LVMC-11-40-120"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Whenever a",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s2",
+   "text": "usable",
+   "role": "standard"
+  },
+  {
+   "id": "s3",
+   "text": "path for bicycles, electric bicycles, or electric scooters has been provided",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "adjacent to a roadway",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "riders of bicycles, electric bicycles, and electric scooters",
+   "role": "subject"
+  },
+  {
+   "id": "s6",
+   "text": "shall use such path and shall not use the roadway",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s3",
+   "atoms": [
+    "st.bicycle_lane_or_path",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'path for bicycles, electric bicycles, or electric scooters' is st.bicycle_lane_or_path, 'lane or separate path reserved for bicycles and the devices a jurisdiction groups with them': the classes the path is for are those the kind is reserved for. 'has been provided' is its presence on the map (status). It lies on a highway (st.on_way, 'the public way (a highway region) a structure region lies on'; st.highway)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.on_way",
+    "st.roadway",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'adjacent to a roadway' ties the path to the roadway (DEF-NRS-484A-220, 'that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder'; st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder') through the highway both lie on (st.on_way, st.highway); st.on_way is not read as nearness, its exclusion: both regions are recorded on that highway."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'bicycles' (DEF-NRS-484A-025, 'a device propelled by human power upon which a person may ride'), 'electric bicycles' (DEF-LVMC-11-02-082) and 'electric scooters' (DEF-LVMC-11-02-083) are admitted aggregates, each claimed as one atom. 'riders' is read through the machine's controlled motion (agency)."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane",
+    "st.bicycle_lane_or_path"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier",
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'use such path' is the rider's footprint on the path singled out by s3 (rel.occupies, st.bicycle_lane_or_path); 'not use the roadway' is the rider not travelling along that roadway (rel.occupies, st.roadway): while moving (not drv.motion.complete_halt) on the roadway and off the path, it moves across a lane (st.lane, as a carrier of a direction only, never a half of the roadway) or the roadway it occupies (drv.motion.moving_across_carrier, 'Road user a moves across the designated direction of travel of carrier region r'), as it does when crossing to or from the path; travelling along the roadway instead of the path is what the words forbid."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s2",
+   "standard": "usable",
+   "concepts": [
+    "st.lane_width",
+    "dev.governs",
+    "dev.regulatory_sign",
+    "dev.temporary_traffic_control"
+   ],
+   "params": [
+    "p.usable_path_width_min"
+   ],
+   "convention": "A bicycle path is usable where its width (st.lane_width) is at least the operating width of one rider, p.usable_path_width_min (AASHTO Guide for the Development of Bicycle Facilities), and no device closes it: no dev.regulatory_sign of code closed_to_traffic or bicycles_prohibited and no dev.temporary_traffic_control governs it (dev.governs).",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a bicycle, an electric bicycle or an electric scooter in controlled motion (not drv.motion.complete_halt with speed_tol p.halt_speed_tolerance) whose footprint overlaps (rel.occupies) a roadway or a bicycle lane or path that lies on a highway h (st.on_way, st.highway) on which both a roadway and a usable bicycle lane or path p lie: p's width (st.lane_width) is at least p.usable_path_width_min and no dev.regulatory_sign of code closed_to_traffic or bicycles_prohibited and no dev.temporary_traffic_control governs p (dev.governs).",
+ "obligation": "At every such observation, re-binding h and p with the whole selection: where the subject occupies a roadway lying on h and occupies no such usable path p, it moves across a lane or the roadway it occupies (drv.motion.moving_across_carrier with speed_tol p.halt_speed_tolerance and cos_max p.rider_crossing_motion_cos); travelling along the roadway (moving, not across) off the path is violated; on the path is compliant.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.rider_crossing_motion_cos",
+  "p.usable_path_width_min"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'has been provided' is read from the path's presence on the map.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "'riders' is read through the machine's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s6",
+   "why": "'use the roadway' is read as travelling along it (moving, not across the occupied carrier's direction by more than p.rider_crossing_motion_cos allows); crossing the roadway to reach or leave the path is not a use of it. 'use such path' is judged where the rider would otherwise travel along the roadway: a rider elsewhere on the highway (a sidewalk) is not judged by this rule.",
+   "kind": "reading"
+  },
+  {
+   "span": "s2",
+   "why": "'usable' is read through the path's width and its closure by a device; an obstruction on the path (st.obstruction) is not read, no relation atom placing an object on a region.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "An electric scooter (ru.electric_scooter) rides at 5 m/s along a lane of the roadway, velocity parallel to its st.lane_direction; a st.bicycle_lane_or_path 3 m wide, governed by no closing device, lies on the same highway."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same rider travels on the bicycle path, its footprint inside it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle rides along the roadway of a highway on which no bicycle lane or path lies."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A bicycle moves on the roadway beside which a usable path lies; the source does not observe kin.velocity, so whether it travels along or across the roadway is unknown.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A bicycle crosses the roadway at right angles to the lane direction to reach the path."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The only bicycle path on the highway is governed by a dev.temporary_traffic_control closing it; a bicycle rides along the roadway."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed quantisation of the acquisition standard's scene graph"
+  },
+  {
+   "name": "p.rider_crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a rider's velocity and a carrier's designated direction at which the rider counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "bicycle crossing-trajectory observation at mid-block and intersection crossings"
+  },
+  {
+   "name": "p.usable_path_width_min",
+   "unit": "m",
+   "value": 1.2,
+   "convention": "the narrowest width of a bicycle path at which one bicycle or scooter rider can operate on it: the essential operating space of a bicyclist",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (2012), bicyclist operating space"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

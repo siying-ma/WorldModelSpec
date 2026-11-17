@@ -1,0 +1,140 @@
+{
+ "node_id": "LVMC_11_52_136",
+ "law_refs": [
+  "LVMC-11-52-136"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "No person shall park",
+   "role": "obligation"
+  },
+  {
+   "id": "s2",
+   "text": "a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "in an access aisle.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'Park' applies DEF-NRS-484A-155: 'the standing of a vehicle, whether occupied or not, otherwise than temporarily for the purpose of and while actually engaged in loading or unloading of merchandise or passengers'. drv.motion.parked denotes 'the standing of a vehicle, whether occupied or not, observed as a at rest at every observation of the window behind the observation, of length min_duration'; 'A halt shorter than min_duration, which may be the temporary halt the definition leaves out, is not denoted', which carries the definition's exclusion of a temporary halt for loading. Same mapping as the index's 'It shall be unlawful for any person to park' (LVMC_11_40_170)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is admitted as the aggregate DEF-NRS-484A-320::vehicle; ru.aggregate is 'membership of a legal aggregate'. It is not a relational role (who drives) and no class atom replaces an admitted aggregate."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.parking_space",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Access aisle' applies DEF-LVMC-11-02-030: an area 'Adjacent to a parking space designated for the handicapped' and 'Marked by spaced, crosshatched or diagonal stripes'. st.parking_space is a 'marked bay for standing or parking; designation in {general, disabled, disabled_side_lift, access_aisle, municipal, charging}': the designation access_aisle is the marked aisle beside a disabled bay. 'in' places the vehicle there: rel.occupies, 'a road user's footprint overlaps a lane / region', anchors the vehicle to the aisle it is in, not to any aisle of the scene."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and its footprint overlaps a parking-space region whose designation is access_aisle (st.parking_space, rel.occupies) at the observation.",
+ "obligation": "The subject is not parked (drv.motion.parked with speed_tol p.halt_speed_tolerance and min_duration p.parking_min_duration) while its footprint overlaps that access-aisle region: for every parking-space region of designation access_aisle the subject occupies at the observation, the subject is not parked there.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'No person shall park' is read through the vehicle's own standing; whoever or whatever controls it, the duty binds the vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "The definition's exclusion of a halt made 'temporarily for the purpose of and while actually engaged in loading or unloading' is read through the halt's duration: a halt shorter than p.parking_min_duration is the temporary halt and is not parking; the loading purpose itself is not observed.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s3",
+   "why": "The defined area's design for 'unobstructed ingress, egress and access' and its adjacency to a disabled bay are read through the mapped marking: a parking-space region the source designates access_aisle is the access aisle.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A passenger car (vehicle aggregate) comes to rest with its footprint overlapping a st.parking_space of designation access_aisle beside a disabled bay and stays at rest there (kin.speed at or below the tolerance) for longer than p.parking_min_duration."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A passenger car halts briefly in an access-aisle parking space, shorter than p.parking_min_duration, to let a passenger out, then drives off; drv.motion.parked never holds while it occupies the aisle."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A passenger car parks for a long time in a parking space of designation general; its footprint never overlaps an access_aisle region."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "masked": [
+    "rel.occupies"
+   ],
+   "narrative": "A passenger car stands at rest next to an access-aisle region for longer than p.parking_min_duration; the source does not observe rel.occupies, so whether it is in the aisle is unknown."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source's kinematic channel"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "municipal curbside management practice: passenger loading zone time limits"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,445 @@
+{
+ "verdict": "OK",
+ "details": [
+  "11 witnesses, 11 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "since": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "s"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "cmp": "le",
+         "lhs": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "s"
+           }
+          ],
+          "measure": "st_region_geometry_distance"
+         },
+         "rhs": {
+          "lit": {
+           "den": 1,
+           "num": 0
+          },
+          "unit": "metre"
+         }
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "rises": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "s"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "cmp": "le",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "s"
+              }
+             ],
+             "measure": "st_region_geometry_distance"
+            },
+            "rhs": {
+             "lit": {
+              "den": 1,
+              "num": 0
+             },
+             "unit": "metre"
+            }
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "asm": "asm.business_or_residence_district"
+          },
+          {
+           "or": [
+            {
+             "or": [
+              {
+               "or": [
+                {
+                 "body": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "a"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 "exists_region": {
+                  "lit": "alley"
+                 },
+                 "var": "a"
+                },
+                {
+                 "body": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "d"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 "exists_region": {
+                  "lit": "driveway_or_alley_entrance"
+                 },
+                 "var": "d"
+                }
+               ]
+              },
+              {
+               "rises": {
+                "not": {
+                 "or": [
+                  {
+                   "body": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "a"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   "exists_region": {
+                    "lit": "alley"
+                   },
+                   "var": "a"
+                  },
+                  {
+                   "body": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "d"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   "exists_region": {
+                    "lit": "driveway_or_alley_entrance"
+                   },
+                   "var": "d"
+                  }
+                 ]
+                }
+               }
+              }
+             ]
+            },
+            {
+             "or": [
+              {
+               "rises": {
+                "body": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "h"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                "exists_region": {
+                 "lit": "highway"
+                },
+                "var": "h"
+               }
+              },
+              {
+               "until": [
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "s"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "s"
+                     }
+                    ],
+                    "measure": "st_region_geometry_distance"
+                   },
+                   "rhs": {
+                    "lit": {
+                     "den": 1,
+                     "num": 0
+                    },
+                    "unit": "metre"
+                   }
+                  }
+                 ]
+                },
+                {
+                 "not": {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "h"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  "exists_region": {
+                   "lit": "highway"
+                  },
+                  "var": "h"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "sidewalk"
+    },
+    "var": "s"
+   },
+   "assumptions": [
+    "asm.business_or_residence_district"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-025::bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-LVMC-11-02-082::electric_bicycle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-LVMC-11-02-083::electric_scooter"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_40_140_o2",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-40-140"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "p"
+        },
+        {
+         "lit": "DEF-NRS-484A-165::pedestrian"
+        }
+       ],
+       "atom": "ru_aggregate",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "p"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        },
+        {
+         "not": {
+          "and": [
+           {
+            "cmp": "gt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              }
+             ],
+             "measure": "kin_speed"
+            },
+            "rhs": {
+             "param": "p.halt_speed_tolerance"
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "p"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "p"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "p"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "1fc6c5fdafe50ee402c2ab64",
+  "candidate_digest": "975e3316ae87775d04ab5b4123344687c576b55a487fc0004ab03bccf7acfcef"
+ }
+}

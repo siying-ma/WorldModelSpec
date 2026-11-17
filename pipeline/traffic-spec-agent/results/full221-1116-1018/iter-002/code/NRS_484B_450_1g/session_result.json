@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 193755,
+  "stop_reason": "end_turn",
+  "session_id": "ede119f5-188c-4e9b-a84c-a03cad773465",
+  "total_cost_usd": 1.75586796,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 123890,
+   "cache_read_input_tokens": 832938,
+   "output_tokens": 21689,
+   "output_tokens_details": {
+    "thinking_tokens": 9826
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 123890,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 686,
+     "cache_read_input_tokens": 126852,
+     "cache_creation_input_tokens": 1506,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1506
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46705,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0051524000000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 21689,
+    "cacheReadInputTokens": 832938,
+    "cacheCreationInputTokens": 123890,
+    "webSearchRequests": 0,
+    "costUSD": 1.7507155600000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 9826,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 123890,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The rule and its witnesses for NRS_484B_450_1g pass the gate: it returned **OK** on the first run (1 of 6 used), with 14 witnesses.\n\n**The rule**\n- **When it applies (s9, s10):** the subject is a vehicle in a travel region that a traffic signal controls, either directly or through the intersection the lane enters. The signal head must also be:\n  - ahead of the vehicle along the lane's direction;\n  - within 30 ft of the vehicle's front. I wrote this as 4·|head − position|² ≤ (30 ft + 30 ft + length)². Doubling instead of halving the length keeps 30 ft as the only figure in the rule.\n  - beyond a road edge on that edge's side.\n- **The duty:** the vehicle is not at rest, unless one of these holds:\n  - another road user is ahead in the same lane, no more than `p.queue_halt_gap` away;\n  - a device governing a region the vehicle occupies directs a halt: a stop sign, a yield sign, a red signal (circular red, any red arrow, flashing red), a level-crossing signal with lights flashing, or a gate lowering or down;\n  - a police officer governing that region directs it to stop.\n\n**Choices the node left open**\n- **Two exceptions written once:** \"in compliance with law\" names only devices that \"official traffic-control device\" already covers, so I wrote the two together. A second copy could never change a verdict.\n- **Red arrow:** a red arrow in any direction counts, since the record doesn't name one.\n- **Gap to the vehicle ahead:** measured as the straight distance between the two bodies, as the gap's definition says.\n- **No narrowings declared.**\n\n**Extra witnesses:** besides the planned scenarios, I added six so that every condition in the rule is tested:\n- **Compliant:** a stop sign, a yield sign, level-crossing lights flashing, and a gate down.\n- **Violated:** a signal that governs only the intersection, and a signal head beyond the left road edge.\n\nThe run's record is in `task_result.md` in the working directory.",
+  "ttft_ms": 19044,
+  "type": "result",
+  "duration_ms": 208113,
+  "uuid": "0026c548-549b-41ae-9695-d2c37c3657c8",
+  "ttft_stream_ms": 1049,
+  "time_to_request_ms": 454,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 48,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 12,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 44,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 7,
+   "engine_pickup": 10,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 287,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 8,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 29,
+  "time_to_request_cpu_ms": 368,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 11,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 4,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 6,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1050,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46705,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0051524000000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 21689,
+    "cacheReadInputTokens": 832938,
+    "cacheCreationInputTokens": 123890,
+    "webSearchRequests": 0,
+    "costUSD": 1.7507155600000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 9826,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 123890,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

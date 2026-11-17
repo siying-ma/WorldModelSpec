@@ -1,0 +1,277 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 9 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "r"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         {
+          "body": {
+           "args": [
+            {
+             "var": "w"
+            },
+            {
+             "var": "h"
+            }
+           ],
+           "atom": "st_on_way",
+           "params": []
+          },
+          "exists_region": {
+           "lit": "sidewalk"
+          },
+          "var": "w"
+         }
+        ]
+       }
+      ]
+     },
+     "exists_region": {
+      "lit": "highway"
+     },
+     "var": "h"
+    },
+    "exists_region": {
+     "lit": "roadway"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_30_090",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-090"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s3",
+     "why": "The carriers of r (r itself, or an occupied st.lane on the same highway) are read existentially for compliance: moving across any one of them (drv.motion.moving_across_carrier) is crossing, not walking along; a moving pedestrian violates only where its motion is along every such carrier."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "body": {
+      "implies": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "body": {
+             "args": [
+              {
+               "var": "w"
+              },
+              {
+               "var": "h"
+              }
+             ],
+             "atom": "st_on_way",
+             "params": []
+            },
+            "exists_region": {
+             "lit": "sidewalk"
+            },
+            "var": "w"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           }
+          ],
+          "derived": "drv_motion_complete_halt",
+          "params": [
+           {
+            "param": "p.halt_speed_tolerance"
+           }
+          ]
+         },
+         {
+          "or": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "derived": "drv_motion_moving_across_carrier",
+            "params": [
+             {
+              "param": "p.halt_speed_tolerance"
+             },
+             {
+              "param": "p.crossing_motion_cos"
+             }
+            ]
+           },
+           {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "c"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "c"
+                  },
+                  {
+                   "var": "h"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "c"
+                  }
+                 ],
+                 "derived": "drv_motion_moving_across_carrier",
+                 "params": [
+                  {
+                   "param": "p.halt_speed_tolerance"
+                  },
+                  {
+                   "param": "p.crossing_motion_cos"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "lane"
+            },
+            "var": "c"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "forall_region": {
+      "lit": "highway"
+     },
+     "var": "h"
+    },
+    "forall_region": {
+     "lit": "roadway"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s3",
+    "why": "The carriers of r (r itself, or an occupied st.lane on the same highway) are read existentially for compliance: moving across any one of them (drv.motion.moving_across_carrier) is crossing, not walking along; a moving pedestrian violates only where its motion is along every such carrier."
+   }
+  ],
+  "context": "84038384b0265cffba3adee7",
+  "candidate_digest": "4b4b9d78d972a3684dfaada065edca8ad687c8d932f7d467d6a6169966667a4a"
+ }
+}

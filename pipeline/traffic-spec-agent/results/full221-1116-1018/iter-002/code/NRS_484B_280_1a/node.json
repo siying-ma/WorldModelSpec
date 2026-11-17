@@ -1,0 +1,167 @@
+{
+ "node_id": "NRS_484B_280_1a",
+ "law_refs": [
+  "NRS-484B-280-1a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "x1",
+   "text": "A driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "x2",
+   "text": "shall: Exercise due care",
+   "role": "standard"
+  },
+  {
+   "id": "x3",
+   "text": "to avoid a collision",
+   "role": "obligation"
+  },
+  {
+   "id": "x4",
+   "text": "with a pedestrian.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "x1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'), claimed as ru.aggregate; 'driver' (DEF-NRS-484A-080) is a role read through the vehicle's controlled motion (observable_reading, agency), ru.aggregate being 'Not a stand-in for: ... a relational role such as who drives'."
+  },
+  {
+   "span": "x3",
+   "atoms": [
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "A collision is rel.contact, 'the bodies of two road users ... touch or overlap (a collision)'; it is 'Not a stand-in for: a near miss', which the operationalization of x2 bounds separately."
+  },
+  {
+   "span": "x4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Pedestrian' is admitted as DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'), claimed as ru.aggregate as the index maps 'A pedestrian'."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "x2",
+   "standard": "due care to avoid a collision (a standard of the driver's care, a state of mind)",
+   "concepts": [
+    "kin.speed",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.halt_speed_tolerance",
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: while the vehicle moves, care shows in its keeping no closest approach to the pedestrian, under constant velocities, within a time-to-collision horizon and below a centre clearance of about a car's half-length plus half a body width",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-130::motor_vehicle, read as driven.",
+ "obligation": "At every observation at which the subject's kin.speed is above p.halt_speed_tolerance, for every road user p other than the subject that is a member of DEF-NRS-484A-165::pedestrian: the subject is not in contact with p (rel.contact), and it is not the case that prim.closest_approach_within(subject, p) over p.conflict_horizon holds with prim.closest_approach_distance(subject, p) over p.conflict_horizon below p.conflict_centre_clearance. Surrogate: the verdict is evidence of care, not a legal conclusion.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "x1",
+   "why": "'A driver' is read through the motor vehicle's controlled motion; who or what is at the controls is not observed.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "x2",
+   "why": "Due care, a state of mind, is read only through its outcome while the subject moves: no contact and no conflicting closest approach with a pedestrian; lookout, speed choice and every other aspect of care are read only through that outcome.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A moving car approaches a pedestrian crossing the roadway ahead and does not slow; their closest approach falls within p.conflict_horizon and below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car slows and halts short of the crossing pedestrian, keeping its closest approach beyond p.conflict_centre_clearance while it moves; no contact."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a bicycle (not a member of the motor vehicle aggregate) passing a pedestrian."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A moving car passes a pedestrian on the sidewalk with no conflicting closest approach; contact between bodies is not observed on this source.",
+   "masked": [
+    "rel.contact"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A moving car drives on a street with no pedestrian in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design vehicle dimensions (AASHTO)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 44786,
+  "stop_reason": "end_turn",
+  "session_id": "bd514579-9702-44a7-ad54-26ae318eaae9",
+  "total_cost_usd": 0.5191302600000001,
+  "usage": {
+   "input_tokens": 8,
+   "cache_creation_input_tokens": 41742,
+   "cache_read_input_tokens": 135641,
+   "output_tokens": 5368,
+   "output_tokens_details": {
+    "thinking_tokens": 951
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 41742,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 530,
+     "cache_read_input_tokens": 45281,
+     "cache_creation_input_tokens": 929,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 929
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 34684,
+    "outputTokens": 24,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038284400000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 8,
+    "outputTokens": 5368,
+    "cacheReadInputTokens": 135641,
+    "cacheCreationInputTokens": 41742,
+    "webSearchRequests": 0,
+    "costUSD": 0.5153018200000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 951,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 41742,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 5,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed `NRS_484B_110` on the first run, out of a budget of 6. It returned `OK` with all 4 witnesses.\n\n**What the rule says:**\n- **Who it covers:** any road user in the vehicle definition the node claims (`ru_aggregate` with `DEF-NRS-484A-320::vehicle`).\n- **When it applies:** whenever the vehicle is moving, meaning it is not at a complete halt under the run's speed tolerance (`p.halt_speed_tolerance`). \"At any time\" means every observation is checked, so I added no time window.\n- **The duty:** the vehicle's footprint overlaps no safety zone (`∀ safety_zone z, ¬ rel_occupies(subject, z)`).\n\n**Choices:** the node left nothing open, so I declared no narrowings of my own. Its two existing narrowings (reading \"driven\" as moving, and \"safety zone\" as a marked zone region) are written from its atoms and not repeated in the rule.\n\n**Witnesses:** a safety zone 8 m long and 4 m wide, and an eastbound car:\n- **forbid:** the car drives through the zone at 8 m/s and is inside it at two observations → violated.\n- **permit:** the car drives at 8 m/s, 6 m clear of the zone → compliant.\n- **idle:** the car is at rest for the whole recording → not applicable.\n- **blind:** same as permit, but the source does not report which regions the car overlaps → unknown.\n\nI didn't find anything wrong with the node or the concept it uses. The summary is in `task_result.md` in the working directory.",
+  "ttft_ms": 10341,
+  "type": "result",
+  "duration_ms": 52027,
+  "uuid": "1678ff3c-f41b-4bfa-b49b-6af9867c8c4b",
+  "ttft_stream_ms": 1268,
+  "time_to_request_ms": 461,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 55,
+   "resume_other": 1,
+   "process_user_input": 4,
+   "input_attachments": 13,
+   "input_hooks": 4,
+   "conversation_append": 1,
+   "transcript_persist": 62,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 7,
+   "engine_pickup": 9,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 271,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 39,
+  "time_to_request_cpu_ms": 375,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 4,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1268,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 34684,
+    "outputTokens": 24,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038284400000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 8,
+    "outputTokens": 5368,
+    "cacheReadInputTokens": 135641,
+    "cacheCreationInputTokens": 41742,
+    "webSearchRequests": 0,
+    "costUSD": 0.5153018200000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 951,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 41742,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

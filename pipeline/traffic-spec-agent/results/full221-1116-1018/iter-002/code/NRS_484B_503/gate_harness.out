@@ -1,0 +1,118 @@
+'TrafficSpec.Rules.NRS_484B_503.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484B_503.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_503","intentions":[],"laws":["NRS-484B-503"],"narrowings":[{"kind":"reading","span":"s1","why":"A railway gate 'not up' is read as a gate observed lowering, down or raising; a crossing without a gate (gate state none) excuses a halt only through flashing lights."},{"kind":"reading","span":"s1","why":"A traffic signal's 'red or yellow indication' is read as circular red or yellow and red or yellow arrows of any direction (with flashing red); flashing yellow and flashing yellow arrows, which permit proceeding, are not included."}],"operationalizations":[{"concepts":["drv.motion.parked"],"params":["p.standing_min_duration","p.halt_speed_tolerance"],"standard":"expeditious","surrogate":false}],"residues":["'For any purpose or period of time' excludes no halt: every halt, whatever its purpose and length, is within the prohibition, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"passenger_loading"}],"atom":"st_curb_zone_kind","params":[]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"tr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"tr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"tr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_503","intentions":[],"laws":["NRS-484B-503"],"narrowings":[{"kind":"reading","span":"s1","why":"A railway gate 'not up' is read as a gate observed lowering, down or raising; a crossing without a gate (gate state none) excuses a halt only through flashing lights."},{"kind":"reading","span":"s1","why":"A traffic signal's 'red or yellow indication' is read as circular red or yellow and red or yellow arrows of any direction (with flashing red); flashing yellow and flashing yellow arrows, which permit proceeding, are not included."}],"obligation":{"body":{"implies":[{"and":[{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"passenger_loading"}],"atom":"st_curb_zone_kind","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"tr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"tr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"tr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]},{"or":[{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},{"or":[{"body":{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"args":[{"var":"o"},{"var":"subject"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_halt_gap"}}]}]},"exists_user":"o"},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"ds"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"ds"},{"or":[{"body":{"args":[{"var":"dy"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"dy"},{"or":[{"body":{"and":[{"args":[{"var":"dt"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"dt"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"dt"},{"or":[{"body":{"and":[{"args":[{"var":"dg"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"dg"},{"lit":"flashing"}],"atom":"dev_railway_signal_or_gate_lights","params":[]},{"or":[{"args":[{"var":"dg"},{"lit":"lowering"}],"atom":"dev_railway_signal_or_gate_gate","params":[]},{"or":[{"args":[{"var":"dg"},{"lit":"down"}],"atom":"dev_railway_signal_or_gate_gate","params":[]},{"args":[{"var":"dg"},{"lit":"raising"}],"atom":"dev_railway_signal_or_gate_gate","params":[]}]}]}]}]},"exists_device":{"lit":"railway_signal_or_gate"},"var":"dg"},{"body":{"and":[{"args":[{"var":"dh"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"dh"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"dh"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"dh"}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"and":[{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.standing_min_duration"}]}},{"or":[{"since":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]},{"until":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]}]}]}]}]}]},"forall_region":{"lit":"curb_zone"},"var":"z"},"residues":["'For any purpose or period of time' excludes no halt: every halt, whatever its purpose and length, is within the prohibition, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"passenger_loading"}],"atom":"st_curb_zone_kind","params":[]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"tr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"tr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"tr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_503","intentions":[],"laws":["NRS-484B-503"],"narrowings":[{"kind":"reading","span":"s1","why":"A railway gate 'not up' is read as a gate observed lowering, down or raising; a crossing without a gate (gate state none) excuses a halt only through flashing lights."},{"kind":"reading","span":"s1","why":"A traffic signal's 'red or yellow indication' is read as circular red or yellow and red or yellow arrows of any direction (with flashing red); flashing yellow and flashing yellow arrows, which permit proceeding, are not included."}],"obligation":{"body":{"implies":[{"and":[{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"passenger_loading"}],"atom":"st_curb_zone_kind","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"zs"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"tr"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"zs"},{"var":"tr"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"tr"}]},{"args":[{"var":"zs"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"forall_device":{"lit":"zone_sign"},"var":"zs"}]},{"or":[{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},{"or":[{"body":{"and":[{"not":{"same":[{"var":"o"},{"var":"subject"}]}},{"and":[{"args":[{"var":"o"},{"var":"subject"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"o"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_halt_gap"}}]}]},"exists_user":"o"},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"args":[{"var":"ds"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"ds"},{"or":[{"body":{"args":[{"var":"dy"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"dy"},{"or":[{"body":{"and":[{"args":[{"var":"dt"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"dt"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"dt"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"dt"},{"or":[{"body":{"and":[{"args":[{"var":"dg"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"dg"},{"lit":"flashing"}],"atom":"dev_railway_signal_or_gate_lights","params":[]},{"or":[{"args":[{"var":"dg"},{"lit":"lowering"}],"atom":"dev_railway_signal_or_gate_gate","params":[]},{"or":[{"args":[{"var":"dg"},{"lit":"down"}],"atom":"dev_railway_signal_or_gate_gate","params":[]},{"args":[{"var":"dg"},{"lit":"raising"}],"atom":"dev_railway_signal_or_gate_gate","params":[]}]}]}]}]},"exists_device":{"lit":"railway_signal_or_gate"},"var":"dg"},{"body":{"and":[{"args":[{"var":"dh"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"dh"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"dh"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"dh"}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"and":[{"not":{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.standing_min_duration"},"subject":"subject"}},{"or":[{"since":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]},{"until":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"}],"atom":"sig_door_open","params":[]}]}]}]}]}]}]}]}]},"forall_region":{"lit":"curb_zone"},"var":"z"},"residues":["'For any purpose or period of time' excludes no halt: every halt, whatever its purpose and length, is within the prohibition, so the duty is the same whether or not these words are read."],"surrogate":false}
+ATOMS	ru_aggregate,st_curb_zone,rel_occupies,st_curb_zone_kind,dev_zone_sign,dev_zone_sign_kind,st_travel_region,dev_governs,prim_conditions_hold,drv_motion_complete_halt,rel_ahead_behind_in_lane,rel_surface_gap,dev_stop_sign,dev_yield_sign,dev_traffic_signal,dev_traffic_signal_shows,dev_railway_signal_or_gate,dev_railway_signal_or_gate_lights,dev_railway_signal_or_gate_gate,dev_human_direction,dev_human_direction_role,dev_human_direction_indication,drv_motion_parked,sig_door_open
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.door_open
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+OCC	subject
+OCC	?z
+OCC	subject,z
+OCC	z
+OCC	?zs
+OCC	zs
+OCC	?tr
+OCC	subject,tr
+OCC	zs,tr
+OCC	zs,subject
+OCC	?z
+OCC	subject,z
+OCC	z
+OCC	?zs
+OCC	zs
+OCC	?tr
+OCC	subject,tr
+OCC	zs,tr
+OCC	zs,subject
+OCC	subject
+OCC	?o
+OCC	o,subject
+OCC	o,subject
+OCC	subject,o
+OCC	?r
+OCC	subject,r
+OCC	?ds
+OCC	ds,r
+OCC	?dy
+OCC	dy,r
+OCC	?dt
+OCC	dt,r
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	dt
+OCC	?dg
+OCC	dg,r
+OCC	dg
+OCC	dg
+OCC	dg
+OCC	dg
+OCC	?dh
+OCC	dh,r
+OCC	dh
+OCC	dh
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+TIME	occurrences	0
+TIME	checks	10
+TIME	lint	459
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	53
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	62
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	44
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	65
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	49
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	65
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	49
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	50
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	50
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	51
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	50
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	53
+SCEN	branch_9	violated	violated	ok
+TIME	scenario:branch_9	54
+TIME	witnesses	695
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_503.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484B_503.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_503	45	12
+TIME	adequacy_start	13
+TIME	adequacy	24006
+DONE

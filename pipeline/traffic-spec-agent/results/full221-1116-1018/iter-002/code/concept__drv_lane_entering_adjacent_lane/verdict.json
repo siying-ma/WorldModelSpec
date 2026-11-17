@@ -1,0 +1,85 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "rel.occupies",
+   "st.lane_adjacency"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"args\":[{\"var\":\"$a1\"},{\"var\":\"$a3\"},{\"var\":\"$a2\"}],\"atom\":\"st_lane_adjacency\",\"params\":[]},{\"and\":[{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]},{\"not\":{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}}]},{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a2\"}],\"atom\":\"rel_occupies\",\"params\":[]}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "args": [
+      {
+       "var": "r1"
+      },
+      {
+       "var": "s"
+      },
+      {
+       "var": "r2"
+      }
+     ],
+     "atom": "st_lane_adjacency",
+     "params": []
+    },
+    {
+     "and": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "a"
+          },
+          {
+           "var": "r1"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "not": {
+          "rises": {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "var": "r1"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        }
+       ]
+      },
+      {
+       "rises": {
+        "args": [
+         {
+          "var": "a"
+         },
+         {
+          "var": "r2"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "d884b809a77d99cb07ff249d",
+  "candidate_digest": "3c17a370ccc2b236ff17e0485b363c5345668761de1ce680e818d0250c544983"
+ }
+}

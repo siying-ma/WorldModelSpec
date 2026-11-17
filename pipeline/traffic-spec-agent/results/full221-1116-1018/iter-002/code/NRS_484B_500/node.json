@@ -1,0 +1,164 @@
+{
+ "node_id": "NRS_484B_500",
+ "law_refs": [
+  "NRS-484B-500"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "When official traffic-control devices are erected at hazardous or congested places,",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "a person shall not stop, stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "in any such designated place.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.regulatory_sign",
+    "prim.conditions_hold"
+   ],
+   "derived": [],
+   "justification": "'Official traffic-control device' is 'every sign, signal, marking and device ... placed or erected by a public authority ... for the purpose of regulating, warning or guiding traffic' (DEF-NRS-484A-145). The device erected at a hazardous place is dev.zone_sign of kind hazardous_place ('a sign that begins or ends a signed zone along the road'), a sign that begins a zone (its end attribute not set); the device erected at a congested place to keep it clear of halting vehicles is dev.regulatory_sign of code no_stopping ('a point regulation by catalogue code'). That the place is hazardous or congested is the authority's designation, evidenced by the sign; the sign is not read as the hazard it marks (dev.regulatory_sign: 'a warning sign is not the hazard it warns of'). The designation is in effect where the sign's posted conditions hold for the subject (prim.conditions_hold; dev.zone_sign is 'not a stand-in for whether the condition holds now')."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.governs",
+    "dev.human_direction",
+    "dev.railway_signal_or_gate",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.yield_sign",
+    "rel.ahead_behind_in_lane",
+    "rel.occupies",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' when prohibited is 'any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device' (DEF-NRS-484A-260, whose own scope 'when prohibited' these words meet); 'stand' is 'the halting of a vehicle, whether occupied or not' (DEF-NRS-484A-250) and 'park' 'the standing of a vehicle' (DEF-NRS-484A-155): the three verbs together forbid a halt, drv.motion.complete_halt ('at rest at the observation ... its speed at or below a tolerance', p.halt_speed_tolerance), as the mapping index reads 'shall not stop, stand or park a vehicle'. The definition's exclusions, which the concept's contract does not make, are carried beside it: a halt with another road user ahead in the same lane (rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane') within p.queue_halt_gap of the subject's body (rel.surface_gap, 'distance between the nearest points of two bodies', not a centre distance) is a halt to avoid conflict with other traffic; a halt on a travel region the subject occupies (rel.occupies, st.travel_region) governed (dev.governs, 'the travel regions whose traffic the device controls') by a stop sign (dev.stop_sign), a yield sign (dev.yield_sign), a traffic signal showing a red or yellow indication (dev.traffic_signal), a railway signal with flashing lights or a gate not up (dev.railway_signal_or_gate), or a police officer's stop indication (dev.human_direction role police_officer, indication stop) is a halt in compliance with a device or an officer. 'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'a person ... a vehicle' is read on the vehicle's controlled motion."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Any such designated place' is the place the s1 device designates: a travel region (st.travel_region) the device governs (dev.governs, 'the travel regions whose traffic the device controls'; not a stand-in for a position, and it is not used as one) and the subject's footprint overlaps (rel.occupies)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) whose footprint overlaps (rel.occupies) a travel region r (st.travel_region) governed (dev.governs) by a designating device d whose conditions hold for the subject (prim.conditions_hold): a zone sign of kind hazardous_place that begins a zone (dev.zone_sign), or a regulatory sign of code no_stopping (dev.regulatory_sign).",
+ "obligation": "Wherever the subject occupies a travel region governed by such a designating device (selected again as in the applicability), the subject is not halted (drv.motion.complete_halt with p.halt_speed_tolerance), except a halt that is (a) to avoid conflict with other traffic: some other road user is ahead of the subject in the same lane (rel.ahead_behind_in_lane) with a gap between bodies (rel.surface_gap) at most p.queue_halt_gap; or (b) in compliance with a device or an officer: a travel region the subject occupies is governed (dev.governs) by a stop sign (dev.stop_sign), a yield sign (dev.yield_sign), a traffic signal displaying circular_red, circular_yellow, a red arrow, a yellow arrow or flashing_red (dev.traffic_signal), a railway signal or gate with lights flashing or gate not up (dev.railway_signal_or_gate), or a person in the role police_officer giving the indication stop (dev.human_direction).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'A person shall not stop, stand or park a vehicle' is read on the vehicle's controlled motion: the duty binds the vehicle's conduct whoever is at its controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "That the place has been designated hazardous or congested by an authority, and the device erected there, are read from the device's presence on the road: the sign is presumed official and its designation presumed.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "'Other traffic' in the stop definition's exclusion is read as any road user ahead in the same lane: the conflict avoided is read as a halt in a queue behind it, and a halt for a conflict with a road user crossing the lane is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car halts in a lane governed by a hazardous_place zone sign whose legend is unconditional; no road user is ahead of it in the lane and no stop sign, signal or officer governs the lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car drives through the same lane without halting."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car halts in a lane that no hazardous_place zone sign and no no-stopping sign governs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car is in the governed lane with no road user ahead, but the source does not observe its speed, so whether it is halted is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car halts in the governed lane behind another car ahead in the same lane, its gap within the queue gap."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The car halts in a lane governed by a no-stopping sign where a traffic signal governing the lane displays circular_red."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source (sensor or simulator specification)"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "HCM queue spacing of stopped vehicles"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

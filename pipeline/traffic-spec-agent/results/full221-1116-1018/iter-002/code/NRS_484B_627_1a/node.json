@@ -1,0 +1,316 @@
+{
+ "node_id": "NRS_484B_627_1a",
+ "law_refs": [
+  "NRS-484B-627-1a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "u1",
+   "text": "If any driver or operator of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "u2",
+   "text": "drives or operates a motor vehicle",
+   "role": "trigger"
+  },
+  {
+   "id": "u3",
+   "text": "at a speed so slow as to impede the forward movement of",
+   "role": "standard"
+  },
+  {
+   "id": "u4",
+   "text": "traffic proceeding immediately behind the driver or operator,",
+   "role": "trigger"
+  },
+  {
+   "id": "u5",
+   "text": "the driver or operator shall:",
+   "role": "subject"
+  },
+  {
+   "id": "u6",
+   "text": "If the highway has one lane for traveling in each direction",
+   "role": "condition"
+  },
+  {
+   "id": "u7",
+   "text": "and the width of the paved portion permits,",
+   "role": "standard"
+  },
+  {
+   "id": "u8",
+   "text": "drive to the extreme right side of the highway",
+   "role": "obligation"
+  },
+  {
+   "id": "u9",
+   "text": "and, if applicable, comply with the provisions of NRS 484B.630.",
+   "role": "reference"
+  }
+ ],
+ "elements": [
+  {
+   "span": "u1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'motor vehicle' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'); 'driver or operator' is read through the vehicle's controlled motion (observable_reading agency), never as membership."
+  },
+  {
+   "span": "u2",
+   "atoms": [
+    "kin.speed",
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "Drives or operates a motor vehicle: the motor vehicle (admitted aggregate DEF-NRS-484A-130::motor_vehicle) is moving, its kin.speed ('magnitude of velocity') above p.halt_speed_tolerance; a vehicle moving on the road is taken to be driven (observable_reading agency)."
+  },
+  {
+   "span": "u4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel'). Proceeding immediately behind: a traffic road user t with the subject ahead of it in the same lane (rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane, along the lane direction') and the gap between the bodies (rel.surface_gap, 'distance between the nearest points of two bodies') within p.rear_signal_reach; the surface gap, not rel.centre_distance, which is 'Not a stand-in for: a clearance between bodies'."
+  },
+  {
+   "span": "u5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver or operator' refers back to the motor vehicle's driver of u1: the admitted aggregate DEF-NRS-484A-130::motor_vehicle, read through the vehicle's controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "u6",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_direction"
+   ],
+   "derived": [],
+   "justification": "The subject occupies (rel.occupies) a lane (st.lane) lying on a highway (st.on_way, st.highway) whose count of lanes in its direction (st.lane_adjacency, 'lane ordinal within the carriageway and the count of lanes in that direction') is the stated one; and the other direction: some lane on the same highway whose designated direction (st.lane_direction, 'direction of travel designated for a structure a vehicle travels in') is opposed to the subject's lane's (the dot product of the two normalised directions below minus p.lane_opposed_direction_cos), and every such opposed lane's count in its direction is also the stated one. Reuses the atoms of the index mapping 'upon highways having width for not more than one line of traffic in each direction' (NRS_484B_203_1_o2), with the lane direction added to tell the two directions apart; st.lane_adjacency is 'Not a stand-in for: the marking between two lanes', which is not read."
+  },
+  {
+   "span": "u8",
+   "atoms": [
+    "prim.region_lateral_offset",
+    "st.road_edge",
+    "st.region_geometry",
+    "kin.extent",
+    "rel.occupies",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "The extreme right side is the right-hand edge of the roadway (st.road_edge, 'curb or edge of the roadway') lying on the highway the subject occupies (st.on_way, st.highway, rel.occupies), its boundary from st.region_geometry. The subject's right body side is within p.pullover_edge_gap of that edge: the edge's lateral offset from the subject (prim.region_lateral_offset, 'the signed lateral offset ... of a structure region from a road user', negative to the right) in magnitude, less half the subject's width (kin.extent, 'a formula reads the full length, width and height')."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "u3",
+   "standard": "so slow as to impede the forward movement of traffic",
+   "concepts": [
+    "kin.speed",
+    "dev.speed_limit_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "params": [
+    "p.impeding_speed_margin",
+    "p.rear_signal_reach",
+    "p.left_lane_move_over_time",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "Slow-moving-vehicle practice: the subject impedes the traffic behind it where, at every observation of the window of p.left_lane_move_over_time behind (the time a driver needs to check, signal and move over once a faster vehicle closes), it moves (speed above p.halt_speed_tolerance) at a speed more than p.impeding_speed_margin below the value of a maximum speed limit sign governing a travel region it occupies, a traffic road user is behind it in the same lane within p.rear_signal_reach, and no road user is ahead of it in the same lane within p.rear_signal_reach, so the subject is not itself held back.",
+   "surrogate": false
+  },
+  {
+   "span": "u7",
+   "standard": "the width of the paved portion permits",
+   "concepts": [
+    "prim.region_lateral_offset",
+    "st.centre_line",
+    "st.road_edge",
+    "kin.extent"
+   ],
+   "params": [
+    "p.free_passage_width"
+   ],
+   "convention": "Lateral clearance of a passing vehicle: the paved half of the roadway, from the centre line to the right road edge (the sum of the magnitudes of their lateral offsets from the subject), is at least the subject's width plus p.free_passage_width, so that with the subject at the right edge a following vehicle has room to pass beside it.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "u9",
+   "why": "NRS 484B.630 has no node in the library, so its turnout duty cannot be composed; the rule does not judge compliance with it."
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a motor vehicle and, at every observation of the window of p.left_lane_move_over_time behind the judged observation, it moves (speed above p.halt_speed_tolerance), its speed plus p.impeding_speed_margin is below the value of a maximum speed limit sign governing a travel region it occupies, some traffic road user is behind it in the same lane with the surface gap within p.rear_signal_reach, and no road user is ahead of it in the same lane within p.rear_signal_reach; at the judged observation it occupies a lane on a highway whose lane count in its direction is one, some lane on the same highway has a designated direction opposed to it (dot product below minus p.lane_opposed_direction_cos) and every such opposed lane's count in its direction is one, and the magnitude of the centre line's lateral offset plus that of the right road edge's is at least its width plus p.free_passage_width.",
+ "obligation": "At the judged observation the magnitude of the lateral offset of the right-hand road edge of the highway it occupies, less half the subject's width, is at or below p.pullover_edge_gap: its right side is at the extreme right of the roadway. Otherwise violated.",
+ "params": [
+  "p.impeding_speed_margin",
+  "p.rear_signal_reach",
+  "p.left_lane_move_over_time",
+  "p.halt_speed_tolerance",
+  "p.free_passage_width",
+  "p.pullover_edge_gap",
+  "p.lane_opposed_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "u1",
+   "why": "'driver or operator' is read through the motor vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "u2",
+   "why": "'drives or operates' is read as the motor vehicle moving under control: a vehicle moving on the road is taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "u5",
+   "why": "'the driver or operator' binds the motor vehicle's conduct whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "u3",
+   "why": "'so slow as to impede' is read against the posted maximum governing the subject's region and through traffic in the same lane immediately behind, sustained over the move-over time; where no maximum speed sign governs the subject's region the reference speed is unobserved and the duty is unknown.",
+   "kind": "reading"
+  },
+  {
+   "span": "u8",
+   "why": "'the extreme right side of the highway' is read as the right edge of the roadway: the subject is not required to enter a shoulder, and its right side within p.pullover_edge_gap of that edge counts as at the extreme right.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car on a two-lane two-way highway (one lane in its direction, centre line present) under a 25 m/s maximum sign has moved at 15 m/s for longer than the move-over time with a car 10 m behind it in its lane and no one ahead; the paved half is 5.5 m wide, enough for its width plus the passage width; its right side stays 1.8 m from the right road edge."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same scene, but the car's right side runs 0.4 m from the right road edge."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same slow car on the same highway with no road user behind it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not supply the gap between the car and the vehicle behind it, so whether traffic is immediately behind is unobserved.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As in forbid, but the paved half of the roadway is 3.2 m: it is narrower than the car's width plus the passage width, so the width does not permit."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As in forbid, but the car travels at 24 m/s under the 25 m/s maximum: it is not slow."
+  }
+ ],
+ "literals": [
+  {
+   "span": "u6",
+   "text": "one",
+   "value": 1,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.impeding_speed_margin",
+   "unit": "m/s",
+   "value": 4.5,
+   "convention": "the amount by which a vehicle's speed below the posted maximum of its way holds back the traffic immediately behind it: about ten miles per hour, the differential at which slow-vehicle turnout and keep-right practice treats a vehicle as slow-moving",
+   "source": "FHWA and state slow-moving-vehicle turnout practice"
+  },
+  {
+   "name": "p.rear_signal_reach",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "the gap between bodies within which a following vehicle in the same lane is immediately to the rear of a vehicle: two seconds of headway at an urban speed of about 15 m/s",
+   "source": "two-second headway rule of driver manuals"
+  },
+  {
+   "name": "p.left_lane_move_over_time",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the time a driver needs, once a faster vehicle closes from behind, to check the mirrors, signal and move one lane to the right: a perception-reaction time, a few seconds of signal and the lane change",
+   "source": "perception-reaction and lane-change duration studies"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source"
+  },
+  {
+   "name": "p.free_passage_width",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "the free lateral width one passing vehicle needs beside a standing vehicle: the width of a design passenger or single-unit vehicle with its lateral clearance, about a narrow traffic lane",
+   "source": "AASHTO design vehicle widths and lateral clearance"
+  },
+  {
+   "name": "p.pullover_edge_gap",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "the gap between a vehicle body and the right-hand curb or roadway edge within which a vehicle pulled over to clear the way counts as as close to the edge as it can be placed: the curb clearance of a parallel-parked car (about 0.3 m) plus lane-keeping variability and an edge margin",
+   "source": "curb clearance and lane-keeping variability"
+  },
+  {
+   "name": "p.lane_opposed_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle (about twenty-five degrees) off exactly opposed at which the designated directions of two mapped lanes of one way count as opposite directions of travel: the direction noise of map lane segments along a gently curving way",
+   "source": "HD map lane direction accuracy"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

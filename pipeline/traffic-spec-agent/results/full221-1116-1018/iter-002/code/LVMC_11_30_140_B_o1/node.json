@@ -1,0 +1,216 @@
+{
+ "node_id": "LVMC_11_30_140_B_o1",
+ "law_refs": [
+  "LVMC-11-30-140-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Any pedestrian who is not wholly or partially blind",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "or any driver of any vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "who approaches or comes in contact with",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "a person wholly or partially blind, carrying a cane or walking stick white in color, or white tipped in red, or being assisted by a person",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "with wisdom",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "shall immediately",
+   "role": "standard"
+  },
+  {
+   "id": "s7",
+   "text": "come to a full stop",
+   "role": "obligation"
+  },
+  {
+   "id": "s8",
+   "text": "and take such precautions before proceeding",
+   "role": "sibling"
+  },
+  {
+   "id": "s9",
+   "text": "as may be necessary to avoid an accident or injury to the person wholly or partially blind",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.pedestrian_with_white_cane_or_guide_animal"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'). 'who is not wholly or partially blind' leaves out the pedestrians the law protects; blindness itself is no observable, and is read through the feature the same sentence names as its sign: the subject is not of the class ru.pedestrian_with_white_cane_or_guide_animal ('pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person'), which carries no exclusion of its own."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exclusions of devices moved by human power, electric bicycles, electric personal assistive mobility devices and electric scooters, which the reading classifies). 'driver' (DEF-NRS-484A-080) is the role of who controls the vehicle, never membership: it is read through the vehicle's controlled motion. Same atoms as 'The driver of a vehicle' (LVMC_11_20_060_o1)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.centre_distance",
+    "rel.contact"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'comes in contact with' is rel.contact, 'the bodies of two road users ... touch or overlap (a collision)', taken at the observation at which it begins; a near miss is not contact, its exclusion, and is read by 'approaches'. 'approaches' is the subject, while not at rest (not drv.motion.complete_halt), coming within a reach of the person: the centre-to-centre distance (rel.centre_distance, 'Euclidean ground-plane distance between reference points') falls to p.blind_person_approach_reach. That atom is not read as a clearance between bodies or an order of arrival, its exclusions: only as how near the subject has come."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.pedestrian_with_white_cane_or_guide_animal"
+   ],
+   "derived": [],
+   "justification": "The person protected is identified by the features the words list: 'carrying a cane or walking stick white in color, or white tipped in red, or being assisted by a person' is ru.pedestrian_with_white_cane_or_guide_animal, 'pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person'. 'a person wholly or partially blind' with those features is the pedestrian the class describes: the ontology's class for exactly this description, whose contract states no exclusion. The person is another road user than the subject, quantified in the applicability."
+  },
+  {
+   "span": "s7",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stop' is required here, so DEF-NRS-484A-255 applies by its own scope ('when required, means complete cessation from movement'; DEF-NRS-484A-260 is scoped to stopping 'when prohibited'). 'come to a full stop' is drv.motion.complete_halt, whose contract quotes that definition: 'The road user is at rest at the observation — complete cessation from movement'."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s6",
+   "standard": "immediately",
+   "concepts": [
+    "drv.motion.complete_halt"
+   ],
+   "params": [
+    "p.immediate_stop_window"
+   ],
+   "convention": "The stop is immediate when the subject is at rest within a window ahead of the approach or contact event no longer than a perception-reaction time plus the braking time from an urban approach speed (AASHTO stopping-sight-distance model).",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s5",
+   "why": "'with wisdom' qualifies the person assisting, not the person protected; that the person assisted is wholly or partially blind and is being assisted is what identifies the protected person, and a helper's wisdom, a state of mind no trace shows, does not change that identification, so the duty owed to the person assisted is the same whether or not the helper's wisdom holds.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is either a pedestrian (ru.aggregate=DEF-NRS-484A-165::pedestrian) that is not of the class ru.pedestrian_with_white_cane_or_guide_animal, or a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) read through its controlled motion; and at the judged observation, for some other road user b of the scene (not the same as the subject) of the class ru.pedestrian_with_white_cane_or_guide_animal, an approach or contact event occurs: rel.contact between the subject and b holds here and did not at the previous observation, or rel.centre_distance between them is at most p.blind_person_approach_reach here and was not at the previous observation while the subject is not at rest (not drv.motion.complete_halt with speed_tol p.halt_speed_tolerance).",
+ "obligation": "At each observation at which such an event occurs, the subject is at rest (drv.motion.complete_halt with speed_tol p.halt_speed_tolerance) at some observation of the window ahead of length p.immediate_stop_window, measured in time on the subject. No halt in that window is violated; a window that reaches past the end of the trace without a halt is unknown.",
+ "params": [
+  "p.blind_person_approach_reach",
+  "p.halt_speed_tolerance",
+  "p.immediate_stop_window"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driver of any vehicle' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motor vehicle (ru.motor_vehicle) moving at 10 m/s comes within p.blind_person_approach_reach (rel.centre_distance) of a ru.pedestrian_with_white_cane_or_guide_animal at the kerb and keeps moving: no observation of the window p.immediate_stop_window ahead has kin.speed at or below p.halt_speed_tolerance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same vehicle decelerates and is at rest (drv.motion.complete_halt) within p.immediate_stop_window after the centre distance first falls to the reach."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A vehicle drives past an ordinary pedestrian (ru.pedestrian, no cane, not led); no road user of class ru.pedestrian_with_white_cane_or_guide_animal is in the scene."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A ru.pedestrian_with_white_cane_or_guide_animal stands near the vehicle's path; rel.centre_distance is not observed and no contact occurs, so whether the vehicle approached is unknown; the vehicle does not halt.",
+   "masked": [
+    "rel.centre_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The subject is itself a ru.pedestrian_with_white_cane_or_guide_animal walking toward another such pedestrian."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A pedestrian (ru.pedestrian, no cane) walking comes into rel.contact with a ru.pedestrian_with_white_cane_or_guide_animal and keeps walking, never at rest within p.immediate_stop_window."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.blind_person_approach_reach",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "the centre distance within which a moving road user has approached a pedestrian carrying a white cane or led by another person: the stopping distance from an urban approach speed of about 13 m/s with a 1 s perception-reaction time and a 4.5 m/s^2 deceleration",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping-sight-distance model"
+  },
+  {
+   "name": "p.immediate_stop_window",
+   "unit": "s",
+   "value": 4.0,
+   "convention": "the longest time from the moment a stop is due until the road user is at rest for the stop to be immediate: a 1 s perception-reaction time plus the braking time from an urban approach speed of about 13 m/s at 4.5 m/s^2",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping-sight-distance model"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed quantisation of the acquisition standard's scene graph"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,35 @@
+'TrafficSpec.Rules.NRS_484B_110.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_110.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_110","intentions":[],"laws":["NRS-484B-110"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_110","intentions":[],"laws":["NRS-484B-110"],"narrowings":[],"obligation":{"body":{"not":{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"safety_zone"},"var":"z"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_110","intentions":[],"laws":["NRS-484B-110"],"narrowings":[],"obligation":{"body":{"not":{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"safety_zone"},"var":"z"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_complete_halt,st_safety_zone,rel_occupies
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.occupies
+OCC	subject
+OCC	subject
+OCC	?z
+OCC	subject,z
+TIME	occurrences	0
+TIME	checks	3
+TIME	lint	18
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	19
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	17
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	8
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	21
+TIME	witnesses	65
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_110.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_110.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_110	2	3
+TIME	adequacy_start	5
+TIME	adequacy	99
+DONE

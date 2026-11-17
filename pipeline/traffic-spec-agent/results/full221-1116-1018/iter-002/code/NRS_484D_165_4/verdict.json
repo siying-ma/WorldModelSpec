@@ -1,0 +1,98 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 3 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       }
+      ],
+      "derived": "drv_motion_parked",
+      "params": [
+       {
+        "param": "p.halt_speed_tolerance"
+       },
+       {
+        "param": "p.parking_min_duration"
+       }
+      ]
+     },
+     {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "low_beam"
+         }
+        ],
+        "atom": "sig_headlamp",
+        "params": []
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "high_beam"
+         }
+        ],
+        "atom": "sig_headlamp",
+        "params": []
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484D_165_4",
+   "intentions": [],
+   "laws": [
+    "NRS-484D-165-4"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "args": [
+     {
+      "var": "subject"
+     },
+     {
+      "lit": "low_beam"
+     }
+    ],
+    "atom": "sig_headlamp",
+    "params": []
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "7954238821987211a329e324",
+  "candidate_digest": "c1ced16b878ed0910c0fef8d4034b9c04a71396d1c38a80a5f814f103bbd94a3"
+ }
+}

@@ -1,0 +1,286 @@
+{
+ "node_id": "LVMC_11_12_070_B",
+ "law_refs": [
+  "LVMC-11-12-070-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Said driver",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "having so yielded",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "may proceed",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s5",
+   "text": "the drivers of all other vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "s6",
+   "text": "approaching the intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "s7",
+   "text": "on the through highway",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s9",
+   "text": "right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s10",
+   "text": "to the vehicle about to enter or cross the through highway",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.traffic_signal",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "'Said driver' is the driver subsection (A) addresses: the driver of a vehicle (the admitted aggregate DEF-NRS-484A-320::vehicle) at an entrance to the through highway, which DEF-NRS-484A-275 describes as one where 'vehicular traffic from intersecting highways is required by law to yield right-of-way to vehicles on such through highway in obedience to either an authorized stop sign or a yield sign, or other official traffic-control device'. Read: o occupies (rel.occupies) a carrier c2 (st.travel_region) with st.lane_enters(c2, j) for the intersection j the subject approaches, c2 governed (dev.governs) by a stop sign, a yield sign or a traffic signal showing flashing_red. dev.governs 'Not a stand-in for: a position' does not apply: governance is read. The role 'driver' is read through o's controlled motion, never as membership."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "kin.speed",
+    "rel.contact",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'having so yielded' requires the act itself, with its qualifications: o yielded right-of-way 'to vehicles on such through highway in obedience to' the device at its entrance (DEF-NRS-484A-275). Read over o's approach, from the last observation at which o's occupancy of c2 rose until its occupancy of j rose: where c2 is governed by a stop sign or flashing-red signal, o came to rest on c2 short of j (drv.motion.complete_halt, 'complete cessation from movement'); and o did not proceed (kin.speed above p.halt_speed_tolerance) while a vehicle on the through highway was in a danger of a crash with it, the right-of-way bound operationalized on s9 (prim.closest_approach_within / prim.closest_approach_distance with p.conflict_horizon and p.conflict_centre_clearance), nor touched one (rel.contact). The primitives' exclusion 'alone establishes none of [contact, clearance, danger]' is respected: the danger is the operationalization's bound. Subsection (A) itself is not in this plan nor accepted, so its words are carried by these observables, not by composition."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate: 'membership of a legal aggregate: the atom's literal argument is an aggregate id'. Its exclusion 'a relational role such as who drives or controls a vehicle — never membership' does not apply: 'the drivers of' is read through the vehicle's controlled motion (agency reading), and the aggregate only states the class. 'all other' = every vehicle other than the one about to enter: the subject is never the same road user as o."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "st.lane_enters: 'a road user's approach to an intersection is a carrier it occupies (rel.occupies) whose entrance end is that intersection ... approaches through it whatever its motion'. The carrier c is quantified over st.travel_region (the abstract union of the carrier kinds lane_enters admits) and the intersection j over st.intersection ('the region where two roadways meet'). Not a stand-in for the subject's presence in the intersection or for dev.governs: the relation read is entry topology, as its contract states."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.traffic_signal",
+    "dev.governs",
+    "st.lane_enters",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "DEF-NRS-484A-275: a through highway is one 'at the entrances to which vehicular traffic from intersecting highways is required by law to yield right-of-way to vehicles on such through highway in obedience to either an authorized stop sign or a yield sign, or other official traffic-control device'. Read on the devices: the subject's approach carrier c is governed (dev.governs: 'the travel regions whose traffic the device controls') by no stop sign ('regulatory sign requiring a full halt'), yield sign ('regulatory sign requiring yielding without a mandatory halt') or traffic signal showing flashing_red, while the entering vehicle's carrier c2 into the same j is governed by one of them. dev.governs 'Not a stand-in for: a position' does not apply: governance, not a halting place, is read."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "To yield is to grant the other precedence: the subject does not proceed in conflict with it. kin.speed 'magnitude of velocity' tells a subject still proceeding from one that has given way; rel.contact 'the bodies of two road users ... touch or overlap (a collision)' marks precedence taken outright. rel.contact's exclusion 'a near miss' is respected: the near-conflict is bounded by the operationalization of s9, not by contact."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'the vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle (ru.aggregate, as on s5). 'about to enter or cross the through highway' is an imminent movement, read by the movement it leads to: o, coming from carrier c2 with st.lane_enters(c2, j), occupies j (rel.occupies 'a road user's footprint overlaps a lane / region (... intersection ...)') now or at an observation within p.conflict_horizon ahead; j is the intersection of the through highway the subject approaches (st.intersection)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s9",
+   "standard": "right-of-way: DEF-NRS-484A-210 'approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other'",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: a danger of a crash exists where, under constant velocities, the centres of the two road users come within a centre clearance comparable to their half-extents inside a time-to-collision horizon; a road user whose speed is at or below the source's speed resolution has granted precedence",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s3",
+   "why": "a permission granted to the entering driver; it imposes no condition on the through-highway drivers beyond the entering vehicle's movement, which s10 carries, so the duty is the same whether or not the permission is read",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), occupies a carrier c (st.travel_region) with st.lane_enters(c, j) for an intersection j (st.intersection), and c is governed (dev.governs) by no stop sign, no yield sign and no traffic signal showing flashing_red; and some road user o, not the subject, is a vehicle (same aggregate) that came from a carrier c2 with st.lane_enters(c2, j) governed by a stop sign, a yield sign or a traffic signal showing flashing_red, and either occupies j (having occupied c2 or j at every observation since it last occupied c2) or occupies c2 and occupies j at some observation within p.conflict_horizon ahead; and o has so yielded: since the last observation at which o's occupancy of c2 rose, (i) where c2 is governed by a stop sign or a flashing-red signal, drv.motion.complete_halt(o; p.halt_speed_tolerance) held at some observation at which o occupied c2 and not j, and (ii) at every observation before o's occupancy of j rose, it is not the case that o's kin.speed exceeded p.halt_speed_tolerance while, for some vehicle v other than o that occupied j or a carrier entering j governed by no stop sign, yield sign or flashing-red signal, prim.closest_approach_within(o, v; p.conflict_horizon) held with prim.closest_approach_distance(o, v; p.conflict_horizon) below p.conflict_centre_clearance, and o was in rel.contact with no such v; this is unknown where o's occupancy of c2 rose before the recording began.",
+ "obligation": "For every road user o selected as in the applicability (re-bound with the whole selection: a vehicle other than the subject, from a carrier c2 entering the same j governed by a stop sign, yield sign or flashing-red signal, entering j within p.conflict_horizon or already in j having come from c2, and having so yielded as the applicability states): it is not the case that the subject's kin.speed exceeds p.halt_speed_tolerance while prim.closest_approach_within(subject, o; p.conflict_horizon) holds with prim.closest_approach_distance(subject, o; p.conflict_horizon) below p.conflict_centre_clearance; and rel.contact(subject, o) does not hold.",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "'drivers' is read through the vehicle's controlled motion: the duty binds the vehicle approaching on the through highway, whoever or whatever controls it",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s7",
+   "why": "the legal designation 'through highway' is read through the devices on the road that display it: a stop sign, a yield sign or a flashing-red signal governing the entering approach and none governing the subject's approach; 'other official traffic-control device' is read as the flashing-red signal, the remaining device that requires traffic from the intersecting highway to halt and yield",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s10",
+   "why": "'about to enter or cross' is an imminent movement, read by the entry into the intersection it leads to (within p.conflict_horizon ahead) or by the vehicle already crossing",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s9",
+   "why": "precedence is read as the subject not proceeding (speed above the halt tolerance) while a constant-velocity closest approach to the entering vehicle falls below the centre clearance within the horizon, and never touching it; how the subject gives way (slowing or halting) is not modelled",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Subject vehicle on a lane entering j with no device; o halts at the stop sign on the cross approach and starts into j when no through vehicle is within the conflict bound; the subject then arrives and the subject keeps its speed and the constant-velocity closest approach of centres is below p.conflict_centre_clearance within p.conflict_horizon."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; the subject brakes to a halt short of j while o crosses; while the closest approach is below the clearance the subject's speed is at or below p.halt_speed_tolerance, and no contact occurs."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject approaches j on the through approach, but no vehicle is on or entering from a stop-sign or yield-sign approach of j."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source does not observe which carriers the stop sign governs, so whether o's approach is an entrance to a through highway is unknown.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "All-way stop: the subject's own carrier is governed by a stop sign, so it is not on a through highway."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As forbid, except that o never comes to rest at its stop sign before entering j: it has not so yielded, and the duty does not arise."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "As forbid, except that o halts and then pulls into j while the subject is already within the conflict bound of it: o has not so yielded."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hydén 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car dimensions (AASHTO design vehicle P: 5.8 m by 2.1 m)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed noise floor of vehicle odometry and tracked-object estimates"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

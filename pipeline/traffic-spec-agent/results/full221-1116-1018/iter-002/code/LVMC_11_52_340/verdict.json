@@ -1,0 +1,159 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          }
+         ],
+         "atom": "ru_official_vehicle",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "lit": "municipal"
+          }
+         ],
+         "atom": "ru_official_vehicle_kind",
+         "params": []
+        }
+       ]
+      }
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "space"
+          },
+          {
+           "lit": "municipal"
+          }
+         ],
+         "atom": "st_parking_space_designation",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "space"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "parking_space"
+      },
+      "var": "space"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_52_340",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-52-340"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "space"
+          },
+          {
+           "lit": "municipal"
+          }
+         ],
+         "atom": "st_parking_space_designation",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "space"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       ]
+      },
+      {
+       "not": {
+        "args": [
+         {
+          "var": "subject"
+         }
+        ],
+        "derived": "drv_motion_parked",
+        "params": [
+         {
+          "param": "p.halt_speed_tolerance"
+         },
+         {
+          "param": "p.parking_min_duration"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "parking_space"
+    },
+    "var": "space"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "ad93087571256e6902c07698",
+  "candidate_digest": "f8e4717fef7c709875f36e9177edc3978069495e56d3c2d299abc6b1453b5371"
+ }
+}

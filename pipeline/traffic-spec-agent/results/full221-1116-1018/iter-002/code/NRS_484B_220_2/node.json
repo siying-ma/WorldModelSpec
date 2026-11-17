@@ -1,0 +1,133 @@
+{
+ "node_id": "NRS_484B_220_2",
+ "law_refs": [
+  "NRS-484B-220-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "passing around a rotary traffic island",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall be driven only to the right of such island.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway'; ru.aggregate is 'true when the user carries an included class'."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "A rotary traffic island is st.roundabout, 'a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches'; passing around it is the subject's footprint overlapping that region (rel.occupies, 'a road user's footprint overlaps a lane / region'), the same mapping the index gives 'within a roundabout' (LVMC_11_43_010_A). 'Traffic' here names the island, a structure, not road users the duty turns on, so the traffic aggregate is not claimed."
+  },
+  {
+   "span": "s3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.circulating_clockwise_about"
+   ],
+   "justification": "Passing with the island on the vehicle's left, i.e. to the right of it, is travel counter-clockwise about the island's centre seen from above; driving to its left is travel clockwise about it: drv.motion.circulating_clockwise_about(subject, r), 'the point lies to the right of a's direction of travel and a's velocity turns about it clockwise', on the roundabout r of s2, with speed_tol = p.halt_speed_tolerance and sin_tol = p.roundabout_clockwise_sin_tol, must not hold. Same concept the index maps for 'shall be in a counterclockwise direction' (LVMC_11_43_010_A)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies a roundabout region r (st.roundabout).",
+ "obligation": "At every such observation, for every roundabout r the subject occupies, drv.motion.circulating_clockwise_about(subject, r) with speed_tol = p.halt_speed_tolerance and sin_tol = p.roundabout_clockwise_sin_tol does not hold.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.roundabout_clockwise_sin_tol"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'to the right of such island' is read as not travelling clockwise about the roundabout's reference point, taken as the centre of its central island; motion towards or away from the centre (entry, exit) is not a breach",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "'driven' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject occupies a st.roundabout whose reference point is at (0,0); at kin.position (0,-15) it moves with kin.velocity (-6,0) m/s: the centre is on its right and it turns clockwise."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "At kin.position (0,-15) in the roundabout the subject moves with kin.velocity (6,0) m/s: counter-clockwise, island on its left."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject occupies no roundabout; it drives on a straight roadway."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject occupies the roundabout but its kin.velocity is not observed.",
+   "masked": [
+    "kin.velocity"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "source speed resolution"
+  },
+  {
+   "name": "p.roundabout_clockwise_sin_tol",
+   "unit": "ratio",
+   "value": 0.26,
+   "convention": "the share of a vehicle's speed across the line to the roundabout's centre at or below which its motion counts as towards or away from the centre rather than around it: within about 15 degrees of the radial direction",
+   "source": "geometric convention"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

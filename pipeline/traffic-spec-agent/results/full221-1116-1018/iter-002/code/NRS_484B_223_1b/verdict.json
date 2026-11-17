@@ -1,0 +1,605 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-285::traffic"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     {
+      "body": {
+       "body": {
+        "or": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l1"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "cmp": "ge",
+              "lhs": {
+               "args": [
+                {
+                 "var": "l1"
+                },
+                {
+                 "lit": "count"
+                }
+               ],
+               "measure": "st_lane_adjacency"
+              },
+              "rhs": {
+               "lit": {
+                "den": 1,
+                "num": 2
+               },
+               "unit": "count"
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "l2"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "l1"
+                 },
+                 {
+                  "var": "l2"
+                 },
+                 {
+                  "lit": "left"
+                 }
+                ],
+                "derived": "drv_lane_entering_adjacent_lane",
+                "params": []
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l1"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "cmp": "ge",
+              "lhs": {
+               "args": [
+                {
+                 "var": "l1"
+                },
+                {
+                 "lit": "count"
+                }
+               ],
+               "measure": "st_lane_adjacency"
+              },
+              "rhs": {
+               "lit": {
+                "den": 1,
+                "num": 2
+               },
+               "unit": "count"
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "l2"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "l1"
+                 },
+                 {
+                  "var": "l2"
+                 },
+                 {
+                  "lit": "right"
+                 }
+                ],
+                "derived": "drv_lane_entering_adjacent_lane",
+                "params": []
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "lane"
+       },
+       "var": "l2"
+      },
+      "exists_region": {
+       "lit": "lane"
+      },
+      "var": "l1"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_223_1b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-223-1b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "and": [
+     {
+      "body": {
+       "body": {
+        "and": [
+         {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "l1"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "cmp": "ge",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "l1"
+                  },
+                  {
+                   "lit": "count"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency"
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 1,
+                  "num": 2
+                 },
+                 "unit": "count"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "l2"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "l1"
+                   },
+                   {
+                    "var": "l2"
+                   },
+                   {
+                    "lit": "left"
+                   }
+                  ],
+                  "derived": "drv_lane_entering_adjacent_lane",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "left"
+                 }
+                ],
+                "atom": "sig_turn_indicator",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "left"
+                 }
+                ],
+                "atom": "sig_hand_signal",
+                "params": []
+               }
+              ]
+             },
+             {
+              "not": {
+               "rises": {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "left"
+                   }
+                  ],
+                  "atom": "sig_turn_indicator",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "left"
+                   }
+                  ],
+                  "atom": "sig_hand_signal",
+                  "params": []
+                 }
+                ]
+               }
+              }
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "l1"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "cmp": "ge",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "l1"
+                  },
+                  {
+                   "lit": "count"
+                  }
+                 ],
+                 "measure": "st_lane_adjacency"
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 1,
+                  "num": 2
+                 },
+                 "unit": "count"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "l2"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "l1"
+                   },
+                   {
+                    "var": "l2"
+                   },
+                   {
+                    "lit": "right"
+                   }
+                  ],
+                  "derived": "drv_lane_entering_adjacent_lane",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "right"
+                 }
+                ],
+                "atom": "sig_turn_indicator",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "right"
+                 }
+                ],
+                "atom": "sig_hand_signal",
+                "params": []
+               }
+              ]
+             },
+             {
+              "not": {
+               "rises": {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "right"
+                   }
+                  ],
+                  "atom": "sig_turn_indicator",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "right"
+                   }
+                  ],
+                  "atom": "sig_hand_signal",
+                  "params": []
+                 }
+                ]
+               }
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "lane"
+       },
+       "var": "l2"
+      },
+      "forall_region": {
+       "lit": "lane"
+      },
+      "var": "l1"
+     },
+     {
+      "body": {
+       "or": [
+        {
+         "same": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "other"
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "other"
+             }
+            ],
+            "atom": "rel_contact",
+            "params": []
+           }
+          },
+          {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "other"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "other"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "forall_user": "other"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "592443005be2d9f2ca79bb55",
+  "candidate_digest": "e7d1966cee8a9338df3df263d637fc96fff8c5f663ad8780af58a2835d8f7c54"
+ }
+}

@@ -1,0 +1,374 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 15 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "body": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "ow"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "one_way_roadway"
+       },
+       "var": "ow"
+      }
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "hs"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "cmp": "lt",
+           "lhs": {
+            "args": [
+             {
+              "var": "hs"
+             }
+            ],
+            "measure": "st_sight_distance"
+           },
+           "rhs": {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               }
+              ],
+              "measure": "kin_speed"
+             },
+             {
+              "param": "p.passing_sight_time"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "highway"
+        },
+        "var": "hs"
+       },
+       {
+        "or": [
+         {
+          "body": {
+           "and": [
+            {
+             "cmp": "gt",
+             "lhs": {
+              "add": [
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "x"
+                   }
+                  ],
+                  "measure": "kin_velocity"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "k"
+                   },
+                   {
+                    "lit": "x"
+                   }
+                  ],
+                  "measure": "st_region_geometry"
+                 }
+                ]
+               },
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "y"
+                   }
+                  ],
+                  "measure": "kin_velocity"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "k"
+                   },
+                   {
+                    "lit": "y"
+                   }
+                  ],
+                  "measure": "st_region_geometry"
+                 }
+                ]
+               }
+              ]
+             },
+             "rhs": {
+              "add": [
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "x"
+                   }
+                  ],
+                  "measure": "kin_velocity"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "x"
+                   }
+                  ],
+                  "measure": "kin_position"
+                 }
+                ]
+               },
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "y"
+                   }
+                  ],
+                  "measure": "kin_velocity"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "lit": "y"
+                   }
+                  ],
+                  "measure": "kin_position"
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "cmp": "le",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "k"
+               }
+              ],
+              "measure": "st_region_geometry_distance"
+             },
+             "rhs": {
+              "mul": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "measure": "kin_speed"
+               },
+               {
+                "param": "p.passing_sight_time"
+               }
+              ]
+             }
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "crest"
+          },
+          "var": "k"
+         },
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "hc"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "cmp": "gt",
+             "lhs": {
+              "args": [
+               {
+                "var": "hc"
+               }
+              ],
+              "measure": "st_curvature"
+             },
+             "rhs": {
+              "param": "p.curvature_resolution"
+             }
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "highway"
+          },
+          "var": "hc"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_213_2a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-213-2a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "args": [
+           {
+            "var": "c"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         {
+          "cmp": "ge",
+          "lhs": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "params": [],
+           "quantity": "prim_region_lateral_offset"
+          },
+          "rhs": {
+           "lit": {
+            "den": 1,
+            "num": 0
+           },
+           "unit": "metre"
+          }
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "centre_line"
+       },
+       "var": "c"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "485659822b6e134506658c82",
+  "candidate_digest": "aa7d925c9c2a9f740dc23bb44438ba9f98eed3ae90b47fbc86fd0bc08bf36f59"
+ }
+}

@@ -1,0 +1,132 @@
+{
+ "node_id": "NRS_484B_220_1",
+ "law_refs": [
+  "NRS-484B-220-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Upon a highway designated and signposted for one-way traffic",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall be driven only in the direction designated.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "rel.occupies",
+    "st.one_way_roadway",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "st.one_way_roadway, 'roadway on which traffic is restricted to one direction', occupied by the subject (rel.occupies, 'a road user's footprint overlaps a lane / region'), as the index maps 'Upon any highway on which traffic is restricted to one direction of movement' (NRS_484B_210_1). 'Traffic' is the admitted aggregate DEF-NRS-484A-285::traffic, 'vehicles and other conveyances ... using any highway for purposes of travel', whose direction the designation restricts. 'Designated and signposted' is legal status: the one-way roadway's presence on the road is its evidence (observable_reading status)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle: 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway'; ru.aggregate is 'true when the user carries an included class'."
+  },
+  {
+   "span": "s3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.moving_against_carrier"
+   ],
+   "justification": "'Only in the direction designated' forbids motion against the one-way roadway's designated direction (st.lane_direction, 'direction of travel designated for a structure a vehicle travels in — ... a roadway, one-way roadway'): drv.motion.moving_against_carrier(subject, r) on the one-way roadway r of s1, with speed_tol = p.halt_speed_tolerance. 'Driven' is read through the vehicle's controlled motion (agency)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies a one-way roadway r (st.one_way_roadway).",
+ "obligation": "At every such observation, for every one-way roadway r the subject occupies, the subject is not moving against r's designated direction: drv.motion.moving_against_carrier(subject, r) with speed_tol = p.halt_speed_tolerance does not hold.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'designated and signposted' is read through the one-way roadway's presence on the road, the evidence of its designation and posting",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'driven' is read through the vehicle's controlled motion, whoever or whatever controls it",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'only in the direction designated' is read as no motion component against the designated direction beyond the speed resolution; motion across the roadway (entering or leaving it) is not read as a breach",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject occupies a st.one_way_roadway whose st.lane_direction is (1,0) and moves with kin.velocity (-8,0) m/s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject occupies the same one-way roadway and moves with kin.velocity (8,0) m/s."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject occupies a two-way st.roadway (not a one-way roadway) and moves in either direction."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject occupies a one-way roadway whose st.lane_direction the source does not supply, moving at 8 m/s.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "source speed resolution"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

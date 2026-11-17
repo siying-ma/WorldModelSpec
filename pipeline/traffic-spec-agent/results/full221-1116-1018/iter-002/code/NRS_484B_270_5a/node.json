@@ -1,0 +1,188 @@
+{
+ "node_id": "NRS_484B_270_5a",
+ "law_refs": [
+  "NRS-484B-270-5a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "w1",
+   "text": "The driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "w2",
+   "text": "shall: Exercise due care",
+   "role": "standard"
+  },
+  {
+   "id": "w3",
+   "text": "to avoid a collision",
+   "role": "obligation"
+  },
+  {
+   "id": "w4",
+   "text": "with a person riding",
+   "role": "condition"
+  },
+  {
+   "id": "w5",
+   "text": "a bicycle, an electric bicycle or an electric scooter.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "w1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'The driver of a motor vehicle' (NRS_484B_270_1): the admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'), claimed as ru.aggregate; 'driver' is a role read through the vehicle's controlled motion (observable_reading, agency), ru.aggregate being 'Not a stand-in for: ... a relational role such as who drives'."
+  },
+  {
+   "span": "w3",
+   "atoms": [
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "A collision is rel.contact, 'the bodies of two road users ... touch or overlap (a collision)'; it is 'Not a stand-in for: a near miss', which the operationalization of w2 bounds separately."
+  },
+  {
+   "span": "w4",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'a person riding' is the rider's controlled motion of the device, read as the device moving: kin.speed 'magnitude of velocity' above p.halt_speed_tolerance (observable_reading, agency), as the index maps 'a person lawfully riding' for NRS_484B_270_1."
+  },
+  {
+   "span": "w5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'a bicycle, an electric bicycle or an electric scooter.' (NRS_484B_270_1): the three admitted aggregates, claimed as ru.aggregate with their ids, never expanded into class atoms."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "w2",
+   "standard": "due care to avoid a collision (a standard of the driver's care, a state of mind)",
+   "concepts": [
+    "kin.speed",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.halt_speed_tolerance",
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: while the vehicle moves, care shows in its keeping no closest approach to the rider, under constant velocities, within a time-to-collision horizon and below a centre clearance of about a car's half-length plus half a body width",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-130::motor_vehicle, read as driven.",
+ "obligation": "At every observation at which the subject's kin.speed is above p.halt_speed_tolerance, for every road user b other than the subject that is a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter and moving with kin.speed above p.halt_speed_tolerance: the subject is not in contact with b (rel.contact), and it is not the case that prim.closest_approach_within(subject, b) over p.conflict_horizon holds with prim.closest_approach_distance(subject, b) over p.conflict_horizon below p.conflict_centre_clearance. Surrogate: the verdict is evidence of care, not a legal conclusion.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "w1",
+   "why": "'The driver' is read through the motor vehicle's controlled motion; who or what is at the controls is not observed.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "w4",
+   "why": "'a person riding' is read as the device moving above the halt tolerance; a rider at rest is not read.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "w2",
+   "why": "Due care, a state of mind, is read only through its outcome while the subject moves: no contact and no conflicting closest approach with a riding bicyclist or scooter rider; lookout, speed choice and every other aspect of care are read only through that outcome.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A moving car closes on a bicycle riding ahead in the same lane; their closest approach falls within p.conflict_horizon and below p.conflict_centre_clearance and the car does not slow."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car slows behind the moving bicycle and keeps a closest approach beyond p.conflict_centre_clearance, then passes with a wide berth; no contact."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is an electric scooter (not a member of the motor vehicle aggregate) riding near a bicycle."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A moving car passes alongside a riding electric bicycle with no conflicting closest approach; contact between bodies is not observed on this source.",
+   "masked": [
+    "rel.contact"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A moving car drives on an empty street: no bicycle, electric bicycle or electric scooter is in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design vehicle dimensions (AASHTO)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

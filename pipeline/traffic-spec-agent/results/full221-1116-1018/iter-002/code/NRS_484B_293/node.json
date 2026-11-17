@@ -1,0 +1,177 @@
+{
+ "node_id": "NRS_484B_293",
+ "law_refs": [
+  "NRS-484B-293"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Pedestrians",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall move",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "whenever practicable",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "upon the right half of crosswalks.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Pedestrians' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); ru.aggregate is 'membership of a legal aggregate', claimed by its admitted id and never expanded into class atoms."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'shall move' places the duty on the pedestrian's movement: it is read at observations at which the pedestrian moves, i.e. where drv.motion.complete_halt ('The road user is at rest at the observation ... its speed (kin.speed) at or below a tolerance the caller sets for the source's speed resolution') does not hold with p.halt_speed_tolerance. A pedestrian at rest does not move, and the words place on it no duty of position."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk",
+    "st.region_geometry",
+    "kin.position",
+    "kin.velocity",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'crosswalks' is st.crosswalk ('marked crossing, or the unmarked prolongation of sidewalks at an intersection'), carrying both limbs of DEF-NRS-484A-065 (the connection of the sidewalk lines at an intersection; a portion distinctly indicated for crossing by markings); the pedestrian's own crosswalk is anchored by rel.occupies ('a road user's footprint overlaps a lane / region'). 'the right half' is read about the crosswalk's reference point (st.region_geometry: 'the reference point and the boundary polygon of a structure region in the world frame'; its not-a-stand-in clause excludes occupancy, which rel.occupies reads) and the pedestrian's own direction of movement (kin.velocity 'velocity vector', kin.position 'position of the body's reference point', kin.speed 'magnitude of velocity'): the pedestrian is on the right half where the crosswalk's reference point does not lie to the right of its direction of movement by more than p.pedestrian_lateral_tolerance, i.e. v_x(r_y-p_y) - v_y(r_x-p_x) is at least minus that tolerance times its speed."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "whenever practicable",
+   "concepts": [
+    "rel.bearing",
+    "rel.surface_gap",
+    "rel.occupies",
+    "st.obstruction",
+    "st.region_geometry",
+    "prim.region_lateral_offset"
+   ],
+   "params": [
+    "p.pedestrian_near_reach"
+   ],
+   "convention": "pedestrian stride and shy distance: keeping to the right half is impracticable where the right half ahead of the pedestrian is taken up within about two strides, by another road user occupying the same crosswalk ahead on its right (rel.bearing: positive longitudinal and negative lateral component; rel.surface_gap at or below the reach) or by an obstruction on its right (prim.region_lateral_offset below zero; st.region_geometry distance at or below the reach)",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject, a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian), occupies a crosswalk x (rel.occupies(subject, x), x of kind st.crosswalk) and moves: drv.motion.complete_halt(subject; p.halt_speed_tolerance) does not hold.",
+ "obligation": "For every crosswalk x the subject occupies (re-bound with the same selection), either (a) it moves on the right half of x: with v its velocity, p its position and r the reference point of x, v_x*(r_y - p_y) - v_y*(r_x - p_x) is at least minus p.pedestrian_lateral_tolerance times its speed (kin.speed), so that x's reference point does not lie to its right by more than the tolerance; or (b) keeping to the right half is not practicable: some other road user u (not the subject) occupying x lies ahead of the subject on its right (rel.bearing(subject, u) with longitudinal component above zero and lateral component below zero) at a surface gap (rel.surface_gap) at or below p.pedestrian_near_reach, or some region o of kind st.obstruction lies on the subject's right (prim.region_lateral_offset(subject, o) below zero) at a ground distance (st.region_geometry) at or below p.pedestrian_near_reach.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.pedestrian_lateral_tolerance",
+  "p.pedestrian_near_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "The halves of a crosswalk are read about its mapped reference point, taken as its centre, and the side is read relative to the pedestrian's own direction of movement (its velocity), which on a crossing runs along the crosswalk's length; a pedestrian within p.pedestrian_lateral_tolerance of the centre counts as on the right half.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "The words name no factor of practicability; the catch-all is read only through the occupation of the right side ahead by another road user in the crosswalk or by an obstruction within p.pedestrian_near_reach; any other reason the right half may be impracticable is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian (ru.aggregate pedestrian) walks across a marked crosswalk it occupies (rel.occupies st.crosswalk) at 1.3 m/s (kin.speed); the crosswalk's reference point (st.region_geometry) lies 1.5 m to the right of its velocity; no other road user and no st.obstruction is in the scene."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same pedestrian walks across the crosswalk with its reference point 1.5 m to the left of its velocity: it moves on the right half."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian walks along a st.sidewalk and occupies no st.crosswalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian moving in a crosswalk at 1.3 m/s whose velocity is not observed: which half it moves on cannot be read.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The pedestrian moves on the left half of the crosswalk while three other pedestrians occupying the crosswalk lie ahead of it on its right (rel.bearing longitudinal positive, lateral negative) at a surface gap of 1.5 m: the right half is not practicable."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian stands at rest (kin.speed 0) on the left half of the crosswalk: it does not move."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of tracked-object kinematics in driving datasets and simulators"
+  },
+  {
+   "name": "p.pedestrian_lateral_tolerance",
+   "unit": "m",
+   "value": 0.3,
+   "convention": "the lateral margin within which a pedestrian's reference point counts as on a line that divides a region or a way: half a pedestrian's shoulder breadth plus the source's position error for a pedestrian",
+   "source": "Highway Capacity Manual pedestrian body ellipse (about 0.6 m shoulder breadth) and pedestrian tracking position error"
+  },
+  {
+   "name": "p.pedestrian_near_reach",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "the ground distance from a pedestrian's body to a place, a region or a vehicle within which the pedestrian is near it: about two walking strides plus a curb step",
+   "source": "pedestrian stride length (about 0.75 m) and curb step conventions of pedestrian facility design"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

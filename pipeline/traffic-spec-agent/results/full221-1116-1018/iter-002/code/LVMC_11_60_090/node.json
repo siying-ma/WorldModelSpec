@@ -1,0 +1,202 @@
+{
+ "node_id": "LVMC_11_60_090",
+ "law_refs": [
+  "LVMC-11-60-090"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.taxicab"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Any cab,",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "upon leaving any stand designated in accordance with the provisions of this Section,",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall execute a right-hand turn,",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "when a sign is posted giving notice of this requirement,",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "at the first street intersection after it leaves such stand.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.taxicab"
+   ],
+   "derived": [],
+   "justification": "No definition applies to 'cab' in this law (the definitions table lists none), so it is mapped like other words: ru.taxicab, 'passenger vehicle for hire, identifiable by its markings', is the class a cab is. No aggregate is admitted for the word here, so the class atom is the carrier."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "The 'stand designated in accordance with the provisions of this Section' (a taxistand section) is the taxicab stand, st.curb_zone of kind taxicab_stand ('a signed or marked length of curb; kind ∈ {..., taxicab_stand, ...}'). The table resolves 'stand' to DEF-NRS-484A-250, which defines the act of halting; the noun here names the place, so the definition's words are not the carrier. 'leaving' is the event at which the cab's footprint ceases to overlap that curb zone (rel.occupies false, having been true at the previous observation). Designation is read by the stand's presence (status)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.right_turn_through_region"
+   ],
+   "justification": "drv.motion.right_turn_through_region(a, r) denotes that 'Road user a has made a turn to the right through region r, recognized as it leaves r', with its heading change since entry in the right-turn band; it takes the intersection as its region argument, so the turn is judged at the intersection s5 singles out. kin.yaw_rate and rel.occupies are the atoms it reads."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.travel_region",
+    "rel.occupies",
+    "prim.conditions_hold"
+   ],
+   "derived": [],
+   "justification": "The posted sign is a dev.regulatory_sign of code right_turn_only ('a point regulation by catalogue code, ... right_turn_only'), read where it governs (dev.governs: 'the travel regions whose traffic the device controls') a travel region the cab occupies (rel.occupies) at the observation it leaves the stand, with its conditions holding for the cab (prim.conditions_hold: 'any occupancy or class condition is met'), so a notice limited to taxicabs is read as such. The sign is a condition, not the turn itself ('a prohibition sign is a condition')."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "'the first street intersection after it leaves such stand' is the intersection r (st.intersection, 'the region where two roadways meet') whose exit the turn concept recognizes, such that since the observation the cab left 'such stand' — the same curb zone s2 binds — its footprint has overlapped no intersection other than r (rel.occupies). A city intersection is a street intersection within this ordinance's territorial scope."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.taxicab"
+   ]
+  }
+ ],
+ "applicability": "The subject is a taxicab (ru.taxicab). At the observation t its footprint ceases to overlap an intersection r (rel.occupies, st.intersection: false at t, true at t-1). Earlier, at an observation d, it left a taxicab_stand curb zone k (overlap of k true at d-1, false at d) while a regulatory sign of code right_turn_only whose conditions hold for the subject (prim.conditions_hold) governed (dev.governs) a travel region the subject occupied at d; and at every observation from d to t its footprint overlapped no intersection other than r (written with since: [for every intersection q not the same as r, not rel.occupies(subject, q)] since [the departure from k with the sign condition]).",
+ "obligation": "At t, drv.motion.right_turn_through_region(subject, r) holds, with step = p.heading_since_step_carla_scene_graph, turn_min = p.turn_heading_min and u_turn_min = p.u_turn_heading_min: the cab's passage through the first intersection after leaving the stand was a turn to the right.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'designated in accordance with the provisions of this Section' is read by the presence of the signed or marked taxicab_stand curb zone.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "A sign 'giving notice of this requirement' is read as a posted right_turn_only regulatory sign that governs the travel region the cab occupies as it leaves the stand and whose conditions hold for the cab; its posting is read by its presence.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A taxicab leaves a taxicab_stand curb zone into a lane governed by a right_turn_only sign, reaches the first intersection and goes straight through it: at its exit the heading change since entry is about 0 degrees."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same taxicab turns right through the first intersection: at its exit the heading change since entry is about -90 degrees."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A taxicab leaves the stand into a lane no right_turn_only sign governs and goes straight through the first intersection."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source supplies no yaw rate while the cab is in the intersection, so the heading change through it is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The taxicab turns right through the first intersection after the signed stand, then goes straight through a second intersection: at the exit of the second, an intersection other than it was occupied since the departure, so it is not the first."
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.right_turn_through_region",
+  "boundary": "event",
+  "onset": {
+   "words": "the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation: its entry into r",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "The turn concept's act begins at the cab's entry into the intersection r, marked by rel.occupies rising on r."
+  },
+  "recognition": "The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r.",
+  "under_way": {
+   "words": "shall execute a right-hand turn,",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "Inside the act the cab is within r since its entry and its heading is changing (kin.yaw_rate), which no observation before the entry shows; no span of this node is read while the act is under way."
+  },
+  "spans": {
+   "s2": "at_recognition",
+   "s4": "at_recognition",
+   "s5": "at_recognition"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "proposed this iteration by LVMC_11_40_080_o1; turning-movement classification in trajectory analysis"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "proposed this iteration by LVMC_11_40_080_o1; turning-movement classification in trajectory analysis"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

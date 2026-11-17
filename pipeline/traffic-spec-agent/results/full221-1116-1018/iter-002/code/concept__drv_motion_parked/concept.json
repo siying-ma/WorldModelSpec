@@ -1,0 +1,63 @@
+{
+ "concept_id": "drv.motion.parked",
+ "kind": "formula",
+ "contract": "Road user a is parked: \"the standing of a vehicle, whether occupied or not\", observed as a at rest at every observation of the window behind the observation, of length min_duration: at each of them a's speed (kin.speed, read through drv.motion.complete_halt) is at or below speed_tol. A halt shorter than min_duration, which may be the temporary halt the definition leaves out, is not denoted. It denotes a state at one observation: it says nothing of whether a rider is on a, of where a stands, or of why it stands. Not denoted: a road user whose speed was above speed_tol at some observation of that window. Where the window reaches before the start of the recording or a speed in it is unobserved, it is unknown.",
+ "definition": "DEF-NRS-484A-155",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution"
+  },
+  {
+   "name": "min_duration",
+   "unit": "s",
+   "meaning": "the length of the window behind over which the road user must have been at rest: the longest halt that still counts as a temporary one"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a at rest at every observation of the window behind the observation, of length min_duration",
+   "atoms": [],
+   "concepts": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "drv.motion.complete_halt: 'The road user is at rest at the observation ... observed as its speed (kin.speed) at or below a tolerance the caller sets'; holding it at every observation of a window behind (holdsFor over time) is the standing the definition names, 'whether occupied or not', so no occupancy is read."
+  }
+ ],
+ "residues": [
+  {
+   "span": "otherwise than temporarily for the purpose of and while actually engaged in loading or unloading of merchandise or passengers",
+   "why": "a purpose is not observable; the definition's exclusion of a temporary halt is read only by the halt's duration (min_duration): a halt held longer than min_duration while loading is denoted, a halt shorter than it for any purpose is not"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A bicycle stands at rest beside the curb at every observation of the window behind, with no rider on it."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A bicycle halts briefly and moves off again within the window behind: its speed is above the tolerance at some observation of the window."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source supplies no speed for the bicycle during the window.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_40_170"
+ ]
+}

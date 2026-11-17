@@ -1,0 +1,65 @@
+'TrafficSpec.Concepts.interaction.overtake_pass.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtake_pass.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtake_pass.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"b","sort":{"sort":"track"}}],"body":{"and":[{"rises":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"rises":{"not":{"since":[{"not":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_dir_cos"}]}]}]}}},{"at_last":"time","body":"tt","length":{"param":"window"},"subject":"a","when":{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_dir_cos"}]}]}}]}]},"contract":"Road user a overtakes and passes road user b from the rear: a, travelling in the same direction as b, comes from having b ahead of it to having b behind it. b is ahead of a where the longitudinal component of b's bearing in a's frame, the component along a's heading (kin.heading) of the vector from a's position to b's position (kin.position), is positive and the two bodies' projections on a's heading share no length (rel.longitudinal_overlap negative); b is behind a where that component is negative and the projections share no length. The act begins at the last observation of the window behind at which b was ahead of a with their headings aligned within same_dir_cos (rel.same_direction). The act is recognized at the observation at which b is behind a and was not behind a at the previous observation, where b was ahead of a with headings aligned at some observation of the window behind. The concept holds at that observation only, and not again until b has again been ahead of a and then comes to be behind it. Conduct before the window behind is not read: a pass that takes longer than the window is not recognized. It denotes the relative motion of the two road users only: it says nothing of the lanes they occupy, of whether b moves, or of why a passes. Not denoted: a drawing alongside b that does not clear b; b ahead of a only while their headings are not aligned (a road user met head-on or crossing); b behind a at every observation of the window. Where the positions of a and b are unobserved, it is unknown.","definition":null,"id":"drv.interaction.overtake_pass","kind":"formula","narrowings":[],"params":[{"name":"window","unit":"second"},{"name":"same_dir_cos","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	kin_heading,kin_position,rel_longitudinal_overlap,rel_same_direction,kin_time
+READS	kin_heading,kin_position,rel_longitudinal_overlap,rel_same_direction,kin_time
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"rises":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"rises":{"not":{"since":[{"not":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_dir_cos"}]}]}]}}},{"at_last":"time","body":"tt","length":{"param":"window"},"subject":"a","when":{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"b"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_dir_cos"}]}]}}]}]}
+WITNESS	holds	drv.interaction.overtake_pass@w
+WITNESS	fails	drv.interaction.overtake_pass@w
+WITNESS	blind	drv.interaction.overtake_pass@w
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a,b
+OCC	a
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a
+OCC	a
+OCC	b
+OCC	a,b
+INST	drv.interaction.overtake_pass@w	ok
+TIME	checks	5
+TIME	lint	51
+SCEN	holds	drv.interaction.overtake_pass@w	compliant	compliant	ok
+TIME	scenario:drv.interaction.overtake_pass@w/holds	30
+SCEN	fails	drv.interaction.overtake_pass@w	violated	violated	ok
+TIME	scenario:drv.interaction.overtake_pass@w/fails	25
+SCEN	blind	drv.interaction.overtake_pass@w	unknown	unknown	ok
+TIME	scenario:drv.interaction.overtake_pass@w/blind	89
+TIME	witnesses	144
+DONE_WITNESSES
+'TrafficSpec.Concepts.interaction.overtake_pass.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtake_pass.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtake_pass.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.interaction.overtake_pass@w	10	2
+TIME	adequacy_start	14
+TIME	adequacy	249
+DONE

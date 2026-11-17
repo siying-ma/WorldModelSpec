@@ -1,0 +1,207 @@
+{
+ "node_id": "LVMC_11_46_030_o2",
+ "law_refs": [
+  "LVMC-11-46-030"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It shall be unlawful for any person driving or operating, propelling or causing to be propelled, any vehicle,",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "to fail to stop not less than fifty feet from the nearest side of",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "a school pedestrian lane",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "where any signal device, flagman or other person is stationed, giving warning that children are about to cross or are crossing the street;",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "and it is further declared unlawful to proceed",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "until such signal has stopped, raised, or been removed, or the flagman or person stationed at such pedestrian lane has given a signal to go, or has left the locality.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"any vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"), one atom; the driving person is read through the vehicle's controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.region_geometry"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"to proceed\" refers to the stop the first clause requires, with its qualification kept: a halt (drv.motion.complete_halt, carrying DEF-NRS-484A-255 \"complete cessation from movement\", the definition whose scope is a stop \"when required\") made while the body distance to the crosswalk (st.region_geometry \"the ground distance from a road user's body outline to it\") is not less than fifty feet, under the warning. The first clause's duty itself is node LVMC_11_46_030_o1; here the stop is the act this duty follows, carried in full, not the other rule's verdict."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.crosswalk",
+    "st.on_way",
+    "st.highway",
+    "prim.region_offset_along"
+   ],
+   "derived": [],
+   "justification": "Same words, same atoms as LVMC_11_46_030_o1: st.crosswalk \"marked crossing, or the unmarked prolongation of sidewalks\" on the street (st.on_way to the st.highway the subject's travel region lies on), ahead of the subject along its travel region by prim.region_offset_along (positive, the side only)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "dev.crossing_warning_signal",
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Same words, same atoms as LVMC_11_46_030_o1: dev.crossing_warning_signal with active true, or dev.human_direction of any role with indication stop, governing (dev.governs \"the travel regions whose traffic the device controls\") the travel region (st.travel_region) the subject occupies (rel.occupies)."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"unlawful to proceed\": the vehicle stays at rest; drv.motion.complete_halt (\"at rest at the observation ... speed (kin.speed) at or below a tolerance\") failing is any movement after the stop. Not denoted by the concept: why it stays."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.crossing_warning_signal",
+    "dev.human_direction",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "\"until such signal has stopped, raised, or been removed\": the same dev.crossing_warning_signal d no longer has its active attribute, or is no longer in the scene or no longer governs the subject's travel region (dev.governs). \"or the flagman or person stationed at such pedestrian lane has given a signal to go\": the same dev.human_direction d shows indication proceed (\"indication ∈ {stop, proceed, slow, turn(dir)}\"). \"or has left the locality\": d is no longer in the scene or no longer governs the subject's travel region. \"such\" singles out the device that gave the warning the subject stopped for; each end condition reads that device."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle). At the judged observation bind, as in LVMC_11_46_030_o1, a travel region g with rel.occupies(subject, g), a device d with dev.governs(d, g) giving warning (dev.crossing_warning_signal active, or dev.human_direction of any role with indication stop), a highway w with st.on_way(g, w), and the nearest crosswalk c on w ahead of the subject along g (prim.region_offset_along(subject, c, g) > 0). The subject stopped for that warning and the warning has lasted since: since(warning(d) and ahead(c), drv_motion_complete_halt(subject) and st_region_geometry_distance(subject, c) >= the literal fifty feet and warning(d) and ahead(c)), with speed_tol p.halt_speed_tolerance. The duty ends ('until') at the first observation at which d gives no warning: the signal's active attribute is false or the signal is gone or no longer governs g ('stopped, raised, or been removed'); the person's indication is proceed ('a signal to go'), or the person is gone or no longer governs g ('has left the locality'); from then the since fails and the duty does not apply.",
+ "obligation": "The subject does not proceed: drv_motion_complete_halt(subject) holds at the judged observation, with speed_tol p.halt_speed_tolerance.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "\"any person driving or operating, propelling or causing to be propelled\" is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "The school pedestrian lane is the crosswalk at which the warning of children crossing is given; the school designation is read through that warning.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "\"stationed\" at the pedestrian lane is read as a warning device or person governing the subject's travel region, the lane being the nearest crosswalk ahead on the same way; \"children are about to cross or are crossing\" is read through the warning given.",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s5",
+   "why": "\"proceed\" is read as any movement above the halt tolerance after the stop, forward or not."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Street w with lane g (direction east) and crosswalk c ahead; a school crossing guard (dev.human_direction, role school_crossing_guard, indication stop) governs g. The subject, a passenger car (ru.motor_vehicle), halts with its body farther than fifty feet from c while the guard indicates stop, then moves on at walking pace towards c while the guard still indicates stop."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the subject stays at rest while the guard indicates stop and moves on only after the guard's indication becomes proceed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Same street, no warning device and no person directing traffic; the subject halts briefly short of c and drives on."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe what devices govern (dev.governs absent): whether the guard's warning applies to the subject's lane is unknown.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "As in forbid's first part, then the guard leaves the scene (no dev.human_direction any more) and the subject drives on through c."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A dev.crossing_warning_signal governing g is active; the subject halts farther than fifty feet from c, then moves on while the signal is still active."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "As in branch_2, but the subject moves on only after the signal's active attribute becomes false."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s2",
+   "text": "fifty feet",
+   "value": 50,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

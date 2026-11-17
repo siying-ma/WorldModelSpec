@@ -1,0 +1,181 @@
+{
+ "node_id": "NRS_484B_213_2c",
+ "law_refs": [
+  "NRS-484B-213-2c"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "must not be driven to the left side of the highway at any time:",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "When the view is obstructed",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "upon approaching within 100 feet of any bridge, viaduct or tunnel.",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "Subsection 2 does not apply upon a one-way highway.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'A vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "prim.region_lateral_offset",
+    "st.centre_line",
+    "st.on_way",
+    "st.highway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'the left side of the highway' is the side beyond its center (DEF-NRS-484A-040: 'to indicate each portion of a highway allocated to traffic proceeding in the two opposite directions, and, if a line is not marked, it is an imaginary line in the highway equally distant from the edges'): an st.centre_line c, 'the marking, or the geometric centre, dividing the two directions', lying (st.on_way) on the st.highway the subject occupies (rel.occupies), with prim.region_lateral_offset(subject, c) ('signed lateral offset (m, left positive)') negative. 'at any time' places the duty at every observation. 'driven' is read through controlled motion (agency)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.elevated_structure",
+    "st.region_geometry",
+    "kin.position",
+    "kin.velocity"
+   ],
+   "derived": [],
+   "justification": "'any bridge, viaduct or tunnel' is st.elevated_structure, 'bridge, viaduct or tunnel carrying the roadway'. 'approaching within 100 feet': the ground distance from the subject's body to the structure (st.region_geometry) is at most the stated 100 feet and the subject's velocity (kin.velocity) points toward the structure's reference point from its position (kin.position)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.one_way_roadway"
+   ],
+   "derived": [],
+   "justification": "'upon a one-way highway': the subject occupies (rel.occupies) an st.one_way_roadway, 'roadway on which traffic is restricted to one direction'; there subsection 2 does not apply."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "the view is obstructed",
+   "concepts": [
+    "st.sight_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.passing_sight_time"
+   ],
+   "convention": "Passing sight distance: the MUTCD minimum passing sight distance by prevailing speed (Table 3B-1), the warrant for a no-passing zone where the view is restricted, expressed as the time the subject's speed takes to cover it. The view is obstructed where st.sight_distance at the subject's point, 'the distance along the road within which a vehicle at a point and another vehicle on the road could see each other', is below the subject's kin.speed times p.passing_sight_time; the bound moves with the subject's speed.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At an observation at which the subject, of DEF-NRS-484A-320::vehicle, occupies no st.one_way_roadway, st.sight_distance at its point is below its kin.speed times p.passing_sight_time, and for some st.elevated_structure x the ground distance from its body to x (st.region_geometry) is at most the stated 100 feet and the dot product of its kin.velocity with the vector from its kin.position to x's reference point is positive.",
+ "obligation": "The subject is not on the left side of the highway: for every st.centre_line c lying (st.on_way) on a highway the subject occupies, prim.region_lateral_offset(subject, c) is not negative. Where it is negative for some such c, the duty is violated.",
+ "params": [
+  "p.passing_sight_time"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driven to the left side of the highway' is read as the subject's reference point lying beyond the centre line to its left.",
+   "kind": "reading"
+  },
+  {
+   "span": "s2",
+   "why": "'driven' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'the view' is read through the sight distance of the subject's place, what could be seen from it, not through any driver's perception.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject moves toward an st.elevated_structure within the stated 100 feet, st.sight_distance at its point below its speed times p.passing_sight_time, its reference point left of the centre line."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same approach with the subject right of the centre line."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject approaches a bridge within the stated distance with st.sight_distance far above the bound, left of the centre line."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject approaches a bridge within the stated distance left of the centre line; st.sight_distance is not observed.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The same approach with short sight distance on an st.one_way_roadway."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s4",
+   "text": "100 feet",
+   "value": 100,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.passing_sight_time",
+   "unit": "s",
+   "value": 11.0,
+   "convention": "the MUTCD minimum passing sight distance (Table 3B-1, the warrant for a no-passing zone) divided by the prevailing speed it is tabulated for: about eleven seconds of travel across 25 to 70 mph; the sight distance or the clear distance a pass needs is the subject's speed times this time",
+   "source": "MUTCD 2009 Section 3B.02, Table 3B-1"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

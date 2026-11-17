@@ -1,0 +1,275 @@
+{
+ "node_id": "NRS_484B_267_2c",
+ "law_refs": [
+  "NRS-484B-267-2c"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Upon approaching an authorized emergency vehicle or an official vehicle of a regulatory agency which is moving or preparing to move in any direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "including, without limitation, arriving at or leaving the scene of a crash or other incident,",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "and making use of flashing lights meeting the requirements of",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "subsection 3 of NRS 484A.480 [DEF-NRS-484A-480-3],",
+   "role": "reference"
+  },
+  {
+   "id": "s5",
+   "text": "the driver of any other vehicle shall,",
+   "role": "subject"
+  },
+  {
+   "id": "s6",
+   "text": "except when otherwise directed by a law enforcement officer:",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "Be prepared to stop.",
+   "role": "obligation"
+  },
+  {
+   "id": "s8",
+   "text": "As used in this section, “preparing to move” means any indication that is visible to an approaching driver that an authorized emergency vehicle or an official vehicle of a regulatory agency is about to move, including, without limitation: (a) A movement of the vehicle; or (b) The use of hand signals by the driver of the vehicle.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "kin.speed",
+    "rel.bearing",
+    "rel.centre_distance",
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle",
+    "ru.official_vehicle",
+    "rel.visible",
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "justification": "'an authorized emergency vehicle' is the admitted aggregate DEF-NRS-484A-020::authorized_emergency_vehicle ('a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'), claimed as ru.aggregate; its 'not a stand-in for' a responding role does not bite, since the conduct the words require of it (lights in use, motion) is read separately. 'an official vehicle of a regulatory agency' is ru.official_vehicle of kind regulatory_agency ('a vehicle in official or contracted road service ... kind ∈ {..., regulatory_agency, ...}'), not read as an emergency vehicle. 'Upon approaching': the subject, moving (kin.speed, 'magnitude of velocity', above the halt tolerance), has that vehicle ahead of it (rel.bearing, 'direction of b from a in a's frame', longitudinal component positive) within the approach reach of centre distance (rel.centre_distance, 'Euclidean ground-plane distance between reference points'; no clearance or order of arrival is read from it). 'which is moving': the vehicle's kin.speed above the halt tolerance. 'or preparing to move', as the section defines it (s8): the vehicle visible from the subject (rel.visible, 'an unobstructed line of sight from a's reference point to b's body'; not a distance, not a lit lamp) showing an arm signal (sig.hand_signal meaning other than no_signal) or a lit turn indicator (sig.turn_indicator left or right: the signal, not the manoeuvre). 'in any direction' adds no restriction: no heading of the vehicle is read. The vehicle is quantified in the formula, never a binder."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "source_spans": [
+    "s4"
+   ],
+   "justification": "sig.warning_lamp: 'a warning lamp lit; colour ∈ {red, blue, amber, white}, mode ∈ {flashing, rotating, steady}, facing ∈ {front, rear, side}'. The words borrowed from DEF-NRS-484A-480-3, 'at least one flashing red warning lamp visible from the front', fix which lights meet the requirements: a lamp lit on the approached vehicle of colour red, mode flashing, facing front. Not a stand-in for an audible warning: no siren is read, the words name lights only."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'any other vehicle' is the defined term vehicle, admitted as DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); its exclusions (devices moved by human power, electric bicycles, electric personal assistive mobility devices, electric scooters) are the reading's classification under that id, never expanded here. 'other' excludes the approached vehicle: the subject and it are not the same road user. 'the driver' is a relational role, not an aggregate: read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.human_direction: 'a person directing traffic and the direction given; role ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger}': a law enforcement officer is role police_officer, the other roles are not law enforcement officers. The exception holds where such a device governs (dev.governs, 'the travel regions whose traffic the device controls'; not a position) a travel region (st.travel_region, read only through the quantifier, as the abstract kind requires) the subject occupies (rel.occupies, 'a road user's footprint overlaps a lane / region'). 'otherwise directed' admits any indication the officer gives there."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "kin.speed",
+    "rel.visible",
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "justification": "The section's own definition of 'preparing to move', read as s1 reads it: 'any indication that is visible to an approaching driver' is the vehicle visible from the subject (rel.visible) showing an indication; '(a) A movement of the vehicle' is its kin.speed above the halt tolerance; '(b) The use of hand signals by the driver of the vehicle' is sig.hand_signal ('a driver's or rider's arm signal') with a meaning other than no_signal; 'including, without limitation' admits further indications, of which a lit turn indicator (sig.turn_indicator, 'the signal that precedes a manoeuvre') is the one the vocabulary carries. 'about to move' is an imminent movement read through these indications."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s7",
+   "standard": "Be prepared to stop",
+   "concepts": [
+    "kin.speed",
+    "rel.surface_gap",
+    "env.wet_road",
+    "env.precipitation",
+    "env.ice_or_snow"
+   ],
+   "params": [
+    "p.driver_reaction_time",
+    "p.following_decel_dry",
+    "p.following_decel_wet",
+    "p.following_decel_ice"
+   ],
+   "convention": "stopping-distance model: the subject is prepared to stop where the distance it needs to come to 'complete cessation from movement' (the stop when required, DEF-NRS-484A-255) — its speed times the perception-reaction time plus its speed squared over twice the braking deceleration — does not exceed the gap between its body and the approached vehicle's (rel.surface_gap); the deceleration is selected by the surface: ice or snow, else a wet road or falling precipitation, else dry",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s4",
+   "as": "definition",
+   "source": "DEF-NRS-484A-480-3",
+   "quote": "at least one flashing red warning lamp visible from the front"
+  }
+ ],
+ "residues": [
+  {
+   "span": "s2",
+   "why": "'including, without limitation' lists examples of a vehicle moving or preparing to move; the duty is the same whether or not the vehicle is arriving at or leaving the scene of a crash or other incident",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-320::vehicle, moving (kin.speed above p.halt_speed_tolerance). Some road user e, not the subject, that is a member of DEF-NRS-484A-020::authorized_emergency_vehicle or an ru.official_vehicle of kind regulatory_agency, shows a lit sig.warning_lamp of colour red, mode flashing, facing front; e is moving (kin.speed above p.halt_speed_tolerance) or preparing to move (rel.visible from the subject to e, and e's sig.hand_signal meaning other than no_signal or its sig.turn_indicator other than off); and e lies ahead of the subject (rel.bearing from the subject, longitudinal component positive) within p.emergency_approach_reach of centre distance (rel.centre_distance). Not applicable where a dev.human_direction of role police_officer governs (dev.governs) a st.travel_region the subject occupies (rel.occupies).",
+ "obligation": "Surrogate. For every road user e selected as in the applicability (re-bound with its whole selection: class, lamp, moving or preparing, ahead within the reach), the subject's stopping distance at the observation — kin.speed × p.driver_reaction_time plus kin.speed squared divided by twice the deceleration, the deceleration being p.following_decel_ice where env.ice_or_snow holds, else p.following_decel_wet where env.wet_road or env.precipitation holds, else p.following_decel_dry — is at most the gap between the subject's body and e's (rel.surface_gap).",
+ "params": [
+  "p.emergency_approach_reach",
+  "p.halt_speed_tolerance",
+  "p.driver_reaction_time",
+  "p.following_decel_dry",
+  "p.following_decel_wet",
+  "p.following_decel_ice"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "'the driver' of a vehicle is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "'preparing to move', which the section defines as an indication that the vehicle is 'about to move', is an imminent movement, read through the visible indications the definition lists (movement, hand signals) and a lit turn indicator",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s1",
+   "why": "'visible to an approaching driver' is read as the vehicle being in the subject's line of sight (rel.visible), not as what the driver perceived",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "s7",
+   "why": "'prepared to stop' is read only as the ability to stop short of the approached vehicle at the current speed; readiness of mind is not observed and the rule is a surrogate"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Dry road. The subject vehicle moves toward an ambulance (authorized emergency vehicle) ahead of it within the approach reach; the ambulance moves with a red front warning lamp flashing. The subject's speed gives a stopping distance (reaction plus braking) longer than the surface gap to the ambulance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene, but the subject has slowed so that its stopping distance is shorter than the surface gap to the ambulance."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject drives at speed; no emergency or regulatory-agency vehicle is in the scene. The duty binds the subject alone and does not arise."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe warning lamps, so whether the ambulance uses its flashing lights is unknown.",
+   "masked": [
+    "sig.warning_lamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As in forbid, but a police officer directing traffic (dev.human_direction, role police_officer) governs the lane the subject occupies."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Icy road (env.ice_or_snow). The subject's speed and gap would allow a stop on a dry surface but not at the ice deceleration; the ambulance ahead is stopped and its driver gives an arm signal, visible from the subject (preparing to move), with its red front lamp flashing."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.emergency_approach_reach",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "centre distance within which a driver approaching an emergency or enforcement vehicle that shows flashing warning lamps counts as approaching it: about the distance at which the lamps are conspicuous by day and a driver at an urban speed of 15 m/s has ten seconds to slow",
+   "source": "warning-lamp conspicuity and perception-reaction figures (as proposed this iteration by NRS_484B_267_2a)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "source speed resolution (as proposed this iteration by LVMC_11_12_070_B)"
+  },
+  {
+   "name": "p.driver_reaction_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "perception-reaction time of an alert driver to an expected hazard in the stopping-distance model",
+   "source": "AASHTO Green Book stopping sight distance (as proposed this iteration by NRS_484B_600_1a)"
+  },
+  {
+   "name": "p.following_decel_dry",
+   "unit": "m/s^2",
+   "value": 6.0,
+   "convention": "braking deceleration of a passenger vehicle on a dry paved surface (coefficient of friction about 0.6)",
+   "source": "tyre-road friction figures (as proposed this iteration by NRS_484B_127_1)"
+  },
+  {
+   "name": "p.following_decel_wet",
+   "unit": "m/s^2",
+   "value": 4.0,
+   "convention": "braking deceleration of a passenger vehicle on a wet paved surface (coefficient of friction about 0.4)",
+   "source": "tyre-road friction figures (as proposed this iteration by NRS_484B_127_1)"
+  },
+  {
+   "name": "p.following_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.0,
+   "convention": "braking deceleration of a passenger vehicle on an icy or snow-covered surface (coefficient of friction about 0.1)",
+   "source": "tyre-road friction figures (as proposed this iteration by NRS_484B_127_1)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

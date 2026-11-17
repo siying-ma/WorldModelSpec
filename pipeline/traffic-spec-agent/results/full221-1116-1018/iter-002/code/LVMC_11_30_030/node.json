@@ -1,0 +1,186 @@
+{
+ "node_id": "LVMC_11_30_030",
+ "law_refs": [
+  "LVMC-11-30-030"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "Whenever any vehicle is stopped at a marked crosswalk or at any unmarked crosswalk at an intersection to permit a pedestrian to cross the roadway",
+   "role": "trigger"
+  },
+  {
+   "id": "d2",
+   "text": "the driver of any other vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "d3",
+   "text": "approaching from the rear shall not overtake and pass such stopped vehicle",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.crosswalk",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.travel_region",
+    "prim.region_offset_along",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'any vehicle' is a member b of the admitted aggregate DEF-NRS-484A-320::vehicle, quantified in the rule. 'is stopped' is drv.motion.complete_halt on b ('at rest at the observation', speed at or below p.halt_speed_tolerance). 'at a marked crosswalk or at any unmarked crosswalk at an intersection' is a crosswalk c: st.crosswalk, 'marked crossing, or the unmarked prolongation of sidewalks at an intersection', which is the defined crosswalk in both of its branches; b is at c where its body occupies c (rel.occupies) or lies within p.stop_point_tolerance of it (st.region_geometry, 'the ground distance from a road user's body outline to it'), and c lies ahead of or under b along the direction of a carrier b occupies (prim.region_offset_along not negative; carrier of kind st.travel_region): a vehicle halted beyond the crossing is not stopped at it. 'to permit a pedestrian to cross the roadway' is a purpose, read through the conduct it explains: a pedestrian (DEF-NRS-484A-165::pedestrian, 'a person afoot, a person in a manual or motorized wheelchair') occupies the crosswalk c (rel.occupies) at the same observation."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver of any other vehicle' names the vehicle whose conduct is judged, a member of DEF-NRS-484A-320::vehicle other than b; same mapping as the index's 'The driver of a vehicle'. 'driver' is a role, read through the vehicle's controlled motion."
+  },
+  {
+   "span": "d3",
+   "atoms": [],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'approaching from the rear ... overtake and pass such stopped vehicle' is the manoeuvre of drv.interaction.overtake_pass(subject, b): the subject, travelling in the same direction as b, comes from having b ahead of it (approaching from the rear) to having b behind it. 'such stopped vehicle' is the same b bound by the trigger."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-320::vehicle, and some other vehicle b of the scene (DEF-NRS-484A-320::vehicle, not the subject) is, at the observation or at some observation of the p.overtake_window behind it, at a complete halt (drv.motion.complete_halt with p.halt_speed_tolerance) at a crosswalk c (its body occupying c or within p.stop_point_tolerance of c, with c not behind it along the direction of a carrier it occupies) while a pedestrian occupies c.",
+ "obligation": "There is no other vehicle b such that, at the observation, the subject overtakes and passes b (drv.interaction.overtake_pass(subject, b) with window p.overtake_window and same_dir_cos p.overtake_same_direction_cos, at its recognition) and the trigger held for b at some observation of that act: from the last observation of the window behind at which b was ahead of the subject with headings aligned, up to the observation itself, b was at a complete halt at a crosswalk c occupied by a pedestrian, as stated in the applicability.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance",
+  "p.overtake_window",
+  "p.overtake_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "d1",
+   "why": "'to permit a pedestrian to cross the roadway' is a purpose, read through the conduct it explains: the vehicle is halted at the crosswalk while a pedestrian occupies that crosswalk; a halt for a pedestrian still waiting on the curb is not read.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "d2",
+   "why": "'the driver' is read through the vehicle's controlled motion: the duty binds the overtaking vehicle whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Car b halts 1 m before a marked crosswalk in the right lane while a pedestrian walks on the crosswalk; the subject car, coming up behind b in the same direction, moves to the left lane and passes b within 6 s while b is still halted and the pedestrian still on the crosswalk."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Car b halts before a marked crosswalk with a pedestrian on it; the subject car, behind b in the same direction, halts behind b and does not pass it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car drives along a street; no vehicle is halted at any crosswalk, and no other vehicle is in the scene."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Car b stands before a marked crosswalk with a pedestrian on it while the subject passes it, but the speed of b is not observed, so whether b is stopped is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "occasion_d1",
+   "expected": "violated",
+   "narrative": "Car b is halted at an unmarked crosswalk at an intersection with a pedestrian on it during the first 3 s of the subject's pass; the pedestrian then reaches the far curb and b remains halted while the subject completes the pass 2 s later."
+  },
+  {
+   "name": "occasion_d1_outside",
+   "expected": "compliant",
+   "narrative": "Car b halts at a marked crosswalk with a pedestrian on it while the subject waits behind; the pedestrian clears the crosswalk and b moves off before the subject begins to move out; the subject passes b, which is then moving, 8 s later, with no pedestrian on the crosswalk during the pass."
+  }
+ ],
+ "occasion": {
+  "act": "drv.interaction.overtake_pass",
+  "boundary": "window",
+  "window": "p.overtake_window",
+  "under_way": {
+   "words": "overtake and pass",
+   "atoms": [
+    "kin.speed",
+    "rel.bearing",
+    "rel.longitudinal_overlap",
+    "rel.same_direction"
+   ],
+   "derived": [],
+   "justification": "An observation inside the pass is one at or after the last observation of the window behind at which b was ahead of the subject with headings aligned (rel.bearing longitudinal component positive, rel.longitudinal_overlap negative, rel.same_direction within p.overtake_same_direction_cos), at which the subject is moving (kin.speed, 'magnitude of velocity', above p.halt_speed_tolerance), and before b is behind the subject: it is read from the subject's motion and the two road users' relative position, not from the region either occupies."
+  },
+  "spans": {
+   "d1": "some_moment"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of road-user tracking in recorded and simulated traces"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "MUTCD section 3B.16: stop lines placed at least 4 ft in advance of the nearest crosswalk line"
+  },
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "AASHTO Green Book passing-manoeuvre model: passing times of about 4 to 11 s"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "heading angles of urban lane changes, typically below 20 degrees"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,179 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       }
+      ],
+      "derived": "drv_motion_complete_halt",
+      "params": [
+       {
+        "param": "p.halt_speed_tolerance"
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "or": [
+         {
+          "body": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "rw"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          "exists_region": {
+           "lit": "roadway"
+          },
+          "var": "rw"
+         },
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "sh"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "sh"
+                 },
+                 {
+                  "var": "hw"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               },
+               {
+                "body": {
+                 "args": [
+                  {
+                   "var": "rw2"
+                  },
+                  {
+                   "var": "hw"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                "exists_region": {
+                 "lit": "roadway"
+                },
+                "var": "rw2"
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "highway"
+             },
+             "var": "hw"
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "shoulder"
+          },
+          "var": "sh"
+         }
+        ]
+       },
+       {
+        "or": [
+         {
+          "args": [],
+          "atom": "env_darkness",
+          "params": []
+         },
+         {
+          "cmp": "lt",
+          "lhs": {
+           "args": [],
+           "measure": "env_visibility"
+          },
+          "rhs": {
+           "lit": {
+            "den": 5,
+            "num": 1524
+           },
+           "unit": "metre"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484D_165_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484D-165-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "args": [
+     {
+      "var": "subject"
+     }
+    ],
+    "atom": "sig_position_lamp",
+    "params": []
+   },
+   "residues": [
+    "'whether attended or unattended' covers both states: the duty is the same whether or not anyone attends the vehicle.",
+    "The equipment duty and the lamps' colour (white or amber to the front, red to the rear) and reach (visible from 500 feet) describe the lamps the obligation requires displayed; no atom carries a lamp's colour, reach or fitment, so the rule reads only that the position lamps are lit.",
+    "The location of the lamps (one as near as practicable to the side closest to passing traffic) is a fitment requirement no atom carries; the rule does not read it."
+   ],
+   "surrogate": false
+  },
+  "context": "8d6109567c853a8d91876ac9",
+  "candidate_digest": "64147d6430c8fc69d4f097caaa5bb2ea8ba0f84e888b324fc471acd0bb3f5d13"
+ }
+}

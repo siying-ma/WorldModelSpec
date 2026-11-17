@@ -1,0 +1,125 @@
+'TrafficSpec.Rules.NRS_484B_270_2a_o2.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_270_2a_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_270_2a_o2","intentions":[],"laws":["NRS-484B-270-2a"],"narrowings":[{"kind":"reading","span":"a8","why":"'the lane' to the rider's lane's immediate left is read beside some lane the rider occupies at the pass's start: the left lane is missing, unavailable or unsafe where it is so beside some lane the rider occupies"}],"operationalizations":[{"concepts":["dev.governs","dev.temporary_traffic_control","env.ice_or_snow","env.precipitation","env.wet_road","kin.speed","rel.bearing","rel.occupies","rel.surface_gap","st.lane_adjacency"],"params":["p.following_headway_dry","p.following_headway_wet","p.following_headway_ice"],"standard":"if the lane is available and moving into the lane is reasonably safe","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"and":[{"not":{"same":[{"var":"subject"},{"var":"r"}]}},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"r"}],"derived":"drv_interaction_overtake_pass","params":[{"param":"p.overtake_window"},{"param":"p.overtake_same_direction_cos"}]}},{"and":[{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"r"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}},{"not":{"body":{"not":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"body":{"and":[{"args":[{"var":"r"},{"var":"lr"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"lr"}],"measure":"st_lane_adjacency_count"},"rhs":{"lit":{"den":1,"num":1},"unit":"count"}}]},"exists_region":{"lit":"lane"},"var":"lr"}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]}]},"exists_user":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_270_2a_o2","intentions":[],"laws":["NRS-484B-270-2a"],"narrowings":[{"kind":"reading","span":"a8","why":"'the lane' to the rider's lane's immediate left is read beside some lane the rider occupies at the pass's start: the left lane is missing, unavailable or unsafe where it is so beside some lane the rider occupies"}],"obligation":{"body":{"implies":[{"and":[{"and":[{"not":{"same":[{"var":"subject"},{"var":"r"}]}},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"r"}],"derived":"drv_interaction_overtake_pass","params":[{"param":"p.overtake_window"},{"param":"p.overtake_same_direction_cos"}]}},{"and":[{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"r"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}},{"not":{"body":{"not":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"body":{"and":[{"args":[{"var":"r"},{"var":"lr"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"lr"}],"measure":"st_lane_adjacency_count"},"rhs":{"lit":{"den":1,"num":1},"unit":"count"}}]},"exists_region":{"lit":"lane"},"var":"lr"}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]}]},{"or":[{"at_last":"time","body":{"body":{"and":[{"args":[{"var":"r"},{"var":"le"}],"atom":"rel_occupies","params":[]},{"or":[{"not":{"body":{"args":[{"var":"le"},{"var":"lf"}],"atom":"st_lane_adjacency_left","params":[]},"exists_region":{"lit":"lane"},"var":"lf"}},{"body":{"and":[{"args":[{"var":"le"},{"var":"lg"}],"atom":"st_lane_adjacency_left","params":[]},{"or":[{"body":{"args":[{"var":"d"},{"var":"lg"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"},{"body":{"and":[{"not":{"same":[{"var":"u"},{"var":"subject"}]}},{"and":[{"not":{"same":[{"var":"u"},{"var":"r"}]}},{"and":[{"args":[{"var":"u"},{"var":"lg"}],"atom":"rel_occupies","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.following_headway_dry"},"then":{"param":"p.following_headway_wet"}},"then":{"param":"p.following_headway_ice"}}]}}]}]}]},"exists_user":"u"}]}]},"exists_region":{"lit":"lane"},"var":"lg"}]}]},"exists_region":{"lit":"lane"},"var":"le"},"length":{"param":"p.overtake_window"},"subject":"subject","when":{"and":[{"args":[{"var":"subject"},{"var":"r"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}]}},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"implies":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"body":{"and":[{"args":[{"var":"r"},{"var":"la"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"la"},{"var":"lb"}],"atom":"st_lane_adjacency_left","params":[]},{"args":[{"var":"subject"},{"var":"lb"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"lane"},"var":"lb"}]},"exists_region":{"lit":"lane"},"var":"la"},{"body":{"implies":[{"args":[{"var":"r"},{"var":"lc"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"lc"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"lane"},"var":"lc"}]}]},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}]}]}]},"forall_user":"r"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"and":[{"not":{"same":[{"var":"subject"},{"var":"r"}]}},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]},{"and":[{"rises":{"and":[{"rises":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"rises":{"not":{"since":[{"not":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}]}}},{"at_last":"time","body":"tt","length":{"param":"p.overtake_window"},"subject":"subject","when":{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}}]}]}},{"and":[{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"r"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}},{"not":{"body":{"not":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"body":{"and":[{"args":[{"var":"r"},{"var":"lr"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"lr"}],"measure":"st_lane_adjacency_count"},"rhs":{"lit":{"den":1,"num":1},"unit":"count"}}]},"exists_region":{"lit":"lane"},"var":"lr"}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]}]},"exists_user":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_270_2a_o2","intentions":[],"laws":["NRS-484B-270-2a"],"narrowings":[{"kind":"reading","span":"a8","why":"'the lane' to the rider's lane's immediate left is read beside some lane the rider occupies at the pass's start: the left lane is missing, unavailable or unsafe where it is so beside some lane the rider occupies"}],"obligation":{"body":{"implies":[{"and":[{"and":[{"not":{"same":[{"var":"subject"},{"var":"r"}]}},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"r"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]},{"and":[{"rises":{"and":[{"rises":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"rises":{"not":{"since":[{"not":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}},{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}]}}},{"at_last":"time","body":"tt","length":{"param":"p.overtake_window"},"subject":"subject","when":{"and":[{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_position"}]}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"sub":[{"args":[{"var":"r"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_position"}]}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}}]}]}},{"and":[{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"r"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}},{"not":{"body":{"not":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"body":{"and":[{"args":[{"var":"r"},{"var":"lr"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"lr"}],"measure":"st_lane_adjacency_count"},"rhs":{"lit":{"den":1,"num":1},"unit":"count"}}]},"exists_region":{"lit":"lane"},"var":"lr"}]}},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}}]}]}]},{"or":[{"at_last":"time","body":{"body":{"and":[{"args":[{"var":"r"},{"var":"le"}],"atom":"rel_occupies","params":[]},{"or":[{"not":{"body":{"args":[{"var":"le"},{"var":"lf"}],"atom":"st_lane_adjacency_left","params":[]},"exists_region":{"lit":"lane"},"var":"lf"}},{"body":{"and":[{"args":[{"var":"le"},{"var":"lg"}],"atom":"st_lane_adjacency_left","params":[]},{"or":[{"body":{"args":[{"var":"d"},{"var":"lg"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"},{"body":{"and":[{"not":{"same":[{"var":"u"},{"var":"subject"}]}},{"and":[{"not":{"same":[{"var":"u"},{"var":"r"}]}},{"and":[{"args":[{"var":"u"},{"var":"lg"}],"atom":"rel_occupies","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.following_headway_dry"},"then":{"param":"p.following_headway_wet"}},"then":{"param":"p.following_headway_ice"}}]}}]}]}]},"exists_user":"u"}]}]},"exists_region":{"lit":"lane"},"var":"lg"}]}]},"exists_region":{"lit":"lane"},"var":"le"},"length":{"param":"p.overtake_window"},"subject":"subject","when":{"and":[{"args":[{"var":"subject"},{"var":"r"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_same_direction","params":[{"param":"p.overtake_same_direction_cos"}]}]}]}},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"implies":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"r"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"body":{"and":[{"args":[{"var":"r"},{"var":"la"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"la"},{"var":"lb"}],"atom":"st_lane_adjacency_left","params":[]},{"args":[{"var":"subject"},{"var":"lb"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"lane"},"var":"lb"}]},"exists_region":{"lit":"lane"},"var":"la"},{"body":{"implies":[{"args":[{"var":"r"},{"var":"lc"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"subject"},{"var":"lc"}],"atom":"rel_occupies","params":[]}}]},"forall_region":{"lit":"lane"},"var":"lc"}]}]},"holds_for":"time","length":{"param":"p.overtake_window"},"subject":"subject"}]}]}]},"forall_user":"r"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_interaction_overtake_pass,kin_time,kin_speed,rel_same_direction,rel_longitudinal_overlap,st_lane,rel_occupies,st_lane_adjacency_count,rel_bearing,st_lane_adjacency_left,dev_temporary_traffic_control,dev_governs,rel_surface_gap,env_ice_or_snow,env_wet_road,env_precipitation
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle	DEF-NRS-484A-025::bicycle	DEF-NRS-484B-017::electric_bicycle	DEF-NRS-484B-018::electric_scooter	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.lane_adjacency
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	r
+OCC	r
+OCC	r
+OCC	subject,r
+OCC	subject
+OCC	r
+OCC	subject,r
+OCC	subject
+OCC	subject
+OCC	r
+OCC	?lr
+OCC	r,lr
+OCC	lr
+OCC	?r
+OCC	subject,r
+OCC	r
+OCC	r
+OCC	r
+OCC	subject,r
+OCC	subject
+OCC	r
+OCC	subject,r
+OCC	subject
+OCC	subject
+OCC	r
+OCC	?lr
+OCC	r,lr
+OCC	lr
+OCC	subject
+OCC	subject,r
+OCC	subject
+OCC	r
+OCC	subject,r
+OCC	?le
+OCC	r,le
+OCC	?lf
+OCC	le,lf
+OCC	?lg
+OCC	le,lg
+OCC	?d
+OCC	d,lg
+OCC	?u
+OCC	u,subject
+OCC	u,r
+OCC	u,lg
+OCC	subject,u
+OCC	subject
+OCC	
+OCC	
+OCC	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	r
+OCC	?la
+OCC	r,la
+OCC	?lb
+OCC	la,lb
+OCC	subject,lb
+OCC	?lc
+OCC	r,lc
+OCC	subject,lc
+LITERAL	1/1	TrafficSpec.PUnit'.count
+LITERAL	1/1	TrafficSpec.PUnit'.count
+TIME	occurrences	0
+TIME	checks	6
+TIME	lint	687
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	85
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	86
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	57
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	91
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	117
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	73
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	79
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	81
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	117
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	117
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	116
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	119
+SCEN	branch_9	not_applicable	not_applicable	ok
+TIME	scenario:branch_9	81
+TIME	witnesses	1219
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_270_2a_o2.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_270_2a_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_270_2a_o2	34	12
+TIME	adequacy_start	17
+TIME	adequacy	27634
+DONE

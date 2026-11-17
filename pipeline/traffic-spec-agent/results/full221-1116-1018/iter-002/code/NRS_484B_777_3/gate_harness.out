@@ -1,0 +1,82 @@
+'TrafficSpec.Rules.NRS_484B_777_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_777_3.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_777_3","intentions":[],"laws":["NRS-484B-777-3"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},{"and":[{"body":{"args":[{"var":"subject"},{"var":"rw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"rw"},{"not":{"body":{"args":[{"var":"subject"},{"var":"bl"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"bl"}}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"NRS_484B_777_3","intentions":[],"laws":["NRS-484B-777-3"],"narrowings":[],"obligation":{"not":{"body":{"body":{"and":[{"not":{"same":[{"var":"b"},{"var":"subject"}]}},{"and":[{"not":{"same":[{"var":"c"},{"var":"subject"}]}},{"and":[{"not":{"same":[{"var":"b"},{"var":"c"}]}},{"and":[{"or":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"b"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"or":[{"args":[{"var":"c"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"c"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"c"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"not":{"args":[{"var":"b"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},{"and":[{"not":{"args":[{"var":"c"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]}]},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]}]},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"b"},{"var":"c"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.abreast_gap_max"}},{"or":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.abreast_gap_max"}},{"cmp":"le","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.abreast_gap_max"}}]}]}]}]}]}]}]}]}]}]}]}]},"exists_user":"c"},"exists_user":"b"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},{"and":[{"body":{"args":[{"var":"subject"},{"var":"rw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"rw"},{"not":{"body":{"args":[{"var":"subject"},{"var":"bl"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"bl"}}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"NRS_484B_777_3","intentions":[],"laws":["NRS-484B-777-3"],"narrowings":[],"obligation":{"not":{"body":{"body":{"and":[{"not":{"same":[{"var":"b"},{"var":"subject"}]}},{"and":[{"not":{"same":[{"var":"c"},{"var":"subject"}]}},{"and":[{"not":{"same":[{"var":"b"},{"var":"c"}]}},{"and":[{"or":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"b"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"b"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"or":[{"args":[{"var":"c"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"c"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"c"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"b"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"c"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]}]},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]}]},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"b"},{"var":"c"}],"atom":"rel_same_direction","params":[{"param":"p.side_by_side_same_direction_cos"}]}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"b"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.abreast_gap_max"}},{"or":[{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"c"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.abreast_gap_max"}},{"cmp":"le","lhs":{"args":[{"var":"b"},{"var":"c"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.abreast_gap_max"}}]}]}]}]}]}]}]}]}]}]}]}]},"exists_user":"c"},"exists_user":"b"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_complete_halt,st_roadway,rel_occupies,st_bicycle_lane_or_path,rel_longitudinal_overlap,rel_same_direction,rel_surface_gap
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-025::bicycle	DEF-NRS-484B-017::electric_bicycle	DEF-NRS-484B-018::electric_scooter
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.longitudinal_overlap
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?rw
+OCC	subject,rw
+OCC	?bl
+OCC	subject,bl
+OCC	?b
+OCC	?c
+OCC	b,subject
+OCC	c,subject
+OCC	b,c
+OCC	b
+OCC	b
+OCC	b
+OCC	c
+OCC	c
+OCC	c
+OCC	b
+OCC	c
+OCC	subject
+OCC	b
+OCC	subject,b
+OCC	subject
+OCC	c
+OCC	subject,c
+OCC	b
+OCC	c
+OCC	b,c
+OCC	subject,b
+OCC	subject,c
+OCC	b,c
+TIME	occurrences	1
+TIME	checks	5
+TIME	lint	58
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	40
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	10
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	38
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	28
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	39
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	11
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	38
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	38
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	18
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	39
+TIME	witnesses	299
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_777_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_777_3.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_777_3	20	9
+TIME	adequacy_start	7
+TIME	adequacy	3125
+DONE

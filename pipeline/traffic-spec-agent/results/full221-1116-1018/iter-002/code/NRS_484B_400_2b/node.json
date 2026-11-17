@@ -1,0 +1,227 @@
+{
+ "node_id": "NRS_484B_400_2b",
+ "law_refs": [
+  "NRS-484B-400-2b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "intends to turn",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "at an intersection and:",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "Both intersecting highways are two-directional:",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "After entering the intersection, the left turn must be made so as to leave the intersection to the right of the centerline of the highway being entered.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.aggregate: 'membership of a legal aggregate'. The definitions table admits DEF-NRS-484A-320::vehicle for 'vehicle' (DEF-NRS-484A-320: 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway, except: (1) Devices moved by human power ...'); claimed as the aggregate, never expanded. 'driver' (DEF-NRS-484A-080: 'every person who drives or is in actual physical control of a vehicle') is a relational role read through the vehicle's controlled motion (observable_reading agency); the aggregate carries only the class."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "st.intersection: 'the region where two roadways meet, bounded by the prolongation of their edges' (DEF-NRS-484A-105 'the area embraced within the prolongation or connection of the lateral curb lines ... of two highways which join one another'); i is the target region of the declared intention and the region the left turn is made through: the subject's footprint overlaps it (rel.occupies: 'a road user's footprint overlaps a lane / region') from its entry to its exit. st.intersection is 'not a stand-in for a crosswalk or a stop line': no halt place is read."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.intersection",
+    "st.median_or_divider",
+    "st.lane",
+    "st.roadway",
+    "st.lane_direction"
+   ],
+   "derived": [],
+   "justification": "'two-directional' uses DEF-NRS-484B-073: 'an undivided highway upon which vehicles are allowed to proceed in opposite directions'. The intersecting highways are the highways i lies on (st.on_way: 'an intersection lies on every way that meets there'; st.highway: 'the entire public way between its boundary lines'). 'undivided' is read with DEF-NRS-484A-070 ('divided into two or more roadways by means of a physical barrier or dividing section'): no st.median_or_divider ('physical barrier or dividing section between roadways') lies on h. 'allowed to proceed in opposite directions' is two carriers lying on h (lanes or roadway directed segments) whose designated directions (st.lane_direction) are opposed, the cosine at or below minus p.lane_opposed_direction_cos. 'Both' is every highway i lies on. st.on_way is 'not a stand-in for nearness to a way'."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.left_turn_through_region",
+    "drv.motion.moving_against_carrier"
+   ],
+   "justification": "drv.motion.left_turn_through_region(subject, i): 'Road user a has made a turn to the left through region r, recognized as it leaves r. The act begins at the observation at which a's footprint came to overlap r (rel.occupies) ... its entry into r. The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r.' 'After entering the intersection, the left turn must be made so as to leave the intersection' is that act, begun at the entry and recognized at the exit. 'to the right of the centerline of the highway being entered': DEF-NRS-484A-040 makes the centerline the line 'to indicate each portion of a highway allocated to traffic proceeding in the two opposite directions', so the subject leaves to its right where, at the exit, it moves against the designated direction of no lane its footprint overlaps (rel.occupies over st.lane): drv.motion.moving_against_carrier(subject, l): 'part of its motion runs opposite to r's designated direction', with speed_tol p.halt_speed_tolerance, is false for every such lane l. The lanes the subject overlaps at the exit lie on the highway it enters. moving_against_carrier 'says nothing of whether a occupies r', which rel.occupies supplies."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s2",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the left at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle). The judged observation is the recognition of drv.motion.left_turn_through_region(subject, i; step p.heading_since_step_carla_scene_graph, turn_min p.turn_heading_min, u_turn_min p.u_turn_heading_min) for an intersection i (st.intersection): the subject's exit from i after its entry, its heading change since the entry in the left-turn band. The act is under way from the entry into i (rel.occupies rising) up to the exit. int.left_turn(subject, i) is declared true at some observation while the act is under way (read behind the judged observation). i is the act's region and its kind is read at the recognition. Every highway h that i lies on (st.on_way i h) is two-directional, read at the recognition: no st.median_or_divider lies on h, and two lanes or roadway segments lying on h carry designated directions whose cosine is at or below minus p.lane_opposed_direction_cos.",
+ "obligation": "At the recognition (the exit from i), for every st.lane l the subject's footprint overlaps (rel.occupies), drv.motion.moving_against_carrier(subject, l; speed_tol p.halt_speed_tolerance) is false: the subject leaves the intersection in lanes allocated to its own direction, to the right of the centerline of the highway entered. A lane overlapped against its direction violates the duty; an unobserved lane direction or velocity makes it unknown where the verdict turns on it. Where the entry lies before the recording or a yaw rate since the entry is missing, the act is unknown.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min",
+  "p.halt_speed_tolerance",
+  "p.lane_opposed_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'to the right of the centerline of the highway being entered' is read through the lanes the subject overlaps as it leaves the intersection: none may carry a designated direction its motion runs against. A highway entered with no mapped lane is not read here.",
+   "kind": "reading"
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.left_turn_through_region",
+  "boundary": "event",
+  "onset": {
+   "words": "its entry into r",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "drv.motion.left_turn_through_region: 'The act begins at the observation at which a's footprint came to overlap r (rel.occupies), having not overlapped it at the previous observation: its entry into r.' r is the intersection i (st.intersection)."
+  },
+  "recognition": "The act is recognized at the observation at which a's footprint does not overlap r, having overlapped it at the previous observation: its exit from r.",
+  "under_way": {
+   "words": "the observations from the subject's entry into the intersection up to its exit, at which it is moving through it and turning",
+   "atoms": [
+    "rel.occupies",
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region': the subject did not overlap i before its entry, so overlap since the entry, together with the heading change integrated from kin.yaw_rate ('rate of change of heading') since that entry, tells an observation inside the turn from one on the approach before it began."
+  },
+  "spans": {
+   "s3": "at_recognition",
+   "s4": "at_recognition"
+  }
+ },
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two two-way undivided highways meet; the subject, with int.left_turn declared at the intersection, enters it, turns left (heading change in the band) and at its exit overlaps the receiving highway's lane whose designated direction its velocity runs against."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same layout and intention; at its exit the subject overlaps only the receiving lane whose designated direction its velocity runs along."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Same as forbid, but the receiving highway is one-way (its lanes carry no opposed directions) or divided by a median: the condition fails."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same as forbid, but the source declares kin.yaw_rate absent, so the left turn through the intersection is not decided.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The subject passes straight through the intersection (heading change below the turn band) and exits into a lane against its direction: no left turn is recognized."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "int.left_turn is declared true at the entry and at the first observations inside the intersection, then false (the source's plan marks the turn completed) before the exit; the subject exits into an opposing lane: the intention held while the turn was under way."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "int.left_turn is declared true on the approach only and false from the entry onwards (the plan changed to straight through), yet the subject turns left and exits into an opposing lane: no intention to turn at the intersection is declared while the turn is under way."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "proposed this iteration by LVMC_11_40_080_o1"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "proposed this iteration by LVMC_11_40_080_o1"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B"
+  },
+  {
+   "name": "p.lane_opposed_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle (about twenty-five degrees) off exactly opposed at which the designated directions of two mapped lanes of one way count as opposite directions of travel: the direction noise of map lane segments along a gently curving way",
+   "source": "proposed this iteration by NRS_484B_307_8a_o2"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

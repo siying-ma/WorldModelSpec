@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 35406,
+  "stop_reason": "end_turn",
+  "session_id": "9e3bf517-297e-4bec-9584-d0de71d37497",
+  "total_cost_usd": 0.5143936600000001,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 46707,
+   "cache_read_input_tokens": 49594,
+   "output_tokens": 3988,
+   "output_tokens_details": {
+    "thinking_tokens": 968
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 46707,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 784,
+     "cache_read_input_tokens": 46463,
+     "cache_creation_input_tokens": 3375,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3375
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42688,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00470778,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3988,
+    "cacheReadInputTokens": 49594,
+    "cacheCreationInputTokens": 46707,
+    "webSearchRequests": 0,
+    "costUSD": 0.50968588,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 968,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46707,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote the revised record for `drv.motion.left_turn` to `record.jsonl`; it hasn't been through the validator or the gate yet.\n\n**The gate failure was in the witness traces, not the record.** All three scenarios failed for the same reason: at t=8000 the bicycle kept its t=7000 heading while its yaw rate already turned it (15° in `holds` and `blind`, 5° in `fails`). The adapter holds a scene's rate over the interval before it, so it can't produce such a trace. The coder's note blames a `SCOPE_VIOLATION` from runtime tmp files, but the verdict I was given is `WITNESS_FAIL`.\n\n**What changed in the record:**\n- **Scenario wording:** the `holds` and `fails` scenarios now say the heading at each observation must equal the previous heading turned by this observation's yaw rate times the interval between them. `blind` is now the `holds` trace with `kin.yaw_rate` masked. The next coder should then write traces the adapter can produce.\n- **`differs_from` added:** this fixes the validator's defect against `drv.motion.u_turn`. That concept covers a reversal to either hand: the size of the heading change lies from `u_turn_min` to 360° minus `u_turn_min`. This one covers only a left turn: a signed change from `turn_min` up to, but not including, `u_turn_min`. Neither concept covers what the other does, so `drv.motion.u_turn` can't stand in for this one.\n- **Justification:** the first element now quotes the current `prim.heading_change` contract, which includes \"sampled too sparsely\".\n\n**Kept as it was:** the contract text, formals, parameters, act section and elements. The `used_by` list also stays at `LVMC_11_40_080_o1` and `LVMC_11_40_080_o2`. The users list in the prompt shows different nodes (`LVMC_11_40_080_o1` plus four `NRS_484B_*` nodes), and I didn't reconcile the two.\n\n**One possible review issue:** `prim.heading_change` is also unknown where the window is \"sampled too sparsely\", but the contract's last sentence names only a truncated window or a missing yaw rate. I left the contract alone because rewording it sends the calling laws back to their planner. The concept review may flag this.",
+  "ttft_ms": 11245,
+  "type": "result",
+  "duration_ms": 35262,
+  "uuid": "e1623907-eaf9-422e-ac41-540520dd2f66",
+  "ttft_stream_ms": 1179,
+  "time_to_request_ms": 503,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 52,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 16,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 55,
+   "tool_pool_refresh": 2,
+   "init_message": 4,
+   "init_frame_send": 9,
+   "engine_pickup": 12,
+   "loop_entry": 5,
+   "message_prep": 2,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 312,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 5,
+   "message_normalization": 2,
+   "client_creation": 2,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 44,
+  "time_to_request_cpu_ms": 380,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 16,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 4,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 5,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 2,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1179,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42688,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00470778,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3988,
+    "cacheReadInputTokens": 49594,
+    "cacheCreationInputTokens": 46707,
+    "webSearchRequests": 0,
+    "costUSD": 0.50968588,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 968,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46707,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

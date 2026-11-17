@@ -1,0 +1,35 @@
+'TrafficSpec.Rules.NRS_484B_153_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_153_3.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_153_3","intentions":[],"laws":["NRS-484B-153-3"],"narrowings":[],"operationalizations":[{"concepts":["sig.door_open"],"params":["p.traffic_side_door_max_open"],"standard":"longer than is necessary for immediate loading or unloading of passengers or cargo","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"args":[{"var":"subject"},{"lit":"traffic"}],"atom":"sig_door_open","params":[]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_153_3","intentions":[],"laws":["NRS-484B-153-3"],"narrowings":[],"obligation":{"not":{"body":{"args":[{"var":"subject"},{"lit":"traffic"}],"atom":"sig_door_open","params":[]},"holds_for":"time","length":{"param":"p.traffic_side_door_max_open"},"subject":"subject"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"args":[{"var":"subject"},{"lit":"traffic"}],"atom":"sig_door_open","params":[]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_153_3","intentions":[],"laws":["NRS-484B-153-3"],"narrowings":[],"obligation":{"not":{"body":{"args":[{"var":"subject"},{"lit":"traffic"}],"atom":"sig_door_open","params":[]},"holds_for":"time","length":{"param":"p.traffic_side_door_max_open"},"subject":"subject"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,sig_door_open,kin_time
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.door_open
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+TIME	occurrences	0
+TIME	checks	2
+TIME	lint	303
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	724
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	365
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	7
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	11
+TIME	witnesses	1107
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_153_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_153_3.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_153_3	2	3
+TIME	adequacy_start	13
+TIME	adequacy	3315
+DONE

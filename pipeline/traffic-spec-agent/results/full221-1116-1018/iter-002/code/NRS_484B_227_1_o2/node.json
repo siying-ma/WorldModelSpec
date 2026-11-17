@@ -1,0 +1,168 @@
+{
+ "node_id": "NRS_484B_227_1_o2",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a",
+   "text": "Every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "b",
+   "text": "driven upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "c",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "d",
+   "text": "and must not be driven over, across or within any dividing space, barrier or section",
+   "role": "obligation"
+  },
+  {
+   "id": "e",
+   "text": "or make any left turn, semicircular turn or U-turn,",
+   "role": "sibling"
+  },
+  {
+   "id": "f",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "exception"
+  },
+  {
+   "id": "g",
+   "text": "or at a crossover or intersection established by a public authority.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate: 'membership of a legal aggregate: the atom's literal argument is an aggregate id'. No named class stands in for it."
+  },
+  {
+   "span": "b",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.median_or_divider"
+   ],
+   "derived": [],
+   "justification": "DEF-NRS-484A-070: 'a highway divided into two or more roadways by means of a physical barrier or dividing section'. st.highway: 'the entire public way between its boundary lines'; st.median_or_divider: 'physical barrier or dividing section between roadways'; st.on_way ties the divider to the highway h ('a median or any other part of it'); rel.occupies anchors the subject on h. 'Driven' is read through the vehicle's motion."
+  },
+  {
+   "span": "d",
+   "atoms": [
+    "rel.occupies",
+    "st.median_or_divider"
+   ],
+   "derived": [],
+   "justification": "'driven over, across or within any dividing space, barrier or section' is the subject's footprint overlapping a divider region: rel.occupies, 'a road user's footprint overlaps a lane / region (... median ...)'; st.median_or_divider, 'physical barrier or dividing section between roadways'. Over, across and within are all an overlap of the footprint with the divider region; no distance stands in for it."
+  },
+  {
+   "span": "f",
+   "atoms": [
+    "rel.occupies",
+    "st.median_or_divider"
+   ],
+   "derived": [],
+   "justification": "st.median_or_divider carries an 'opening attribute where a crossover exists': 'through an opening' is the footprint overlapping a divider region of h that carries the opening attribute."
+  },
+  {
+   "span": "g",
+   "atoms": [
+    "rel.occupies",
+    "st.median_or_divider",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "A crossover is a divider region with the opening attribute; an intersection is st.intersection, 'the region where two roadways meet'; rel.occupies places the subject at it. 'Established by a public authority' is a legal status read through the feature's presence."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "At every observation at which the subject occupies a highway h (st.highway) on which a median_or_divider region lies (st.on_way), except where the subject's footprint overlaps an intersection lying on h.",
+ "obligation": "Re-binding h as in the applicability: for every median_or_divider region m lying on h, the subject's footprint does not overlap m (rel.occupies), unless m carries the opening attribute (an opening in the divider or a crossover).",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "b",
+   "why": "'driven' is read through the vehicle's motion on the highway, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "g",
+   "why": "'established by a public authority' is a legal status; the crossover or intersection present on the road is its evidence.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A st.median_or_divider m without the opening attribute lies on highway h; the subject's footprint overlaps m as it drives across it away from any intersection."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject drives along its roadway of h; its footprint never overlaps the divider."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject drives over a painted island on a highway on which no st.median_or_divider lies."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject drives on h next to the divider; rel.occupies is absent on the source, so whether its footprint overlaps the divider is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject crosses the divider where the divider region it overlaps carries the opening attribute (a crossover)."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The subject's footprint overlaps the nose of the divider while it also overlaps an intersection lying on h."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

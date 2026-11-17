@@ -1,0 +1,68 @@
+'TrafficSpec.Rules.LVMC_11_40_130.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_40_130.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_40_130","intentions":[],"laws":["LVMC-11-40-130"],"narrowings":[],"operationalizations":[{"concepts":["env.darkness","env.ice_or_snow","env.precipitation","env.visibility","env.wet_road","kin.speed"],"params":["p.bicycle_reaction_time","p.bicycle_decel_dry","p.bicycle_decel_wet","p.bicycle_decel_ice","p.bicycle_lamp_reach"],"standard":"a speed reasonable and prudent under the conditions then existing","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_40_130","intentions":[],"laws":["LVMC-11-40-130"],"narrowings":[],"obligation":{"and":[{"cmp":"le","lhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]},"rhs":{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"args":[],"measure":"env_visibility"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]},{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"args":[],"measure":"env_visibility"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]}]}},{"implies":[{"args":[],"atom":"env_darkness","params":[]},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]},"rhs":{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"param":"p.bicycle_lamp_reach"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]},{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"param":"p.bicycle_lamp_reach"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]}]}}]}]},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_40_130","intentions":[],"laws":["LVMC-11-40-130"],"narrowings":[],"obligation":{"and":[{"cmp":"le","lhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]},"rhs":{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"args":[],"measure":"env_visibility"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]},{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"args":[],"measure":"env_visibility"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]}]}},{"implies":[{"args":[],"atom":"env_darkness","params":[]},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]},"rhs":{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"param":"p.bicycle_lamp_reach"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]},{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.bicycle_decel_dry"},"then":{"param":"p.bicycle_decel_wet"}},"then":{"param":"p.bicycle_decel_ice"}},{"sub":[{"param":"p.bicycle_lamp_reach"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.bicycle_reaction_time"}]}]}]}]}}]}]},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,kin_speed,env_ice_or_snow,env_wet_road,env_precipitation,env_visibility,env_darkness
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-025::bicycle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	env.visibility
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	
+OCC	
+OCC	
+OCC	
+OCC	subject
+OCC	
+OCC	
+OCC	
+OCC	
+OCC	subject
+OCC	
+OCC	subject
+OCC	subject
+OCC	
+OCC	
+OCC	
+OCC	subject
+OCC	
+OCC	
+OCC	
+OCC	subject
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	4
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	39
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	35
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	36
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	46
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	29
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	34
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	33
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	58
+TIME	witnesses	310
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_40_130.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_40_130.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_40_130	4	7
+TIME	adequacy_start	5
+TIME	adequacy	1117
+DONE

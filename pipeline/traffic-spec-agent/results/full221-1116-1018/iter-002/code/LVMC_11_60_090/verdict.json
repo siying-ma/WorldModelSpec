@@ -1,0 +1,417 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 11 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "rises": {
+        "not": {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       }
+      },
+      {
+       "since": [
+        {
+         "body": {
+          "or": [
+           {
+            "same": [
+             {
+              "var": "q"
+             },
+             {
+              "var": "r"
+             }
+            ]
+           },
+           {
+            "not": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "q"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           }
+          ]
+         },
+         "forall_region": {
+          "lit": "intersection"
+         },
+         "var": "q"
+        },
+        {
+         "and": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "k"
+               },
+               {
+                "lit": "taxicab_stand"
+               }
+              ],
+              "atom": "st_curb_zone_kind",
+              "params": []
+             },
+             {
+              "rises": {
+               "not": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "k"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               }
+              }
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "curb_zone"
+           },
+           "var": "k"
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "lit": "right_turn_only"
+               }
+              ],
+              "atom": "dev_regulatory_sign_code",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "derived": "prim_conditions_hold",
+                "params": []
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    },
+                    {
+                     "var": "v"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "v"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "travel_region"
+                },
+                "var": "v"
+               }
+              ]
+             }
+            ]
+           },
+           "exists_device": {
+            "lit": "regulatory_sign"
+           },
+           "var": "d"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       }
+      ],
+      "atom": "ru_taxicab",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_60_090",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-60-090"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "rises": {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        },
+        {
+         "since": [
+          {
+           "body": {
+            "or": [
+             {
+              "same": [
+               {
+                "var": "q"
+               },
+               {
+                "var": "r"
+               }
+              ]
+             },
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "q"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             }
+            ]
+           },
+           "forall_region": {
+            "lit": "intersection"
+           },
+           "var": "q"
+          },
+          {
+           "and": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "k"
+                 },
+                 {
+                  "lit": "taxicab_stand"
+                 }
+                ],
+                "atom": "st_curb_zone_kind",
+                "params": []
+               },
+               {
+                "rises": {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "k"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 }
+                }
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "curb_zone"
+             },
+             "var": "k"
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "lit": "right_turn_only"
+                 }
+                ],
+                "atom": "dev_regulatory_sign_code",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "derived": "prim_conditions_hold",
+                  "params": []
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "d"
+                      },
+                      {
+                       "var": "v"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "v"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    }
+                   ]
+                  },
+                  "exists_region": {
+                   "lit": "travel_region"
+                  },
+                  "var": "v"
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_device": {
+              "lit": "regulatory_sign"
+             },
+             "var": "d"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "derived": "drv_motion_right_turn_through_region",
+       "params": [
+        {
+         "param": "p.heading_since_step_carla_scene_graph"
+        },
+        {
+         "param": "p.turn_heading_min"
+        },
+        {
+         "param": "p.u_turn_heading_min"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "f70ea6bb4a812ee397648248",
+  "candidate_digest": "c07e96ef06e44202cae0cdc5d8d8547262c045901a003084acdafe19c0218b84"
+ }
+}

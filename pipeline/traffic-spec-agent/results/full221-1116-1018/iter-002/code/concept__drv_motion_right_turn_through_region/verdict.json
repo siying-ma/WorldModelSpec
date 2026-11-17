@@ -1,0 +1,97 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.time",
+   "kin.yaw_rate",
+   "rel.occupies"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"rises\":{\"not\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},\"rhs\":{\"neg\":{\"param\":\"$p2\"}}},{\"cmp\":\"le\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},\"rhs\":{\"neg\":{\"param\":\"$p1\"}}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "rises": {
+      "not": {
+       "args": [
+        {
+         "var": "a"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     }
+    },
+    {
+     "and": [
+      {
+       "cmp": "gt",
+       "lhs": {
+        "heading_since": "a",
+        "max_step": {
+         "param": "step"
+        },
+        "onset": {
+         "rises": {
+          "args": [
+           {
+            "var": "a"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        }
+       },
+       "rhs": {
+        "neg": {
+         "param": "u_turn_min"
+        }
+       }
+      },
+      {
+       "cmp": "le",
+       "lhs": {
+        "heading_since": "a",
+        "max_step": {
+         "param": "step"
+        },
+        "onset": {
+         "rises": {
+          "args": [
+           {
+            "var": "a"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        }
+       },
+       "rhs": {
+        "neg": {
+         "param": "turn_min"
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "39a2799a773368479961a629",
+  "candidate_digest": "c5534bf199127293b1e913cf9695d2b25f1cb0447fb3a4205e0ddaab78587f2a"
+ }
+}

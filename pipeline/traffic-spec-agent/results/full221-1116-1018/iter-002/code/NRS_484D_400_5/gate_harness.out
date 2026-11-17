@@ -1,0 +1,38 @@
+'TrafficSpec.Rules.NRS_484D_400_5.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484D_400_5.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484D_400_5","intentions":[],"laws":["NRS-484D-400-5"],"narrowings":[],"operationalizations":[],"residues":["A permission about equipment and its audible range; it imposes no duty on conduct and the rule judges only whether the siren sounds.","Restates the permission the exception (s4, s5) grants: in that event the siren may sound. The purpose 'to warn pedestrians and other drivers of his or her approach' is what a sounding siren does; the duty is the same whether or not these words are read.","A permission to show warning lamps without the siren; it imposes no duty, and the siren duty never judges lamps alone."],"surrogate":false}
+RULEJSON	{"applicability":{"not":{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]}]}]}]},{"or":[{"args":[{"var":"subject"},{"lit":"red"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]}]}]}]}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484D_400_5","intentions":[],"laws":["NRS-484D-400-5"],"narrowings":[],"obligation":{"not":{"args":[{"var":"subject"}],"atom":"sig_siren","params":[]}},"residues":["A permission about equipment and its audible range; it imposes no duty on conduct and the rule judges only whether the siren sounds.","Restates the permission the exception (s4, s5) grants: in that event the siren may sound. The purpose 'to warn pedestrians and other drivers of his or her approach' is what a sounding siren does; the duty is the same whether or not these words are read.","A permission to show warning lamps without the siren; it imposes no duty, and the siren duty never judges lamps alone."],"surrogate":false}
+RULEXJSON	{"applicability":{"not":{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]}]}]}]},{"or":[{"args":[{"var":"subject"},{"lit":"red"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"blue"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"amber"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"},{"lit":"rotating"}],"atom":"sig_warning_lamp","params":[]}]}]}]}]}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484D_400_5","intentions":[],"laws":["NRS-484D-400-5"],"narrowings":[],"obligation":{"not":{"args":[{"var":"subject"}],"atom":"sig_siren","params":[]}},"residues":["A permission about equipment and its audible range; it imposes no duty on conduct and the rule judges only whether the siren sounds.","Restates the permission the exception (s4, s5) grants: in that event the siren may sound. The purpose 'to warn pedestrians and other drivers of his or her approach' is what a sounding siren does; the duty is the same whether or not these words are read.","A permission to show warning lamps without the siren; it imposes no duty, and the siren duty never judges lamps alone."],"surrogate":false}
+ATOMS	ru_aggregate,sig_warning_lamp,sig_siren
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-020::authorized_emergency_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.siren
+MANIFEST	branch_1	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+TIME	occurrences	0
+TIME	checks	2
+TIME	lint	3
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-020::authorized_emergency_vehicle]
+TIME	scenario:forbid	10
+SCEN	permit	compliant	?	permit: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484A-020::authorized_emergency_vehicle]
+TIME	scenario:permit	8
+SCEN	idle	not_applicable	?	idle: expected not_applicable, got unknown [aggregate_unresolved:DEF-NRS-484A-020::authorized_emergency_vehicle]
+TIME	scenario:idle	8
+SCEN	blind	unknown	?	blind: unknown for [aggregate_unresolved:DEF-NRS-484A-020::authorized_emergency_vehicle], not for an atom the manifest masks
+TIME	scenario:blind	20
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	7
+TIME	witnesses	54
+DONE_WITNESSES

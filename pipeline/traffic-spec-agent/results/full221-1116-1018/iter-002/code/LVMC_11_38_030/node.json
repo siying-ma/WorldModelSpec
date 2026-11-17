@@ -1,0 +1,156 @@
+{
+ "node_id": "LVMC_11_38_030",
+ "law_refs": [
+  "LVMC-11-38-030"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.moped"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "No motorcycle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "or motor scooter",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall be ridden",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "upon any sidewalk",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "of the City",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle"
+   ],
+   "derived": [],
+   "justification": "'motorcycle' is the admitted aggregate DEF-NRS-484A-135::motorcycle ('every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground, excluding an electric bicycle, a tractor or a moped'), one atom, never replaced by ru.motorcycle."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.moped"
+   ],
+   "derived": [],
+   "justification": "No definition applies to 'motor scooter'. A seated motor-driven scooter is either a motor vehicle on not more than three wheels with a seat, already a member of the motorcycle aggregate of s1, or a small-engined scooter that DEF-NRS-484A-125 names as a 'motor-driven scooter', which the motorcycle definition excludes as a moped: ru.moped, 'a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it'. The standing electric scooter (ru.electric_scooter) is not a 'motor scooter' of this chapter: the code defines and regulates 'electric scooter' separately (DEF-LVMC-11-02-083, chapter 11.40)."
+  },
+  {
+   "span": "s3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'be ridden' is the machine in controlled motion: not drv.motion.complete_halt ('The road user is at rest at the observation — complete cessation from movement', speed at or below a tolerance). A motorcycle at rest on a sidewalk is not ridden. Who rides is read through the machine's motion (observable_reading, agency)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "'sidewalk' (DEF-NRS-484A-240: 'that portion of a highway between the curb lines or the lateral lines of a highway and the adjacent property lines intended for the use of pedestrians') is st.sidewalk, 'area for pedestrians between roadway and property line'; not a crosswalk, its exclusion. 'upon any' is the footprint overlapping it: rel.occupies ('a road user's footprint overlaps a lane / region (... sidewalk ...)')."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s5",
+   "id": "asm.within_city_limits",
+   "meaning": "the place of the road user at the observation lies within the territorial limits of the incorporated city whose ordinances the reading applies, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.moped"
+   ]
+  }
+ ],
+ "applicability": "The subject is a motorcycle (ru.aggregate=DEF-NRS-484A-135::motorcycle) or a moped (ru.moped) whose footprint overlaps a sidewalk (rel.occupies, st.sidewalk) at a place the reading declares within the city's limits (asm.within_city_limits), read at the judged observation.",
+ "obligation": "At every such observation the subject is at rest (drv.motion.complete_halt with speed_tol p.halt_speed_tolerance); moving while on the sidewalk is violated.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'be ridden' is read through the machine's controlled motion (not at rest); whether a person sits on it or pushes it is not told apart.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motorcycle (ru.motorcycle) moves at 3 m/s with its footprint on a st.sidewalk, at a place declared asm.within_city_limits true."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A motorcycle stands at rest (kin.speed at or below p.halt_speed_tolerance) on a sidewalk within the city."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A motorcycle moves on the roadway and occupies no sidewalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A motorcycle is on a sidewalk within the city; the source does not observe kin.speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A moped (ru.moped) moves at 2 m/s on a sidewalk within the city."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A motorcycle moves on a sidewalk at a place declared asm.within_city_limits false."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed quantisation of the acquisition standard's scene graph"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

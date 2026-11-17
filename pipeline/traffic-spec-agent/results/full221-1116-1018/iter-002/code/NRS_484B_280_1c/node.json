@@ -1,0 +1,322 @@
+{
+ "node_id": "NRS_484B_280_1c",
+ "law_refs": [
+  "NRS-484B-280-1c"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "z1",
+   "text": "A driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "z2a",
+   "text": "shall: Exercise",
+   "role": "obligation"
+  },
+  {
+   "id": "z2",
+   "text": "proper caution",
+   "role": "standard"
+  },
+  {
+   "id": "z3",
+   "text": "upon observing",
+   "role": "trigger"
+  },
+  {
+   "id": "z4",
+   "text": "a pedestrian:",
+   "role": "trigger"
+  },
+  {
+   "id": "z5",
+   "text": "(1) On or near a highway, street or road;",
+   "role": "condition"
+  },
+  {
+   "id": "z6",
+   "text": "(2) At or near a bus stop or bench, shelter or transit stop for passengers of public mass transportation",
+   "role": "condition"
+  },
+  {
+   "id": "z7",
+   "text": "or in the act of boarding",
+   "role": "condition"
+  },
+  {
+   "id": "z8",
+   "text": "a bus or other public transportation vehicle;",
+   "role": "condition"
+  },
+  {
+   "id": "z9",
+   "text": "or (3) In or near a school zone or a school crossing zone",
+   "role": "condition"
+  },
+  {
+   "id": "z10",
+   "text": "marked in accordance with NRS 484B.363",
+   "role": "condition"
+  },
+  {
+   "id": "z11",
+   "text": "or a marked or unmarked crosswalk.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "z1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'), claimed as ru.aggregate; 'driver' is a role read through the vehicle's controlled motion (observable_reading, agency), ru.aggregate being 'Not a stand-in for: ... a relational role such as who drives'."
+  },
+  {
+   "span": "z2a",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "What the driver must exercise shows in the vehicle's conduct toward the observed pedestrian: its motion, kin.speed 'magnitude of velocity' (the duty read while it moves above p.halt_speed_tolerance), and the outcome caution exists to prevent, rel.contact 'the bodies of two road users ... touch or overlap (a collision)', which is 'Not a stand-in for: a near miss'; the near miss is bounded by the operationalization of z2."
+  },
+  {
+   "span": "z3",
+   "atoms": [
+    "rel.visible"
+   ],
+   "derived": [],
+   "justification": "Observing is a perception; the ontology reads what was in an actual road user's line of sight as rel.visible, 'b is visible from a: an unobstructed line of sight from a's reference point to b's body' (observable_reading, perception). Its exclusions — a distance, the sight distance of a place, the clarity of the air, a lamp being lit — do not apply: the words name what the driver could see of an actual pedestrian."
+  },
+  {
+   "span": "z4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Pedestrian' is admitted as DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'), claimed as ru.aggregate."
+  },
+  {
+   "span": "z5",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'Highway' (DEF-NRS-484A-095, 'the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic'), 'street' (DEF-NRS-484A-265, 'the entire width between the boundary lines of every highway inside the territorial limits of a city') and 'road' (DEF-NRS-484A-215, 'the entire width between the boundary lines of every highway outside the territorial limits of a city') are all highways, and together every highway whatever the city limits: st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders'; it is 'Not a stand-in for: the roadway', and the words name the whole way. 'On' is rel.occupies, 'a road user's footprint overlaps a lane / region'; 'near' is st.region_geometry, 'the ground distance from a road user's body outline to it (zero when they overlap)', at most p.pedestrian_near_reach. st.region_geometry is 'Not a stand-in for: occupancy', which is why rel.occupies carries 'on'."
+  },
+  {
+   "span": "z6",
+   "atoms": [
+    "st.transit_stop",
+    "rel.occupies",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'a bus stop or bench, shelter or transit stop for passengers of public mass transportation' is st.transit_stop, 'a bus stop, bench, shelter or platform for public transport passengers'. 'Stop' here is part of the place name 'bus stop' and 'transit stop', not the halt DEF-NRS-484A-255 or DEF-NRS-484A-260 defines. 'At' is rel.occupies of the stop's region and 'near' is its st.region_geometry ground distance at most p.pedestrian_near_reach, which also anchors the stop to the pedestrian."
+  },
+  {
+   "span": "z7",
+   "atoms": [
+    "drv.motion.complete_halt",
+    "sig.door_open",
+    "rel.surface_gap"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "Boarding is read through the conduct that shows it (observable_reading, purpose): the pedestrian within p.pedestrian_near_reach of the vehicle's body, rel.surface_gap 'distance between the nearest points of two bodies', while the vehicle is at rest, drv.motion.complete_halt 'The road user is at rest at the observation', and has a door open, sig.door_open 'a door open'. The halt concept 'says nothing of how long the road user stays at rest, where it is, or why', which the reading does not need."
+  },
+  {
+   "span": "z8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-030::bus",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "ru.transit_bus"
+   ],
+   "derived": [],
+   "justification": "'Bus' is admitted as DEF-NRS-484A-030::bus ('a vehicle owned by the State, a political subdivision or a private school or nursery, designed for carrying more than 10 passengers ... or a vehicle, other than a taxicab, designed and used for the transportation of persons for compensation'), claimed as ru.aggregate. 'Other public transportation vehicle' is a member of the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported ... upon a highway', excluding devices 'used exclusively upon stationary rails') that is in public transit service: ru.transit_bus, 'bus in public transit service, identifiable by its livery or route display', a class the words name on their own and no definition admits."
+  },
+  {
+   "span": "z9",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "st.travel_region",
+    "rel.occupies",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'School zone' (DEF-NRS-484B-063, 'those sections of streets which are adjacent to school property') and 'school crossing zone' (DEF-NRS-484B-060, 'those sections of streets not adjacent to school property that pupils cross while following a designated walking route to school') are administrative categories; the law takes them where they are 'marked', and the ontology makes the sign the atom where a category is marked on the road: dev.zone_sign, 'a sign that begins or ends a signed zone along the road; kind ∈ {school, school_crossing, ...}', with kind school or school_crossing and its end attribute false; the sections of street are the travel regions it governs, dev.governs 'the travel regions whose traffic the device controls', of kind st.travel_region. dev.zone_sign is 'Not a stand-in for: whether the condition holds now', which the words do not ask: the zone, not its hours, places the pedestrian. 'In' is rel.occupies of such a region and 'near' its st.region_geometry ground distance at most p.pedestrian_near_reach."
+  },
+  {
+   "span": "z10",
+   "atoms": [
+    "dev.zone_sign"
+   ],
+   "derived": [],
+   "justification": "'marked in accordance with NRS 484B.363' is the zone's marking: dev.zone_sign of kind school or school_crossing. Its accordance with NRS 484B.363, a statute outside this corpus, is the legal status of a feature, read through the sign's presence (observable_reading, status)."
+  },
+  {
+   "span": "z11",
+   "atoms": [
+    "st.crosswalk",
+    "rel.occupies",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'Crosswalk' (DEF-NRS-484A-065, '(1) That part of a highway at an intersection included within the connections of the lateral lines of the sidewalks ... or (2) Any portion of a highway at an intersection or elsewhere distinctly indicated for pedestrian crossing by lines or other markings on the surface') is st.crosswalk, 'marked crossing, or the unmarked prolongation of sidewalks at an intersection; marked attribute', both values of the attribute read since the words name 'a marked or unmarked crosswalk'. 'In or near' (carried from z9) is rel.occupies of the crosswalk or its st.region_geometry ground distance at most p.pedestrian_near_reach."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "z2",
+   "standard": "proper caution upon observing a pedestrian (a standard of the driver's care, a state of mind)",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: while the vehicle moves, caution shows in its keeping no contact and no closest approach to the observed pedestrian, under constant velocities, within a time-to-collision horizon and below a centre clearance of about a car's half-length plus half a body width",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-130::motor_vehicle, read as driven.",
+ "obligation": "At every observation at which the subject's kin.speed is above p.halt_speed_tolerance, for every road user p other than the subject that is a member of DEF-NRS-484A-165::pedestrian, visible from the subject at that observation (rel.visible), and at one of the places: (1) p's footprint overlaps a highway (st.highway) or its ground distance to one (st.region_geometry) is at most p.pedestrian_near_reach; (2) p's footprint overlaps a transit stop (st.transit_stop) or its ground distance to one is at most p.pedestrian_near_reach, or p's rel.surface_gap to a road user v that is a member of DEF-NRS-484A-030::bus, or a member of DEF-NRS-484A-320::vehicle that is an ru.transit_bus, is at most p.pedestrian_near_reach while v is at rest (drv.motion.complete_halt with p.halt_speed_tolerance) and has a door open (sig.door_open); (3) p's footprint overlaps, or its ground distance is at most p.pedestrian_near_reach to, a travel region governed (dev.governs) by a dev.zone_sign of kind school or school_crossing that begins a zone, or a crosswalk (st.crosswalk, marked or unmarked): the subject is not in contact with p (rel.contact), and it is not the case that prim.closest_approach_within(subject, p) over p.conflict_horizon holds with prim.closest_approach_distance(subject, p) over p.conflict_horizon below p.conflict_centre_clearance. Surrogate: the verdict is evidence of caution, not a legal conclusion.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance",
+  "p.pedestrian_near_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "z1",
+   "why": "'A driver' is read through the motor vehicle's controlled motion; who or what is at the controls is not observed.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "z3",
+   "why": "'upon observing' is read as the pedestrian being in the subject's line of sight at the observation judged; a pedestrian seen earlier and occluded now is not read.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "z7",
+   "why": "'in the act of boarding' is read through the conduct that shows it: the pedestrian close to a halted bus or transit vehicle with a door open.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "z10",
+   "why": "the marking's accordance with NRS 484B.363 is read through the presence of the school or school-crossing zone sign.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "z2",
+   "why": "Proper caution, a state of mind, is read only through its outcome while the subject moves: no contact and no conflicting closest approach with the observed pedestrian; slowing, lookout and every other aspect of caution are read only through that outcome.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian visible from a moving car steps from the curb into a marked crosswalk; the car does not slow and their closest approach falls within p.conflict_horizon and below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car slows and halts short of the crosswalk while the visible pedestrian crosses; while it moves there is no contact and no conflicting closest approach."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is an electric scooter (not a member of the motor vehicle aggregate) passing a pedestrian at a crosswalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A moving car closes on a pedestrian at a crosswalk with a conflicting closest approach; whether the pedestrian is in the car's line of sight is not observed on this source.",
+   "masked": [
+    "rel.visible"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A moving car drives on a street with no pedestrian in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A pedestrian hidden behind a parked van (not visible from the car) steps into the roadway; the car's closest approach to it is in conflict but there is no contact: the duty arises only upon observing."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A visible pedestrian stands beside a halted transit bus whose door is open, boarding it; a moving car passes the bus with a conflicting closest approach to the pedestrian."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature (time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design vehicle dimensions (AASHTO)"
+  },
+  {
+   "name": "p.pedestrian_near_reach",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "the ground distance from a pedestrian's body to a place, a region or a vehicle within which the pedestrian is near it: about two walking strides plus a curb step",
+   "source": "pedestrian stride length (about 0.75 m) and curb heights (FHWA pedestrian facility guidance)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,312 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 14 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "body": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "w"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "one_way_roadway"
+       },
+       "var": "w"
+      }
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "h"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "cmp": "lt",
+           "lhs": {
+            "args": [
+             {
+              "var": "h"
+             }
+            ],
+            "measure": "st_sight_distance"
+           },
+           "rhs": {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               }
+              ],
+              "measure": "kin_speed"
+             },
+             {
+              "param": "p.passing_sight_time"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "highway"
+        },
+        "var": "h"
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "cmp": "le",
+           "lhs": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "e"
+             }
+            ],
+            "measure": "st_region_geometry_distance"
+           },
+           "rhs": {
+            "lit": {
+             "den": 25,
+             "num": 762
+            },
+            "unit": "metre"
+           }
+          },
+          {
+           "cmp": "gt",
+           "lhs": {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "kin_velocity"
+             },
+             {
+              "sub": [
+               {
+                "args": [
+                 {
+                  "var": "e"
+                 },
+                 {
+                  "lit": "x"
+                 }
+                ],
+                "measure": "st_region_geometry"
+               },
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "lit": "x"
+                 }
+                ],
+                "measure": "kin_position"
+               }
+              ]
+             }
+            ]
+           },
+           "rhs": {
+            "neg": {
+             "mul": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "lit": "y"
+                }
+               ],
+               "measure": "kin_velocity"
+              },
+              {
+               "sub": [
+                {
+                 "args": [
+                  {
+                   "var": "e"
+                  },
+                  {
+                   "lit": "y"
+                  }
+                 ],
+                 "measure": "st_region_geometry"
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "lit": "y"
+                  }
+                 ],
+                 "measure": "kin_position"
+                }
+               ]
+              }
+             ]
+            }
+           }
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "elevated_structure"
+        },
+        "var": "e"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_213_2c",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-213-2c"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s3",
+     "why": "st.sight_distance 'at the subject's point' is read off the highway region the subject occupies (rel.occupies); the view is obstructed where it is below the subject's kin.speed times p.passing_sight_time for some such highway."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "args": [
+           {
+            "var": "c"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         {
+          "cmp": "ge",
+          "lhs": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "params": [],
+           "quantity": "prim_region_lateral_offset"
+          },
+          "rhs": {
+           "lit": {
+            "den": 1,
+            "num": 0
+           },
+           "unit": "metre"
+          }
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "centre_line"
+       },
+       "var": "c"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s3",
+    "why": "st.sight_distance 'at the subject's point' is read off the highway region the subject occupies (rel.occupies); the view is obstructed where it is below the subject's kin.speed times p.passing_sight_time for some such highway."
+   }
+  ],
+  "context": "495cfc5360758921fae8e7a5",
+  "candidate_digest": "e02c3a747e60f11ee91e3acef16abe8d690830d82c7d97bbce19136018318f2b"
+ }
+}

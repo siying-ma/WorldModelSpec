@@ -1,0 +1,212 @@
+{
+ "node_id": "NRS_484B_477_1b",
+ "law_refs": [
+  "NRS-484B-477-1b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "Unless otherwise provided by ordinance of the local authority having jurisdiction,",
+   "role": "condition"
+  },
+  {
+   "id": "b2",
+   "text": "a person",
+   "role": "subject"
+  },
+  {
+   "id": "b3",
+   "text": "shall not: Stop, stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "b4",
+   "text": "in any other",
+   "role": "condition"
+  },
+  {
+   "id": "b5",
+   "text": "alley",
+   "role": "condition"
+  },
+  {
+   "id": "b6",
+   "text": "in such a manner, or under such conditions as to leave available less than 10 feet of the width of the alley for the free movement of vehicular traffic.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a person ... a vehicle': the duty binds the vehicle the person stops, the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'); ru.aggregate is 'membership of a legal aggregate'."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "dev.governs",
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.railway_signal_or_gate",
+    "dev.human_direction",
+    "st.travel_region",
+    "rel.occupies",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' prohibited takes DEF-NRS-484A-260: 'any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device'; standing and parking are halts as well, so the three verbs are read as the halting they all are: drv.motion.complete_halt ('at rest at the observation'). The exception is read through its conduct: the subject occupies (rel.occupies) a travel region governed (dev.governs) by a traffic signal, stop sign, yield sign, railway signal or gate or a person directing traffic (dev.human_direction), or a member of traffic (ru.aggregate=DEF-NRS-484A-285::traffic) is ahead of it in its lane (rel.ahead_behind_in_lane) within the queue spacing between bodies (rel.surface_gap)."
+  },
+  {
+   "span": "b5",
+   "atoms": [
+    "rel.occupies",
+    "st.alley"
+   ],
+   "derived": [],
+   "justification": "'alley' (DEF-NRS-484A-015: a highway 'Within a city block set apart for public use', 'Which primarily services access to the rear entrance of abutting property') is st.alley, 'a narrow way within a block serving the rear of properties'; the vehicle in it is rel.occupies."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "st.road_edge",
+    "st.region_geometry",
+    "prim.region_lateral_offset",
+    "st.obstruction",
+    "rel.bearing",
+    "rel.longitudinal_overlap",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "The width of the alley left available beside the halted vehicle is measured on each side from its body: to the alley's edge, a road edge region (st.road_edge, 'curb or edge of the roadway') on that side (prim.region_lateral_offset, 'the signed lateral offset (m, left positive)', read for its sign only) at the ground distance from the body (st.region_geometry, 'the ground distance from a road user's body outline to it'); 'under such conditions' covers what else narrows that width beside it: an obstruction (st.obstruction, 'a physical object on or beside the roadway that is not a road user') on that side within the width, or a member of traffic (ru.aggregate=DEF-NRS-484A-285::traffic) at rest (drv.motion.complete_halt) alongside (rel.longitudinal_overlap, 'the length the two footprints' projections ... share', at or above zero) on that side (rel.bearing, 'direction of b from a in a's frame') with a lateral gap between bodies (rel.surface_gap, lateral component) inside it. The width available is the free width on one side, never the two sides added, since a vehicle moves past on one side. 'the free movement of vehicular traffic' (traffic of vehicles, DEF-NRS-484A-320::vehicle) names whom the width serves: the duty binds whether or not a vehicle is present to use it. The region distance is not a stand-in for occupancy; the bearing and overlap are not a contact or distance and are read only for side and alongside."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "b1",
+   "id": "asm.local_alley_ordinance",
+   "meaning": "the alley at the place of the road user at the observation is one on which an ordinance of the local authority having jurisdiction regulates stopping, standing or parking by provisions of its own, as the map's reading records"
+  },
+  {
+   "span": "b4",
+   "id": "asm.business_district",
+   "meaning": "the place of the road user at the observation lies in a business district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies (rel.occupies) an alley region (st.alley); asm.business_district does not hold at its place ('any other' alley: one not in a business district, the alleys of paragraph (a) being those in one); asm.local_alley_ordinance does not hold; and its position leaves less than 10 feet (literal) of the alley's width free on either side: a side (left: prim.region_lateral_offset above zero, rel.bearing lateral component positive; right: below zero, negative) is free where some road edge region (st.road_edge) lies on that side, every road edge region on that side lies at a ground distance from the subject's body (st.region_geometry) of at least 10 feet, every obstruction (st.obstruction) on that side lies at least 10 feet from the body, and every other road user of DEF-NRS-484A-285::traffic at rest (drv.motion.complete_halt) alongside the subject (rel.longitudinal_overlap at or above zero) on that side has a lateral gap between bodies (rel.surface_gap, lateral) of at least 10 feet; the condition holds where neither side is free.",
+ "obligation": "The subject does not halt there: violated where it is at rest (drv.motion.complete_halt, speed_tol p.halt_speed_tolerance) and its halt is not one in the stream of traffic (it occupies no travel region (st.travel_region) governed (dev.governs) by a traffic signal, stop sign, yield sign, railway signal or gate or person directing traffic (dev.human_direction), and no member of DEF-NRS-484A-285::traffic is ahead of it in its lane (rel.ahead_behind_in_lane) with a gap between bodies (rel.surface_gap) at or below p.queue_halt_gap); compliant otherwise.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "b3",
+   "why": "The three verbs are read as the halting they all are, with the stopping definition's exception read through the device the subject's region is governed by and a queue ahead within the queue spacing.",
+   "kind": "reading"
+  },
+  {
+   "span": "b2",
+   "why": "The person is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A vehicle at rest 20 s in an alley (asm.business_district false, asm.local_alley_ordinance false); the left road edge lies 2.0 m and the right 0.3 m from its body; nothing else beside it, nobody ahead, no device."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same vehicle, edges as in forbid, moves through the alley at 2 m/s without halting."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same halt in an alley where asm.business_district is true."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "The vehicle is at rest with the right edge 0.3 m and the left edge 4.0 m from its body, nothing alongside: 10 feet are left free on its left."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but region outlines are absent, so the distances to the edges are unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The left edge lies 4.0 m from the subject's body, but another vehicle at rest alongside on its left has a lateral gap of 1.5 m; the right edge lies 0.3 m away."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The subject halts 2 m behind another vehicle ahead of it in its lane, edges as in forbid: a queue halt."
+  }
+ ],
+ "literals": [
+  {
+   "span": "b6",
+   "text": "10 feet",
+   "value": 10,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; reused unchanged"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "proposed this iteration by LVMC_11_52_030_A; reused unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,112 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 4 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-285::traffic"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "one_way_roadway"
+      },
+      "var": "r"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_220_1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-220-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "not": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "derived": "drv_motion_moving_against_carrier",
+        "params": [
+         {
+          "param": "p.halt_speed_tolerance"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "one_way_roadway"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "df2e329bf3c58f66c8e0f5db",
+  "candidate_digest": "7dc60c2121f5de3ede02efb6bda09def6ea8a5385bf9adad4e2edee3edc9f67a"
+ }
+}

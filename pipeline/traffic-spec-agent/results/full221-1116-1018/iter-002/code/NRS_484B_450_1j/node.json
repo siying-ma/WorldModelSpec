@@ -1,0 +1,298 @@
+{
+ "node_id": "NRS_484B_450_1j",
+ "law_refs": [
+  "NRS-484B-450-1j"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not stop, stand or park a vehicle,",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "except when necessary to avoid conflict",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "with other traffic",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "or in compliance with law",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "or the directions of a police officer",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "or official traffic-control device,",
+   "role": "exception"
+  },
+  {
+   "id": "s8",
+   "text": "in any of the following places:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s9",
+   "text": "Within 20 feet of a driveway entrance to any fire station",
+   "role": "condition"
+  },
+  {
+   "id": "s10",
+   "text": "and, on the side of a highway opposite the entrance to any fire station,",
+   "role": "condition"
+  },
+  {
+   "id": "s11",
+   "text": "within 75 feet of that entrance.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The words name the person who stops, stands or parks \"a vehicle\". Who controls a vehicle is not observable; the ontology reads the one who drives through the vehicle's controlled motion, so the road user judged is the vehicle (agency reading, disclosed). ru.aggregate is \"membership of a legal aggregate: the atom's literal argument is an aggregate id\"; the admitted id DEF-NRS-484A-320::vehicle counts \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\", its exceptions classified by the run's reading. Not a stand-in for a named class with its own atom (the words name none), nor for the relational role of who controls the vehicle: the atom states the class of the road user whose halts are judged."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"stop\" when prohibited is \"any halting, even momentarily, of a vehicle, whether occupied or not\" (DEF-NRS-484A-260); \"stand\" is \"the halting of a vehicle, whether occupied or not\" other than while receiving or discharging passengers (DEF-NRS-484A-250); \"park\" is \"the standing of a vehicle, whether occupied or not\" (DEF-NRS-484A-155). Each is a halting, so forbidding all three forbids every halt of the vehicle at the place, however brief. drv.motion.complete_halt denotes that \"The road user is at rest at the observation\", observed as kin.speed at or below a tolerance, at each observation; what it does not denote (\"a slowing whose sampled speed stays above the tolerance\") is no halting. \"a vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\")."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "\"traffic\" is the admitted aggregate DEF-NRS-484A-285::traffic (\"pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel\"); \"other\" leaves out the subject itself. rel.ahead_behind_in_lane (\"a is ahead of / behind b in the same lane, along the lane direction\") places that traffic in the subject's path, and rel.surface_gap (\"distance between the nearest points of two bodies\") is the clearance to it that the operationalization of \"necessary\" bounds. Neither contract carries a not-a-stand-in clause this use touches; no centre distance and no order of arrival is read."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "dev.governs",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"in compliance with law\" excuses a halt the law itself requires of the vehicle where it is. Observably those are the halt a stop sign requires (dev.stop_sign: \"regulatory sign requiring a full halt\") and the halt a traffic signal requires while it shows a red indication (dev.traffic_signal: \"a signal head\" with states circular_red, red_arrow(dir) and flashing_red), each on the traffic of a travel region the device governs (dev.governs: \"the travel regions whose traffic the device controls\") that the vehicle's footprint overlaps (rel.occupies: \"a road user's footprint overlaps a lane / region\"; st.travel_region is the kind that relation ranges over here). dev.governs is \"Not a stand-in for: a position — the region a device governs is not where a halt is required\": the governed region is not read as the place of a required halt; it reads only that a vehicle within the governed approach, while the device commands a halt, is held there in obedience to it."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.governs",
+    "dev.human_direction",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.human_direction is \"a person directing traffic and the direction given; role ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger}; indication ∈ {stop, proceed, slow, turn(dir)}\". A police officer (\"every officer authorized to direct or regulate traffic\", DEF-NRS-484A-180) is the role police_officer, and the direction a halt complies with is the indication stop, given to the travel region the vehicle's footprint overlaps (dev.governs: \"the travel regions whose traffic the device controls\"; rel.occupies; st.travel_region the kind). dev.governs is not read as the place a halt is required, only as the traffic the direction is given to. A flagger or a crossing guard is another role and is not read."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "dev.governs",
+    "dev.railway_signal_or_gate",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.yield_sign",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "An official traffic-control device is \"every sign, signal, marking and device ... placed or erected by a public authority or railroad for the purpose of regulating, warning or guiding traffic\" (DEF-NRS-484A-145). The devices whose directions a halt obeys are a stop sign (dev.stop_sign: \"regulatory sign requiring a full halt\"), a yield sign (dev.yield_sign: \"regulatory sign requiring yielding without a mandatory halt\", whose yield may require a halt), a traffic signal showing circular_red, a red_arrow or flashing_red (dev.traffic_signal), and a level-crossing signal with its lights flashing or its gate lowering or down (dev.railway_signal_or_gate: \"lights ∈ {flashing, dark}; gate ∈ {up, lowering, down, raising, none}\"), each governing the travel region the vehicle occupies (dev.governs, rel.occupies, st.travel_region). \"official\" is the device's legal status, read from its presence. dev.governs is not read as the position of a required halt, only as the traffic the device directs; no sign is read as a manoeuvre."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "st.fire_station_entrance",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "A driveway is \"every way or place in private ownership and used for vehicular travel by the owner and those having express or implied permission from the owner\" (DEF-NRS-484A-190); st.fire_station_entrance is \"the driveway entrance of a fire station\", the very feature the words name. Ownership and permission are the way's legal status, which no feature on the road displays; the entrance's presence is read as that status. \"Within 20 feet\" is the ground distance from the vehicle's body to the entrance region (st.region_geometry: \"the ground distance from a road user's body outline to it (zero when they overlap)\") at most the literal 20 feet. st.region_geometry is \"Not a stand-in for: occupancy\" and no overlap is read from it."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "st.fire_station_entrance",
+    "st.road_edge",
+    "prim.region_lateral_offset",
+    "st.on_way",
+    "st.highway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "The vehicle is on the side of the highway opposite the entrance where it stands beyond the middle of the way from the entrance: its footprint overlaps a highway (rel.occupies; st.highway: \"the entire public way between its boundary lines, including sidewalks and shoulders\", as DEF-NRS-484A-095's \"entire width between the boundary lines\"), and among the roadway edges lying on that highway (st.road_edge: \"curb or edge of the roadway\"; st.on_way: \"the public way (a highway region) a structure region lies on\") some edge lies between the vehicle and the fire station entrance (st.fire_station_entrance), in the vehicle's frame on the entrance's side and no farther than it (prim.region_lateral_offset: \"the signed lateral offset (m, left positive) of a structure region from a road user\"), that is farther from the vehicle than every edge of that highway on the vehicle's other side: the vehicle is nearer the far side of the way than the near side. The test holds on a two-way, one-way or divided way alike, since it reads only the way's edges. st.on_way is \"Not a stand-in for: nearness to a way\" and is read only as the edge lying on the way; st.highway is not read as the roadway. \"the entrance\" is the same region the next span measures to."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "st.fire_station_entrance",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "\"that entrance\" is the fire station entrance (st.fire_station_entrance) the previous span singles out; the vehicle is within 75 feet of it where the ground distance from its body to that region (st.region_geometry: \"the ground distance from a road user's body outline to it\") is at most the literal 75 feet. No occupancy is read from the distance."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "necessary to avoid conflict with other traffic",
+   "concepts": [
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "params": [
+    "p.queue_halt_gap"
+   ],
+   "convention": "queue spacing of halted vehicles: a halt with a member of traffic ahead in the same lane within that gap between bodies is a halt the traffic ahead makes necessary",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a road user of DEF-NRS-484A-320::vehicle, and at the observation either the ground distance from its body to some fire station entrance (st.fire_station_entrance; st.region_geometry distance) is at most the literal 20 feet, or there are a fire station entrance f, a highway h whose footprint the subject's overlaps (rel.occupies) and a roadway edge e1 (st.road_edge) lying on h (st.on_way) such that, with lf and l1 the signed lateral offsets of f and e1 from the subject (prim.region_lateral_offset), l1 is nonzero, of the sign of lf and of magnitude at most that of lf (e1 between the subject and the entrance), and every roadway edge e2 lying on h whose signed offset l2 is nonzero and of the sign opposite to lf has the magnitude of l2 less than that of l1 (the subject nearer the far side of the way than the near side), and the ground distance from the subject's body to that same f (st.region_geometry) is at most the literal 75 feet.",
+ "obligation": "At every observation at which the applicability holds, the subject is not at rest (drv.motion.complete_halt with p.halt_speed_tolerance), unless at that observation one of the exceptions holds: (a) some road user other than the subject, of DEF-NRS-484A-285::traffic, is ahead of the subject in the same lane (rel.ahead_behind_in_lane) with the gap between their bodies (rel.surface_gap) at most p.queue_halt_gap; (b) a stop sign, or a traffic signal showing circular_red, a red_arrow or flashing_red, governs (dev.governs) a travel region the subject's footprint overlaps (rel.occupies); (c) a dev.human_direction of role police_officer with indication stop governs a travel region the subject occupies; (d) a stop sign, a yield sign, a traffic signal showing circular_red, a red_arrow or flashing_red, or a dev.railway_signal_or_gate with lights flashing or gate lowering or down governs a travel region the subject occupies. Violated where the subject is at rest there and no exception holds.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "The person who stops the vehicle is read through the vehicle's controlled motion: the rule judges the vehicle's halts whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "\"necessary to avoid conflict with other traffic\" is read only as a halt with a member of traffic ahead in the same lane within the queue gap; a halt to let crossing or oncoming traffic clear, with nothing ahead in the lane, is not read as necessary, so such a halt is judged without this exception.",
+   "kind": "reading"
+  },
+  {
+   "span": "s7",
+   "why": "\"official\" is the device's legal status, read from the device's presence in the scene.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s9",
+   "why": "The driveway definition's \"private ownership\" and the owner's permission are the way's legal status; the fire station entrance's presence in the scene is read as the driveway entrance the words name.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject, a ru.aggregate vehicle, is at rest (kin.speed zero) with its body 3 m from a st.fire_station_entrance (st.region_geometry); no other road user, no human direction and no device is in the scene."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the subject moves past the entrance at kin.speed 8 m/s."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "On a two-way highway 12 m wide between its st.road_edge regions, the subject is at rest 2 m from the edge on the entrance's side, with its body 18 m from the entrance."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source maps the regions without their outlines, so every distance and lateral offset to them is unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "On the same highway, the subject is at rest 1 m from the road edge on the side away from the entrance (the edge on the entrance's side 10 m from it, between it and the entrance), with its body 18 m from the entrance."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "As in forbid, but a dev.human_direction of role police_officer with indication stop governs the subject's lane."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "The subject is at rest on the side of the highway away from the entrance, 1 m from the far road edge, with its body 30 m from the entrance."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s9",
+   "text": "20 feet",
+   "value": 20,
+   "unit": "ft"
+  },
+  {
+   "span": "s11",
+   "text": "75 feet",
+   "value": 75,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source's kinematics"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "jam spacing of halted vehicles in traffic-flow studies (Highway Capacity Manual)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

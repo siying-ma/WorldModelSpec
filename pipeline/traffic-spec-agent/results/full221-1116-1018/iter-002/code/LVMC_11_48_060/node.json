@@ -1,0 +1,179 @@
+{
+ "node_id": "LVMC_11_48_060",
+ "law_refs": [
+  "LVMC-11-48-060"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-305::truck"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Streets",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "other than truck routes",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "shall not be used as through routes",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "from one truck route to another",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "unless pick-up, delivery or essential use is required enroute",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "\"Streets\" (DEF-NRS-484A-265, \"the entire width between the boundary lines of every highway inside the territorial limits of a city\"): st.highway \"the entire public way between its boundary lines\" at its whole extent, the city limit being the reading's scope for a city ordinance; rel.occupies anchors the subject on it. Same mapping as the index entry \"upon a street\"."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"other than truck routes\": a street stretch on which no travel region the subject occupies (rel.occupies, st.travel_region) is governed (dev.governs) by a dev.regulatory_sign with code truck_route; the designation is marked by the sign, so the sign is the atom (ontology §9), its presence the evidence (observable_reading status)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "\"used as through routes\": the subject travels the street stretch (rel.occupies of st.highway regions with no truck route governing, at every observation of the stretch) from leaving one truck route to entering another, read through its controlled motion; the stretch is bounded by the two truck-route occupancies, so the history read is the stretch itself, not the recording."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "dev.regulatory_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "\"truck route\": the routes designated for trucks; the road users a through-route ban between truck routes concerns are trucks, the admitted aggregate DEF-NRS-484A-305::truck (\"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"), one atom. \"from one truck route to another\": the subject occupied (rel.occupies) a travel region (st.travel_region) governed (dev.governs) by a dev.regulatory_sign with code truck_route, and now comes to occupy one so governed that lies on a different way: st.on_way \"the public way (a highway region) a structure region lies on\" names the highway (st.highway) each lies on, and \"another\" is read as no highway in common between the two; st.on_way is not nearness."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "\"pick-up, delivery or essential use is required enroute\": a purpose, read through the conduct it explains (observable_reading purpose): a halt on the stretch long enough to serve a stop, drv.motion.parked (\"at rest at every observation of the window behind the observation, of length min_duration\") at some observation of the stretch, with min_duration the shortest pick-up or delivery dwell. A halt in traffic, shorter than that, is not such a stop."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-305::truck"
+   ]
+  }
+ ],
+ "applicability": "The subject is a truck (ru.aggregate DEF-NRS-484A-305::truck). Let onTR(g) = rel.occupies(subject, g) for a travel region g governed (dev.governs) by a dev.regulatory_sign with code truck_route. Trigger: at the judged observation t the subject comes onto a truck route: some travel region g2 with onTR(g2) at t, and the subject occupied no truck-route-governed travel region at the observation before. Exception: within the stretch defined in the obligation, drv_motion_parked(subject) held at some observation (speed_tol p.halt_speed_tolerance, min_duration p.delivery_halt_min_duration); the exception reads the same stretch, re-bound with its full selection.",
+ "obligation": "The subject did not use streets as a through route from one truck route to another: it is not the case that, going back from the observation before t, the subject occupied at every observation a highway region (st.highway) and no truck-route-governed travel region, back to an observation s at which it occupied a truck-route-governed travel region g1 such that no highway w has both st.on_way(g1, w) and st.on_way(g2, w). Written at t with since: not since((not onTR-any and occupies some st.highway) or rises(onTR-any), exists g1 (onTR(g1) and forall w (on_way(g1, w) implies not on_way(g2, w)))). Unknown where the stretch reaches the start of the recording; a stretch that began on the same truck route's way, or not on a truck route, is no through route.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.delivery_halt_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "\"used as through routes\" is read as a continuous stretch on streets off truck routes between leaving a truck-route region and entering one on a highway the first does not lie on; a stretch that returns to the same truck route's way is no through route."
+  },
+  {
+   "span": "s2",
+   "why": "Truck routes are read through the truck_route sign governing the travel region; its presence is the evidence of the designation.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "\"pick-up, delivery or essential use is required enroute\" is read through a halt on the stretch at least as long as the shortest pick-up or delivery dwell; the requirement itself and an essential use without such a halt are not observable.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A truck (ru.truck) travels on lane A governed by a truck_route regulatory sign and lying on highway W1, turns onto residential street S (no truck_route sign governs its lanes), drives along S without halting, and comes onto lane B governed by a truck_route sign and lying on highway W2, which A does not lie on."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The truck leaves lane A on W1 for street S, drives along S, and comes back onto a truck-route lane lying on W1."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A passenger car (ru.motor_vehicle) makes the forbid trip from A over S to B."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe what signs govern (dev.governs absent): which regions are truck routes is unknown.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As in forbid, but on S the truck halts at the curb for longer than the delivery dwell before driving on to B."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.delivery_halt_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the shortest halt counted as a pick-up or delivery stop en route rather than a halt in traffic: the short end of a goods vehicle's curbside dwell",
+   "source": "urban freight curbside dwell-time studies"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

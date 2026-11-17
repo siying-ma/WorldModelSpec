@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 208246,
+  "stop_reason": "end_turn",
+  "session_id": "e21ba34e-e5ee-4c09-9cbc-24e8f3dd5839",
+  "total_cost_usd": 1.70108235,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 117173,
+   "cache_read_input_tokens": 734692,
+   "output_tokens": 22902,
+   "output_tokens_details": {
+    "thinking_tokens": 13075
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 117173,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 880,
+     "cache_read_input_tokens": 120265,
+     "cache_creation_input_tokens": 1376,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1376
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39906,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0044045099999999995,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 22902,
+    "cacheReadInputTokens": 734692,
+    "cacheCreationInputTokens": 117173,
+    "webSearchRequests": 0,
+    "costUSD": 1.69667784,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 13075,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 117173,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed NRS_484B_330_1 on its first run: **OK**, with 8 witnesses and 19 names. That used one of the six runs.\n\nOne slip: before writing anything, I ran an `ls` on the Core directory. That broke the rule that the only command allowed is the gate. It changed nothing, and I've noted it in `task_result.md`.\n\n**The rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_330_1.lean`):\n- **Who it applies to:** the subject must be a vehicle, read through the `DEF-NRS-484A-320::vehicle` aggregate.\n- **When it applies:** the subject occupies a travel region `r`, and a flagger giving an indication governs `r`. The region must also be either:\n  - governed by a temporary traffic control device and lying on a highway (s4), or\n  - governed by a temporary traffic control zone sign that is not an end sign (s5).\n- **The duty:** for every such region and flagger, the obligation re-states the whole selection and then requires three things:\n  - **Stop:** don't pass the flagger while stop is shown both now and at the previous observation. \"Passes\" means the flagger was ahead at the previous observation and is not ahead now.\n  - **Slow:** don't approach a flagger showing slow with longitudinal acceleration at or above `p.speed_decrease_decel_min`.\n  - **Turn:** don't pass the flagger showing a left, right or U-turn signal without having turned that way. The heading change is measured since the signal last came on. Left and right must reach `p.turn_heading_min` (right counted as negative); a U-turn must reach `p.u_turn_heading_min` either way.\n\n**Choices I made:**\n- I wrote the three turn thresholds as one comparison that picks its bound by direction, rather than three separate checks. The meaning is the same.\n- I wrote \"giving an indication\" as an either-or over every possible flagger signal.\n- I declared no narrowings; every reading is the node's own.\n\n**Witnesses** (`library/TrafficSpecWitness/NRS_484B/NRS_484B_330_1.lean`):\n- I built the seven planned scenarios and added `branch_4` (violated): a temporary traffic control zone sign governs the lane and there are no cones. Without it, no witness would test the s5 zone-sign case.\n- `branch_2` uses scenes 50 ms apart so the heading change can be measured; at coarser spacing it comes out unknown.\n\n`task_result.md` is in the working directory.",
+  "ttft_ms": 69880,
+  "type": "result",
+  "duration_ms": 219344,
+  "uuid": "62cbd7bf-8651-4cc5-bee2-77b277496581",
+  "ttft_stream_ms": 1235,
+  "time_to_request_ms": 545,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 61,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 13,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 57,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 361,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 46,
+  "time_to_request_cpu_ms": 385,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 4,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1235,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39906,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0044045099999999995,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 18,
+    "outputTokens": 22902,
+    "cacheReadInputTokens": 734692,
+    "cacheCreationInputTokens": 117173,
+    "webSearchRequests": 0,
+    "costUSD": 1.69667784,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 13075,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 117173,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

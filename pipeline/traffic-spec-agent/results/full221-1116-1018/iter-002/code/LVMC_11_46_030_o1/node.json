@@ -1,0 +1,181 @@
+{
+ "node_id": "LVMC_11_46_030_o1",
+ "law_refs": [
+  "LVMC-11-46-030"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It shall be unlawful for any person driving or operating, propelling or causing to be propelled, any vehicle,",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "to fail to stop not less than fifty feet from the nearest side of",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "a school pedestrian lane",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "where any signal device, flagman or other person is stationed, giving warning that children are about to cross or are crossing the street;",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "and it is further declared unlawful to proceed until such signal has stopped, raised, or been removed, or the flagman or person stationed at such pedestrian lane has given a signal to go, or has left the locality.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"any vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"), one atom, never expanded. \"any person driving or operating, propelling or causing to be propelled\" names who controls the vehicle, read through its controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.region_geometry"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"stop\" here is a stop the law requires, so the definition whose own scope is \"when required\" (DEF-NRS-484A-255, \"complete cessation from movement\") is the one whose scope the words meet; drv.motion.complete_halt carries it (\"The road user is at rest at the observation ... at or below a tolerance the caller sets for the source's speed resolution\"). \"not less than fifty feet from the nearest side of\" the crossing: st.region_geometry \"the ground distance from a road user's body outline to it (zero when they overlap)\" is the distance from the vehicle's body to the nearest side of the crosswalk region, a distance the words themselves state (literal); it is not used for occupancy, so the \"Not a stand-in for: occupancy\" clause does not apply."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.crosswalk",
+    "st.on_way",
+    "st.highway",
+    "prim.region_offset_along"
+   ],
+   "derived": [],
+   "justification": "\"a school pedestrian lane\": st.crosswalk \"marked crossing, or the unmarked prolongation of sidewalks at an intersection\" — a lane for pedestrians to cross the street; not a sidewalk. Its school character is read through the warning of children crossing given there (observable_reading status). \"the street\" it crosses: st.on_way \"the public way (a highway region) a structure region lies on\" ties the crosswalk to the highway (st.highway, \"the entire public way between its boundary lines\") on which the subject's governed travel region also lies; st.on_way is not nearness. The crosswalk is the one the subject approaches: prim.region_offset_along \"the signed distance ... from a road user's reference point ... to a structure region ... measured along a carrier's designated direction\" positive puts it ahead of the subject along its travel region's direction; the primitive establishes only the side, and the nearest side's distance is read from st.region_geometry, as its contract requires."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "dev.crossing_warning_signal",
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"any signal device ... giving warning that children are about to cross or are crossing\": dev.crossing_warning_signal \"a signal device at a pedestrian or school crossing that warns of persons crossing; active attribute\" with active true. \"flagman or other person is stationed, giving warning\": dev.human_direction \"a person directing traffic and the direction given; role ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger}\" of any role (\"or other person\"), indication stop, the warning that halts traffic. \"stationed\" at the crossing the subject approaches is read through dev.governs \"the travel regions whose traffic the device controls\" on the travel region (st.travel_region) the subject occupies (rel.occupies \"a road user's footprint overlaps a lane / region\"): a device governing the subject's travel region and a crosswalk ahead of it on the same way. dev.governs is not a position, and the halt place is read from the crosswalk, not from the device."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle). The duty arises at an event: at the judged observation t the subject comes within fifty feet of a crosswalk at which a warning is given. Bind a travel region g (kind st.travel_region) with rel.occupies(subject, g); a device d with dev.governs(d, g) that gives warning at t: a dev.crossing_warning_signal whose active attribute holds, or a dev.human_direction of any role whose indication is stop; a highway w (st.highway) with st.on_way(g, w); a crosswalk c (st.crosswalk) with st.on_way(c, w), ahead of the subject along g (prim.region_offset_along(subject, c, g) > 0), and the nearest such crosswalk ahead (no other crosswalk on w has a smaller positive offset along g). The event: st_region_geometry_distance(subject, c) is below the literal fifty feet at t and was at or above it at the observation before (rises of the distance being below fifty feet).",
+ "obligation": "Duty of rule 4c. Act: a halt of the subject (drv_motion_complete_halt(subject) with speed_tol p.halt_speed_tolerance) at an observation at which the body distance st_region_geometry_distance(subject, c) is at or above the literal fifty feet, c is ahead of the subject along a travel region it occupies that d governs, and d gives warning. Search: back from t through observations at which d gives warning continuously and c stays ahead of the subject along a travel region it occupies that d governs. The search ends at the onset of d's warning (the observation at which d's warning rose: a halt before the warning began is no halt for it), at the previous occurrence of the same event for the same subject and crosswalk (an earlier rise of 'within fifty feet of c'), or at an observation at which c is not ahead. Written: since(warning(d) and ahead(c) and not earlier-event, halt(subject) and distance(subject, c) >= fifty feet and warning(d) and ahead(c)). Where the search finds the halt, compliant; where it reaches the warning's onset, the previous event or an observation with c not ahead without the halt, violated; where it reaches the start of the recording with d warning and c ahead at every observation and no halt found, unknown. A missing distance, governance or direction makes the duty unknown only where the verdict turns on it.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "\"any person driving or operating, propelling or causing to be propelled\" is read through the vehicle's controlled motion: the duty binds the vehicle whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "The crosswalk is a school pedestrian lane where the warning of children crossing is given there; the school designation is read through that warning, not through a separate designation.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "\"that children are about to cross or are crossing\" is read through the warning given, not through children observed: the device's or person's warning (signal active, or a person's stop indication) is the evidence of the crossing it announces; the device stationed at the pedestrian lane is the one governing the subject's travel region with that lane the nearest crosswalk ahead on the same way.",
+   "kind": "observable_reading",
+   "category": "intention"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A straight two-way street w (st.highway) with a lane g (st.lane, direction east, st.on_way w) and a marked crosswalk c across w ahead. A school crossing guard (dev.human_direction, role school_crossing_guard, indication stop) governs g from before the subject appears until after it passes. The subject, a passenger car (ru.motor_vehicle) in g, approaches from far upstream at a steady urban speed and, without halting, comes within fifty feet of c and passes through it; distances, speed and governance observed at every scene."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the subject halts (speed at or below the halt tolerance) while its body is farther than fifty feet from c and the guard still indicates stop; later the guard indicates proceed and the subject drives on through the crosswalk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Same street and crosswalk, but no warning device and no person directing traffic is in the scene; the subject drives through c without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source maps regions without outlines (st.region_geometry absent): the distance from the subject's body to c, and so the event, is unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The guard indicates stop over g at every scene of the recording; the subject is in g with c ahead from its first observation, is moving at its first observation and comes within fifty feet of c later without any halt recorded; whether it halted for the warning before the recording began is not observed.",
+   "boundary": "the approach to c under the guard's warning before the recording's first scene: the warning's onset and the subject's conduct since then"
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "As in forbid, but the warning is given by a dev.crossing_warning_signal governing g whose active attribute holds, and no person directs traffic."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The subject halts farther than fifty feet from c before any warning is given, the guard then steps out with the stop indication, and the subject moves on and comes within fifty feet of c without halting again while the warning lasts."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s2",
+   "text": "fifty feet",
+   "value": 50,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

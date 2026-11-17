@@ -1,0 +1,198 @@
+{
+ "node_id": "NRS_484B_223_3a",
+ "law_refs": [
+  "NRS-484B-223-3a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a highway has been designed to provide a single center lane to be used only for turning by traffic moving in both directions,",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "the following rules apply:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s3",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "may be driven in the center turn lane",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "only for the purpose of making a left-hand turn",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "onto or from the highway.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.centre_turn_lane",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "st.centre_turn_lane: 'a single centre lane used only for turning by traffic in both directions', the words' own configuration; 'center' (DEF-NRS-484A-040) places it on the line that indicates 'each portion of a highway allocated to traffic proceeding in the two opposite directions'. The subject occupies it (rel.occupies). 'Traffic' is the admitted aggregate DEF-NRS-484A-285::traffic whose turns the lane serves. 'Designed to provide' is the lane's presence on the road (observable_reading status)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate is 'true when the user carries an included class'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.centre_turn_lane"
+   ],
+   "derived": [],
+   "justification": "Driven in the centre turn lane: the subject's footprint overlaps (rel.occupies, 'a road user's footprint overlaps a lane / region') the st.centre_turn_lane of s1."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.intersection",
+    "st.driveway_or_alley_entrance"
+   ],
+   "derived": [
+    "drv.motion.left_turn"
+   ],
+   "justification": "'From the highway': the declared intention of s5 is taken at the place a left turn leaves the highway for, st.intersection ('the region where two roadways meet') or st.driveway_or_alley_entrance ('private road, alley or driveway meeting the highway'). 'Onto the highway': the left turn already made into the lane, read through conduct (observable_reading purpose): the subject has occupied the centre turn lane c at every observation since drv.motion.left_turn ('has completed a turn to the left') was recognized while it occupied c, and at some observation of the turn window behind that recognition it occupied no part of the highway h (st.highway) on which c lies (st.on_way, 'the public way a structure region lies on')."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s5",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the left at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies a centre turn lane c (st.centre_turn_lane).",
+ "obligation": "At every such observation the subject's presence in c is excused, and otherwise violated, where either (from) the subject's declared intention int.left_turn at some intersection or driveway/alley entrance region holds at that observation, or (onto) the subject has occupied c at every observation since an observation at which drv.motion.left_turn(subject) (window = p.vehicle_turn_window, turn_min = p.turn_heading_min, u_turn_min = p.u_turn_heading_min, yaw_tol = p.turn_yaw_rate_tol) held while it occupied c, and at some observation of the window p.vehicle_turn_window behind that observation it occupied no part of the highway h on which c lies.",
+ "params": [
+  "p.vehicle_turn_window",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min",
+  "p.turn_yaw_rate_tol"
+ ],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "'driven' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "'designed to provide' is read through the centre turn lane's presence on the road",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s6",
+   "why": "a left-hand turn onto the highway is read through the turn the subject made into the lane from off the highway, which explains its presence there",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject moves from a through lane into the st.centre_turn_lane without turning and travels 150 m in it; int.left_turn is declared false at every intersection and driveway_or_alley_entrance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject occupies the centre turn lane and int.left_turn is declared true at a driveway_or_alley_entrance 40 m ahead."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject occupies a through lane on a road without a centre turn lane."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source labels lanes but cannot tell a centre turn lane; the subject occupies the middle lane with int.left_turn declared false and no prior turn.",
+   "masked": [
+    "st.centre_turn_lane"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject leaves a private driveway (occupying no part of the highway), turns left by 85 degrees into the centre turn lane, and stays in it; int.left_turn is declared false."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.vehicle_turn_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of a turn by a motor vehicle at a junction or into or out of a driveway, from the start of its heading change to its end, including the crossing of opposing lanes",
+   "source": "AASHTO Green Book intersection sight distance (left-turn time gap 7.5 s) plus a margin"
+  },
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "geometric convention"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "geometric convention"
+  },
+  {
+   "name": "p.turn_yaw_rate_tol",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "the yaw-rate magnitude at or below which a road user's heading counts as no longer turning: the yaw-rate noise floor of the source",
+   "source": "source yaw-rate noise"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

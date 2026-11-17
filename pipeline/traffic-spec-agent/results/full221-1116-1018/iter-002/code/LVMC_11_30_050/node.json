@@ -1,0 +1,157 @@
+{
+ "node_id": "LVMC_11_30_050",
+ "law_refs": [
+  "LVMC-11-30-050"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "No pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "shall cross a roadway",
+   "role": "trigger"
+  },
+  {
+   "id": "e3",
+   "text": "at any place other than by a route at right angles to the curb or by the shortest route to the opposite curb",
+   "role": "obligation"
+  },
+  {
+   "id": "e4",
+   "text": "except in a crosswalk",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); one atom, never expanded."
+  },
+  {
+   "span": "e2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.lane"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "Crossing a roadway is being on it and moving across it: rel.occupies, 'a road user's footprint overlaps a lane / region', on st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder' (the defined roadway; not the sidewalk or shoulder), and drv.motion.moving_across_carrier(subject, k) with cos_max p.crossing_motion_cos on a carrier k the pedestrian occupies (a lane, st.lane, or the roadway itself), whose designated direction is the direction the curbs run: moving across, not along, the way. Walking along the roadway is not crossing it."
+  },
+  {
+   "span": "e3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "'a route at right angles to the curb' is motion at right angles to the direction the roadway's carriers run, which is the curb's direction: drv.motion.moving_across_carrier(subject, k) with cos_max p.right_angle_crossing_cos, the tolerance of 'at right angles' on sampled headings. 'the shortest route to the opposite curb' between curbs that run parallel is the same perpendicular route."
+  },
+  {
+   "span": "e4",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "st.crosswalk, 'marked crossing, or the unmarked prolongation of sidewalks at an intersection', is the defined crosswalk; rel.occupies places the pedestrian in it. Not a sidewalk."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-165::pedestrian, occupies a roadway (st.roadway), does not occupy a crosswalk (st.crosswalk), and occupies a carrier k (a lane, st.lane, or a roadway) across which it moves: drv.motion.moving_across_carrier(subject, k) with speed_tol p.halt_speed_tolerance and cos_max p.crossing_motion_cos.",
+ "obligation": "For each such carrier k, the subject moves at right angles to it: drv.motion.moving_across_carrier(subject, k) with speed_tol p.halt_speed_tolerance and cos_max p.right_angle_crossing_cos.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos",
+  "p.right_angle_crossing_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "e3",
+   "why": "'at right angles to the curb' and 'the shortest route to the opposite curb' are read as motion perpendicular, within p.right_angle_crossing_cos, to the designated direction of the lane or roadway the pedestrian occupies, which runs along the curb; where the curbs are not parallel the shortest route may differ from that perpendicular, and a roadway carrying no designated direction (an unlaned two-way roadway) leaves the duty unknown.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian crosses a laned roadway mid-block, away from any crosswalk, walking at 1.4 m/s at 40 degrees off perpendicular to the lane direction."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A pedestrian crosses the same roadway mid-block walking at 1.4 m/s at 5 degrees off perpendicular to the lane direction."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian walks along the sidewalk and never occupies the roadway."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian occupies the roadway mid-block, but its velocity is not observed.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian crosses diagonally at 40 degrees off perpendicular inside a marked crosswalk."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of road-user tracking in recorded and simulated traces"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "geometric convention separating walking along a roadway from crossing it, from pedestrian heading resolution"
+  },
+  {
+   "name": "p.right_angle_crossing_cos",
+   "unit": "ratio",
+   "value": 0.26,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the motion counts as at right angles to the curb: within about 15 degrees of perpendicular",
+   "source": "pedestrian tracking heading resolution and path deviation observed in square crossings"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

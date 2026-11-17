@@ -1,0 +1,53 @@
+'TrafficSpec.Rules.LVMC_11_52_030_B.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_52_030_B.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_52_030_B","intentions":[],"laws":["LVMC-11-52-030-B"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"yellow"}],"atom":"st_curb_zone_colour","params":[]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},{"not":{"or":[{"and":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-070::commercial_vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"args":[{"var":"d"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-140::taxicab"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"args":[{"var":"d"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]}]}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_030_B","intentions":[],"laws":["LVMC-11-52-030-B"],"narrowings":[],"obligation":{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"z"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"lit":"yellow"}],"atom":"st_curb_zone_colour","params":[]}]},"exists_region":{"lit":"curb_zone"},"var":"z"},{"not":{"or":[{"and":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-070::commercial_vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"args":[{"var":"d"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-140::taxicab"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"parking_restricted"}],"atom":"dev_zone_sign_kind","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"},{"args":[{"var":"d"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]}]}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_030_B","intentions":[],"laws":["LVMC-11-52-030-B"],"narrowings":[],"obligation":{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_curb_zone,rel_occupies,st_curb_zone_colour,dev_zone_sign,dev_zone_sign_kind,st_travel_region,dev_governs,prim_conditions_hold,drv_motion_complete_halt
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-LVMC-11-02-070::commercial_vehicle	DEF-LVMC-11-02-140::taxicab
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	subject
+OCC	?z
+OCC	subject,z
+OCC	z
+OCC	subject
+OCC	?d
+OCC	d
+OCC	?r
+OCC	d,r
+OCC	subject,r
+OCC	d,subject
+OCC	subject
+OCC	?d
+OCC	d
+OCC	?r
+OCC	d,r
+OCC	subject,r
+OCC	d,subject
+OCC	subject
+TIME	occurrences	1
+TIME	checks	5
+TIME	lint	33
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	12
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	9
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	9
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	13
+SCEN	branch_1	not_applicable	?	branch_1: expected not_applicable, got unknown [aggregate_unresolved:DEF-LVMC-11-02-070::commercial_vehicle, aggregate_unresolved:DEF-LVMC-11-02-140::taxicab]
+TIME	scenario:branch_1	10
+SCEN	branch_2	not_applicable	?	branch_2: expected not_applicable, got unknown [aggregate_unresolved:DEF-LVMC-11-02-070::commercial_vehicle, aggregate_unresolved:DEF-LVMC-11-02-140::taxicab]
+TIME	scenario:branch_2	10
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	10
+TIME	witnesses	73
+DONE_WITNESSES

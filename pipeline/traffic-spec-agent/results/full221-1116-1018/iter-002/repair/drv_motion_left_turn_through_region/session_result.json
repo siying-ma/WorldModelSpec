@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 30334,
+  "stop_reason": "end_turn",
+  "session_id": "c53b6ec1-cd5c-448a-8d79-0bfc20fc010f",
+  "total_cost_usd": 0.50274334,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 46773,
+   "cache_read_input_tokens": 48315,
+   "output_tokens": 3447,
+   "output_tokens_details": {
+    "thinking_tokens": 769
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 46773,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 651,
+     "cache_read_input_tokens": 46061,
+     "cache_creation_input_tokens": 2966,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2966
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42269,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004660040000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3447,
+    "cacheReadInputTokens": 48315,
+    "cacheCreationInputTokens": 46773,
+    "webSearchRequests": 0,
+    "costUSD": 0.49808330000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 769,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46773,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've written a revised record to `record.jsonl`. It keeps the same `concept_id`, contract, formals, parameters, act and elements, and I changed only the scenarios. Nothing has been re-gated yet: the harness codes and gates the revised record again.\n\n**Why the gate refused it.** The witness traces broke a rule of the adapter: a scene's yaw rate is held over the interval before that scene, so the next heading must equal the last one turned by that rate. In the coder's traces the heading jumped straight from east to north (or south) and skipped the in-between angles. The yaw rate also started at the entry scene, so the first turn would fall in the interval before the entry. The coder's body matches the contract, so the record itself was not at fault.\n\n**What I changed.** The `holds` and `fails` scenarios now spell out a trace the adapter can produce:\n- The yaw rate is zero up to and including the entry.\n- After the entry it is a constant rate (to the left in `holds`, to the right in `fails`).\n- Each scene's heading is the previous one turned by that rate over the interval, so the trace passes through non-axis headings until the quarter turn is complete.\n\n`blind` keeps the same positions and headings with no yaw rate supplied.\n\n**Two other changes:**\n- `used_by` now lists all eight nodes that wait for this concept, not just `LVMC_11_43_010_C1`.\n- I added `supersedes` and `counterexample`, both null.\n\n**Separate harness problem.** The coder's own runs never reached the files. Every run failed with `SCOPE_VIOLATION` because the gate's output capture is written under `.runtime/tmp` inside the git tree. That needs a harness fix: the scope check should skip `.runtime/`, or the tmp directory should move outside the tree. Changing the record can't fix it.",
+  "ttft_ms": 8916,
+  "type": "result",
+  "duration_ms": 30064,
+  "uuid": "6ee76669-1e68-4c63-b759-198af74bbcaf",
+  "ttft_stream_ms": 1440,
+  "time_to_request_ms": 651,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 64,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 13,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 20,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 501,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 4,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 42,
+  "time_to_request_cpu_ms": 487,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 14,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 4,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1440,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42269,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004660040000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3447,
+    "cacheReadInputTokens": 48315,
+    "cacheCreationInputTokens": 46773,
+    "webSearchRequests": 0,
+    "costUSD": 0.49808330000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 769,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46773,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

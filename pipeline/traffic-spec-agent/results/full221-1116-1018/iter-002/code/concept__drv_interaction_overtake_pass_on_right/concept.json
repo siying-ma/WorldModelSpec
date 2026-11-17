@@ -1,0 +1,88 @@
+{
+ "concept_id": "drv.interaction.overtake_pass_on_right",
+ "kind": "formula",
+ "contract": "Road user a overtakes and passes road user b on b's right: a overtakes and passes b from the rear, as drv.interaction.overtake_pass states it with the same window and the same heading tolerance, and makes the passage with b on its left. b is on a's left where the lateral component of b's bearing in a's frame (rel.bearing) is positive; the two are side by side where their projections on a's heading share length (rel.longitudinal_overlap at or above zero). The act begins at the last observation of the window behind at which b was ahead of a with their headings aligned within same_dir_cos. The act is recognized at the observation at which drv.interaction.overtake_pass holds for a and b, where b is on a's left there and at every observation since the act began at which the two are side by side. The concept holds at that observation only, and not again until b has again been ahead of a and then comes to be behind it. Conduct before the window behind is not read: a pass that takes longer than the window is not recognized. It denotes the relative motion of the two road users and the side on which a passes only: it says nothing of the lanes or the pavement a uses, of whether b moves, or of why a passes. Not denoted: a pass with b on a's right at the recognition or at some observation at which the two are side by side, which is a pass on b's left; a drawing alongside b that does not clear b; b ahead of a only while their headings are not aligned. Where b's bearing or the overlap of the two bodies is unobserved at an observation the passage reads, it is unknown.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "b",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "window",
+   "unit": "s",
+   "meaning": "the longest duration of the pass, from having b ahead to having it behind; conduct before the window is not read"
+  },
+  {
+   "name": "same_dir_cos",
+   "unit": "ratio",
+   "meaning": "cosine of the largest heading difference at which a and b count as travelling in the same direction"
+  }
+ ],
+ "act": {
+  "boundary": "window",
+  "window": "window",
+  "onset": "The act begins at the last observation of the window behind at which b was ahead of a with their headings aligned within same_dir_cos.",
+  "recognition": "The act is recognized at the observation at which drv.interaction.overtake_pass holds for a and b, where b is on a's left there and at every observation since the act began at which the two are side by side.",
+  "extent": "The concept holds at that observation only, and not again until b has again been ahead of a and then comes to be behind it.",
+  "history": "Conduct before the window behind is not read: a pass that takes longer than the window is not recognized."
+ },
+ "elements": [
+  {
+   "span": "a overtakes and passes b from the rear, as drv.interaction.overtake_pass states it with the same window and the same heading tolerance",
+   "atoms": [],
+   "concepts": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "The pass from the rear, its beginning, its recognition and its extent are those of drv.interaction.overtake_pass, whose contract denotes 'Road user a overtakes and passes road user b from the rear: a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'; this concept adds only the side, so it calls that concept with its own window and same_dir_cos rather than rebuilding it."
+  },
+  {
+   "span": "b is on a's left where the lateral component of b's bearing in a's frame (rel.bearing) is positive",
+   "atoms": [
+    "rel.bearing"
+   ],
+   "concepts": [],
+   "justification": "rel.bearing is the 'direction of b from a in a's frame (for \"on the right of\", \"immediately to the rear\")': its lateral component tells on which side of a the other road user lies, which is the side of the passage."
+  },
+  {
+   "span": "the two are side by side where their projections on a's heading share length (rel.longitudinal_overlap at or above zero)",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "concepts": [],
+   "justification": "rel.longitudinal_overlap: 'the bodies overlap along the subject's heading (side by side): the length the two footprints' projections on that axis share'; its exclusion (neither a contact nor a distance between the bodies) does not apply, since only the side-by-side phase of the pass is read with it."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a follows b in the same lane with headings aligned (rel.same_direction), b ahead with no longitudinal overlap; a moves to the right, draws alongside with b's bearing lateral component positive (b on a's left) while rel.longitudinal_overlap is non-negative, and comes to have b behind it with b still on its left, all within the window: the concept holds at the observation at which b first is behind a."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same pass made with a moving to the left: while side by side, b's bearing lateral component is negative (b on a's right), and at recognition b is behind a on its right: drv.interaction.overtake_pass holds but the passage is on b's left, so the concept does not hold."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The pass of the holds scenario with rel.bearing not observed on the source: neither the order nor the side can be read.",
+   "masked": [
+    "rel.bearing"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_210_1",
+  "NRS_484B_210_2",
+  "NRS_484B_210_3"
+ ]
+}

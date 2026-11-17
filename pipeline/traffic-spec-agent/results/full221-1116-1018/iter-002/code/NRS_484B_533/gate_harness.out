@@ -1,0 +1,66 @@
+'TrafficSpec.Rules.NRS_484B_533.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_533.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_533","intentions":[],"laws":["NRS-484B-533"],"narrowings":[{"kind":"reading","span":"s5","why":"Where two road edges lying on the highway are equally nearest the vehicle, front wheels turned beyond the resolution toward the side of either comply."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},{"and":[{"cmp":"eq","lhs":{"args":[{"var":"subject"}],"measure":"ru_occupant_count"},"rhs":{"lit":{"den":1,"num":0},"unit":"count"}},{"body":{"and":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"h"}],"measure":"st_grade"}},"rhs":{"param":"p.grade_resolution"}}]},"exists_region":{"lit":"highway"},"var":"h"}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_533","intentions":[],"laws":["NRS-484B-533"],"narrowings":[{"kind":"reading","span":"s5","why":"Where two road edges lying on the highway are equally nearest the vehicle, front wheels turned beyond the resolution toward the side of either comply."}],"obligation":{"and":[{"not":{"args":[{"var":"subject"}],"atom":"kin_engine_running","params":[]}},{"and":[{"args":[{"var":"subject"}],"atom":"kin_parking_brake","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"h"}],"measure":"st_grade"}},"rhs":{"param":"p.grade_resolution"}}]},{"body":{"and":[{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"implies":[{"args":[{"var":"e2"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"le","lhs":{"abs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"}},"rhs":{"abs":{"args":[{"var":"subject"},{"var":"e2"}],"params":[],"quantity":"prim_region_lateral_offset"}}}]},"forall_region":{"lit":"road_edge"},"var":"e2"}]},{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_steer_angle"},"rhs":{"param":"p.steer_angle_resolution"}}]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"}],"measure":"kin_steer_angle"},"rhs":{"neg":{"param":"p.steer_angle_resolution"}}}]}]}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"forall_region":{"lit":"highway"},"var":"h"}]}]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"cmp":"eq","lhs":{"args":[{"var":"subject"}],"measure":"ru_occupant_count"},"rhs":{"lit":{"den":1,"num":0},"unit":"count"}},{"body":{"and":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"h"}],"measure":"st_grade"}},"rhs":{"param":"p.grade_resolution"}}]},"exists_region":{"lit":"highway"},"var":"h"}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_533","intentions":[],"laws":["NRS-484B-533"],"narrowings":[{"kind":"reading","span":"s5","why":"Where two road edges lying on the highway are equally nearest the vehicle, front wheels turned beyond the resolution toward the side of either comply."}],"obligation":{"and":[{"not":{"args":[{"var":"subject"}],"atom":"kin_engine_running","params":[]}},{"and":[{"args":[{"var":"subject"}],"atom":"kin_parking_brake","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"subject"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"abs":{"args":[{"var":"h"}],"measure":"st_grade"}},"rhs":{"param":"p.grade_resolution"}}]},{"body":{"and":[{"and":[{"args":[{"var":"e"},{"var":"h"}],"atom":"st_on_way","params":[]},{"body":{"implies":[{"args":[{"var":"e2"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"le","lhs":{"abs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"}},"rhs":{"abs":{"args":[{"var":"subject"},{"var":"e2"}],"params":[],"quantity":"prim_region_lateral_offset"}}}]},"forall_region":{"lit":"road_edge"},"var":"e2"}]},{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_steer_angle"},"rhs":{"param":"p.steer_angle_resolution"}}]},{"and":[{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"lt","lhs":{"args":[{"var":"subject"}],"measure":"kin_steer_angle"},"rhs":{"neg":{"param":"p.steer_angle_resolution"}}}]}]}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"forall_region":{"lit":"highway"},"var":"h"}]}]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_complete_halt,ru_occupant_count,st_highway,rel_occupies,st_grade,kin_engine_running,kin_parking_brake,st_road_edge,st_on_way,prim_region_lateral_offset,kin_steer_angle
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.parking_brake
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?h
+OCC	subject,h
+OCC	h
+OCC	subject
+OCC	subject
+OCC	?h
+OCC	subject,h
+OCC	h
+OCC	?e
+OCC	e,h
+OCC	?e2
+OCC	e2,h
+OCC	subject,e
+OCC	subject,e2
+OCC	subject
+OCC	e
+OCC	subject
+OCC	subject
+OCC	e
+OCC	subject
+TIME	occurrences	0
+TIME	checks	8
+TIME	lint	48
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	11
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	13
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	16
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	16
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	13
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	9
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	13
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	12
+TIME	witnesses	103
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_533.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_533.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+ADEQ_SIZE	NRS_484B_533	15	7
+TIME	adequacy_start	14
+TIME	adequacy	1233
+DONE

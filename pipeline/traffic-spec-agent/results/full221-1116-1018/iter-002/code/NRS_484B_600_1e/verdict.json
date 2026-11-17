@@ -1,0 +1,59 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 2 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": "tt",
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_600_1e",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-600-1e"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "cmp": "le",
+    "lhs": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "measure": "kin_speed"
+    },
+    "rhs": {
+     "lit": {
+      "den": 625,
+      "num": 22352
+     },
+     "unit": "metre_per_second"
+    }
+   },
+   "residues": [
+    "\"In any event\" states that the bound holds whatever other limit or circumstance applies; it adds no condition, and the duty is the same whether or not the words are read."
+   ],
+   "surrogate": false
+  },
+  "context": "29ded11c876cd4a099140f3e",
+  "candidate_digest": "dd30a8d6d4a4fd6a67d18433a4dbb840575c08a44de25384f88b454b16cd2ade"
+ }
+}

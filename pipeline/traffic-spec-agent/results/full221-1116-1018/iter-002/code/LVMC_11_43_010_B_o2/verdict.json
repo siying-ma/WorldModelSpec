@@ -1,0 +1,177 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "rises": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "var": "r"
+       }
+      ],
+      "atom": "rel_occupies",
+      "params": []
+     }
+    },
+    "exists_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_43_010_B_o2",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-43-010-B"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "rises": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "u"
+              },
+              {
+               "var": "subject"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "u"
+               },
+               {
+                "lit": "DEF-NRS-484A-285::traffic"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "u"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "not": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "u"
+              }
+             ],
+             "derived": "prim_closest_approach_within",
+             "params": [
+              {
+               "param": "p.roundabout_critical_gap"
+              }
+             ]
+            },
+            {
+             "cmp": "lt",
+             "lhs": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "u"
+               }
+              ],
+              "params": [
+               {
+                "param": "p.roundabout_critical_gap"
+               }
+              ],
+              "quantity": "prim_closest_approach_distance"
+             },
+             "rhs": {
+              "param": "p.conflict_centre_clearance"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "forall_user": "u"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "roundabout"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "0dee4dfc7f525d057a115e31",
+  "candidate_digest": "ff725b95b036bfaf134a7a5fe7103aed98a4580f8fa8c1759d4c6d7e4db9c7f8"
+ }
+}

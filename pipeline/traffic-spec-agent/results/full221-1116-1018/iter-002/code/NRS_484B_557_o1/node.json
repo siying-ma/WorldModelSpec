@@ -1,0 +1,204 @@
+{
+ "node_id": "NRS_484B_557_o1",
+ "law_refs": [
+  "NRS-484B-557"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The Department of Transportation, and local authorities with the approval of the Department of Transportation, may designate dangerous highway grade crossings of railroads",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "and erect official traffic-control devices at such crossings directing a stop.",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "When such stop signs are erected",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "the driver of any vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "shall stop within 50 feet but not less than 15 feet from the nearest track of such a grade crossing",
+   "role": "obligation"
+  },
+  {
+   "id": "s7",
+   "text": "and afterward may proceed only",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "upon exercising due care.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.railway_crossing",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "A 'highway grade crossing of a railroad' ('railroad' is 'a carrier of persons or property upon cars ... operated upon stationary rails', DEF-NRS-484A-200) is st.railway_crossing, 'level crossing of a railway with the roadway, and its nearest rail', lying on a highway (st.on_way, 'the public way a structure region lies on'; st.highway). The authority's designation of it as dangerous is its legal status, evidenced by the stop sign erected for it (s2, s3)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.stop_sign"
+   ],
+   "derived": [],
+   "justification": "'Official traffic-control devices ... directing a stop' ('every sign, signal, marking and device ... placed or erected by a public authority or railroad', DEF-NRS-484A-145) are stop signs: dev.stop_sign, 'regulatory sign requiring a full halt'; its presence is the evidence that it is official."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'When such stop signs are erected': the stop sign governs (dev.governs, 'the travel regions whose traffic the device controls'; not a stand-in for a position, and the place of the halt is read from the crossing, not from the sign) a travel region (st.travel_region) the subject occupies (rel.occupies) on its approach, and that region lies on the same highway as the crossing (st.on_way): the chain of relations ties the sign to 'such crossings'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Driver' is 'every person who drives or is in actual physical control of a vehicle' (DEF-NRS-484A-080), a role read through the vehicle's controlled motion; 'any vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "st.region_geometry",
+    "rel.occupies",
+    "st.railway_crossing"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' when required means 'complete cessation from movement' (DEF-NRS-484A-255, whose own scope 'when required' these words meet): drv.motion.complete_halt, whose contract quotes it, with p.halt_speed_tolerance. The place of the halt: the ground distance from the subject's body to the crossing (st.region_geometry, 'the ground distance from a road user's body outline to it (zero when they overlap)'), the crossing being st.railway_crossing with 'its nearest rail', is at most the upper and at least the lower figure the span states (literals), and the subject's footprint does not yet overlap the crossing (rel.occupies). 'Such a grade crossing' is the crossing s1 to s3 select, re-bound with every relation that fixed it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle), and the judged observation is an entry of the subject into a railway crossing x (st.railway_crossing): its footprint overlaps x (rel.occupies) and did not at the previous observation, and at that previous observation the subject occupied a travel region r (st.travel_region) governed (dev.governs) by a stop sign (dev.stop_sign), where r and x lie on the same highway h (st.on_way, st.highway).",
+ "obligation": "Duty of an act before an event (rule 4c). Event: the entry of the applicability, for the crossing x and the governed region r it selects. Act and place: at some observation of the search the subject is halted (drv.motion.complete_halt with p.halt_speed_tolerance), its footprint does not overlap x (rel.occupies), and the ground distance from its body to x (st.region_geometry) is at most the upper literal of s5 and at least its lower literal. Search: back from the observation before the entry, through observations at which the subject does not overlap x and its distance to x is at most the upper literal (the stopping zone). History bound: the search ends at the approach start, the last observation before the entry at which the subject does not overlap x and its distance to x exceeds the upper literal, or at the subject's previous exit from x (the observation at which it ceased to overlap x), the previous occurrence of the same event; nothing else ends it, not the start of the recording nor a first observation. Verdict: where the search finds the halt, the duty is met; where it reaches either end without the halt, the duty is violated; where it reaches the subject's first observation, inside the zone, with neither end found and no halt, the duty is unknown. A distance, an overlap or a speed unobserved at an observation of the search makes the search unknown from that point unless a halt in the zone was found nearer the entry. Whether the entry occurred is unknown where the previous observation does not show the subject's overlap with x, and whether the stop sign governs is unknown where governance of r is not observed.",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s4",
+   "why": "'The driver of any vehicle' is read on the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "The designation of the crossing as dangerous by the Department or a local authority is read from the presence of a stop sign governing the approach to the crossing.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "That the device is official and directs a stop is read from the presence of a stop sign.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "The distance 'from the nearest track' is read as the distance from the vehicle's body to the crossing region, whose near boundary is its nearest rail.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car on a lane governed by a stop sign approaches a railway crossing on the same highway from beyond the upper figure and drives into it without halting."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car halts at a distance from the crossing between the two figures, then drives into it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car drives into a railway crossing from a lane that no stop sign governs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car halts somewhere on its approach and then enters the crossing, but the source maps no region outlines, so its distance to the crossing is unknown at every observation.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the car already moving inside the stopping zone, between the two figures from the crossing; it enters the crossing without a recorded halt; a halt before the recording cannot be excluded.",
+   "boundary": "the car's approach from the observation at which it was last farther than the upper figure from the crossing up to the start of the recording"
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The car halts only closer to the crossing than the lower figure, then enters it."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s5",
+   "text": "50 feet",
+   "value": 50,
+   "unit": "ft"
+  },
+  {
+   "span": "s5",
+   "text": "15 feet",
+   "value": 15,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source (sensor or simulator specification)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

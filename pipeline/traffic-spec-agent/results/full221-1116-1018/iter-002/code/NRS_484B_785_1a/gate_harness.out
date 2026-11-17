@@ -1,0 +1,38 @@
+'TrafficSpec.Rules.NRS_484B_785_1a.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_785_1a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_785_1a","intentions":[],"laws":["NRS-484B-785-1a"],"narrowings":[],"operationalizations":[],"residues":["The ordinance the words name (LVMC 11.40.185(A), posted as DEF-LVMC-11-40-185-A: 'an electric bicycle or an electric scooter may be operated on a public roadway or sidewalk, or a lane, path, or route designated for bicycle, electric bicycle, or electric scooter use') provides where a scooter may be operated and states no speed; nothing in it provides otherwise on the speed this line bounds, so the duty is the same whether or not the exception's words hold.","The permission to operate adds no restriction to the speed bound: a scooter at rest or moving below the bound meets it alike, so the duty is the same whether or not the scooter is being operated."],"surrogate":false}
+RULEJSON	{"applicability":{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_785_1a","intentions":[],"laws":["NRS-484B-785-1a"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":4191},"unit":"metre_per_second"}},"residues":["The ordinance the words name (LVMC 11.40.185(A), posted as DEF-LVMC-11-40-185-A: 'an electric bicycle or an electric scooter may be operated on a public roadway or sidewalk, or a lane, path, or route designated for bicycle, electric bicycle, or electric scooter use') provides where a scooter may be operated and states no speed; nothing in it provides otherwise on the speed this line bounds, so the duty is the same whether or not the exception's words hold.","The permission to operate adds no restriction to the speed bound: a scooter at rest or moving below the bound meets it alike, so the duty is the same whether or not the scooter is being operated."],"surrogate":false}
+RULEXJSON	{"applicability":{"or":[{"body":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"args":[{"var":"subject"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_785_1a","intentions":[],"laws":["NRS-484B-785-1a"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":4191},"unit":"metre_per_second"}},"residues":["The ordinance the words name (LVMC 11.40.185(A), posted as DEF-LVMC-11-40-185-A: 'an electric bicycle or an electric scooter may be operated on a public roadway or sidewalk, or a lane, path, or route designated for bicycle, electric bicycle, or electric scooter use') provides where a scooter may be operated and states no speed; nothing in it provides otherwise on the speed this line bounds, so the duty is the same whether or not the exception's words hold.","The permission to operate adds no restriction to the speed bound: a scooter at rest or moving below the bound meets it alike, so the duty is the same whether or not the scooter is being operated."],"surrogate":false}
+ATOMS	ru_aggregate,st_roadway,rel_occupies,st_bicycle_lane_or_path,kin_speed
+COMPOSES	
+AGGREGATES	DEF-NRS-484B-018::electric_scooter
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?b
+OCC	subject,b
+OCC	subject
+LITERAL	4191/625	TrafficSpec.PUnit'.metrePerSecond
+TIME	occurrences	0
+TIME	checks	2
+TIME	lint	20
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:forbid	9
+SCEN	permit	compliant	?	permit: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:permit	7
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	8
+SCEN	blind	unknown	?	blind: unknown for [aggregate_unresolved:DEF-NRS-484B-018::electric_scooter], not for an atom the manifest masks
+TIME	scenario:blind	19
+SCEN	branch_1	violated	?	branch_1: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:branch_1	8
+SCEN	branch_2	compliant	?	branch_2: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:branch_2	7
+TIME	witnesses	58
+DONE_WITNESSES

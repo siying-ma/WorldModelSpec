@@ -1,0 +1,192 @@
+{
+ "node_id": "NRS_484A_450_2",
+ "law_refs": [
+  "NRS-484A-450-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Every driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "approaching a stop intersection indicated by a stop sign",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall stop before entering the crosswalk on the near side of the intersection or, if there is no crosswalk, shall stop at a clearly marked stop line, or if none, then at the point nearest the intersecting highway where the driver has a view of approaching traffic on the intersecting highway",
+   "role": "obligation"
+  },
+  {
+   "id": "s9",
+   "text": "before entering the intersection.",
+   "role": "trigger"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a defined term whose admitted aggregate is DEF-NRS-484A-320::vehicle; claimed as the aggregate. 'driver' (DEF-NRS-484A-080) names who controls the vehicle, a relational role, not membership: read through the vehicle's controlled motion (agency narrowing)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.intersection",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The approach is the carrier c the vehicle occupies (rel.occupies) whose entrance end is the intersection r (st.lane_enters: 'the intersection region a directed approach carrier runs into at its entrance end'); the stop intersection is 'indicated by a stop sign' where a dev.stop_sign ('regulatory sign requiring a full halt') governs c (dev.governs: 'the travel regions whose traffic the device controls — a lane, ...'). st.travel_region is the kind of c, st.intersection the kind of r. Same atoms as the index's 'approaching the intersection' plus the stop sign."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.crosswalk",
+    "st.stop_line",
+    "st.entrance_of",
+    "rel.occupies",
+    "st.intersection",
+    "st.region_geometry",
+    "prim.region_offset_along",
+    "st.lane_direction"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stop' is required here, so DEF-NRS-484A-255 applies: 'complete cessation from movement', drv.motion.complete_halt. The three places are read through the approach carrier c, in the order the words list. (1) The crosswalk 'on the near side of the intersection' is the st.crosswalk recorded as marking c's entrance (st.entrance_of: 'the carrier whose entrance into an intersection a stop line or a crosswalk marks'); 'before entering' it is a halt with the footprint off it (rel.occupies), short of it along c's direction (prim.region_offset_along along st.lane_direction, positive) and within the stop-point tolerance (st.region_geometry ground distance). Distance never stands for belonging: the association is st.entrance_of. (2) 'if there is no crosswalk' holds where the crosswalks' entrance lists are observed and none marks c ('where the source observes a line's entrances its list is complete'); the st.stop_line, 'the transverse line marking where vehicles halt for a device', recorded as marking c, is then the place: a halt not past it along c's direction, body within the tolerance; 'clearly marked' is read by the represented line (status). (3) 'if none': no stop line marks c either (lists observed); the point nearest the intersecting highway before entering the intersection is c's entrance end at r (st.intersection): a halt off r, short of r along c's direction, body within the tolerance of r — the ontology's approach convention reads the edge of the intersection as the carrier's entrance end, which is the point nearest the intersecting highway and the one with the widest view along it."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The event the halt precedes: the vehicle's footprint comes to overlap the intersection r (rel.occupies true at the observation, false at the previous one), r being the region st.lane_enters names for c."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that enters an intersection r at the judged observation t — its footprint overlaps r at t and not at t-1 (rel.occupies) — having occupied at t-1 a carrier c (st.travel_region) whose entrance end is r (st.lane_enters(c, r)), and a stop sign (dev.stop_sign) governs c (dev.governs).",
+ "obligation": "Duty of an act before an event (approach convention). Event: the entry into r at t through c; the duty is judged at t. Act: a halt of the subject (drv.motion.complete_halt, speed_tol = p.halt_speed_tolerance) at the governing place, read through c. Place, in the order the words list: (1) where a crosswalk x is recorded as marking c (st.entrance_of(x, c)): a halt at which the footprint does not overlap x (rel.occupies), the subject is short of x along c's designated direction (prim.region_offset_along of x along st.lane_direction of c, positive) and the body-to-x ground distance (st.region_geometry) is at most p.stop_point_tolerance; (2) else, where the crosswalk lists are observed and none marks c, and a stop line l is recorded as marking c: a halt at which the subject is not past l along c's direction (offset not negative) and the body-to-l distance is at most p.stop_point_tolerance; (3) else, where the crosswalk and stop-line lists are observed and none marks c: a halt at which the footprint does not overlap r, the subject is short of r along c's direction, and the body-to-r distance is at most p.stop_point_tolerance. Where several marks of the governing kind mark c, a halt in the zone of any of them it has not passed counts. History bound: the search runs back from t-1 and ends at the approach start — the last observation before t at which the subject, on a carrier the governing mark is recorded as marking, is outside that mark's stopping zone upstream (off the mark, short of it, farther than p.stop_point_tolerance; with several marks, outside and short of each) — or at the subject's previous entry into r, whichever is later. Nothing else ends it: not the start of the recording, a first observation, another intersection or mark, or a distance travelled. Crossing the mark, moving on toward r, a change of carrier or lateral move within the same entry, a reverse that stays within the zone and speed noise begin no new approach; only an observed exit from the zone upstream does, and the act is then owed again. Verdict: the act found → compliant; the search reaches the approach start or the previous entry without it → violated; it reaches neither (the recording begins first, or a speed or place in between is unobserved) without the act → unknown. Missing evidence: the entry is unknown, never absent, where t-1 does not show the subject on a mapped carrier with an observed association to r (no earlier observation, no mapped carrier, association unobserved); an unobserved dev.governs of c, or an unobserved association of a mark with c, makes the verdict unknown only where it turns on it — a halt found at a place known to govern, and an association the source excludes, are decided whatever the missing fact.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "The stop intersection 'indicated by a stop sign' is read by a stop sign the source records as governing the approach carrier c; a sign recorded only as governing the intersection itself is not read as facing c.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'clearly marked' is read by the represented stop line; the paint's clarity is not modelled.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "The point nearest the intersecting highway 'where the driver has a view of approaching traffic' is read as c's entrance end, the edge of r, within p.stop_point_tolerance: no point nearer the intersecting highway lies before the intersection, and the view along it is widest there; the view itself (st.sight_along_way) is not compared with a bound."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car on lane c, governed by a stop sign, with a crosswalk recorded as marking c, approaches from 40 m at 10 m/s, rolls over the crosswalk at 4 m/s and enters the intersection without ever being at rest."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car comes to rest 1 m short of the crosswalk, off it, then proceeds and enters the intersection."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car enters the intersection through a lane governed by a traffic signal and by no stop sign."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe which travel regions the stop sign governs.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "No crosswalk marks c (lists observed); a stop line marks c; the car comes to rest 1 m short of the line and then enters."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Neither a crosswalk nor a stop line marks c (lists observed); the car comes to rest 1 m short of the intersection's edge, off it, and then enters."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A crosswalk marks c; the car comes to rest 20 m short of it, moves on and enters the intersection without halting again: the halt lies before the approach start."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the car already 1 m short of the crosswalk marking c, moving at 3 m/s; it enters the intersection without a recorded halt, and no recorded observation shows it outside the stopping zone upstream.",
+   "boundary": "the approach start: the observation at which the car was outside the crosswalk's stopping zone upstream lies before the recording, so whether it halted within the zone before the recording began is not observed"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "proposed this iteration by LVMC_11_20_060_o1; MUTCD stop-line placement before a crosswalk"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

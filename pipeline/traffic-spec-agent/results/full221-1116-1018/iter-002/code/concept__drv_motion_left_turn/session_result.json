@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 108787,
+  "stop_reason": "end_turn",
+  "session_id": "5e1695b2-09ba-485c-8445-c3f5317da9f2",
+  "total_cost_usd": 0.87829478,
+  "usage": {
+   "input_tokens": 16,
+   "cache_creation_input_tokens": 60479,
+   "cache_read_input_tokens": 379389,
+   "output_tokens": 11748,
+   "output_tokens_details": {
+    "thinking_tokens": 4779
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 60479,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 624,
+     "cache_read_input_tokens": 63820,
+     "cache_creation_input_tokens": 1127,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1127
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37030,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0040876,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 16,
+    "outputTokens": 11748,
+    "cacheReadInputTokens": 379389,
+    "cacheCreationInputTokens": 60479,
+    "webSearchRequests": 0,
+    "costUSD": 0.8742071800000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4779,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 60479,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the first run (1 of 6), reporting 3 witnesses, 2 names and 1 atom read. I made no further changes after that.\n\n**Concept body** (`left_turn.lean`): the concept holds only at the observation where this becomes true:\n- the heading change over the window behind (`prim_heading_change` over `window`) is at least `turn_min` and less than `u_turn_min`, and\n- the yaw rate is at most `yaw_tol` in magnitude.\n\nThe band is signed with left positive, so a right turn and a reversal both fall outside it. If the window is truncated or a yaw rate in it is missing, the result is unknown. I declared no narrowings because every part of the body comes straight from the contract's words.\n\n**Witnesses**: one instance with window 10 s, turn_min 45°, u_turn_min 150° and yaw_tol 1 °/s. Each trace is a bicycle observed for 30 scenes, one per second.\n- **holds:** the bicycle turns at 15 °/s for 6 s, then rides straight. It is judged at 21000 ms, the first observation with zero yaw rate, where the heading change is 90°.\n- **fails:** a lane change that turns the heading +10° and back. It is judged at every observation whose window is fully covered (10000–29000 ms), and the heading change never reaches 45°.\n- **blind:** the holds trace with `kin.yaw_rate` masked, judged at 21000 ms.\n\n**One approximation in the witnesses:** the narrative says heading and yaw rate agree exactly, but headings at 5°, 10°, 15° and so on can't be written exactly as rational vectors. I rounded them to the nearest thousandth of (cos θ, sin θ). The trace check accepts this: it only flags a heading that stays the same while the yaw rate is non-zero.\n\n`task_result.md` is written in the working directory.",
+  "ttft_ms": 4366,
+  "type": "result",
+  "duration_ms": 118003,
+  "uuid": "b6da02e5-ebd1-4697-ace3-d0a31554d7a6",
+  "ttft_stream_ms": 1489,
+  "time_to_request_ms": 346,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 49,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 15,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 65,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 6,
+   "engine_pickup": 10,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 2,
+   "request_announcements": 155,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 7,
+   "message_normalization": 2,
+   "client_creation": 2,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 43,
+  "time_to_request_cpu_ms": 316,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 15,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 3,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 5,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 5,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 2,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1489,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37030,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0040876,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 16,
+    "outputTokens": 11748,
+    "cacheReadInputTokens": 379389,
+    "cacheCreationInputTokens": 60479,
+    "webSearchRequests": 0,
+    "costUSD": 0.8742071800000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4779,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 60479,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

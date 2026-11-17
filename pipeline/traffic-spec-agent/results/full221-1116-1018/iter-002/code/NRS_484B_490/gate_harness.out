@@ -1,0 +1,48 @@
+'TrafficSpec.Rules.NRS_484B_490.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_490.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_490","intentions":[],"laws":["NRS-484B-490"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"narrow_highway"}],"atom":"dev_zone_sign_kind","params":[]},{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]},"exists_region":{"lit":"travel_region"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_490","intentions":[],"laws":["NRS-484B-490"],"narrowings":[],"obligation":{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.parking_min_duration"}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"narrow_highway"}],"atom":"dev_zone_sign_kind","params":[]},{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"zone_sign"},"var":"d"}]},"exists_region":{"lit":"travel_region"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_490","intentions":[],"laws":["NRS-484B-490"],"narrowings":[],"obligation":{"not":{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.parking_min_duration"},"subject":"subject"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_travel_region,rel_occupies,dev_zone_sign,dev_zone_sign_kind,dev_governs,prim_conditions_hold,drv_motion_parked
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.governs
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?d
+OCC	d
+OCC	d,r
+OCC	d,subject
+OCC	subject
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	233
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	69
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	78
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	66
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	70
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	65
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	66
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	66
+TIME	witnesses	480
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_490.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_490.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_490	5	6
+TIME	adequacy_start	9
+TIME	adequacy	1574
+DONE

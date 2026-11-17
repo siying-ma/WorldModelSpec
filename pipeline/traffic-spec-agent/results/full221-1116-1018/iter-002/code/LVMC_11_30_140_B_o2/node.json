@@ -1,0 +1,233 @@
+{
+ "node_id": "LVMC_11_30_140_B_o2",
+ "law_refs": [
+  "LVMC-11-30-140-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Any pedestrian who is not wholly or partially blind",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "or any driver of any vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "who approaches or comes in contact with",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "a person wholly or partially blind, carrying a cane or walking stick white in color, or white tipped in red, or being assisted by a person",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "with wisdom",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "shall immediately",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "come to a full stop",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "and take such precautions before proceeding",
+   "role": "obligation"
+  },
+  {
+   "id": "s9",
+   "text": "as may be necessary to avoid an accident or injury to the person wholly or partially blind",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.pedestrian_with_white_cane_or_guide_animal"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'). 'who is not wholly or partially blind' leaves out the pedestrians the law protects; blindness itself is no observable, and is read through the feature the same sentence names as its sign: the subject is not of the class ru.pedestrian_with_white_cane_or_guide_animal ('pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person'), which carries no exclusion of its own."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exclusions of devices moved by human power, electric bicycles, electric personal assistive mobility devices and electric scooters, which the reading classifies). 'driver' (DEF-NRS-484A-080) is the role of who controls the vehicle, never membership: it is read through the vehicle's controlled motion. Same atoms as 'The driver of a vehicle' (LVMC_11_20_060_o1)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.centre_distance",
+    "rel.contact"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'comes in contact with' is rel.contact, 'the bodies of two road users ... touch or overlap (a collision)', taken at the observation at which it begins; a near miss is not contact, its exclusion, and is read by 'approaches'. 'approaches' is the subject, while not at rest (not drv.motion.complete_halt), coming within a reach of the person: the centre-to-centre distance (rel.centre_distance, 'Euclidean ground-plane distance between reference points') falls to p.blind_person_approach_reach. That atom is not read as a clearance between bodies or an order of arrival, its exclusions: only as how near the subject has come."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.pedestrian_with_white_cane_or_guide_animal"
+   ],
+   "derived": [],
+   "justification": "The person protected is identified by the features the words list: 'carrying a cane or walking stick white in color, or white tipped in red, or being assisted by a person' is ru.pedestrian_with_white_cane_or_guide_animal, 'pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person'. 'a person wholly or partially blind' with those features is the pedestrian the class describes: the ontology's class for exactly this description, whose contract states no exclusion. The person is another road user than the subject, quantified in the applicability."
+  },
+  {
+   "span": "s8",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'before proceeding' refers to the full stop the sibling span requires after the approach or contact (o1): proceeding is the subject moving again (not drv.motion.complete_halt) after it has been at rest (drv.motion.complete_halt, 'The road user is at rest at the observation — complete cessation from movement', DEF-NRS-484A-255, the definition scoped to a stop 'when required') since the latest approach or contact event with the same protected person. The referent keeps its subject (this subject), its object (that person), its event and its order (halt after the event, motion after the halt). 'take such precautions' is read through the outcome the precautions secure (observable_reading, perception), which the standard span bounds."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s9",
+   "standard": "such precautions ... as may be necessary to avoid an accident or injury to the person wholly or partially blind",
+   "concepts": [
+    "rel.contact",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Traffic-conflict technique: while proceeding, the subject neither touches the protected person (rel.contact) nor is on a course whose closest approach of centres, under constant velocities, comes within p.conflict_horizon (prim.closest_approach_within) at a distance below p.conflict_centre_clearance (prim.closest_approach_distance); an accident or injury is avoided when no such contact or conflict arises.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s5",
+   "why": "'with wisdom' qualifies the person assisting, not the person protected; that the person assisted is wholly or partially blind and is being assisted is what identifies the protected person, and a helper's wisdom, a state of mind no trace shows, does not change that identification, so the duty owed to the person assisted is the same whether or not the helper's wisdom holds.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is either a pedestrian (ru.aggregate=DEF-NRS-484A-165::pedestrian) that is not of the class ru.pedestrian_with_white_cane_or_guide_animal, or a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) read through its controlled motion; for some other road user b (not the same as the subject) of the class ru.pedestrian_with_white_cane_or_guide_animal, an approach or contact event (rel.contact beginning, or rel.centre_distance first falling to at most p.blind_person_approach_reach while the subject is not at rest) occurred at or before the judged observation; the subject has been at rest (drv.motion.complete_halt with speed_tol p.halt_speed_tolerance) at some observation since the latest such event; and at the judged observation the subject is not at rest (proceeding).",
+ "obligation": "At every such observation, for that b: the subject is not in contact with b (rel.contact), and it is not the case that the centres of the subject and b approach each other within p.conflict_horizon (prim.closest_approach_within) with a closest-approach distance (prim.closest_approach_distance, same horizon) below p.conflict_centre_clearance. Either contact or such a conflict course is violated. Surrogate: the verdict is evidence for the standard, not a legal conclusion.",
+ "params": [
+  "p.blind_person_approach_reach",
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driver of any vehicle' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s8",
+   "why": "'take such precautions' is a duty to make sure, read through the outcome it secures while the subject proceeds after its stop: no contact with and no conflict course toward the protected person.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "s9",
+   "why": "'an accident or injury' is read only through contact between the bodies and a predicted closest approach of the centres below the clearance within the horizon; an injury without contact is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motor vehicle comes within the reach of a ru.pedestrian_with_white_cane_or_guide_animal crossing ahead, halts, then moves off toward the pedestrian: prim.closest_approach_within holds over p.conflict_horizon with prim.closest_approach_distance below p.conflict_centre_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The vehicle halts, waits until the pedestrian has left its path, then moves off; the centres do not approach below the clearance within the horizon and no rel.contact occurs."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A vehicle halts and moves off near an ordinary pedestrian; no ru.pedestrian_with_white_cane_or_guide_animal is in the scene."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A vehicle halts and moves off near a ru.pedestrian_with_white_cane_or_guide_animal; rel.centre_distance is not observed and no contact occurs, so whether an approach event occurred is unknown.",
+   "masked": [
+    "rel.centre_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "After halting, the vehicle moves off and its body touches the white-cane pedestrian (rel.contact)."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.blind_person_approach_reach",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "the centre distance within which a moving road user has approached a pedestrian carrying a white cane or led by another person: the stopping distance from an urban approach speed of about 13 m/s with a 1 s perception-reaction time and a 4.5 m/s^2 deceleration",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping-sight-distance model"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed quantisation of the acquisition standard's scene graph"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "Swedish Traffic Conflict Technique (Hyden 1987); FHWA Surrogate Safety Assessment Model"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design vehicle dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

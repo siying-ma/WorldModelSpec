@@ -1,0 +1,582 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "b"
+         },
+         {
+          "var": "subject"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "b"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "b"
+            }
+           ],
+           "derived": "drv_interaction_overtake_pass",
+           "params": [
+            {
+             "param": "p.overtake_window"
+            },
+            {
+             "param": "p.overtake_same_direction_cos"
+            }
+           ]
+          },
+          {
+           "since": [
+            {
+             "not": {
+              "and": [
+               {
+                "cmp": "lt",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "b"
+                  }
+                 ],
+                 "measure": "rel_longitudinal_overlap"
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 1,
+                  "num": 0
+                 },
+                 "unit": "metre"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "b"
+                   }
+                  ],
+                  "atom": "rel_same_direction",
+                  "params": [
+                   {
+                    "param": "p.overtake_same_direction_cos"
+                   }
+                  ]
+                 },
+                 {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "b"
+                    }
+                   ],
+                   "derived": "drv_interaction_overtake_pass",
+                   "params": [
+                    {
+                     "param": "p.overtake_window"
+                    },
+                    {
+                     "param": "p.overtake_same_direction_cos"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "body": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             "exists_region": {
+              "lit": "roadway"
+             },
+             "var": "r"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "b"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-025::bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484B-017::electric_bicycle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484B-018::electric_scooter"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_777_1_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-777-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "b"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "b"
+            },
+            {
+             "lit": "DEF-NRS-484A-320::vehicle"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "b"
+              }
+             ],
+             "derived": "drv_interaction_overtake_pass",
+             "params": [
+              {
+               "param": "p.overtake_window"
+              },
+              {
+               "param": "p.overtake_same_direction_cos"
+              }
+             ]
+            },
+            {
+             "since": [
+              {
+               "not": {
+                "and": [
+                 {
+                  "cmp": "lt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "b"
+                    }
+                   ],
+                   "measure": "rel_longitudinal_overlap"
+                  },
+                  "rhs": {
+                   "lit": {
+                    "den": 1,
+                    "num": 0
+                   },
+                   "unit": "metre"
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "atom": "rel_same_direction",
+                    "params": [
+                     {
+                      "param": "p.overtake_same_direction_cos"
+                     }
+                    ]
+                   },
+                   {
+                    "not": {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "b"
+                      }
+                     ],
+                     "derived": "drv_interaction_overtake_pass",
+                     "params": [
+                      {
+                       "param": "p.overtake_window"
+                      },
+                      {
+                       "param": "p.overtake_same_direction_cos"
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               "exists_region": {
+                "lit": "roadway"
+               },
+               "var": "r"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "since": [
+        {
+         "implies": [
+          {
+           "cmp": "ge",
+           "lhs": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "measure": "rel_longitudinal_overlap"
+           },
+           "rhs": {
+            "lit": {
+             "den": 1,
+             "num": 0
+            },
+            "unit": "metre"
+           }
+          },
+          {
+           "and": [
+            {
+             "not": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "b"
+               }
+              ],
+              "atom": "rel_contact",
+              "params": []
+             }
+            },
+            {
+             "and": [
+              {
+               "implies": [
+                {
+                 "args": [
+                  {
+                   "var": "b"
+                  }
+                 ],
+                 "derived": "drv_motion_complete_halt",
+                 "params": [
+                  {
+                   "param": "p.halt_speed_tolerance"
+                  }
+                 ]
+                },
+                {
+                 "cmp": "ge",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "b"
+                   },
+                   {
+                    "lit": "lateral"
+                   }
+                  ],
+                  "measure": "rel_surface_gap"
+                 },
+                 "rhs": {
+                  "param": "p.door_swing_reach"
+                 }
+                }
+               ]
+              },
+              {
+               "implies": [
+                {
+                 "and": [
+                  {
+                   "cmp": "gt",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "b"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   "rhs": {
+                    "param": "p.halt_speed_tolerance"
+                   }
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "b"
+                    }
+                   ],
+                   "atom": "rel_same_direction",
+                   "params": [
+                    {
+                     "param": "p.overtake_same_direction_cos"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "cmp": "ge",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "b"
+                   },
+                   {
+                    "lit": "lateral"
+                   }
+                  ],
+                  "measure": "rel_surface_gap"
+                 },
+                 "rhs": {
+                  "param": "p.bicycle_pass_safe_gap"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "cmp": "lt",
+           "lhs": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "measure": "rel_longitudinal_overlap"
+           },
+           "rhs": {
+            "lit": {
+             "den": 1,
+             "num": 0
+            },
+            "unit": "metre"
+           }
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "b"
+              }
+             ],
+             "atom": "rel_same_direction",
+             "params": [
+              {
+               "param": "p.overtake_same_direction_cos"
+              }
+             ]
+            },
+            {
+             "not": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "b"
+               }
+              ],
+              "derived": "drv_interaction_overtake_pass",
+              "params": [
+               {
+                "param": "p.overtake_window"
+               },
+               {
+                "param": "p.overtake_same_direction_cos"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "b"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "292c19ddd5e948a83d50feae",
+  "candidate_digest": "69dbfd92dc5e0934fc76dab160be773cd8b57e6b87a799b3201d2b57713a5661"
+ }
+}

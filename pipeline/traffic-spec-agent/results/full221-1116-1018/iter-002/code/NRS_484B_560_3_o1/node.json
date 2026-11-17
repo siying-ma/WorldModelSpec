@@ -1,0 +1,202 @@
+{
+ "node_id": "NRS_484B_560_3_o1",
+ "law_refs": [
+  "NRS-484B-560-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "When stopping is required",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "at a railroad crossing",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "the driver",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "shall keep as far to the right of the highway",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "as possible",
+   "role": "standard"
+  },
+  {
+   "id": "s6",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s7",
+   "text": "shall not form two lanes of traffic",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "unless the highway is marked for four or more lanes of traffic.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.governs",
+    "dev.railway_signal_or_gate",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.human_direction",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"Stopping\" (DEF-NRS-484A-260) is \"any halting, even momentarily, of a vehicle\"; that it is required is read through the devices in the scene that require a halt of the subject's traffic: dev.railway_signal_or_gate, \"the devices at a level crossing; lights in {flashing, dark}; gate in {up, lowering, down, raising, none}\", with lights flashing or the gate lowering or down; dev.stop_sign, \"regulatory sign requiring a full halt\"; dev.traffic_signal showing circular_red; dev.human_direction with indication stop and role police_officer or railroad_flagger. Each must govern (dev.governs, \"the travel regions whose traffic the device controls\") a travel region (st.travel_region) the subject's footprint overlaps (rel.occupies, \"a road user's footprint overlaps a lane / region\"). dev.governs is \"not a stand-in for a position\": the place of the stop is not read from governance but from s2's distance to the crossing. dev.traffic_signal is not a sign; the signal's state is read, not a sign's."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.railway_crossing",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "st.railway_crossing: \"level crossing of a railway with the roadway, and its nearest rail\"; \"railroad\" (DEF-NRS-484A-200) is \"a carrier of persons or property upon cars, other than streetcars, operated upon stationary rails\": a level crossing of a railway with the roadway is a railroad crossing, and a streetcar line laid along the street forms no level crossing of a railway with the roadway, so the definition's exclusion is already made by the contract. The subject is at the crossing where st.region_geometry, \"the ground distance from a road user's body outline to it (zero when they overlap)\", is within p.railroad_crossing_approach_reach; region_geometry is not a stand-in for occupancy, and no occupancy is read from it."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"Driver\" (DEF-NRS-484A-080) means \"every person who drives or is in actual physical control of a vehicle\": the duty binds the conduct of a vehicle, the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"); ru.aggregate is not a stand-in for the relational role of who drives, which is read through the vehicle's controlled motion (observable_reading, agency)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.road_edge",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [],
+   "justification": "The right of the highway the subject is on: st.highway \"the entire public way between its boundary lines\" occupied by the subject (rel.occupies); st.road_edge \"curb or edge of the roadway\" lying on that way (st.on_way, \"the public way a structure region lies on\"); the edge is on the subject's right where prim.region_lateral_offset, \"the signed lateral offset (m, left positive) of a structure region from a road user\", is negative. st.on_way is not nearness to a way: the edge's belonging to the way is read from the relation, not from distance."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "as far to the right of the highway as possible",
+   "concepts": [
+    "st.region_geometry",
+    "st.road_edge",
+    "prim.region_lateral_offset"
+   ],
+   "params": [
+    "p.pullover_edge_gap"
+   ],
+   "convention": "A vehicle kept as far right as it can be placed stands with its body within the curb clearance of a parallel-parked car plus lane-keeping variability and an edge margin of the right-hand edge of the roadway: the ground distance from its body to a road edge on its right (st.region_geometry, prim.region_lateral_offset negative) is at most p.pullover_edge_gap. A vehicle in any lane but the rightmost, or wandering left within the rightmost, is farther.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle; its body is within p.railroad_crossing_approach_reach of a railroad crossing c (st.railway_crossing, st.region_geometry); and some device d governs (dev.governs) a travel region r whose footprint the subject overlaps (rel.occupies) and requires a halt of r's traffic at this observation: a dev.railway_signal_or_gate whose lights are flashing or whose gate is lowering or down, a dev.stop_sign, a dev.traffic_signal displaying circular_red, or a dev.human_direction of role police_officer or railroad_flagger with indication stop.",
+ "obligation": "At every such observation, some st.road_edge e lies on a highway h the subject occupies (st.on_way(e, h), rel.occupies(subject, h)), lies to the subject's right (prim.region_lateral_offset(subject, e) < 0), and the ground distance from the subject's body to e (st.region_geometry) is at most p.pullover_edge_gap. Where no such edge is found the duty is violated; where the offset or the distance of every candidate edge is unobserved, unknown.",
+ "params": [
+  "p.railroad_crossing_approach_reach",
+  "p.pullover_edge_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "\"the driver\" is read through the vehicle's controlled motion; whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "That a device is official, placed by a public authority or railroad, is read from its presence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "\"the right of the highway\" is read as the right-hand edge of the roadway; a shoulder beyond that edge is not a place the vehicle is required to move onto.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Railway signal lights flashing and gate down govern the two-lane approach of a one-way roadway; the subject car halts 8 m from the railway crossing in the left lane, its body 4.5 m from the right-hand road edge (prim.region_lateral_offset negative), farther than p.pullover_edge_gap."
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A stop sign governs the subject's lane 10 m from a railway crossing on a two-lane two-way highway; the subject car halts straddling the centre line, its body 2.5 m from the right-hand road edge."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same crossing and flashing lights; the subject car halts 8 m from the crossing in the rightmost lane, its body 0.4 m from the right-hand road edge."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car is 8 m from a railway crossing whose lights are dark and gate up; no stop sign, red signal or stop direction governs its lane."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Lights flashing govern the subject's lane near a crossing; the source maps regions without their outline, so the distance to the crossing and to the road edge is unobserved.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.railroad_crossing_approach_reach",
+   "unit": "m",
+   "value": 15.2,
+   "convention": "the ground distance from a vehicle's body to a railroad grade crossing within which the vehicle is at the crossing, on the stretch where a halt for the crossing is made: the 50-ft outer bound of the zone in which grade-crossing practice places the halt before the nearest rail",
+   "source": "MUTCD Part 8 highway-rail grade crossing stop-line placement and the Uniform Vehicle Code grade-crossing stop zone"
+  },
+  {
+   "name": "p.pullover_edge_gap",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "the gap between a vehicle body and the right-hand curb or roadway edge within which a vehicle pulled over to clear the way counts as as close to the edge as it can be placed: the curb clearance of a parallel-parked car (about 0.3 m) plus lane-keeping variability and an edge margin",
+   "source": "parallel-parking curb clearance and lane-keeping variability in naturalistic driving data"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

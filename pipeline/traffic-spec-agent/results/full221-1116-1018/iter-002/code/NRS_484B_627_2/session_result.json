@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 237924,
+  "stop_reason": "end_turn",
+  "session_id": "7e1f4bc7-be00-4178-b2fc-ba1fc15f335c",
+  "total_cost_usd": 2.07188036,
+  "usage": {
+   "input_tokens": 34,
+   "cache_creation_input_tokens": 130500,
+   "cache_read_input_tokens": 1663781,
+   "output_tokens": 25116,
+   "output_tokens_details": {
+    "thinking_tokens": 12333
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 130500,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 864,
+     "cache_read_input_tokens": 133288,
+     "cache_creation_input_tokens": 1680,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1680
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43019,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00474694,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 34,
+    "outputTokens": 25116,
+    "cacheReadInputTokens": 1663781,
+    "cacheCreationInputTokens": 130500,
+    "webSearchRequests": 0,
+    "costUSD": 2.06713342,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 12333,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 130500,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 21,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `NRS_484B_627_2` on the third of six runs (16 witnesses, 21 names). The rule and witness files are finished, and `task_result.md` is written in the working directory.\n\n**What the rule says.** It applies to a vehicle occupying a roadway. It is violated when the vehicle is halted and a traffic road user behind it in the same lane is within `p.rear_signal_reach` and is either halted or braking at `p.speed_decrease_decel_min` or more. The halt complies instead if any of these holds:\n- a road user is ahead in the lane within `p.queue_halt_gap`;\n- a closest approach is predicted within `p.conflict_horizon` and `p.conflict_centre_clearance`;\n- a halt-requiring control governs a travel region the vehicle occupies: a stop or yield sign, a red/flashing-red/red-arrow signal, a person directing traffic signalling stop, or a railway crossing with lights flashing or a gate not up.\n\nThe exceptions sit in the obligation, so they make the halt compliant rather than \"not applicable\". That matches the record's wording (\"except where …\") and the planned compliant verdict for `branch_1`.\n\n**Gate runs:**\n1. `BUILD_FAIL`: the bus in the witness file was given only an x coordinate. I added the y coordinate.\n2. `WITNESS_FAIL`: `blind` came out violated instead of unknown. Masking `rel.ahead_behind_in_lane` only removes a measured value, and Core still computed the relation from lane occupancy. In the blind scene I now report only the halted car's own lane occupancy, not the follower's, so the relation can't be worked out. The unknown it produces is attributed to the masked atom, which is what the witness needs.\n3. `OK`.\n\n**Choices the node left open:**\n- **Body gap:** I read `rel.surface_gap` as the straight-line distance between the two bodies, since the record says \"body gap\".\n- **\"A gate not up\":** I wrote this as a gate lowering, down or raising. Core's \"no gate\" state is not treated as a gate that is not up. I don't consider this a narrowing, so none is declared.\n- **Extra witnesses:** I added `branch_3`–`branch_12` so that every alternative in the rule is tested on its own: each kind of control, the conflict and no-conflict cases, a braking follower, a follower too far behind, and a vehicle too far ahead.\n\nBefore the first gate run I made one stray `echo` call. It changed nothing and is noted in `task_result.md`.",
+  "ttft_ms": 34679,
+  "type": "result",
+  "duration_ms": 265194,
+  "uuid": "ca985047-6165-4e81-bc77-5d25d86c6b79",
+  "ttft_stream_ms": 995,
+  "time_to_request_ms": 294,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 28,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 14,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "transcript_persist": 38,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 7,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 164,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 5,
+   "message_normalization": 1,
+   "client_creation": 8,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 23,
+  "time_to_request_cpu_ms": 257,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 8,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 8,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 995,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43019,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00474694,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 34,
+    "outputTokens": 25116,
+    "cacheReadInputTokens": 1663781,
+    "cacheCreationInputTokens": 130500,
+    "webSearchRequests": 0,
+    "costUSD": 2.06713342,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 12333,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 130500,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

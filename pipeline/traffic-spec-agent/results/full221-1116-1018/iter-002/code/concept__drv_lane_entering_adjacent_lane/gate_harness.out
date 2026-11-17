@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.lane.entering_adjacent_lane.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.entering_adjacent_lane.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.entering_adjacent_lane.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"r1","sort":{"sort":"region"}},{"name":"r2","sort":{"sort":"region"}},{"name":"s","sort":{"sort":"literal","values":["left","right"]}}],"body":{"and":[{"args":[{"var":"r1"},{"var":"s"},{"var":"r2"}],"atom":"st_lane_adjacency","params":[]},{"and":[{"and":[{"args":[{"var":"a"},{"var":"r1"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"a"},{"var":"r1"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"args":[{"var":"a"},{"var":"r2"}],"atom":"rel_occupies","params":[]}}]}]},"contract":"Road user a, occupying lane r1, begins to move into lane r2, the neighbouring lane of the same direction on side s of r1 (s left or right): the event of a's footprint first reaching into r2 from r1. It is observed with a's footprint occupancy (rel.occupies) and the lanes' adjacency (st.lane_adjacency): r2 is r1's neighbour on side s, a's footprint overlaps both r1 and r2 at the observation, and at the previous observation it overlapped r1 and did not overlap r2. The event is recognized at the first observation at which a's footprint overlaps r2, and conduct before the previous observation is not read. The concept holds at that observation only, and not again until a's footprint has ceased to overlap r2 and again comes to overlap it from r1. It says nothing of whether a completes the move, of its signal, of its speed, or of why it moves. Not denoted: a road user that comes into r2 from elsewhere than r1; one that stays within r1; a lane r2 that is not r1's neighbour of the same direction on side s, such as an opposing lane. Where a's overlap with either lane at the observation or at the previous one is unobserved, where there is no previous observation, or where the adjacency of the two lanes is not observed, it is unknown.","definition":null,"id":"drv.lane.entering_adjacent_lane","kind":"formula","narrowings":[],"params":[],"residues":[],"supersedes":null}
+ATOMS	st_lane_adjacency,rel_occupies
+READS	st_lane_adjacency,rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"args":[{"var":"r1"},{"var":"s"},{"var":"r2"}],"atom":"st_lane_adjacency","params":[]},{"and":[{"and":[{"args":[{"var":"a"},{"var":"r1"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"a"},{"var":"r1"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"args":[{"var":"a"},{"var":"r2"}],"atom":"rel_occupies","params":[]}}]}]}
+WITNESS	holds	drv.lane.entering_adjacent_lane@w
+WITNESS	fails	drv.lane.entering_adjacent_lane@w
+WITNESS	blind	drv.lane.entering_adjacent_lane@w
+OCC	r1,s,r2
+OCC	a,r1
+OCC	a,r1
+OCC	a,r2
+INST	drv.lane.entering_adjacent_lane@w	ok
+TIME	checks	2
+TIME	lint	13
+SCEN	holds	drv.lane.entering_adjacent_lane@w	compliant	compliant	ok
+TIME	scenario:drv.lane.entering_adjacent_lane@w/holds	8
+SCEN	fails	drv.lane.entering_adjacent_lane@w	violated	violated	ok
+TIME	scenario:drv.lane.entering_adjacent_lane@w/fails	8
+SCEN	blind	drv.lane.entering_adjacent_lane@w	unknown	unknown	ok
+TIME	scenario:drv.lane.entering_adjacent_lane@w/blind	10
+TIME	witnesses	26
+DONE_WITNESSES
+'TrafficSpec.Concepts.lane.entering_adjacent_lane.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.entering_adjacent_lane.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.entering_adjacent_lane.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.lane.entering_adjacent_lane@w	4	2
+TIME	adequacy_start	16
+TIME	adequacy	69
+DONE

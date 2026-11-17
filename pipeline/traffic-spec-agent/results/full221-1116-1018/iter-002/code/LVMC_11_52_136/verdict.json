@@ -1,0 +1,128 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "aisle"
+        },
+        {
+         "lit": "access_aisle"
+        }
+       ],
+       "atom": "st_parking_space_designation",
+       "params": []
+      },
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "aisle"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "parking_space"
+    },
+    "var": "aisle"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_52_136",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-52-136"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "aisle"
+          },
+          {
+           "lit": "access_aisle"
+          }
+         ],
+         "atom": "st_parking_space_designation",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "aisle"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       ]
+      },
+      {
+       "not": {
+        "args": [
+         {
+          "var": "subject"
+         }
+        ],
+        "derived": "drv_motion_parked",
+        "params": [
+         {
+          "param": "p.halt_speed_tolerance"
+         },
+         {
+          "param": "p.parking_min_duration"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "parking_space"
+    },
+    "var": "aisle"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "54ce4d9c3cb7f05c51726f37",
+  "candidate_digest": "fac7d18f2ac79312eb3c71e5c59984b5e56406f03a398547b44b8c83472e47bd"
+ }
+}

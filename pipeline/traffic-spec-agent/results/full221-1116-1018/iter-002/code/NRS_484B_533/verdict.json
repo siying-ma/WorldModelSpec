@@ -1,0 +1,364 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 12 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       }
+      ],
+      "derived": "drv_motion_complete_halt",
+      "params": [
+       {
+        "param": "p.halt_speed_tolerance"
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "cmp": "eq",
+        "lhs": {
+         "args": [
+          {
+           "var": "subject"
+          }
+         ],
+         "measure": "ru_occupant_count"
+        },
+        "rhs": {
+         "lit": {
+          "den": 1,
+          "num": 0
+         },
+         "unit": "count"
+        }
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "h"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "cmp": "gt",
+           "lhs": {
+            "abs": {
+             "args": [
+              {
+               "var": "h"
+              }
+             ],
+             "measure": "st_grade"
+            }
+           },
+           "rhs": {
+            "param": "p.grade_resolution"
+           }
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "highway"
+        },
+        "var": "h"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_533",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-533"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s5",
+     "why": "Where two road edges lying on the highway are equally nearest the vehicle, front wheels turned beyond the resolution toward the side of either comply."
+    }
+   ],
+   "obligation": {
+    "and": [
+     {
+      "not": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "atom": "kin_engine_running",
+       "params": []
+      }
+     },
+     {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         }
+        ],
+        "atom": "kin_parking_brake",
+        "params": []
+       },
+       {
+        "body": {
+         "implies": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "h"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "cmp": "gt",
+             "lhs": {
+              "abs": {
+               "args": [
+                {
+                 "var": "h"
+                }
+               ],
+               "measure": "st_grade"
+              }
+             },
+             "rhs": {
+              "param": "p.grade_resolution"
+             }
+            }
+           ]
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "e"
+                 },
+                 {
+                  "var": "h"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               },
+               {
+                "body": {
+                 "implies": [
+                  {
+                   "args": [
+                    {
+                     "var": "e2"
+                    },
+                    {
+                     "var": "h"
+                    }
+                   ],
+                   "atom": "st_on_way",
+                   "params": []
+                  },
+                  {
+                   "cmp": "le",
+                   "lhs": {
+                    "abs": {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "e"
+                      }
+                     ],
+                     "params": [],
+                     "quantity": "prim_region_lateral_offset"
+                    }
+                   },
+                   "rhs": {
+                    "abs": {
+                     "args": [
+                      {
+                       "var": "subject"
+                      },
+                      {
+                       "var": "e2"
+                      }
+                     ],
+                     "params": [],
+                     "quantity": "prim_region_lateral_offset"
+                    }
+                   }
+                  }
+                 ]
+                },
+                "forall_region": {
+                 "lit": "road_edge"
+                },
+                "var": "e2"
+               }
+              ]
+             },
+             {
+              "or": [
+               {
+                "and": [
+                 {
+                  "cmp": "gt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "e"
+                    }
+                   ],
+                   "params": [],
+                   "quantity": "prim_region_lateral_offset"
+                  },
+                  "rhs": {
+                   "lit": {
+                    "den": 1,
+                    "num": 0
+                   },
+                   "unit": "metre"
+                  }
+                 },
+                 {
+                  "cmp": "gt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "measure": "kin_steer_angle"
+                  },
+                  "rhs": {
+                   "param": "p.steer_angle_resolution"
+                  }
+                 }
+                ]
+               },
+               {
+                "and": [
+                 {
+                  "cmp": "lt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "e"
+                    }
+                   ],
+                   "params": [],
+                   "quantity": "prim_region_lateral_offset"
+                  },
+                  "rhs": {
+                   "lit": {
+                    "den": 1,
+                    "num": 0
+                   },
+                   "unit": "metre"
+                  }
+                 },
+                 {
+                  "cmp": "lt",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "measure": "kin_steer_angle"
+                  },
+                  "rhs": {
+                   "neg": {
+                    "param": "p.steer_angle_resolution"
+                   }
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "road_edge"
+           },
+           "var": "e"
+          }
+         ]
+        },
+        "forall_region": {
+         "lit": "highway"
+        },
+        "var": "h"
+       }
+      ]
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s5",
+    "why": "Where two road edges lying on the highway are equally nearest the vehicle, front wheels turned beyond the resolution toward the side of either comply."
+   }
+  ],
+  "context": "b06c4c7c072eb0b06a6a190c",
+  "candidate_digest": "47d76966d9a021135fc861d8e7fe1e67e402f7073f88c42f4403ed34d19a55db"
+ }
+}

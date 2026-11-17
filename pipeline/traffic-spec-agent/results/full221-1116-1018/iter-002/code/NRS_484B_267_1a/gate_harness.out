@@ -1,0 +1,65 @@
+'TrafficSpec.Rules.NRS_484B_267_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_267_1a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_267_1a","intentions":[],"laws":["NRS-484B-267-1a"],"narrowings":[{"kind":"no_atom","span":"u4","why":"the words borrowed from u5 (DEF-NRS-484A-480-3) require the flashing red warning lamp to be 'visible from the front' (the record: facing front); the formula language's sig_warning_lamp atom reads colour and mode only (sig_warning_lamp [x, colour] / [x, colour, mode], Atoms.lean sig_warning_lamp_shows), and no atom of the surface reads a lamp's facing, so the formula states 'a lit red flashing warning lamp' in any facing"}],"operationalizations":[{"concepts":["kin.speed","rel.bearing","rel.centre_distance"],"params":["p.halt_speed_tolerance","p.emergency_immediate_approach_reach"],"standard":"the immediate approach of the emergency or regulatory vehicle","surrogate":false},{"concepts":["prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.conflict_horizon","p.conflict_centre_clearance"],"standard":"the right-of-way: DEF-NRS-484A-210 'approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other'","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_1a","intentions":[],"laws":["NRS-484B-267-1a"],"narrowings":[{"kind":"no_atom","span":"u4","why":"the words borrowed from u5 (DEF-NRS-484A-480-3) require the flashing red warning lamp to be 'visible from the front' (the record: facing front); the formula language's sig_warning_lamp atom reads colour and mode only (sig_warning_lamp [x, colour] / [x, colour, mode], Atoms.lean sig_warning_lamp_shows), and no atom of the surface reads a lamp's facing, so the formula states 'a lit red flashing warning lamp' in any facing"}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}]},{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"not":{"args":[{"var":"subject"},{"var":"e"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"e"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}}]}]}]},"forall_user":"e"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_1a","intentions":[],"laws":["NRS-484B-267-1a"],"narrowings":[{"kind":"no_atom","span":"u4","why":"the words borrowed from u5 (DEF-NRS-484A-480-3) require the flashing red warning lamp to be 'visible from the front' (the record: facing front); the formula language's sig_warning_lamp atom reads colour and mode only (sig_warning_lamp [x, colour] / [x, colour, mode], Atoms.lean sig_warning_lamp_shows), and no atom of the surface reads a lamp's facing, so the formula states 'a lit red flashing warning lamp' in any facing"}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"e"},{"var":"subject"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"e"},{"var":"subject"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_immediate_approach_reach"}}]}]}]}]}]},{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"not":{"args":[{"var":"subject"},{"var":"e"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"e"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"e"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}}]}]}]},"forall_user":"e"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,ru_official_vehicle,ru_official_vehicle_kind,sig_warning_lamp,kin_speed,rel_bearing,rel_centre_distance,dev_human_direction,dev_human_direction_role,st_travel_region,dev_governs,rel_occupies,rel_contact,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-020::authorized_emergency_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.warning_lamp
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	?e
+OCC	e,subject
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e,subject
+OCC	e,subject
+OCC	?d
+OCC	d
+OCC	?r
+OCC	d,r
+OCC	subject,r
+OCC	?e
+OCC	e,subject
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e,subject
+OCC	e,subject
+OCC	subject
+OCC	subject,e
+OCC	subject,e
+OCC	subject,e
+TIME	occurrences	0
+TIME	checks	6
+TIME	lint	59
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	17
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	15
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	10
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	18
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	16
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	12
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	10
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	16
+TIME	witnesses	114
+DONE_WITNESSES

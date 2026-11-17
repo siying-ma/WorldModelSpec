@@ -1,0 +1,174 @@
+{
+ "node_id": "NRS_484B_497",
+ "law_refs": [
+  "NRS-484B-497"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a laned roadway is restricted to one direction,",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "a person shall not stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "upon the left-hand side of such one-way roadway",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "unless official traffic-control devices are erected permitting such standing or parking.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.one_way_roadway",
+    "st.lane",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'Roadway' is 'that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder' (DEF-NRS-484A-220); a roadway 'restricted to one direction' is st.one_way_roadway, 'roadway on which traffic is restricted to one direction', which refines st.roadway, whose exclusion (not the sidewalk) does not touch a roadway. 'Laned' is read as a lane (st.lane, 'a longitudinal strip of roadway for one line of vehicles'; not a stand-in for a half of the roadway, which is not how it is used here) lying on the public way (st.on_way, 'the public way (a highway region) a structure region lies on'; st.highway, 'the entire public way between its boundary lines') on which the one-way roadway lies: the relation ties the lanes to the roadway's way, never distance."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'Stand' is 'the halting of a vehicle, whether occupied or not, otherwise than for the purpose of and while actually engaged in receiving or discharging passengers' (DEF-NRS-484A-250) and 'park' 'the standing of a vehicle, whether occupied or not, otherwise than temporarily ...' (DEF-NRS-484A-155): park is a kind of standing, so the two together are standing. drv.motion.parked denotes a road user 'at rest at every observation of the window behind the observation, of length min_duration', and leaves out 'a halt shorter than min_duration, which may be the temporary halt the definition leaves out': with min_duration p.standing_min_duration, a halt longer than a passenger pick-up dwell is standing, as the mapping index reads 'No person shall stand or park a vehicle'. 'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'a person ... a vehicle' is read on the vehicle's controlled motion."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.one_way_roadway",
+    "st.road_edge",
+    "prim.region_lateral_offset",
+    "kin.heading",
+    "st.lane_direction",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'Upon ... such one-way roadway': the subject's footprint overlaps (rel.occupies, 'a road user's footprint overlaps a lane / region') the same one-way roadway s1 selects, re-bound with s1's selection. 'The left-hand side' is read against the roadway's designated direction (st.lane_direction, 'direction of travel designated for a structure a vehicle travels in ... a roadway, one-way roadway'), never the vehicle's heading alone: among the curbs or edges (st.road_edge, 'curb or edge of the roadway') lying on the roadway's way (st.on_way, st.highway), the one nearest the subject lies on the left of that direction. Its side is read with prim.region_lateral_offset ('the signed lateral offset (m, left positive) of a structure region from a road user ... perpendicular to the road user's heading'), whose sign is turned into the roadway's frame by the sign of the dot product of the subject's heading (kin.heading, 'direction the body points') with the roadway's direction: a parked vehicle may face either way. No 'not a stand-in' clause applies: the offset is used as a side, not as occupancy."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.parking_space",
+    "dev.regulatory_sign",
+    "dev.zone_sign",
+    "dev.governs",
+    "prim.conditions_hold",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Official traffic-control device' is 'every sign, signal, marking and device ... placed or erected by a public authority ... for the purpose of regulating, warning or guiding traffic' (DEF-NRS-484A-145); a device 'permitting such standing or parking' is read through the devices of the vocabulary that permit it: a marked bay (st.parking_space, 'marked bay for standing or parking') the subject's footprint overlaps (rel.occupies); a regulatory sign of code angle_parking (dev.regulatory_sign, 'a point regulation by catalogue code') or a zone sign of kind parking_restricted (dev.zone_sign, a signed zone with its 'conditions attribute') that governs (dev.governs, 'the travel regions whose traffic the device controls'; st.travel_region) a region the subject occupies, with its posted conditions holding for the subject (prim.conditions_hold, 'the structured conditions of a device ... hold at the observation for a road user'). dev.regulatory_sign's exclusion (a sign is not a manoeuvre or a road feature) is respected: the sign is read as the permission it posts."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) whose footprint overlaps (rel.occupies) a one-way roadway r (st.one_way_roadway) lying on a highway h (st.on_way, st.highway) on which some lane (st.lane) also lies.",
+ "obligation": "For every one-way roadway r the subject occupies, selected again as in the applicability (lying on a highway h on which a lane lies), it is not the case that all of the following hold at the observation: (1) the subject is parked (drv.motion.parked with speed_tol p.halt_speed_tolerance and min_duration p.standing_min_duration); (2) the subject is on the left-hand side of r: of the road edges (st.road_edge) lying on h, the one with the smallest absolute lateral offset from the subject (prim.region_lateral_offset) lies to the left of r's designated direction, that is its offset is positive where the dot product of the subject's heading (kin.heading) and r's direction (st.lane_direction) is positive, and negative where that dot product is negative; (3) no device permits standing or parking there: the subject's footprint overlaps no parking space (st.parking_space), and no regulatory sign of code angle_parking (dev.regulatory_sign) and no zone sign of kind parking_restricted (dev.zone_sign) whose conditions hold for the subject (prim.conditions_hold) governs (dev.governs) a travel region the subject occupies.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.standing_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'A person shall not ... park a vehicle' is read on the vehicle's controlled motion: the duty binds the vehicle's conduct whoever is at its controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "That a device is official and 'erected' is read from its presence on the road: a marked bay or a posted sign present in the scene is presumed official.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car is at rest, for longer than the standing duration, against the left curb of a one-way roadway of two lanes, heading along the roadway's direction; the nearest road edge lies to its left; it overlaps no parking bay and no angle-parking or parking-restricted sign governs the roadway."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car is at rest for as long against the right curb of the same one-way roadway: the nearest road edge lies to the right of the roadway's direction."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car is at rest against a left curb of a two-way roadway (st.roadway that is not one-way): no one-way roadway is occupied."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not observe the roadway's designated direction, so which edge lies on the left-hand side is unknown.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car is at rest at the left curb of the one-way roadway inside a marked parking bay."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The car halts at the left curb only for a moment shorter than the standing duration and moves off: it is not standing."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source (sensor or simulator specification)"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "curbside passenger pick-up dwell observations (ITE curbside management practice)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

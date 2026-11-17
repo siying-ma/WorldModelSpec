@@ -1,0 +1,187 @@
+{
+ "node_id": "NRS_484B_410_o1",
+ "law_refs": [
+  "NRS-484B-410"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person,",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "except when stopping, standing or parking where no parking is permitted,",
+   "role": "exception"
+  },
+  {
+   "id": "s3",
+   "text": "shall not start a vehicle which is stopped, standing or parked on a highway",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "nor enter upon a highway",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "unless and until such movement can be made with safety.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'A person' who starts a vehicle is read through the vehicle's controlled motion (agency reading), so the binder is the vehicle, the admitted aggregate DEF-NRS-484A-320::vehicle; same mapping as the index row 'A person'."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone",
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.travel_region",
+    "prim.conditions_hold"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stopping, standing or parking' (DEF-NRS-484A-260 'any halting, even momentarily, of a vehicle'; DEF-NRS-484A-250 'the halting of a vehicle'; DEF-NRS-484A-155 'the standing of a vehicle') together denote every halt, drv.motion.complete_halt ('at rest at the observation'), read at the observation before the start. 'where no parking is permitted' is a place a no-parking restriction marks: an st.curb_zone of kind no_parking, no_stopping or fire_lane or a curb painted red, which the vehicle's footprint overlaps (rel.occupies), or an st.travel_region it occupies that a dev.regulatory_sign of code no_parking, no_standing or no_stopping governs (dev.governs) with its conditions holding (prim.conditions_hold). The sign is a condition, not a manoeuvre (its not-a-stand-in clause does not apply); the posted or painted feature is the evidence of the restriction (status reading)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'a vehicle' is the admitted aggregate. 'stopped, standing or parked' is every halt (the three definitions' union: DEF-NRS-484A-260 'any halting, even momentarily', DEF-NRS-484A-250 'the halting of a vehicle', DEF-NRS-484A-155 'the standing of a vehicle'; their exclusions -- conflict or device halts, passenger and loading halts -- intersect only on purposes no conduct shows), drv.motion.complete_halt with p.halt_speed_tolerance. 'start' is the observation at which complete_halt ceases to hold, having held at the previous one. 'on a highway' is rel.occupies of an st.highway region ('the entire public way between its boundary lines', matching DEF-NRS-484A-095 'the entire width between the boundary lines'), at the previous observation."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "such movement can be made with safety",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: a movement is made with safety where, at its onset, no other road user's centre is predicted under constant velocities to come within the conflict centre clearance of the subject's centre within the time-to-collision horizon",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle. Engaged at an observation at which the subject starts: drv.motion.complete_halt(subject; p.halt_speed_tolerance) held at the previous observation while the subject occupied an st.highway region, and does not hold at this observation; and the exception does not hold: at the previous observation the subject did not occupy a place where no parking is permitted -- an st.curb_zone of kind no_parking, no_stopping or fire_lane, or one whose curb colour is red, or an st.travel_region governed (dev.governs) by a dev.regulatory_sign of code no_parking, no_standing or no_stopping whose conditions hold (prim.conditions_hold).",
+ "obligation": "At that observation no other road user of the scene, of any class (same excludes the subject), satisfies prim.closest_approach_within(subject, other; p.conflict_horizon) with prim.closest_approach_distance(subject, other; p.conflict_horizon) at or below p.conflict_centre_clearance. Where one does, violated.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'A person' who starts a vehicle is read through the vehicle's controlled motion: the duty binds the vehicle, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'where no parking is permitted' is read by the posted no-parking, no-standing or no-stopping sign whose conditions hold, or the marked or red-painted curb zone, the feature's presence being the evidence of the restriction.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "'with safety' is read only as the absence, at the onset of the movement, of a predicted near-collision with another road user; 'unless and until' is read at the start observation, the start being withheld until then.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject car stands at the curb on a highway for 20 s, outside any no-parking zone, then starts (speed rises above the tolerance) while another car 12 m behind it in the same lane closes at 12 m/s, so their centres are predicted to meet within the horizon."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject car stands at the curb on a highway and starts; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car drives along the highway at 12 m/s throughout and never halts."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car stands at the curb and then moves off, but kin.speed is not observed on this source, so whether it was halted and started cannot be decided.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The subject car halted in a curb zone of kind no_parking painted red starts while another car 12 m behind closes at 12 m/s: the exception holds."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of tracking sources"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique (Hyden; time-to-collision thresholds of 1.5 to 3 s)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design dimensions (AASHTO design vehicle P)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

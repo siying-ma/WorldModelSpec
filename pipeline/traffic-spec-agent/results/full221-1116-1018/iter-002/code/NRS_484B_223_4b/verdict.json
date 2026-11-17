@@ -1,0 +1,258 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "rises": {
+        "not": {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "x"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       }
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "l"
+             },
+             {
+              "lit": "right"
+             }
+            ],
+            "atom": "st_turn_lane_side",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "l"
+             },
+             {
+              "var": "x"
+             }
+            ],
+            "atom": "st_lane_enters",
+            "params": []
+           }
+          ]
+         },
+         {
+          "since": [
+           {
+            "not": {
+             "rises": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "x"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            }
+           },
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "l"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "turn_lane"
+       },
+       "var": "l"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "x"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_223_4b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-223-4b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "rises": {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "x"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "l"
+               },
+               {
+                "lit": "right"
+               }
+              ],
+              "atom": "st_turn_lane_side",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "l"
+               },
+               {
+                "var": "x"
+               }
+              ],
+              "atom": "st_lane_enters",
+              "params": []
+             }
+            ]
+           },
+           {
+            "since": [
+             {
+              "not": {
+               "rises": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "x"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               }
+              }
+             },
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "l"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "turn_lane"
+         },
+         "var": "l"
+        }
+       ]
+      },
+      {
+       "rises": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "x"
+         }
+        ],
+        "derived": "drv_motion_right_turn_through_region",
+        "params": [
+         {
+          "param": "p.heading_since_step_carla_scene_graph"
+         },
+         {
+          "param": "p.turn_heading_min"
+         },
+         {
+          "param": "p.u_turn_heading_min"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "x"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "0b16536f7e5a16490bc39c7c",
+  "candidate_digest": "8fedd632d039a301c4956e9dfea12316d0329a8a52a9484b11a43bde41937a6f"
+ }
+}

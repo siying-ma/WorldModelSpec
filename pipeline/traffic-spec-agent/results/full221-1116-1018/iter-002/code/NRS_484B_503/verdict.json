@@ -1,0 +1,879 @@
+{
+ "verdict": "OK",
+ "details": [
+  "13 witnesses, 24 names, composes nothing",
+  "narrowings declared by the coder: 2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "z"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "z"
+          },
+          {
+           "lit": "passenger_loading"
+          }
+         ],
+         "atom": "st_curb_zone_kind",
+         "params": []
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "curb_zone"
+      },
+      "var": "z"
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "zs"
+            },
+            {
+             "lit": "parking_restricted"
+            }
+           ],
+           "atom": "dev_zone_sign_kind",
+           "params": []
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "tr"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "zs"
+               },
+               {
+                "var": "tr"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "travel_region"
+           },
+           "var": "tr"
+          }
+         ]
+        },
+        {
+         "args": [
+          {
+           "var": "zs"
+          },
+          {
+           "var": "subject"
+          }
+         ],
+         "derived": "prim_conditions_hold",
+         "params": []
+        }
+       ]
+      },
+      "forall_device": {
+       "lit": "zone_sign"
+      },
+      "var": "zs"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_503",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-503"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s1",
+     "why": "A railway gate 'not up' is read as a gate observed lowering, down or raising; a crossing without a gate (gate state none) excuses a halt only through flashing lights."
+    },
+    {
+     "kind": "reading",
+     "span": "s1",
+     "why": "A traffic signal's 'red or yellow indication' is read as circular red or yellow and red or yellow arrows of any direction (with flashing red); flashing yellow and flashing yellow arrows, which permit proceeding, are not included."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "z"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "z"
+            },
+            {
+             "lit": "passenger_loading"
+            }
+           ],
+           "atom": "st_curb_zone_kind",
+           "params": []
+          }
+         ]
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "zs"
+               },
+               {
+                "lit": "parking_restricted"
+               }
+              ],
+              "atom": "dev_zone_sign_kind",
+              "params": []
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "tr"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "zs"
+                  },
+                  {
+                   "var": "tr"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "travel_region"
+              },
+              "var": "tr"
+             }
+            ]
+           },
+           {
+            "args": [
+             {
+              "var": "zs"
+             },
+             {
+              "var": "subject"
+             }
+            ],
+            "derived": "prim_conditions_hold",
+            "params": []
+           }
+          ]
+         },
+         "forall_device": {
+          "lit": "zone_sign"
+         },
+         "var": "zs"
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           }
+          ],
+          "derived": "drv_motion_complete_halt",
+          "params": [
+           {
+            "param": "p.halt_speed_tolerance"
+           }
+          ]
+         }
+        },
+        {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "o"
+                },
+                {
+                 "var": "subject"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "o"
+                 },
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "atom": "rel_ahead_behind_in_lane",
+                "params": []
+               },
+               {
+                "cmp": "le",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "o"
+                  }
+                 ],
+                 "measure": "rel_surface_gap"
+                },
+                "rhs": {
+                 "param": "p.queue_halt_gap"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "exists_user": "o"
+          },
+          {
+           "or": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "ds"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  "exists_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "ds"
+                 },
+                 {
+                  "or": [
+                   {
+                    "body": {
+                     "args": [
+                      {
+                       "var": "dy"
+                      },
+                      {
+                       "var": "r"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    "exists_device": {
+                     "lit": "yield_sign"
+                    },
+                    "var": "dy"
+                   },
+                   {
+                    "or": [
+                     {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "dt"
+                          },
+                          {
+                           "var": "r"
+                          }
+                         ],
+                         "atom": "dev_governs",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "dt"
+                            },
+                            {
+                             "lit": "circular_red"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          },
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "dt"
+                              },
+                              {
+                               "lit": "circular_yellow"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "or": [
+                              {
+                               "args": [
+                                {
+                                 "var": "dt"
+                                },
+                                {
+                                 "lit": "flashing_red"
+                                }
+                               ],
+                               "atom": "dev_traffic_signal_shows",
+                               "params": []
+                              },
+                              {
+                               "or": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "dt"
+                                  },
+                                  {
+                                   "lit": "red_arrow(left)"
+                                  }
+                                 ],
+                                 "atom": "dev_traffic_signal_shows",
+                                 "params": []
+                                },
+                                {
+                                 "or": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "dt"
+                                    },
+                                    {
+                                     "lit": "red_arrow(right)"
+                                    }
+                                   ],
+                                   "atom": "dev_traffic_signal_shows",
+                                   "params": []
+                                  },
+                                  {
+                                   "or": [
+                                    {
+                                     "args": [
+                                      {
+                                       "var": "dt"
+                                      },
+                                      {
+                                       "lit": "red_arrow(straight)"
+                                      }
+                                     ],
+                                     "atom": "dev_traffic_signal_shows",
+                                     "params": []
+                                    },
+                                    {
+                                     "or": [
+                                      {
+                                       "args": [
+                                        {
+                                         "var": "dt"
+                                        },
+                                        {
+                                         "lit": "red_arrow(u_turn)"
+                                        }
+                                       ],
+                                       "atom": "dev_traffic_signal_shows",
+                                       "params": []
+                                      },
+                                      {
+                                       "or": [
+                                        {
+                                         "args": [
+                                          {
+                                           "var": "dt"
+                                          },
+                                          {
+                                           "lit": "yellow_arrow(left)"
+                                          }
+                                         ],
+                                         "atom": "dev_traffic_signal_shows",
+                                         "params": []
+                                        },
+                                        {
+                                         "or": [
+                                          {
+                                           "args": [
+                                            {
+                                             "var": "dt"
+                                            },
+                                            {
+                                             "lit": "yellow_arrow(right)"
+                                            }
+                                           ],
+                                           "atom": "dev_traffic_signal_shows",
+                                           "params": []
+                                          },
+                                          {
+                                           "or": [
+                                            {
+                                             "args": [
+                                              {
+                                               "var": "dt"
+                                              },
+                                              {
+                                               "lit": "yellow_arrow(straight)"
+                                              }
+                                             ],
+                                             "atom": "dev_traffic_signal_shows",
+                                             "params": []
+                                            },
+                                            {
+                                             "args": [
+                                              {
+                                               "var": "dt"
+                                              },
+                                              {
+                                               "lit": "yellow_arrow(u_turn)"
+                                              }
+                                             ],
+                                             "atom": "dev_traffic_signal_shows",
+                                             "params": []
+                                            }
+                                           ]
+                                          }
+                                         ]
+                                        }
+                                       ]
+                                      }
+                                     ]
+                                    }
+                                   ]
+                                  }
+                                 ]
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "exists_device": {
+                       "lit": "traffic_signal"
+                      },
+                      "var": "dt"
+                     },
+                     {
+                      "or": [
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "dg"
+                            },
+                            {
+                             "var": "r"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "dg"
+                              },
+                              {
+                               "lit": "flashing"
+                              }
+                             ],
+                             "atom": "dev_railway_signal_or_gate_lights",
+                             "params": []
+                            },
+                            {
+                             "or": [
+                              {
+                               "args": [
+                                {
+                                 "var": "dg"
+                                },
+                                {
+                                 "lit": "lowering"
+                                }
+                               ],
+                               "atom": "dev_railway_signal_or_gate_gate",
+                               "params": []
+                              },
+                              {
+                               "or": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "dg"
+                                  },
+                                  {
+                                   "lit": "down"
+                                  }
+                                 ],
+                                 "atom": "dev_railway_signal_or_gate_gate",
+                                 "params": []
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "dg"
+                                  },
+                                  {
+                                   "lit": "raising"
+                                  }
+                                 ],
+                                 "atom": "dev_railway_signal_or_gate_gate",
+                                 "params": []
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_device": {
+                         "lit": "railway_signal_or_gate"
+                        },
+                        "var": "dg"
+                       },
+                       {
+                        "body": {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "dh"
+                            },
+                            {
+                             "var": "r"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "dh"
+                              },
+                              {
+                               "lit": "police_officer"
+                              }
+                             ],
+                             "atom": "dev_human_direction_role",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "dh"
+                              },
+                              {
+                               "lit": "stop"
+                              }
+                             ],
+                             "atom": "dev_human_direction_indication",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "exists_device": {
+                         "lit": "human_direction"
+                        },
+                        "var": "dh"
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "travel_region"
+             },
+             "var": "r"
+            },
+            {
+             "and": [
+              {
+               "not": {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "derived": "drv_motion_parked",
+                "params": [
+                 {
+                  "param": "p.halt_speed_tolerance"
+                 },
+                 {
+                  "param": "p.standing_min_duration"
+                 }
+                ]
+               }
+              },
+              {
+               "or": [
+                {
+                 "since": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "derived": "drv_motion_complete_halt",
+                   "params": [
+                    {
+                     "param": "p.halt_speed_tolerance"
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      }
+                     ],
+                     "derived": "drv_motion_complete_halt",
+                     "params": [
+                      {
+                       "param": "p.halt_speed_tolerance"
+                      }
+                     ]
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      }
+                     ],
+                     "atom": "sig_door_open",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "until": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    }
+                   ],
+                   "derived": "drv_motion_complete_halt",
+                   "params": [
+                    {
+                     "param": "p.halt_speed_tolerance"
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      }
+                     ],
+                     "derived": "drv_motion_complete_halt",
+                     "params": [
+                      {
+                       "param": "p.halt_speed_tolerance"
+                      }
+                     ]
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "subject"
+                      }
+                     ],
+                     "atom": "sig_door_open",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "curb_zone"
+    },
+    "var": "z"
+   },
+   "residues": [
+    "'For any purpose or period of time' excludes no halt: every halt, whatever its purpose and length, is within the prohibition, so the duty is the same whether or not these words are read."
+   ],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s1",
+    "why": "A railway gate 'not up' is read as a gate observed lowering, down or raising; a crossing without a gate (gate state none) excuses a halt only through flashing lights."
+   },
+   {
+    "kind": "reading",
+    "span": "s1",
+    "why": "A traffic signal's 'red or yellow indication' is read as circular red or yellow and red or yellow arrows of any direction (with flashing red); flashing yellow and flashing yellow arrows, which permit proceeding, are not included."
+   }
+  ],
+  "context": "3d939dc7f23a8f6a8a5fc349",
+  "candidate_digest": "76dbcd148cbbcf2390e3b79bf78388aebf6b084b94756b19726a638929392aec"
+ }
+}

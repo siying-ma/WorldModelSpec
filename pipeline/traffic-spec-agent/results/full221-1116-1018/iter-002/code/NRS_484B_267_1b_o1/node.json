@@ -1,0 +1,349 @@
+{
+ "node_id": "NRS_484B_267_1b_o1",
+ "law_refs": [
+  "NRS-484B-267-1b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "u1",
+   "text": "Upon the immediate approach of",
+   "role": "standard"
+  },
+  {
+   "id": "u2",
+   "text": "an authorized emergency vehicle",
+   "role": "condition"
+  },
+  {
+   "id": "u3",
+   "text": "or an official vehicle of a regulatory agency,",
+   "role": "condition"
+  },
+  {
+   "id": "u4",
+   "text": "making use of flashing lights meeting the requirements of",
+   "role": "condition"
+  },
+  {
+   "id": "u5",
+   "text": "subsection 3 of NRS 484A.480 [DEF-NRS-484A-480-3],",
+   "role": "reference"
+  },
+  {
+   "id": "u6",
+   "text": "the driver of every other vehicle shall,",
+   "role": "subject"
+  },
+  {
+   "id": "u7",
+   "text": "except when otherwise directed by a law enforcement officer:",
+   "role": "exception"
+  },
+  {
+   "id": "b1",
+   "text": "Except as otherwise provided in this paragraph,",
+   "role": "exception"
+  },
+  {
+   "id": "b2",
+   "text": "immediately",
+   "role": "standard"
+  },
+  {
+   "id": "b3",
+   "text": "drive to a position parallel to, and",
+   "role": "obligation"
+  },
+  {
+   "id": "b4",
+   "text": "as close as possible to, the right-hand edge or, if applicable, curb of a highway",
+   "role": "standard"
+  },
+  {
+   "id": "b5",
+   "text": "and clear of any intersection.",
+   "role": "condition"
+  },
+  {
+   "id": "b6",
+   "text": "The driver shall not drive to and stop in a position on a paved shoulder of a highway",
+   "role": "sibling"
+  },
+  {
+   "id": "b7",
+   "text": "where lawfully placed signage allows a vehicle described in paragraphs (a) to (f), inclusive, of subsection 4 of NRS 484B.210 [list appended below] to drive on the shoulder.",
+   "role": "sibling"
+  },
+  {
+   "id": "b8",
+   "text": "The provisions of subparagraph (1) of paragraph (c) of subsection 1 do not apply to: (a) An authorized emergency vehicle described in NRS 484A.480; (b) A vehicle which has been issued a permit to operate as an authorized emergency vehicle pursuant to NRS 484A.490; (c) A traffic incident management vehicle; (d) A tow car; (e) A coroner vehicle; or (f) A public transit motor bus, that is being driven on the paved shoulder of a highway where lawfully placed signage allows that vehicle to use the shoulder in that manner.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "u2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-020::authorized_emergency_vehicle"
+   ],
+   "derived": [],
+   "justification": "Admitted aggregate DEF-NRS-484A-020::authorized_emergency_vehicle ('a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law'); ru.aggregate 'membership of a legal aggregate'. The conduct the words require of it is carried by u4 and u1, not by the class."
+  },
+  {
+   "span": "u3",
+   "atoms": [
+    "ru.official_vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.official_vehicle 'a vehicle in official or contracted road service ...; kind in {... regulatory_agency ...}', read with kind regulatory_agency; 'Not a stand-in for: an emergency vehicle' respected."
+  },
+  {
+   "span": "u4",
+   "atoms": [
+    "sig.warning_lamp"
+   ],
+   "derived": [],
+   "justification": "sig.warning_lamp 'a warning lamp lit; colour ..., mode ..., facing ...', read as colour red, mode flashing, facing front from the quoted requirement 'at least one flashing red warning lamp visible from the front'; not a stand-in for an audible warning, which is not required.",
+   "source_spans": [
+    "u5"
+   ]
+  },
+  {
+   "span": "u6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Admitted aggregate DEF-NRS-484A-320::vehicle; 'every other' excludes the approaching vehicle; 'driver' read through the vehicle's controlled motion."
+  },
+  {
+   "span": "u7",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Mapping index: 'unless otherwise directed by a Police Officer' maps to dev.governs, dev.human_direction, rel.occupies, st.travel_region; dev.human_direction 'a person directing traffic ...; role in {police_officer, ...}' read with role police_officer, governing (dev.governs) a travel region the subject occupies (rel.occupies)."
+  },
+  {
+   "span": "b1",
+   "atoms": [
+    "st.shoulder",
+    "rel.occupies",
+    "dev.regulatory_sign",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "'Except as otherwise provided in this paragraph' refers to the paragraph's own provision that the driver 'shall not drive to and stop in a position on a paved shoulder of a highway where lawfully placed signage allows' listed vehicles 'to drive on the shoulder': the position this node requires excludes such a shoulder. st.shoulder 'the part of the highway beside the roadway not intended for vehicular traffic; paved attribute', read paved; dev.regulatory_sign 'a point regulation by catalogue code ... shoulder_use_permitted', governing (dev.governs 'the travel regions whose traffic the device controls ... or shoulder') that shoulder; rel.occupies anchors the subject's footprint."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "kin.heading",
+    "st.lane_direction",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'a position parallel to' the edge: the subject's heading (kin.heading 'direction the body points') is parallel, in either sense, to the designated direction (st.lane_direction 'direction of travel designated for a structure a vehicle travels in') of a travel region (st.travel_region) its footprint overlaps (rel.occupies); the carrier's direction runs along its edge. st.travel_region's exclusion of the highway's extent is respected: it only selects the carrier the subject is on."
+  },
+  {
+   "span": "b5",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'clear of any intersection': the subject's footprint overlaps (rel.occupies) no st.intersection region ('the region where two roadways meet, bounded by the prolongation of their edges'; DEF-NRS-484A-105 'the area embraced within the prolongation or connection of the lateral curb lines'). Its exclusion 'Not a stand-in for: a crosswalk or a stop line' is respected."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "u1",
+   "standard": "the immediate approach of the emergency or regulatory vehicle",
+   "concepts": [
+    "kin.speed",
+    "rel.bearing",
+    "rel.centre_distance"
+   ],
+   "params": [
+    "p.halt_speed_tolerance",
+    "p.emergency_immediate_approach_reach"
+   ],
+   "convention": "the vehicle moves with the subject ahead of it in its own frame, within the centre distance a vehicle at an urban response speed covers in the time a driver needs to perceive its lamps and begin clearing the way",
+   "surrogate": false
+  },
+  {
+   "span": "b2",
+   "standard": "immediately",
+   "concepts": [
+    "kin.time",
+    "rel.bearing",
+    "rel.longitudinal_overlap"
+   ],
+   "params": [
+    "p.emergency_pullover_window"
+   ],
+   "convention": "the position is reached within a perception-reaction time plus the lane changes a pull-over takes, counted from the onset of the immediate approach; the duty to clear the way ends once the approaching vehicle has passed the subject (the subject behind it in its frame, their projections sharing no length)",
+   "surrogate": false
+  },
+  {
+   "span": "b4",
+   "standard": "as close as possible to the right-hand edge or curb of a highway",
+   "concepts": [
+    "st.road_edge",
+    "st.region_geometry",
+    "prim.region_lateral_offset",
+    "st.highway",
+    "st.on_way",
+    "st.shoulder",
+    "rel.occupies"
+   ],
+   "params": [
+    "p.pullover_edge_gap"
+   ],
+   "convention": "curb-parking clearance: a vehicle pulled over to the edge stands with its body within the curb clearance of a parked car plus lane-keeping variability of the right-hand curb or roadway edge, or on an unsigned paved shoulder beyond it",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "u5",
+   "as": "definition",
+   "source": "DEF-NRS-484A-480-3",
+   "quote": "at least one flashing red warning lamp visible from the front"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "For some road user e, not the subject, the trigger rises at this observation (it holds here and did not at the previous observation): e is of the authorized-emergency-vehicle aggregate or an official vehicle of kind regulatory_agency, shows a lit warning lamp of colour red, mode flashing, facing front, moves (kin.speed above p.halt_speed_tolerance) with the subject ahead of it in its frame (rel.bearing longitudinal positive), within centre distance p.emergency_immediate_approach_reach. And no human_direction device of role police_officer governs a travel region the subject occupies.",
+ "obligation": "For every e whose trigger rises here: at some observation within p.emergency_pullover_window ahead (formula 'within', time), either e has passed the subject (longitudinal component of rel.bearing from e to the subject negative and rel.longitudinal_overlap of e and the subject negative), or the subject is at the position: (a) for some travel region t its footprint overlaps, the absolute dot product of its heading and t's designated direction is at least p.curb_parallel_cos; (b) for some highway h on which a travel region the subject occupies lies, either there is a road_edge region g lying on h with the ground distance from the subject's body to g (st.region_geometry) at most p.pullover_edge_gap and prim.region_lateral_offset of g from the subject at most zero (the edge on its right or under it), or the subject's footprint overlaps a paved shoulder lying on h; (c) its footprint overlaps no intersection region; (d) its footprint overlaps no paved shoulder governed by a regulatory sign of code shoulder_use_permitted.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.emergency_immediate_approach_reach",
+  "p.emergency_pullover_window",
+  "p.pullover_edge_gap",
+  "p.curb_parallel_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "u6",
+   "why": "'driver' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b2",
+   "why": "the duty is judged at the onset of the immediate approach; it is met once the position is reached within the window or the approaching vehicle has passed the subject first, since the paragraph's purpose, clearing its way, is then spent",
+   "kind": "reading"
+  },
+  {
+   "span": "b4",
+   "why": "'the right-hand edge ... of a highway' is read as the curb or roadway edge (st.road_edge) on the subject's right or a paved shoulder beyond it, not the outer boundary of the public way beyond the sidewalk; 'as close as possible' is read through a fixed gap, so what makes the edge unreachable (parked vehicles, obstructions) is not read",
+   "kind": "reading"
+  },
+  {
+   "span": "b3",
+   "why": "'parallel' is read with the heading in either sense along the occupied carrier's designated direction",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The trigger rises: ambulance e with a lit red flashing front lamp comes within p.emergency_immediate_approach_reach behind the moving subject. Over the next p.emergency_pullover_window the subject stays in the left lane, far from any road_edge region, and e does not pass it."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "At the trigger's rise the subject moves right and, within p.emergency_pullover_window, its body is within p.pullover_edge_gap of the right road_edge (prim.region_lateral_offset negative), heading parallel to its lane's direction within p.curb_parallel_cos, overlapping no intersection and no signed shoulder."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "e approaches with its warning lamps off: the trigger never rises."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but sig.warning_lamp is not observed, so whether the trigger rose is unknown.",
+   "masked": [
+    "sig.warning_lamp"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Within the window the subject reaches the right edge, parallel, but its footprint overlaps an intersection region at every such observation, and e has not passed."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "e overtakes and passes the subject (the subject behind e, no longitudinal overlap) before the subject reaches the edge, within p.emergency_pullover_window."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "Within the window the subject moves onto a paved shoulder governed by a shoulder_use_permitted regulatory sign and stays there; it is never at the roadway edge off that shoulder, and e has not passed."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's vehicle-state estimates"
+  },
+  {
+   "name": "p.emergency_immediate_approach_reach",
+   "unit": "m",
+   "value": 100.0,
+   "convention": "centre distance within which an emergency or enforcement vehicle closing on a road user with its warning lamps flashing is in immediate approach: about five seconds of travel at an urban response speed of 20 m/s, the time a driver needs to perceive the lamps and begin to clear the way",
+   "source": "driver-response studies of emergency-vehicle encounters (perception-reaction time plus lane-change time)"
+  },
+  {
+   "name": "p.emergency_pullover_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest time from the onset of an emergency vehicle's immediate approach until a driver has moved to the right-hand edge: a perception-reaction time of about 1.5 s plus one or two lane changes of about 4 s each",
+   "source": "AASHTO perception-reaction time; naturalistic lane-change duration studies"
+  },
+  {
+   "name": "p.pullover_edge_gap",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "the gap between a vehicle body and the right-hand curb or roadway edge within which a vehicle pulled over to clear the way counts as as close to the edge as it can be placed: the curb clearance of a parallel-parked car (about 0.3 m) plus lane-keeping variability and an edge margin",
+   "source": "curb-parking clearance conventions of municipal codes and driver manuals"
+  },
+  {
+   "name": "p.curb_parallel_cos",
+   "unit": "ratio",
+   "value": 0.97,
+   "convention": "cosine of the largest angle (about fourteen degrees) between a stopped bus's heading and its carrier's designated direction, in either sense, at which the bus counts as approximately parallel to the curb",
+   "source": "heading resolution of parked-vehicle placement"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 34185,
+  "stop_reason": "end_turn",
+  "session_id": "7304af1c-b18e-49ee-96c4-2b89478d9484",
+  "total_cost_usd": 0.51479912,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 46958,
+   "cache_read_input_tokens": 48104,
+   "output_tokens": 3924,
+   "output_tokens_details": {
+    "thinking_tokens": 905
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 46958,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 731,
+     "cache_read_input_tokens": 45850,
+     "cache_creation_input_tokens": 3362,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3362
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42074,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00464024,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3924,
+    "cacheReadInputTokens": 48104,
+    "cacheCreationInputTokens": 46958,
+    "webSearchRequests": 0,
+    "costUSD": 0.5101588800000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 905,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46958,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote `record.jsonl` with a revised record under the same id, `drv.motion.right_turn`. I didn't withdraw or split it, because the record itself was sound.\n\n**What actually failed.** The gate rejected all three witnesses for the same reason: the coder's scooter trace was physically inconsistent. During the turn it gave the scooter a yaw rate of ∓18 °/s but left its recorded heading pointing east. The adapter can't produce a trace like that, since the yaw rate held over each one-second interval has to turn the heading by 18°. The body itself, `rises(band ∧ |yaw_rate| ≤ yaw_tol)`, was never judged.\n\nThe coder's note puts the failure down to a scope violation from a tool output file under `.runtime/tmp`, but this verdict is a witness failure. That `.runtime/tmp` problem may still need fixing in the harness's scope check.\n\n**Changes to the record:**\n- **Unchanged:** the contract text, formals, parameters, elements and act are word for word as before. I also added the wording the primitive's contract has about sparse sampling to the `prim.heading_change` justification.\n- **Scenario narratives:** each now says the recorded heading changes exactly as the yaw rate turns it.\n  - `holds`: −18 °/s for five 1-second steps, turning 18° clockwise per scene to face south, then yaw rate zero.\n  - `fails`: the same turn to the left, ending north.\n  - `blind`: the holds turn with `kin.yaw_rate` masked.\n  - The narratives also say the lead-in must be long enough that the window isn't truncated.\n- **`used_by`:** now only `LVMC_11_40_080_o1`, which is the only user the Users section lists. `LVMC_11_40_080_o2` was dropped.\n- **`differs_from`:** added against `drv.motion.u_turn`, because both take one track argument and read the yaw rate. U-turn covers a reversal to either hand; this concept covers only a right turn smaller than a reversal.\n\nThe coder also pointed out that no witness tests the `−u_turn_min` end of the band. I left that alone because the record is limited to three scenarios and none of them approach that end.",
+  "ttft_ms": 10329,
+  "type": "result",
+  "duration_ms": 33945,
+  "uuid": "a86ebe63-63be-40d3-9155-a11cec15eb97",
+  "ttft_stream_ms": 1211,
+  "time_to_request_ms": 638,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 40,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 13,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "transcript_persist": 32,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 501,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 17,
+  "time_to_request_cpu_ms": 393,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 14,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 4,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 4,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 1,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1211,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42074,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.00464024,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3924,
+    "cacheReadInputTokens": 48104,
+    "cacheCreationInputTokens": 46958,
+    "webSearchRequests": 0,
+    "costUSD": 0.5101588800000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 905,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46958,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

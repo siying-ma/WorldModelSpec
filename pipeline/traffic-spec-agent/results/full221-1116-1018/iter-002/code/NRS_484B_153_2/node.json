@@ -1,0 +1,179 @@
+{
+ "node_id": "NRS_484B_153_2",
+ "law_refs": [
+  "NRS-484B-153-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "A person",
+   "role": "subject"
+  },
+  {
+   "id": "d2",
+   "text": "shall not open the door of or board or alight from",
+   "role": "obligation"
+  },
+  {
+   "id": "d3",
+   "text": "the side of a vehicle which is closest to passing traffic",
+   "role": "condition"
+  },
+  {
+   "id": "d4",
+   "text": "in such a manner as to interfere with",
+   "role": "standard"
+  },
+  {
+   "id": "d5",
+   "text": "moving vehicular traffic.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The person who opens a door, boards or alights is not observable as such; the conduct is the door of a vehicle opening, so the rule judges the vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) whose door it is. Same words mapped to the vehicle aggregate by LVMC_11_22_010."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "sig.door_open"
+   ],
+   "derived": [],
+   "justification": "sig.door_open: 'a door open; side ∈ {traffic, curb}'. Opening the door, boarding and alighting through that side all show as the door on that side being open."
+  },
+  {
+   "span": "d3",
+   "atoms": [
+    "sig.door_open",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the side of a vehicle which is closest to passing traffic' is the value side = traffic of sig.door_open; the vehicle is the subject (ru.aggregate DEF-NRS-484A-320::vehicle)."
+  },
+  {
+   "span": "d5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'vehicular traffic': road users that are traffic (admitted DEF-NRS-484A-285::traffic, 'vehicles and other conveyances … using any highway for purposes of travel') and vehicles (DEF-NRS-484A-320::vehicle); 'moving': not at rest, the negation of drv.motion.complete_halt ('at rest at the observation')."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "d4",
+   "standard": "in such a manner as to interfere with",
+   "concepts": [
+    "rel.contact",
+    "rel.longitudinal_overlap",
+    "rel.surface_gap"
+   ],
+   "params": [
+    "p.door_swing_reach"
+   ],
+   "convention": "While the traffic-side door is open, a moving vehicle of the traffic is interfered with where it touches the subject (rel.contact) or passes alongside it (rel.longitudinal_overlap: the two projections on the subject's heading share length) with a lateral body gap (rel.surface_gap, lateral component) no greater than the lateral reach of an open side door, p.door_swing_reach: it then drives through the space the open door takes.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle and its door on the side closest to passing traffic is open (sig.door_open side traffic).",
+ "obligation": "No road user c that is traffic and a vehicle (ru.aggregate DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle) and not at rest (not drv.motion.complete_halt with p.halt_speed_tolerance) is in contact with the subject (rel.contact), or alongside it (rel.longitudinal_overlap: projections share length) with the lateral component of rel.surface_gap(subject, c) at most p.door_swing_reach; violated where one is.",
+ "params": [
+  "p.door_swing_reach",
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "d1",
+   "why": "'A person' who opens the door, boards or alights is read through the vehicle's traffic-side door being open: who is at the door is not observable.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "d2",
+   "why": "Boarding and alighting are read through the open traffic-side door they pass through; boarding or alighting from a vehicle side that has no door is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "d4",
+   "why": "Interference is read as a moving vehicle touching the subject or passing alongside within the open door's reach; a moving vehicle that brakes or swerves earlier to avoid the door is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car parked at the curb opens its traffic-side door; a moving car passes alongside it with a lateral body gap of 0.5 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car parked at the curb opens its traffic-side door; a moving car passes alongside with a lateral body gap of 2.5 m."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car parked at the curb with all doors closed while traffic passes close by."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car parked at the curb with traffic passing close by; the source declares sig.door_open absent.",
+   "masked": [
+    "sig.door_open"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car parked at the curb opens its traffic-side door with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.door_swing_reach",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "lateral reach of an open passenger-car side door beyond the vehicle body (a front door opens about 0.9 to 1.1 m)",
+   "source": "vehicle door-opening dimensions; dooring-zone guidance"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

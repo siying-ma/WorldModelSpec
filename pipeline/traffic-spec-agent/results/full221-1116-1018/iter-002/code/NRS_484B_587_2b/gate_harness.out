@@ -1,0 +1,98 @@
+'TrafficSpec.Rules.NRS_484B_587_2b.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_587_2b.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_587_2b","intentions":[],"laws":["NRS-484B-587-2b"],"narrowings":[],"operationalizations":[],"residues":["Introduces the list of NRS 484B.210(4) as appended; the exemption from the passing rule of NRS 484B.210(1)(c)(1) it states is that section's, not this duty's, and is not read here."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"and":[{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},{"body":{"args":[{"var":"subject"},{"var":"ca"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"controlled_access"},"var":"ca"}]},{"and":[{"not":{"or":[{"args":[{"var":"subject"}],"atom":"sig_hazard","params":[]},{"and":[{"args":[{"var":"subject"}],"atom":"ru_emergency_vehicle","params":[]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"red"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"blue"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"args":[{"var":"subject"},{"lit":"amber"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"}],"atom":"sig_warning_lamp","params":[]}]}]}]}]}},{"not":{"and":[{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"subject"}],"atom":"ru_official_vehicle","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"incident_management"}],"atom":"ru_official_vehicle_kind","params":[]},{"args":[{"var":"subject"},{"lit":"coroner"}],"atom":"ru_official_vehicle_kind","params":[]}]}]}]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-280::tow_car"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-030::bus"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"}],"atom":"ru_transit_bus","params":[]}]}]}]},{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"sh"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sh"}],"atom":"st_shoulder_paved","params":[]}]},{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"hw"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sh"},{"var":"hw"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"highway"},"var":"hw"},{"body":{"and":[{"and":[{"args":[{"var":"ds"},{"var":"sh"}],"atom":"dev_governs","params":[]},{"args":[{"var":"ds"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]}]},{"args":[{"var":"ds"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"ds"}]}]},"exists_region":{"lit":"shoulder"},"var":"sh"}]}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_587_2b","intentions":[],"laws":["NRS-484B-587-2b"],"narrowings":[],"obligation":{"not":{"body":{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"r1"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"r2"}],"atom":"rel_occupies","params":[]}]},{"and":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"r1"},{"var":"r2"},{"lit":"left"}],"derived":"drv_lane_entering_adjacent_lane","params":[]},{"or":[{"args":[{"var":"r1"},{"lit":"left"},{"lit":"solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]},{"args":[{"var":"r1"},{"lit":"left"},{"lit":"double_solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]}]}]},{"and":[{"args":[{"var":"subject"},{"var":"r1"},{"var":"r2"},{"lit":"right"}],"derived":"drv_lane_entering_adjacent_lane","params":[]},{"or":[{"args":[{"var":"r1"},{"lit":"right"},{"lit":"solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]},{"args":[{"var":"r1"},{"lit":"right"},{"lit":"double_solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]}]}]}]},{"or":[{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r1"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"r2"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r2"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"r1"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]}]}]},"exists_region":{"lit":"lane"},"var":"r2"},"exists_region":{"lit":"lane"},"var":"r1"}},"residues":["Introduces the list of NRS 484B.210(4) as appended; the exemption from the passing rule of NRS 484B.210(1)(c)(1) it states is that section's, not this duty's, and is not read here."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},{"body":{"args":[{"var":"subject"},{"var":"ca"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"controlled_access"},"var":"ca"}]},{"and":[{"not":{"or":[{"args":[{"var":"subject"}],"atom":"sig_hazard","params":[]},{"and":[{"args":[{"var":"subject"}],"atom":"ru_emergency_vehicle","params":[]},{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"red"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"blue"}],"atom":"sig_warning_lamp","params":[]}]},{"or":[{"args":[{"var":"subject"},{"lit":"amber"}],"atom":"sig_warning_lamp","params":[]},{"args":[{"var":"subject"},{"lit":"white"}],"atom":"sig_warning_lamp","params":[]}]}]}]}]}},{"not":{"and":[{"or":[{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"subject"}],"atom":"ru_official_vehicle","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"incident_management"}],"atom":"ru_official_vehicle_kind","params":[]},{"args":[{"var":"subject"},{"lit":"coroner"}],"atom":"ru_official_vehicle_kind","params":[]}]}]}]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-280::tow_car"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-030::bus"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"}],"atom":"ru_transit_bus","params":[]}]}]}]},{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"sh"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sh"}],"atom":"st_shoulder_paved","params":[]}]},{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"hw"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"sh"},{"var":"hw"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"highway"},"var":"hw"},{"body":{"and":[{"and":[{"args":[{"var":"ds"},{"var":"sh"}],"atom":"dev_governs","params":[]},{"args":[{"var":"ds"},{"lit":"shoulder_use_permitted"}],"atom":"dev_regulatory_sign_code","params":[]}]},{"args":[{"var":"ds"},{"var":"subject"}],"derived":"prim_conditions_hold","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"ds"}]}]},"exists_region":{"lit":"shoulder"},"var":"sh"}]}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_587_2b","intentions":[],"laws":["NRS-484B-587-2b"],"narrowings":[],"obligation":{"not":{"body":{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"r1"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"r2"}],"atom":"rel_occupies","params":[]}]},{"and":[{"or":[{"and":[{"and":[{"args":[{"var":"r1"},{"lit":"left"},{"var":"r2"}],"atom":"st_lane_adjacency","params":[]},{"and":[{"and":[{"args":[{"var":"subject"},{"var":"r1"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"r1"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"args":[{"var":"subject"},{"var":"r2"}],"atom":"rel_occupies","params":[]}}]}]},{"or":[{"args":[{"var":"r1"},{"lit":"left"},{"lit":"solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]},{"args":[{"var":"r1"},{"lit":"left"},{"lit":"double_solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]}]}]},{"and":[{"and":[{"args":[{"var":"r1"},{"lit":"right"},{"var":"r2"}],"atom":"st_lane_adjacency","params":[]},{"and":[{"and":[{"args":[{"var":"subject"},{"var":"r1"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"r1"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"args":[{"var":"subject"},{"var":"r2"}],"atom":"rel_occupies","params":[]}}]}]},{"or":[{"args":[{"var":"r1"},{"lit":"right"},{"lit":"solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]},{"args":[{"var":"r1"},{"lit":"right"},{"lit":"double_solid"},{"lit":"white"}],"atom":"st_lane_marking","params":[]}]}]}]},{"or":[{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r1"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"r2"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r2"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"r1"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"entrance"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"exit"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]}]}]},"exists_region":{"lit":"lane"},"var":"r2"},"exists_region":{"lit":"lane"},"var":"r1"}},"residues":["Introduces the list of NRS 484B.210(4) as appended; the exemption from the passing rule of NRS 484B.210(1)(c)(1) it states is that section's, not this duty's, and is not read here."],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_complete_halt,st_controlled_access,rel_occupies,sig_hazard,ru_emergency_vehicle,sig_warning_lamp,ru_official_vehicle,ru_official_vehicle_kind,ru_transit_bus,st_shoulder,st_shoulder_paved,st_highway,st_on_way,dev_regulatory_sign,dev_governs,dev_regulatory_sign_code,prim_conditions_hold,st_lane,drv_lane_entering_adjacent_lane,st_lane_marking
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-020::authorized_emergency_vehicle	DEF-NRS-484A-280::tow_car	DEF-NRS-484A-030::bus
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.lane_marking
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	subject
+OCC	?ca
+OCC	subject,ca
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?sh
+OCC	subject,sh
+OCC	sh
+OCC	?hw
+OCC	subject,hw
+OCC	sh,hw
+OCC	?ds
+OCC	ds,sh
+OCC	ds
+OCC	ds,subject
+OCC	?r1
+OCC	?r2
+OCC	subject,r1
+OCC	subject,r2
+OCC	subject,r1,r2
+OCC	r1
+OCC	r1
+OCC	subject,r1,r2
+OCC	r1
+OCC	r1
+OCC	?d
+OCC	d,r1
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,r2
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,r2
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,r1
+OCC	d
+OCC	d
+TIME	occurrences	1
+TIME	checks	6
+TIME	lint	46
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	21
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	18
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	17
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	22
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	18
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	18
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	17
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	19
+TIME	witnesses	150
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_587_2b.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_587_2b.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_587_2b	42	7
+TIME	adequacy_start	9
+ADEQ	applicability leaf 8: atom ru_aggregate [TrafficSpec.Arg.var "subject", TrafficSpec.Arg.lit "DEF-NRS-484A-020::authorized_emergency_vehicle"] (one of 3 literal variants of this atom; none exercised)
+ADEQ	applicability leaf 14: atom ru_transit_bus [TrafficSpec.Arg.var "subject"]
+TIME	adequacy	4318
+DONE

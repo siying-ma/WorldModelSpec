@@ -1,0 +1,163 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 6 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "cmp": "gt",
+    "lhs": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "measure": "kin_speed"
+    },
+    "rhs": {
+     "param": "p.halt_speed_tolerance"
+    }
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_22_010",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-22-010"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "h4",
+     "why": "contact is read against every other road user only: Core's rel.contact relates two tracks, so the record's 'no structure' limb is not read"
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "o"
+         },
+         {
+          "var": "subject"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "o"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        },
+        {
+         "implies": [
+          {
+           "args": [
+            {
+             "var": "o"
+            },
+            {
+             "var": "subject"
+            }
+           ],
+           "atom": "rel_ahead_behind_in_lane",
+           "params": []
+          },
+          {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "o"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.attention_ttc_min"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "o"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.attention_ttc_min"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "o"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "h4",
+    "why": "contact is read against every other road user only: Core's rel.contact relates two tracks, so the record's 'no structure' limb is not read"
+   }
+  ],
+  "context": "4c23165254156b7730b6eab9",
+  "candidate_digest": "7a2ce6d86453d79357ed642c48206f01bfd444cfdb1cf6b75855b8aadc348daf"
+ }
+}

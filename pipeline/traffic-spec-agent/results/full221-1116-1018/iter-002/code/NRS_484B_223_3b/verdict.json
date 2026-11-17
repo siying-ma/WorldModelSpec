@@ -1,0 +1,222 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-285::traffic"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         }
+        ],
+        "derived": "drv_motion_left_turn",
+        "params": [
+         {
+          "param": "p.vehicle_turn_window"
+         },
+         {
+          "param": "p.turn_heading_min"
+         },
+         {
+          "param": "p.u_turn_heading_min"
+         },
+         {
+          "param": "p.turn_yaw_rate_tol"
+         }
+        ]
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "not": {
+            "body": {
+             "not": {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            },
+            "holds_for": "time",
+            "length": {
+             "param": "p.vehicle_turn_window"
+            },
+            "subject": "subject"
+           }
+          },
+          {
+           "not": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "centre_turn_lane"
+        },
+        "var": "c"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_223_3b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-223-3b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "body": {
+           "not": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          },
+          "holds_for": "time",
+          "length": {
+           "param": "p.vehicle_turn_window"
+          },
+          "subject": "subject"
+         }
+        },
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        }
+       ]
+      },
+      {
+       "at_last": "time",
+       "body": {
+        "cmp": "le",
+        "lhs": {
+         "distance_while": "subject",
+         "holds": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        },
+        "rhs": {
+         "lit": {
+          "den": 25,
+          "num": 1524
+         },
+         "unit": "metre"
+        }
+       },
+       "length": {
+        "param": "p.vehicle_turn_window"
+       },
+       "subject": "subject",
+       "when": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "c"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "centre_turn_lane"
+    },
+    "var": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "e7cec30543bf85cdd62bdcbe",
+  "candidate_digest": "2cb55cc3dee8bdae1fbe2934cecc80f80d02e139b41aa9c7f911d9c8a5da08ba"
+ }
+}

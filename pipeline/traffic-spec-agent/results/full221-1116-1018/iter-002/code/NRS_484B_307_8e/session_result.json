@@ -1,0 +1,247 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 358502,
+  "stop_reason": "end_turn",
+  "session_id": "5de24fb2-3caa-4beb-abca-9ccfcba5a3c6",
+  "total_cost_usd": 2.2807547400000003,
+  "usage": {
+   "input_tokens": 28,
+   "cache_creation_input_tokens": 131968,
+   "cache_read_input_tokens": 1373657,
+   "output_tokens": 36934,
+   "output_tokens_details": {
+    "thinking_tokens": 25114
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 131968,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 942,
+     "cache_read_input_tokens": 135045,
+     "cache_creation_input_tokens": 1391,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1391
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41325,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0045606,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 28,
+    "outputTokens": 36934,
+    "cacheReadInputTokens": 1373657,
+    "cacheCreationInputTokens": 131968,
+    "webSearchRequests": 0,
+    "costUSD": 2.2761941400000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 25114,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 131968,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01M41J1HmfxzRs9WQnpZEPQQ",
+    "tool_input": {
+     "command": "python -m harness gate --run_id full221-1116-1018 --node_id NRS_484B_307_8e --help 2>/dev/null | head -0; true",
+     "description": "(skip)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 18,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for NRS_484B_307_8e (7 witnesses, 11 names, no compositions). I used 3 of the 6 gate runs.\n\n**Gate runs**\n1. **`UNUSED_CLAIM`**: a baseline run on the untouched skeleton, before I had written anything.\n2. **`VACUOUS`**: no witness exercised the case where the steady red head governs the intersection itself rather than the approach lane. I added a `branch_3` witness (expected violated) for that case.\n3. **`OK`**.\n\n**How the rule reads**\n- **Applicability:** the place is in an incorporated city, and there is an intersection `i`, an approach `c` entering it, and a highway `h2` through `i` that `c` is not on. Three things must hold:\n  - **Faced the red:** at some earlier observation the vehicle was on `c` while a head governing `c` or `i` showed only circular red.\n  - **Since then:** the vehicle has not been in `i` and has not been parked.\n  - **Cross street:** some approach of `h2` into `i` is governed by a head not showing circular red.\n- **Obligation:** for every such `i`, `c` and `h2`, the vehicle must not come onto `h2` outside `i` straight from ground that is on no public way.\n\n**Choices the node left open**\n- **\"Red alone\"** means circular red plus none of the other signal states. I counted `unknown` as another state, so a red head also reporting `unknown` does not count as red alone. That errs towards not flagging a violation.\n- **\"A state other than circular red\"** on the cross street is written as \"not showing circular red\".\n- **\"Off the way at the previous observation\"** is written as \"is on some highway now and was on none at the previous observation\". This means the same thing, because the vehicle is on `h2` at that moment.\n- I declared no narrowings, since none of these is narrower than the record's own wording.\n\n**One limit to know about:** for an approach the vehicle never faced red on, the \"faced the red\" condition stays unknown, because the recording could have started after that moment. It only becomes decided once the vehicle enters `i` or parks. I built the witnesses so that some other condition settles each case. In `idle` the vehicle starts inside the intersection, and the witnesses that use windows begin at the second instant. Later nodes that use the same pattern will hit the same issue.\n\nEarly on I also tried one extra shell command (the gate with `--help`). The permission layer refused it, so it never reached the gate and did not count against the budget.\n\nFiles are in the working directory:\n- `library/TrafficSpec/Rules/NRS_484B/NRS_484B_307_8e.lean`\n- `library/TrafficSpecWitness/NRS_484B/NRS_484B_307_8e.lean`\n- `task_result.md`",
+  "ttft_ms": 64895,
+  "type": "result",
+  "duration_ms": 395211,
+  "uuid": "aa601ebc-761e-42d4-b241-a2bdfff8cd1b",
+  "ttft_stream_ms": 1379,
+  "time_to_request_ms": 354,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 44,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "transcript_persist": 43,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 5,
+   "engine_pickup": 8,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 196,
+   "query_setup": 1,
+   "model_gates": 1,
+   "tool_schema_build": 10,
+   "message_normalization": 2,
+   "client_creation": 3,
+   "request_build": 9
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 26,
+  "time_to_request_cpu_ms": 352,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 3,
+   "render_ms": 1,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 8,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 4,
+   "new_schemas": 4
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 9,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 2,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 2,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1379,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41325,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0045606,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 28,
+    "outputTokens": 36934,
+    "cacheReadInputTokens": 1373657,
+    "cacheCreationInputTokens": 131968,
+    "webSearchRequests": 0,
+    "costUSD": 2.2761941400000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 25114,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 131968,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

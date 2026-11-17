@@ -1,0 +1,51 @@
+'TrafficSpec.Rules.NRS_484B_113_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_113_2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"args":[{"var":"subject"}],"derived":"drv_motion_moving_backward","params":[{"param":"p.halt_speed_tolerance"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"obligation":{"not":{"or":[{"body":{"rises":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"r"},{"or":[{"body":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"crosswalk"},"var":"x"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_moving_backward","params":[{"param":"p.halt_speed_tolerance"}]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]}}},"rhs":{"param":"p.turn_heading_min"}}]},"exists_region":{"lit":"intersection"},"var":"r"}]}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"p.halt_speed_tolerance"}}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"obligation":{"not":{"or":[{"body":{"rises":{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"r"},{"or":[{"body":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"crosswalk"},"var":"x"},{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"abs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"p.halt_speed_tolerance"}}},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]}}},"rhs":{"param":"p.turn_heading_min"}}]},"exists_region":{"lit":"intersection"},"var":"r"}]}]}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_moving_backward,st_intersection,rel_occupies,st_crosswalk,kin_yaw_rate,kin_time
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.velocity
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	subject
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	?x
+OCC	subject,x
+OCC	?r
+OCC	subject,r
+OCC	subject
+OCC	subject
+OCC	subject,r
+TIME	occurrences	1
+TIME	checks	4
+TIME	lint	48
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	20
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	17
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	17
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	15
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	17
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	43
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	45
+TIME	witnesses	175
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_113_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_113_2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_113_2	5	6
+TIME	adequacy_start	7
+TIME	adequacy	358
+DONE

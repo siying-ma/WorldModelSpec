@@ -1,0 +1,197 @@
+{
+ "node_id": "LVMC_11_43_010_C2",
+ "law_refs": [
+  "LVMC-11-43-010-C2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The following regulations pertain to",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s2",
+   "text": "the operation of vehicles within a roundabout",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "The operator of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "who intends to exit a roundabout",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "Shall use the right lane to turn right",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "\"vehicles\" is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"), claimed as one atom. \"within a roundabout\": st.roundabout \"a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches\" carries DEF-LVMC-11-02-130 at its whole extent; rel.occupies \"a road user's footprint overlaps a lane / region\" anchors the subject to that roundabout. Same mapping as the index."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle; \"The operator\" is read through the vehicle's controlled motion (observable_reading agency). Same mapping as the index entry \"The operator of a vehicle\"."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [
+    "drv.motion.right_turn_through_region"
+   ],
+   "justification": "The intention to exit is read through the exit it leads to (observable_reading intention): the observation at which the subject's footprint (rel.occupies \"a road user's footprint overlaps a lane / region\") ceases to overlap the roundabout r (st.roundabout), the recognition of drv.motion.right_turn_through_region (\"its exit from r\")."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [
+    "drv.motion.right_turn_through_region"
+   ],
+   "justification": "\"to turn right\": drv.motion.right_turn_through_region (\"a turn to the right through region r ... from minus u_turn_min exclusive to minus turn_min inclusive\") with r the roundabout exited. \"use the right lane\": st.lane \"a longitudinal strip of roadway for one line of vehicles\" with st.lane_adjacency \"lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane\": the right lane is the lane whose ordinal equals the count of lanes in its direction; rel.occupies anchors the lanes the footprint overlaps. Lane membership is never read as an offset from the edge."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle). Bind a region r of kind st.roundabout. At the judged observation the subject exits r having turned right through it: drv_motion_right_turn_through_region(subject, r) holds with step .param p.heading_since_step_carla_scene_graph, turn_min p.turn_heading_min, u_turn_min p.u_turn_heading_min. The intention to exit is read through this exit.",
+ "obligation": "Re-bind the same roundabout: a region r of kind st.roundabout for which the concept holds for the subject at the judged observation. The subject used the right lane within r: at every observation from its entry into r (the latest observation at which rel.occupies(subject, r) rose) up to the judged observation, wherever rel.occupies(subject, r) holds, every region l of kind st.lane with rel.occupies(subject, l) has st_lane_adjacency_ordinal(l) = st_lane_adjacency_count(l), the rightmost lane of its direction. Written with since as for the left lane: since(phi, rises(occupies(subject, r)) and phi). Unknown where the entry lies before the recording or an occupied lane's ordinal or count is unobserved.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "\"The operator\" is read through the vehicle's controlled motion: the duty binds the vehicle whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "\"who intends to exit a roundabout\" is read through the exit itself: the duty is judged at the observation at which the vehicle leaves the roundabout, the recognition of the turn.",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s5",
+   "why": "\"use the right lane\" is read as occupying, within the roundabout, no lane other than the rightmost lane of its carriageway (ordinal equal to the count of lanes in its direction) from the entry to the exit; a single-lane roundabout's only lane is the rightmost."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A two-lane roundabout r (st.roundabout) whose lanes carry st.lane_adjacency ordinals 1 (inner) and 2 (outer) with a count of two. The subject, a passenger car (ru.motor_vehicle), enters r heading east in the lane of ordinal 1 and leaves at the first exit heading south, its yaw rate observed at every scene integrating to a quarter turn to the right since the entry: the right turn through r is recognized and the subject occupied the lane of ordinal 1."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same roundabout and right turn, made in the lane of ordinal 2 throughout."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Same roundabout; the subject enters heading east in the lane of ordinal 1 and leaves heading north, a quarter turn to the left since the entry: no right turn is recognized."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source supplies no lane ordinals or counts (st.lane_adjacency absent).",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "As in permit, but within r the subject drifts so that its footprint overlaps both lanes for several scenes before the exit."
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.right_turn_through_region",
+  "boundary": "event",
+  "onset": {
+   "words": "the operation of vehicles within a roundabout",
+   "atoms": [
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "The act begins at the subject's entry into the roundabout: the observation at which rel.occupies(subject, r) rose, the onset the concept declares."
+  },
+  "recognition": "who intends to exit a roundabout",
+  "under_way": {
+   "words": "to turn right",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies",
+    "st.roundabout"
+   ],
+   "derived": [],
+   "justification": "Inside the act the subject's heading change since its entry into r (headingSince, integrated from kin.yaw_rate \"rate of change of heading\") is defined and its footprint overlaps r; before the entry it is not."
+  },
+  "spans": {
+   "s4": "at_recognition"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "turning-movement classification in intersection geometric design practice (AASHTO, A Policy on Geometric Design of Highways and Streets)"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "turning-movement classification in intersection geometric design practice (AASHTO, A Policy on Geometric Design of Highways and Streets)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,54 @@
+'TrafficSpec.Rules.NRS_484B_280_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_280_1a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_280_1a","intentions":[],"laws":["NRS-484B-280-1a"],"narrowings":[],"operationalizations":[{"concepts":["kin.speed","prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.halt_speed_tolerance","p.conflict_horizon","p.conflict_centre_clearance"],"standard":"due care to avoid a collision (a standard of the driver's care, a state of mind)","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_280_1a","intentions":[],"laws":["NRS-484B-280-1a"],"narrowings":[],"obligation":{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"p"},{"var":"subject"}]}},{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"p"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"p"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"p"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}}]}]},"forall_user":"p"}]},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_280_1a","intentions":[],"laws":["NRS-484B-280-1a"],"narrowings":[],"obligation":{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"p"},{"var":"subject"}]}},{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"p"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"subject"},{"var":"p"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"p"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}}]}]},"forall_user":"p"}]},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,kin_speed,rel_contact,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.contact
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	subject
+OCC	subject
+OCC	?p
+OCC	p,subject
+OCC	p
+OCC	subject,p
+OCC	subject,p
+OCC	subject,p
+TIME	occurrences	0
+TIME	checks	6
+TIME	lint	66
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	14
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	26
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	12
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	13
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	8
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	9
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	9
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	12
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	8
+TIME	witnesses	111
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_280_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_280_1a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_280_1a	5	8
+TIME	adequacy_start	8
+TIME	adequacy	434
+DONE

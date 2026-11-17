@@ -1,0 +1,129 @@
+'TrafficSpec.Rules.NRS_484B_307_5a_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_5a_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_307_5a_o1","intentions":[],"laws":["NRS-484B-307-5a"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"or":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"NRS_484B_307_5a_o1","intentions":[],"laws":["NRS-484B-307-5a"],"narrowings":[],"obligation":{"body":{"implies":[{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"or":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"travel_region"},"var":"c"},{"not":{"or":[{"args":[{"var":"subject"},{"var":"i"}],"derived":"drv_motion_left_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_heading_min"},{"param":"p.u_turn_heading_min"}]},{"or":[{"args":[{"var":"subject"},{"var":"i"}],"derived":"drv_motion_right_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_heading_min"},{"param":"p.u_turn_heading_min"}]},{"args":[{"var":"subject"},{"var":"i"}],"derived":"drv_motion_u_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.u_turn_heading_min"}]}]}]}}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"or":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"NRS_484B_307_5a_o1","intentions":[],"laws":["NRS-484B-307-5a"],"narrowings":[],"obligation":{"body":{"implies":[{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"s"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"since":[{"or":[{"and":[{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"or":[{"and":[{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"subject"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"travel_region"},"var":"c"},{"not":{"or":[{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.turn_heading_min"}},{"cmp":"lt","lhs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.u_turn_heading_min"}}]}]},{"or":[{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"gt","lhs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"neg":{"param":"p.u_turn_heading_min"}}},{"cmp":"le","lhs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"neg":{"param":"p.turn_heading_min"}}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"abs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}},"rhs":{"param":"p.u_turn_heading_min"}},{"cmp":"le","lhs":{"abs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}},"rhs":{"sub":[{"lit":{"den":1,"num":360},"unit":"degree"},{"param":"p.u_turn_heading_min"}]}}]}]}]}]}}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,st_travel_region,dev_traffic_signal,st_lane_enters,dev_governs,rel_occupies,dev_traffic_signal_shows,drv_motion_left_turn_through_region,drv_motion_right_turn_through_region,drv_motion_u_turn_through_region
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-285::traffic	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.yaw_rate
+MANIFEST	occasion_s1	
+MANIFEST	occasion_s1_outside	
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	subject
+OCC	subject
+OCC	?i
+OCC	?c
+OCC	?s
+OCC	c,i
+OCC	s,c
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	subject,c
+OCC	subject,c
+OCC	subject,c
+OCC	?i
+OCC	?c
+OCC	?s
+OCC	c,i
+OCC	s,c
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+OCC	subject,c
+OCC	subject,c
+OCC	subject,c
+OCC	subject,i
+OCC	subject,i
+OCC	subject,i
+TIME	occurrences	0
+TIME	checks	8
+TIME	lint	117
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	52
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	50
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	43
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	54
+SCEN	occasion_s1	violated	violated	ok
+TIME	scenario:occasion_s1	49
+SCEN	occasion_s1_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s1_outside	51
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	52
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	50
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	44
+TIME	witnesses	445
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_307_5a_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_5a_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_307_5a_o1	75	8
+TIME	adequacy_start	6
+TIME	adequacy	4342
+DONE

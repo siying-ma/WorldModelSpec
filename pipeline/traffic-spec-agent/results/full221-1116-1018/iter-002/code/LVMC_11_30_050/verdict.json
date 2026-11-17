@@ -1,0 +1,302 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "w"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "roadway"
+      },
+      "var": "w"
+     },
+     {
+      "and": [
+       {
+        "not": {
+         "body": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "crosswalk"
+         },
+         "var": "c"
+        }
+       },
+       {
+        "or": [
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "k"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "k"
+              }
+             ],
+             "derived": "drv_motion_moving_across_carrier",
+             "params": [
+              {
+               "param": "p.halt_speed_tolerance"
+              },
+              {
+               "param": "p.crossing_motion_cos"
+              }
+             ]
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "lane"
+          },
+          "var": "k"
+         },
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "k"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "k"
+              }
+             ],
+             "derived": "drv_motion_moving_across_carrier",
+             "params": [
+              {
+               "param": "p.halt_speed_tolerance"
+              },
+              {
+               "param": "p.crossing_motion_cos"
+              }
+             ]
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "roadway"
+          },
+          "var": "k"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_30_050",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-050"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "and": [
+     {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "k"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "k"
+            }
+           ],
+           "derived": "drv_motion_moving_across_carrier",
+           "params": [
+            {
+             "param": "p.halt_speed_tolerance"
+            },
+            {
+             "param": "p.crossing_motion_cos"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "k"
+          }
+         ],
+         "derived": "drv_motion_moving_across_carrier",
+         "params": [
+          {
+           "param": "p.halt_speed_tolerance"
+          },
+          {
+           "param": "p.right_angle_crossing_cos"
+          }
+         ]
+        }
+       ]
+      },
+      "forall_region": {
+       "lit": "lane"
+      },
+      "var": "k"
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "k"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "k"
+            }
+           ],
+           "derived": "drv_motion_moving_across_carrier",
+           "params": [
+            {
+             "param": "p.halt_speed_tolerance"
+            },
+            {
+             "param": "p.crossing_motion_cos"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "k"
+          }
+         ],
+         "derived": "drv_motion_moving_across_carrier",
+         "params": [
+          {
+           "param": "p.halt_speed_tolerance"
+          },
+          {
+           "param": "p.right_angle_crossing_cos"
+          }
+         ]
+        }
+       ]
+      },
+      "forall_region": {
+       "lit": "roadway"
+      },
+      "var": "k"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "0bb0c44c5eee6ec12efa8781",
+  "candidate_digest": "5a7f9b58683fa099f77b40c2116e930a016048bf9910f3f25762fd45864cc191"
+ }
+}

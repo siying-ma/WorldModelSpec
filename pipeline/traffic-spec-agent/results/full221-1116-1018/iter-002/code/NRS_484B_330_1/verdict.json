@@ -1,0 +1,1115 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 19 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       {
+        "and": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "f"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "dev_governs",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "f"
+               },
+               {
+                "lit": "flagger"
+               }
+              ],
+              "atom": "dev_human_direction_role",
+              "params": []
+             },
+             {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "f"
+                 },
+                 {
+                  "lit": "stop"
+                 }
+                ],
+                "atom": "dev_human_direction_indication",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "f"
+                   },
+                   {
+                    "lit": "proceed"
+                   }
+                  ],
+                  "atom": "dev_human_direction_indication",
+                  "params": []
+                 },
+                 {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "f"
+                     },
+                     {
+                      "lit": "slow"
+                     }
+                    ],
+                    "atom": "dev_human_direction_indication",
+                    "params": []
+                   },
+                   {
+                    "or": [
+                     {
+                      "args": [
+                       {
+                        "var": "f"
+                       },
+                       {
+                        "lit": "turn(left)"
+                       }
+                      ],
+                      "atom": "dev_human_direction_indication",
+                      "params": []
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "turn(right)"
+                         }
+                        ],
+                        "atom": "dev_human_direction_indication",
+                        "params": []
+                       },
+                       {
+                        "or": [
+                         {
+                          "args": [
+                           {
+                            "var": "f"
+                           },
+                           {
+                            "lit": "turn(straight)"
+                           }
+                          ],
+                          "atom": "dev_human_direction_indication",
+                          "params": []
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "f"
+                           },
+                           {
+                            "lit": "turn(u_turn)"
+                           }
+                          ],
+                          "atom": "dev_human_direction_indication",
+                          "params": []
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "or": [
+           {
+            "and": [
+             {
+              "body": {
+               "args": [
+                {
+                 "var": "c"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              },
+              "exists_device": {
+               "lit": "temporary_traffic_control"
+              },
+              "var": "c"
+             },
+             {
+              "body": {
+               "args": [
+                {
+                 "var": "r"
+                },
+                {
+                 "var": "h"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              "exists_region": {
+               "lit": "highway"
+              },
+              "var": "h"
+             }
+            ]
+           },
+           {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "z"
+                },
+                {
+                 "var": "r"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "z"
+                  },
+                  {
+                   "lit": "temporary_traffic_control"
+                  }
+                 ],
+                 "atom": "dev_zone_sign_kind",
+                 "params": []
+                },
+                {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "z"
+                   }
+                  ],
+                  "atom": "dev_zone_sign_end",
+                  "params": []
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            "exists_device": {
+             "lit": "zone_sign"
+            },
+            "var": "z"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "exists_device": {
+      "lit": "human_direction"
+     },
+     "var": "f"
+    },
+    "exists_region": {
+     "lit": "travel_region"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_330_1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-330-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "implies": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "f"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "dev_governs",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "f"
+                 },
+                 {
+                  "lit": "flagger"
+                 }
+                ],
+                "atom": "dev_human_direction_role",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "f"
+                   },
+                   {
+                    "lit": "stop"
+                   }
+                  ],
+                  "atom": "dev_human_direction_indication",
+                  "params": []
+                 },
+                 {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "f"
+                     },
+                     {
+                      "lit": "proceed"
+                     }
+                    ],
+                    "atom": "dev_human_direction_indication",
+                    "params": []
+                   },
+                   {
+                    "or": [
+                     {
+                      "args": [
+                       {
+                        "var": "f"
+                       },
+                       {
+                        "lit": "slow"
+                       }
+                      ],
+                      "atom": "dev_human_direction_indication",
+                      "params": []
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "turn(left)"
+                         }
+                        ],
+                        "atom": "dev_human_direction_indication",
+                        "params": []
+                       },
+                       {
+                        "or": [
+                         {
+                          "args": [
+                           {
+                            "var": "f"
+                           },
+                           {
+                            "lit": "turn(right)"
+                           }
+                          ],
+                          "atom": "dev_human_direction_indication",
+                          "params": []
+                         },
+                         {
+                          "or": [
+                           {
+                            "args": [
+                             {
+                              "var": "f"
+                             },
+                             {
+                              "lit": "turn(straight)"
+                             }
+                            ],
+                            "atom": "dev_human_direction_indication",
+                            "params": []
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "f"
+                             },
+                             {
+                              "lit": "turn(u_turn)"
+                             }
+                            ],
+                            "atom": "dev_human_direction_indication",
+                            "params": []
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "or": [
+             {
+              "and": [
+               {
+                "body": {
+                 "args": [
+                  {
+                   "var": "c"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                },
+                "exists_device": {
+                 "lit": "temporary_traffic_control"
+                },
+                "var": "c"
+               },
+               {
+                "body": {
+                 "args": [
+                  {
+                   "var": "r"
+                  },
+                  {
+                   "var": "h"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                "exists_region": {
+                 "lit": "highway"
+                },
+                "var": "h"
+               }
+              ]
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "z"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "z"
+                    },
+                    {
+                     "lit": "temporary_traffic_control"
+                    }
+                   ],
+                   "atom": "dev_zone_sign_kind",
+                   "params": []
+                  },
+                  {
+                   "not": {
+                    "args": [
+                     {
+                      "var": "z"
+                     }
+                    ],
+                    "atom": "dev_zone_sign_end",
+                    "params": []
+                   }
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_device": {
+               "lit": "zone_sign"
+              },
+              "var": "z"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "and": [
+         {
+          "not": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "f"
+              },
+              {
+               "lit": "stop"
+              }
+             ],
+             "atom": "dev_human_direction_indication",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "not": {
+                "rises": {
+                 "args": [
+                  {
+                   "var": "f"
+                  },
+                  {
+                   "lit": "stop"
+                  }
+                 ],
+                 "atom": "dev_human_direction_indication",
+                 "params": []
+                }
+               }
+              },
+              {
+               "rises": {
+                "not": {
+                 "cmp": "gt",
+                 "lhs": {
+                  "add": [
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     }
+                    ]
+                   },
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "rhs": {
+                  "lit": {
+                   "den": 1,
+                   "num": 0
+                  },
+                  "unit": "metre"
+                 }
+                }
+               }
+              }
+             ]
+            }
+           ]
+          }
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "f"
+                },
+                {
+                 "lit": "slow"
+                }
+               ],
+               "atom": "dev_human_direction_indication",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "cmp": "gt",
+                 "lhs": {
+                  "add": [
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     }
+                    ]
+                   },
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "rhs": {
+                  "lit": {
+                   "den": 1,
+                   "num": 0
+                  },
+                  "unit": "metre"
+                 }
+                },
+                {
+                 "cmp": "ge",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_accel_longitudinal"
+                 },
+                 "rhs": {
+                  "param": "p.speed_decrease_decel_min"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "rises": {
+                "not": {
+                 "cmp": "gt",
+                 "lhs": {
+                  "add": [
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "x"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "x"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     }
+                    ]
+                   },
+                   {
+                    "mul": [
+                     {
+                      "sub": [
+                       {
+                        "args": [
+                         {
+                          "var": "f"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "dev_position"
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "subject"
+                         },
+                         {
+                          "lit": "y"
+                         }
+                        ],
+                        "measure": "kin_position"
+                       }
+                      ]
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "subject"
+                       },
+                       {
+                        "lit": "y"
+                       }
+                      ],
+                      "measure": "kin_heading"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "rhs": {
+                  "lit": {
+                   "den": 1,
+                   "num": 0
+                  },
+                  "unit": "metre"
+                 }
+                }
+               }
+              },
+              {
+               "and": [
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "f"
+                    },
+                    {
+                     "lit": "turn(left)"
+                    }
+                   ],
+                   "atom": "dev_human_direction_indication",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "f"
+                      },
+                      {
+                       "lit": "turn(right)"
+                      }
+                     ],
+                     "atom": "dev_human_direction_indication",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "f"
+                      },
+                      {
+                       "lit": "turn(u_turn)"
+                      }
+                     ],
+                     "atom": "dev_human_direction_indication",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "not": {
+                  "cmp": "ge",
+                  "lhs": {
+                   "cond": {
+                    "args": [
+                     {
+                      "var": "f"
+                     },
+                     {
+                      "lit": "turn(left)"
+                     }
+                    ],
+                    "atom": "dev_human_direction_indication",
+                    "params": []
+                   },
+                   "else": {
+                    "cond": {
+                     "args": [
+                      {
+                       "var": "f"
+                      },
+                      {
+                       "lit": "turn(right)"
+                      }
+                     ],
+                     "atom": "dev_human_direction_indication",
+                     "params": []
+                    },
+                    "else": {
+                     "abs": {
+                      "heading_since": "subject",
+                      "max_step": {
+                       "param": "p.heading_since_step_carla_scene_graph"
+                      },
+                      "onset": {
+                       "args": [
+                        {
+                         "var": "f"
+                        },
+                        {
+                         "lit": "turn(u_turn)"
+                        }
+                       ],
+                       "atom": "dev_human_direction_indication",
+                       "params": []
+                      }
+                     }
+                    },
+                    "then": {
+                     "neg": {
+                      "heading_since": "subject",
+                      "max_step": {
+                       "param": "p.heading_since_step_carla_scene_graph"
+                      },
+                      "onset": {
+                       "args": [
+                        {
+                         "var": "f"
+                        },
+                        {
+                         "lit": "turn(right)"
+                        }
+                       ],
+                       "atom": "dev_human_direction_indication",
+                       "params": []
+                      }
+                     }
+                    }
+                   },
+                   "then": {
+                    "heading_since": "subject",
+                    "max_step": {
+                     "param": "p.heading_since_step_carla_scene_graph"
+                    },
+                    "onset": {
+                     "args": [
+                      {
+                       "var": "f"
+                      },
+                      {
+                       "lit": "turn(left)"
+                      }
+                     ],
+                     "atom": "dev_human_direction_indication",
+                     "params": []
+                    }
+                   }
+                  },
+                  "rhs": {
+                   "cond": {
+                    "args": [
+                     {
+                      "var": "f"
+                     },
+                     {
+                      "lit": "turn(u_turn)"
+                     }
+                    ],
+                    "atom": "dev_human_direction_indication",
+                    "params": []
+                   },
+                   "else": {
+                    "param": "p.turn_heading_min"
+                   },
+                   "then": {
+                    "param": "p.u_turn_heading_min"
+                   }
+                  }
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "forall_device": {
+      "lit": "human_direction"
+     },
+     "var": "f"
+    },
+    "forall_region": {
+     "lit": "travel_region"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "990fcc0e556d7cd1e4b59f48",
+  "candidate_digest": "d79932a2a4a04acbd6a06327a80335425a2cea90b5b848852db988ad3eb533d7"
+ }
+}

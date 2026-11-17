@@ -1,0 +1,194 @@
+{
+ "node_id": "NRS_484B_560_7b",
+ "law_refs": [
+  "NRS-484B-560-7b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "It is unlawful for the driver of any vehicle:",
+   "role": "subject"
+  },
+  {
+   "id": "b2",
+   "text": "To fail to obey an official traffic-control device or the directions of a police officer",
+   "role": "obligation"
+  },
+  {
+   "id": "b3",
+   "text": "at a railroad crossing.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"vehicle\" is the admitted aggregate DEF-NRS-484A-320::vehicle, \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"; \"driver\" (DEF-NRS-484A-080) is a role read through the vehicle's controlled motion."
+  },
+  {
+   "span": "b2",
+   "atoms": [
+    "dev.governs",
+    "dev.railway_signal_or_gate",
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.human_direction",
+    "rel.occupies",
+    "st.travel_region",
+    "st.region_geometry",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "ru.rail_vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "\"Official traffic-control device\" (DEF-NRS-484A-145) is \"every sign, signal, marking and device ... placed or erected by a public authority or railroad for the purpose of regulating, warning or guiding traffic\"; at a railroad crossing its members that direct the subject's entry are dev.railway_signal_or_gate (\"the devices at a level crossing; lights in {flashing, dark}; gate in {up, lowering, down, raising, none}\": obeyed by not entering while the lights flash or the gate is not up), dev.traffic_signal (circular_red: not entering), dev.stop_sign (\"regulatory sign requiring a full halt\": a halt, drv.motion.complete_halt, on the approach short of the crossing, within p.railroad_crossing_approach_reach by st.region_geometry) and dev.yield_sign (\"requiring yielding without a mandatory halt\": not entering while a rail vehicle, ru.rail_vehicle, closes within the conflict horizon — prim.closest_approach_within and prim.closest_approach_distance, which are \"not a stand-in for contact\" and are read only as the conflict bound). \"Police officer\" (DEF-NRS-484A-180, \"every officer authorized to direct or regulate traffic\") is dev.human_direction of role police_officer; its indication stop is obeyed by not entering. Each device must govern (dev.governs, \"the travel regions whose traffic the device controls\") a travel region (st.travel_region) the subject occupies (rel.occupies) at its entry; dev.governs is not a position, and the place of the halt is read from the distance to the crossing."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "rel.occupies",
+    "st.railway_crossing"
+   ],
+   "derived": [],
+   "justification": "The device or direction is obeyed at a railroad crossing: the event judged is the subject's entry into a st.railway_crossing, \"level crossing of a railway with the roadway, and its nearest rail\", the observation at which its footprint comes to overlap it (rel.occupies) having not overlapped it at the previous one. \"Railroad\" (DEF-NRS-484A-200) excludes streetcars, which form no level crossing of a railway with the roadway."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle and enters a railroad crossing c at this observation: rises(rel.occupies(subject, c)) for some st.railway_crossing c.",
+ "obligation": "At the entry observation, for every device d that governs (dev.governs) a travel region r the subject occupies at that observation: (i) d a dev.railway_signal_or_gate: its lights are not flashing and its gate is not lowering, down or raising; (ii) d a dev.traffic_signal: it does not display circular_red; (iii) d a dev.human_direction of role police_officer: its indication is not stop; (iv) d a dev.yield_sign: no rail vehicle q (ru.rail_vehicle) has prim.closest_approach_within(subject, q) over p.conflict_horizon with prim.closest_approach_distance at most p.conflict_centre_clearance; (v) d a dev.stop_sign: the subject halted before this entry. For (v) the search runs back from the entry: a halt counts at an observation where drv.motion.complete_halt(subject) holds with speed_tol p.halt_speed_tolerance, the subject's footprint does not overlap c, and its body is within p.railroad_crossing_approach_reach of c (st.region_geometry). The search ends at the last observation before the entry at which the subject's body was farther from c than p.railroad_crossing_approach_reach (the approach start: only an observed exit from that zone begins a new approach), or at the previous entry of the subject into c. Finding the halt meets the duty; reaching either end without it violates it; where the recording begins with the subject already within the reach of c and no halt is observed since, or the distance to c is unobserved at an observation the search reads and no halt is found, the duty is unknown. Where no device governs a region the subject occupies at the entry, the duty is complied with.",
+ "params": [
+  "p.railroad_crossing_approach_reach",
+  "p.halt_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "b1",
+   "why": "\"the driver\" is read through the vehicle's controlled motion; whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b2",
+   "why": "That a device is official, placed by a public authority or railroad, is read from its presence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "b2",
+   "why": "Obedience is read at the subject's entry into the crossing, through the devices and directions that govern that entry (railway lights and gate, a red signal, a stop or yield sign, a police officer's stop); instructions that do not bear on entering the crossing, and a direction to proceed, are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Railway signal lights flashing, gate down, governing the subject's approach lane; the subject car drives around the gate and its footprint comes to overlap the railway crossing."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Railway signal lights dark, gate up, governing the subject's lane; the subject car enters the crossing."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car drives along a street with no railway crossing; it never overlaps one."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject car enters a crossing; a railway signal with lights flashing stands at the crossing but the source does not observe which regions it governs.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A stop sign governs the subject's lane at the crossing; the subject car approaches from 60 m, halts 6 m from the crossing (kin.speed 0), then enters."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A stop sign governs the subject's lane; the subject approaches from 60 m and enters the crossing at 8 m/s without halting."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "A police officer (dev.human_direction role police_officer, indication stop) governs the subject's lane; the subject enters the crossing."
+  },
+  {
+   "name": "branch_4",
+   "expected": "compliant",
+   "narrative": "The subject enters an unsignalled crossing with no device governing its lane; no other road user in the scene."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "A stop sign governs the subject's lane; the recording begins with the subject 10 m from the crossing moving at 3 m/s, no halt is observed, and it enters the crossing.",
+   "boundary": "the subject's approach to the crossing from beyond p.railroad_crossing_approach_reach, which lies before the recording's first observation"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.railroad_crossing_approach_reach",
+   "unit": "m",
+   "value": 15.2,
+   "convention": "the ground distance from a vehicle's body to a railroad grade crossing within which the vehicle is at the crossing, on the stretch where a halt for the crossing is made: the 50-ft outer bound of the zone in which grade-crossing practice places the halt before the nearest rail",
+   "source": "MUTCD Part 8 highway-rail grade crossing stop-line placement and the Uniform Vehicle Code grade-crossing stop zone"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of vehicle tracking sources"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique literature"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger-car design dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

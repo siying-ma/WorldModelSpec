@@ -1,0 +1,256 @@
+{
+ "node_id": "NRS_484B_127_2",
+ "law_refs": [
+  "NRS-484B-127-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-305::truck",
+   "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "The driver of any truck or combination of vehicles 80 inches or more in overall width,",
+   "role": "subject"
+  },
+  {
+   "id": "g2",
+   "text": "which is following a truck, or combination of vehicles 80 inches or more in overall width,",
+   "role": "trigger"
+  },
+  {
+   "id": "g3",
+   "text": "shall, whenever conditions permit,",
+   "role": "standard"
+  },
+  {
+   "id": "g4",
+   "text": "leave a space of 500 feet so that an overtaking vehicle may enter and occupy such space without danger,",
+   "role": "obligation"
+  },
+  {
+   "id": "g5",
+   "text": "but this shall not prevent a truck or combination of vehicles from overtaking and passing any vehicle or combination of vehicles.",
+   "role": "exception"
+  },
+  {
+   "id": "g6",
+   "text": "This subsection does not apply to any vehicle or combination of vehicles while moving on a highway on which there are two or more lanes available for traffic moving in the same direction.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+    "kin.extent"
+   ],
+   "derived": [],
+   "justification": "'truck' and 'combination of vehicles' are admitted aggregates (DEF-NRS-484A-305::truck, 'every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose'; DEF-NRS-484A-050::combination_of_vehicles, 'two or more vehicles coupled together'), claimed through ru.aggregate. '80 inches or more in overall width': kin.extent, 'the body's size along its axes … a formula reads the full length, width and height', the full width compared with the stated figure. 'Driver' is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "g2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+    "kin.extent",
+    "rel.ahead_behind_in_lane"
+   ],
+   "derived": [],
+   "justification": "'following': rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane, along the lane direction', the followed road user b ahead of the subject with no other road user between them in that lane (the one it immediately follows). b is a truck or a combination of vehicles (the admitted aggregates) whose full width (kin.extent) is at least the stated figure."
+  },
+  {
+   "span": "g4",
+   "atoms": [
+    "rel.surface_gap"
+   ],
+   "derived": [],
+   "justification": "'leave a space of 500 feet': rel.surface_gap, 'distance between the nearest points of two bodies … its longitudinal and lateral components', the longitudinal component to the followed vehicle at least the stated figure. The words 'so that an overtaking vehicle may enter and occupy such space without danger' state why the space is left; the duty is the stated space itself (narrowing)."
+  },
+  {
+   "span": "g5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'overtaking and passing any vehicle or combination of vehicles': drv.interaction.overtake_pass, 'Road user a overtakes and passes road user b from the rear … comes from having b ahead of it to having b behind it', with a the subject and b any road user that is a vehicle or a combination of vehicles (admitted aggregates). The pass is under way where its recognition falls within the window ahead of length p.overtake_window, the concept's own recognition window."
+  },
+  {
+   "span": "g6",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "'a highway on which there are two or more lanes available for traffic moving in the same direction': st.lane_adjacency, 'lane ordinal within the carriageway and the count of lanes in that direction', read on the lane (st.lane, 'a longitudinal strip of roadway for one line of vehicles') the subject occupies (rel.occupies); the count is at least the stated figure. 'any vehicle or combination of vehicles' is the subject already bound by g1."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "g3",
+   "standard": "whenever conditions permit",
+   "concepts": [
+    "rel.ahead_behind_in_lane",
+    "drv.motion.complete_halt"
+   ],
+   "params": [
+    "p.truck_space_open_time",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "Conditions permit the space where the followed vehicle has been the subject's immediate leader in its lane (rel.ahead_behind_in_lane, no other road user between) and neither vehicle has been at rest (not drv.motion.complete_halt) at every observation of the window behind of length p.truck_space_open_time: the time a heavy vehicle needs to open the space behind a leader by easing off a few miles per hour. A leader that has just come ahead of the subject, or a queue at rest, does not yet permit it.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles"
+   ]
+  }
+ ],
+ "applicability": "The subject is a truck or a combination of vehicles (either admitted aggregate) whose full width (kin.extent) is at least 80 inches, and the lane it occupies (rel.occupies, st.lane) does not count two or more lanes in its direction (st.lane_adjacency count).",
+ "obligation": "For every road user b that is a truck or a combination of vehicles of full width at least 80 inches, ahead of the subject in its lane (rel.ahead_behind_in_lane) with no other road user ahead of the subject and behind b in that lane: either (i) conditions do not permit — it is not the case that, at every observation of the window behind of length p.truck_space_open_time, b was so the subject's immediate leader and neither the subject nor b was at rest (drv.motion.complete_halt, p.halt_speed_tolerance); or (ii) the subject is overtaking and passing — within the window ahead of length p.overtake_window some road user c that is a vehicle or a combination of vehicles is overtaken and passed by the subject (drv.interaction.overtake_pass(subject, c) with p.overtake_window, p.overtake_same_direction_cos); or (iii) the longitudinal component of rel.surface_gap(subject, b) is at least 500 feet. Violated where none holds.",
+ "params": [
+  "p.truck_space_open_time",
+  "p.halt_speed_tolerance",
+  "p.overtake_window",
+  "p.overtake_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "g1",
+   "why": "'The driver' is read through the vehicle's controlled motion: the duty binds the truck's or combination's conduct whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "g4",
+   "why": "'so that an overtaking vehicle may enter and occupy such space without danger' states the purpose of the space; the duty is the stated space, and whether an overtaking vehicle is present is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "g3",
+   "why": "'whenever conditions permit' is a catch-all read only through the leader having been the subject's immediate leader, both moving, for the window that opening the space takes; other conditions (grade, traffic behind) are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two-lane two-way highway (one lane each direction); a 2.6 m wide truck follows another 2.6 m wide truck at 60 m, both at 25 m/s, for 60 s with no one between and no overtaking."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same road; the following wide truck keeps a body gap of 200 m to the wide truck ahead."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject is a motorcycle following a wide truck at 30 m."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Two trucks follow each other at 60 m; the source declares kin.extent absent, so neither width is known.",
+   "masked": [
+    "kin.extent"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The wide trucks travel on a highway whose lane counts two lanes in their direction."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The following wide truck closes to 40 m and, within 8 s, overtakes and passes the leading truck in the opposing lane."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "The wide truck drives alone: no road user is ahead of it in its lane."
+  },
+  {
+   "name": "branch_4",
+   "expected": "compliant",
+   "narrative": "A wide truck pulled into the lane ahead of the subject 5 s ago and is 60 m ahead; the window to open the space has not elapsed."
+  }
+ ],
+ "literals": [
+  {
+   "span": "g1",
+   "text": "80 inches",
+   "value": 80,
+   "unit": "in"
+  },
+  {
+   "span": "g2",
+   "text": "80 inches",
+   "value": 80,
+   "unit": "in"
+  },
+  {
+   "span": "g4",
+   "text": "500 feet",
+   "value": 500,
+   "unit": "ft"
+  },
+  {
+   "span": "g6",
+   "text": "two",
+   "value": 2,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.truck_space_open_time",
+   "unit": "s",
+   "value": 30.0,
+   "convention": "the time a following heavy vehicle needs to open a space behind a leader that has come ahead of it, easing off by a few miles per hour: about 150 m at a closing speed near 5 m/s",
+   "source": "heavy-vehicle following practice; commercial driver manuals"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source"
+  },
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "passing-manoeuvre durations, AASHTO passing sight distance"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading angles"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

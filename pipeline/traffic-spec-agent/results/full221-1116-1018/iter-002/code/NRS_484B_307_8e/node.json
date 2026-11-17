@@ -1,0 +1,203 @@
+{
+ "node_id": "NRS_484B_307_8e",
+ "law_refs": [
+  "NRS-484B-307-8e"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where the signal is a steady red signal alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Vehicular traffic facing the signal",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "may not proceed on or through any private or public property to enter the intersecting",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "street",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "where traffic is not facing a red signal",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "to avoid the red signal.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal is 'a signal head; state in {circular_green, circular_yellow, circular_red, ...}; several states may be displayed at once': a steady red signal alone is the head displaying circular_red and no other state (no arrow, no flashing state). Same atom as the index maps these words to (NRS_484B_307_8d). It is a device, not a sign or a road feature, so no exclusion applies."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "dev.governs",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'Vehicular traffic facing the signal' (NRS_484B_307_2a). 'Traffic' is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances'); 'vehicular' limits it to its vehicle members, the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported'). Facing the signal: the subject occupies (rel.occupies, 'a road user's footprint overlaps a lane / region') a carrier c that runs into intersection i at its entrance end (st.lane_enters; c of kind st.travel_region, i of kind st.intersection), and the head governs c or i (dev.governs, 'the travel regions whose traffic the device controls'); governance is control, not a position, as its exclusion requires."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "st.highway is 'the entire public way between its boundary lines, including sidewalks and shoulders'; private or public property is ground no highway region covers, so proceeding on or through it is the subject's footprint overlapping (rel.occupies) no st.highway region; the 'not a stand-in for the roadway' clause is respected, the test being against the whole way, so a sidewalk or shoulder is not property. The intersecting way is a highway h2 on which intersection i lies (st.on_way: 'an intersection lies on every way that meets there') and on which the approach carrier c does not lie; entering it is the subject's footprint coming to overlap h2 outside i, having overlapped no highway region at the previous observation."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "st.lane_enters",
+    "st.on_way",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The intersecting street's traffic not facing a red signal is read on that street's approaches into the same intersection: a traffic signal head that governs (dev.governs) a carrier k lying on h2 (st.on_way) and entering i (st.lane_enters; k of kind st.travel_region) displays a state other than circular_red (dev.traffic_signal). The words speak of the signal the street's traffic faces, so the condition reads the device and holds whether or not a road user is on h2."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "The purpose 'to avoid the red signal' is read through the conduct it explains: having faced the red on c, the subject reaches h2 without having occupied i (rel.occupies, st.intersection) and without having stood on the property: drv.motion.parked is 'the standing of a vehicle, whether occupied or not', at rest throughout a window of min_duration; a road user that parks on the property is there for the property, not passing through it around the signal."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s4",
+   "id": "asm.within_incorporated_city",
+   "meaning": "the place of the road user at the observation lies within the territorial limits of an incorporated city, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is vehicular traffic (ru.aggregate traffic and ru.aggregate vehicle). There are an intersection i, a carrier c of kind st.travel_region that enters i (st.lane_enters c i), and a highway h2 on which i lies (st.on_way i h2) and on which c does not lie, such that: (a) at some observation up to the judged one, the subject occupied c while a traffic signal head governing c or i (dev.governs) displayed circular_red and no other state (steady red alone); (b) at the judged observation a traffic signal head governing some carrier k that lies on h2 and enters i displays a state other than circular_red (the intersecting street's traffic does not face a red signal); (c) the place lies within an incorporated city (asm.within_incorporated_city: the intersecting way is a street); (d) since the latest observation at which (a) held, the subject has at no observation occupied i and has at no observation been parked (drv.motion.parked with speed_tol p.halt_speed_tolerance and min_duration p.parking_min_duration): it is passing around the signal, not using the property (purpose read through conduct).",
+ "obligation": "Re-binding i, c and h2 by the same selection and relations as the applicability (c enters i, i lies on h2, c does not lie on h2, the subject occupied c while a head governing c or i displayed circular_red alone, and has since neither occupied i nor been parked): it is not the case that at the judged observation the subject occupies h2 and does not occupy i while at the previous observation it occupied no st.highway region (it comes onto the intersecting street from private or public property off every public way).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.parking_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'private or public property' is read as ground outside every highway's boundary lines: the subject's footprint overlaps no st.highway region at the observation before it comes onto the intersecting street. A cut across a sidewalk or shoulder alone, which is part of the highway, is not read as proceeding through property.",
+   "kind": "reading"
+  },
+  {
+   "span": "s6",
+   "why": "The purpose of avoiding the red signal is read through conduct: after facing the steady red on the approach, the subject reaches the intersecting street from off the way without having entered the intersection and without having parked on the property.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s2",
+   "why": "'Vehicular traffic' facing the signal is read through the vehicle's controlled motion on the approach, whoever or whatever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject (vehicle, traffic) occupies approach lane c entering intersection i; the head governing c displays circular_red alone; the head governing the cross street's approach lane k (on h2, entering i) displays circular_green. The subject turns right off c into a corner lot, its footprint overlapping no highway region for several observations while moving (never parked), and then comes to occupy h2 outside i. It never occupied i. The place is within an incorporated city."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene: the subject halts on c while its head displays circular_red alone, waits until circular_green, enters i and turns right onto h2 through i; at no observation does it come onto h2 from off the way."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The head governing c displays circular_green throughout; the subject passes through i. It never occupied c facing a steady red alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the state of the head governing c is never observed (dev.traffic_signal absent); the subject cuts through the corner lot onto h2.",
+   "masked": [
+    "dev.traffic_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the subject parks in the corner lot (at rest for longer than the parking duration) before leaving onto h2; while it waited on c facing the red it complied, and after parking the cut-through condition no longer holds."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As in forbid, but every head governing an approach of h2 into i displays circular_red throughout (an all-red interval): the intersecting street's traffic faces red."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of automotive perception and simulator scene-graph sources"
+  },
+  {
+   "name": "p.parking_min_duration",
+   "unit": "s",
+   "value": 180.0,
+   "convention": "the longest halt counted as temporary, as for loading or unloading: a common time limit of a passenger loading zone",
+   "source": "municipal passenger loading zone time limits"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,229 @@
+{
+ "node_id": "NRS_484B_307_8a_o1",
+ "law_refs": [
+  "NRS-484B-307-8a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where the signal is a steady red signal alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Vehicular traffic facing the signal",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "must stop before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made, or in the absence of any such crosswalk, sign or marking, then before entering the intersection,",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "and,",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s5",
+   "text": "except as otherwise provided in paragraphs (c) and (d) [(c) is appended below, NRS-484B-307-8d],",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "must remain stopped or standing until the green signal is shown.",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "After complying with the requirement to stop,",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "vehicular traffic facing such a signal and situated on the extreme right of the highway",
+   "role": "sibling"
+  },
+  {
+   "id": "s9",
+   "text": "may proceed into the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "s10",
+   "text": "for a right turn",
+   "role": "sibling"
+  },
+  {
+   "id": "s11",
+   "text": "only when the intersecting highway is two-directional or one-way to the right,",
+   "role": "sibling"
+  },
+  {
+   "id": "s12",
+   "text": "or vehicular traffic facing such a signal and situated on the extreme left of a one-way highway",
+   "role": "sibling"
+  },
+  {
+   "id": "s13",
+   "text": "may proceed into the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "s14",
+   "text": "for a left turn",
+   "role": "sibling"
+  },
+  {
+   "id": "s15",
+   "text": "only when the intersecting highway is one-way to the left,",
+   "role": "sibling"
+  },
+  {
+   "id": "s16",
+   "text": "but must yield",
+   "role": "sibling"
+  },
+  {
+   "id": "s17",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "s18",
+   "text": "to pedestrians and other traffic proceeding as directed by the signal at the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal, 'a signal head; state ∈ {circular_green, circular_yellow, circular_red, ...}; several states may be displayed at once': a steady red signal alone is circular_red and no other state (not flashing_red, and no arrow beside it). Same atom as the index for the signal words of NRS_484B_307_2a."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Vehicular traffic': the admitted aggregates DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), claimed as ru.aggregate, never expanded. 'facing the signal': the subject occupies (rel.occupies) a travel region c (st.travel_region) whose entrance end is intersection i (st.lane_enters; st.intersection) and which the head governs (dev.governs, 'the travel regions whose traffic the device controls'). Not a stand-in: dev.governs is not the place of the halt, st.lane_enters not presence in i. Same words, same atoms as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "prim.region_offset_along",
+    "rel.occupies",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.intersection",
+    "st.lane_direction",
+    "st.region_geometry",
+    "st.stop_line"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'must stop': a stop required, DEF-NRS-484A-255, '\"Stop,\" when required, means complete cessation from movement': drv.motion.complete_halt. 'before entering the crosswalk on the nearest side of the intersection': the crosswalk (st.crosswalk, 'marked crossing, or the unmarked prolongation of sidewalks at an intersection') recorded as marking the entrance of the subject's carrier c (st.entrance_of, 'the line or crossing a vehicle approaching through that carrier halts at or before'); 'where the sign or pavement marking indicates where the stop must be made': the stop line (st.stop_line, 'the transverse line marking where vehicles halt for a device') recorded as marking c's entrance; 'or in the absence of any such crosswalk, sign or marking, then before entering the intersection': c's entrance end at intersection i (st.intersection). 'before entering': the footprint does not yet overlap the region (rel.occupies); the side is read by the sign of prim.region_offset_along along c's designated direction (st.lane_direction), the distance to the place by st.region_geometry ('the ground distance from a road user's body outline to it'). Not a stand-in: st.region_geometry is not occupancy, and prim.region_offset_along is read for the side only, never as the distance. Same mapping as the index for the stop words of NRS_484A_450_2 and NRS_484A_450_3."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of the classes traffic and vehicle, enters intersection i at the judged observation: its footprint overlaps i (rel.occupies) there and did not at the previous observation, at which it occupied a travel region c whose entrance end is i (st.lane_enters) and which a traffic signal head s governs (dev.governs); and s displays at the judged observation a steady red alone (circular_red and no other state).",
+ "obligation": "Rule 4c duty: an act at a place before an event. Event: the entry into i just described; each such entry is its own occurrence. Place: the stop line recorded as marking c's entrance (st.entrance_of) where one is; else the crosswalk recorded as marking c's entrance; else c's entrance end at the edge of i. Where a mark's association with c is not observed, whether it governs is unknown; where its list of entrances is observed and excludes c, it does not govern and the next place in that order is read. Act: a complete halt (drv.motion.complete_halt, speed_tol = p.halt_speed_tolerance) at an observation at which the subject occupies c, its footprint overlaps neither i nor the crosswalk marking c's entrance and it is not past the stop line where one is the place, it lies on the upstream side of the place along c's designated direction (st.lane_direction; the sign of prim.region_offset_along shows the place ahead, or zero on the line), and its body is within p.stop_point_tolerance of the place (st.region_geometry distance). History bound: the search runs back from the entry and ends at the approach start, the last observation before the entry at which the subject, on c, is outside the place's stopping zone upstream (off the place, short of it, and farther from it than p.stop_point_tolerance), or at the subject's previous entry into i from c, whichever is later; nothing else ends it: not the start of the recording, not the subject's first observation, not another intersection or mark, not a distance travelled. Only an observed exit from the zone upstream begins a new approach; a creep, a lateral move or a change of lane within the zone keeps a halt already made. A halt found: complied. Either end reached without a halt: violated. Neither end reached and no halt found (the recording begins with the subject inside the zone): unknown. Whether the entry occurred is unknown where the observation before does not show the subject on a mapped carrier whose association with the place is observed, or where there is no observation before.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "The place 'where the sign or pavement marking indicates where the stop must be made' is read as the stop line the source records as marking the approach's entrance: a sign standing without a line indicates a place the ontology does not record (no regulatory sign code marks a stopping point), so where only such a sign indicates the place the duty is read at the crosswalk or the intersection's edge. The places are read in the order stop line, crosswalk, edge of the intersection, a halt before the first that marks the approach meeting the words for all of them.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies lane c, recorded as entering i and governed by head s displaying circular_red alone; a stop line marks c's entrance. The car passes the line at 12 m/s, its speed never at or below the halt tolerance, and its footprint comes to overlap i while s still displays circular_red alone; the search from the entry reaches the approach start (the car 40 m short of the line) without a halt."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same approach; the car halts with its body 1 m short of the stop line, footprint off the line and the crosswalk, waits, and then enters i for a right turn while s still displays circular_red alone: the halt lies within the approach."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car enters i while s displays circular_green alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source supplies no speed for the car at any observation of the approach: whether it halted is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the car already on c with its body 1.5 m short of the stop line, moving at 1 m/s; it enters i under circular_red alone without halting in the recording. The approach start and any earlier entry lie before the recording, so neither end of the search is reached.",
+   "boundary": "the car's approach on c before it came within the stop-point tolerance of the stop line"
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "No stop line or crosswalk marks c's entrance (every line's and crosswalk's list of entrances is observed and excludes c); the car halts with its body 1 m short of the edge of i and then enters i under circular_red alone: the place is the intersection's edge."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; repeated unchanged"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "proposed this iteration by LVMC_11_20_060_o1; repeated unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

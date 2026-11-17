@@ -1,0 +1,89 @@
+'TrafficSpec.Rules.NRS_484B_267_2c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_267_2c.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_267_2c","intentions":[],"laws":["NRS-484B-267-2c"],"narrowings":[{"kind":"no_atom","span":"s3","why":"the borrowed words of DEF-NRS-484A-480-3 'visible from the front', which the record writes as a lit sig.warning_lamp facing front, cannot be stated: no atom form of the surface reads a warning lamp's facing (sig_warning_lamp takes a colour, or a colour and a mode, only; WarningLamp.facing is read by no accessor), so the rule can require a red flashing lamp but not one facing front, and would wrongly fire on a red flashing lamp facing only rear or side"}],"operationalizations":[{"concepts":["env.ice_or_snow","env.precipitation","env.wet_road","kin.speed","rel.surface_gap"],"params":["p.driver_reaction_time","p.following_decel_dry","p.following_decel_wet","p.following_decel_ice"],"standard":"Be prepared to stop","surrogate":true}],"residues":["'including, without limitation' lists examples of a vehicle moving or preparing to move; the duty is the same whether or not the vehicle is arriving at or leaving the scene of a crash or other incident"],"surrogate":true}
+RULEJSON	{"applicability":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"or":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"e"}],"atom":"rel_visible","params":[]},{"or":[{"not":{"args":[{"var":"e"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}},{"not":{"args":[{"var":"e"},{"lit":"off"}],"atom":"sig_turn_indicator","params":[]}}]}]}]},{"and":[{"args":[{"var":"subject"},{"var":"e"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_approach_reach"}}]}]}]}]}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_2c","intentions":[],"laws":["NRS-484B-267-2c"],"narrowings":[{"kind":"no_atom","span":"s3","why":"the borrowed words of DEF-NRS-484A-480-3 'visible from the front', which the record writes as a lit sig.warning_lamp facing front, cannot be stated: no atom form of the surface reads a warning lamp's facing (sig_warning_lamp takes a colour, or a colour and a mode, only; WarningLamp.facing is read by no accessor), so the rule can require a red flashing lamp but not one facing front, and would wrongly fire on a red flashing lamp facing only rear or side"}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"or":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"e"}],"atom":"rel_visible","params":[]},{"or":[{"not":{"args":[{"var":"e"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}},{"not":{"args":[{"var":"e"},{"lit":"off"}],"atom":"sig_turn_indicator","params":[]}}]}]}]},{"and":[{"args":[{"var":"subject"},{"var":"e"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_approach_reach"}}]}]}]}]}]},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]},"rhs":{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.following_decel_dry"},"then":{"param":"p.following_decel_wet"}},"then":{"param":"p.following_decel_ice"}},{"sub":[{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_surface_gap"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.driver_reaction_time"}]}]}]},{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.following_decel_dry"},"then":{"param":"p.following_decel_wet"}},"then":{"param":"p.following_decel_ice"}},{"sub":[{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_surface_gap"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.driver_reaction_time"}]}]}]}]}}]},"forall_user":"e"},"residues":["'including, without limitation' lists examples of a vehicle moving or preparing to move; the duty is the same whether or not the vehicle is arriving at or leaving the scene of a crash or other incident"],"surrogate":true}
+RULEXJSON	{"applicability":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"body":{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"or":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"e"}],"atom":"rel_visible","params":[]},{"or":[{"not":{"args":[{"var":"e"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}},{"not":{"args":[{"var":"e"},{"lit":"off"}],"atom":"sig_turn_indicator","params":[]}}]}]}]},{"and":[{"args":[{"var":"subject"},{"var":"e"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_approach_reach"}}]}]}]}]}]},"exists_user":"e"},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_267_2c","intentions":[],"laws":["NRS-484B-267-2c"],"narrowings":[{"kind":"no_atom","span":"s3","why":"the borrowed words of DEF-NRS-484A-480-3 'visible from the front', which the record writes as a lit sig.warning_lamp facing front, cannot be stated: no atom form of the surface reads a warning lamp's facing (sig_warning_lamp takes a colour, or a colour and a mode, only; WarningLamp.facing is read by no accessor), so the rule can require a red flashing lamp but not one facing front, and would wrongly fire on a red flashing lamp facing only rear or side"}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"subject"}]}},{"and":[{"or":[{"args":[{"var":"e"},{"lit":"DEF-NRS-484A-020::authorized_emergency_vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"e"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"e"},{"lit":"regulatory_agency"}],"atom":"ru_official_vehicle_kind","params":[]}]}]},{"and":[{"args":[{"var":"e"},{"lit":"red"},{"lit":"flashing"}],"atom":"sig_warning_lamp","params":[]},{"and":[{"or":[{"cmp":"gt","lhs":{"args":[{"var":"e"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"e"}],"atom":"rel_visible","params":[]},{"or":[{"not":{"args":[{"var":"e"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}},{"not":{"args":[{"var":"e"},{"lit":"off"}],"atom":"sig_turn_indicator","params":[]}}]}]}]},{"and":[{"args":[{"var":"subject"},{"var":"e"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.emergency_approach_reach"}}]}]}]}]}]},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]},"rhs":{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.following_decel_dry"},"then":{"param":"p.following_decel_wet"}},"then":{"param":"p.following_decel_ice"}},{"sub":[{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_surface_gap"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.driver_reaction_time"}]}]}]},{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.following_decel_dry"},"then":{"param":"p.following_decel_wet"}},"then":{"param":"p.following_decel_ice"}},{"sub":[{"args":[{"var":"subject"},{"var":"e"}],"measure":"rel_surface_gap"},{"mul":[{"args":[{"var":"subject"}],"measure":"kin_speed"},{"param":"p.driver_reaction_time"}]}]}]}]}}]},"forall_user":"e"},"residues":["'including, without limitation' lists examples of a vehicle moving or preparing to move; the duty is the same whether or not the vehicle is arriving at or leaving the scene of a crash or other incident"],"surrogate":true}
+ATOMS	ru_aggregate,kin_speed,ru_official_vehicle,ru_official_vehicle_kind,sig_warning_lamp,rel_visible,sig_hand_signal,sig_turn_indicator,rel_bearing,rel_centre_distance,dev_human_direction,dev_human_direction_role,st_travel_region,dev_governs,rel_occupies,env_ice_or_snow,env_wet_road,env_precipitation,rel_surface_gap
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-020::authorized_emergency_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.warning_lamp
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+OCC	subject
+OCC	subject
+OCC	?e
+OCC	e,subject
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	subject,e
+OCC	e
+OCC	e
+OCC	subject,e
+OCC	subject,e
+OCC	?d
+OCC	d
+OCC	?r
+OCC	d,r
+OCC	subject,r
+OCC	?e
+OCC	e,subject
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	e
+OCC	subject,e
+OCC	e
+OCC	e
+OCC	subject,e
+OCC	subject,e
+OCC	subject
+OCC	subject
+OCC	
+OCC	
+OCC	
+OCC	subject,e
+OCC	subject
+OCC	
+OCC	
+OCC	
+OCC	subject,e
+OCC	subject
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	14
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	61
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	47
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	18
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	62
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	60
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	45
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	59
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	59
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	58
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	26
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	61
+TIME	witnesses	556
+DONE_WITNESSES

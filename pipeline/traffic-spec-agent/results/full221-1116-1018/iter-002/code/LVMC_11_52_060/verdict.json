@@ -1,0 +1,386 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 11 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       }
+      ],
+      "derived": "drv_motion_parked",
+      "params": [
+       {
+        "param": "p.halt_speed_tolerance"
+       },
+       {
+        "param": "p.parking_min_duration"
+       }
+      ]
+     },
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "highway"
+      },
+      "var": "h"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-320::vehicle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-LVMC-11-02-170::trailer"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_52_060",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-52-060"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "c"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "body": {
+             "implies": [
+              {
+               "args": [
+                {
+                 "var": "c_other"
+                },
+                {
+                 "var": "h"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              {
+               "cmp": "le",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "c"
+                 }
+                ],
+                "measure": "st_region_geometry_distance"
+               },
+               "rhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "c_other"
+                 }
+                ],
+                "measure": "st_region_geometry_distance"
+               }
+              }
+             ]
+            },
+            "forall_region": {
+             "lit": "road_edge"
+            },
+            "var": "c_other"
+           }
+          ]
+         },
+         {
+          "body": {
+           "implies": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "cmp": "le",
+             "lhs": {
+              "add": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "c"
+                 }
+                ],
+                "measure": "st_region_geometry_distance"
+               },
+               {
+                "add": [
+                 {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "lit": "length"
+                     }
+                    ],
+                    "measure": "kin_extent"
+                   },
+                   {
+                    "abs": {
+                     "sub": [
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "r"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "st_lane_direction"
+                        }
+                       ]
+                      },
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "r"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "st_lane_direction"
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "subject"
+                     },
+                     {
+                      "lit": "width"
+                     }
+                    ],
+                    "measure": "kin_extent"
+                   },
+                   {
+                    "abs": {
+                     "add": [
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "r"
+                          },
+                          {
+                           "lit": "x"
+                          }
+                         ],
+                         "measure": "st_lane_direction"
+                        }
+                       ]
+                      },
+                      {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "subject"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "kin_heading"
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "r"
+                          },
+                          {
+                           "lit": "y"
+                          }
+                         ],
+                         "measure": "st_lane_direction"
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "rhs": {
+              "lit": {
+               "den": 250,
+               "num": 1143
+              },
+              "unit": "metre"
+             }
+            }
+           ]
+          },
+          "forall_region": {
+           "lit": "travel_region"
+          },
+          "var": "r"
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "road_edge"
+       },
+       "var": "c"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [
+    "A trailer is itself \"a vehicle\" by its definition DEF-LVMC-11-02-170, so the duty binds its body through \"any vehicle\" whether or not it is attached; attachment adds no restriction."
+   ],
+   "surrogate": false
+  },
+  "context": "cabb54cf480ee820112c3393",
+  "candidate_digest": "0b78bf68e461f539a1da3712dadef69a8e68344f037bbfcc430d50bee2d6f2f9"
+ }
+}

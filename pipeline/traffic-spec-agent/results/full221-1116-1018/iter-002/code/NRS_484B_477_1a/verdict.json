@@ -1,0 +1,284 @@
+{
+ "verdict": "OK",
+ "details": [
+  "12 witnesses, 14 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "alley"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "alley"
+      },
+      "var": "alley"
+     },
+     {
+      "and": [
+       {
+        "asm": "asm.business_district"
+       },
+       {
+        "not": {
+         "asm": "asm.local_alley_ordinance"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.local_alley_ordinance",
+    "asm.business_district"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_477_1a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-477-1a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "derived": "drv_motion_complete_halt",
+       "params": [
+        {
+         "param": "p.halt_speed_tolerance"
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          }
+         ],
+         "derived": "drv_motion_parked",
+         "params": [
+          {
+           "param": "p.halt_speed_tolerance"
+          },
+          {
+           "param": "p.parking_min_duration"
+          }
+         ]
+        },
+        {
+         "not": {
+          "or": [
+           {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "tr"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "or": [
+                {
+                 "body": {
+                  "args": [
+                   {
+                    "var": "dev"
+                   },
+                   {
+                    "var": "tr"
+                   }
+                  ],
+                  "atom": "dev_governs",
+                  "params": []
+                 },
+                 "exists_device": {
+                  "lit": "traffic_signal"
+                 },
+                 "var": "dev"
+                },
+                {
+                 "or": [
+                  {
+                   "body": {
+                    "args": [
+                     {
+                      "var": "dev"
+                     },
+                     {
+                      "var": "tr"
+                     }
+                    ],
+                    "atom": "dev_governs",
+                    "params": []
+                   },
+                   "exists_device": {
+                    "lit": "stop_sign"
+                   },
+                   "var": "dev"
+                  },
+                  {
+                   "or": [
+                    {
+                     "body": {
+                      "args": [
+                       {
+                        "var": "dev"
+                       },
+                       {
+                        "var": "tr"
+                       }
+                      ],
+                      "atom": "dev_governs",
+                      "params": []
+                     },
+                     "exists_device": {
+                      "lit": "yield_sign"
+                     },
+                     "var": "dev"
+                    },
+                    {
+                     "or": [
+                      {
+                       "body": {
+                        "args": [
+                         {
+                          "var": "dev"
+                         },
+                         {
+                          "var": "tr"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       "exists_device": {
+                        "lit": "railway_signal_or_gate"
+                       },
+                       "var": "dev"
+                      },
+                      {
+                       "body": {
+                        "args": [
+                         {
+                          "var": "dev"
+                         },
+                         {
+                          "var": "tr"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       "exists_device": {
+                        "lit": "human_direction"
+                       },
+                       "var": "dev"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "travel_region"
+            },
+            "var": "tr"
+           },
+           {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "other"
+                },
+                {
+                 "var": "subject"
+                }
+               ],
+               "atom": "rel_ahead_behind_in_lane",
+               "params": []
+              },
+              {
+               "cmp": "le",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 },
+                 {
+                  "var": "other"
+                 }
+                ],
+                "measure": "rel_surface_gap"
+               },
+               "rhs": {
+                "param": "p.queue_halt_gap"
+               }
+              }
+             ]
+            },
+            "exists_user": "other"
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "473ea96b91378eb5897cca45",
+  "candidate_digest": "63d85f558f53d109117203bf0382e39a0ddfe0a2c784d141ef2533de55e8afd2"
+ }
+}

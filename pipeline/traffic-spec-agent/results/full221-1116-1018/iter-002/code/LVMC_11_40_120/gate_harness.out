@@ -1,0 +1,113 @@
+'TrafficSpec.Rules.LVMC_11_40_120.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_40_120.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_40_120","intentions":[],"laws":["LVMC-11-40-120"],"narrowings":[],"operationalizations":[{"concepts":["dev.governs","dev.regulatory_sign","dev.temporary_traffic_control","st.lane_width"],"params":["p.usable_path_width_min"],"standard":"usable","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}},{"body":{"and":[{"or":[{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"p"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"}]},{"and":[{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"p"}],"measure":"st_lane_width"},"rhs":{"param":"p.usable_path_width_min"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"closed_to_traffic"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"bicycles_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}},{"not":{"body":{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"}}]}]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"},{"body":{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"roadway"},"var":"r"}]}]},"exists_region":{"lit":"highway"},"var":"h"}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-082::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-083::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"LVMC_11_40_120","intentions":[],"laws":["LVMC-11-40-120"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"r"},{"and":[{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"p"}],"measure":"st_lane_width"},"rhs":{"param":"p.usable_path_width_min"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"closed_to_traffic"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"bicycles_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}},{"not":{"body":{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"}}]}]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"},{"not":{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"p"}],"measure":"st_lane_width"},"rhs":{"param":"p.usable_path_width_min"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"closed_to_traffic"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"bicycles_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}},{"not":{"body":{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"}}]}]},{"args":[{"var":"subject"},{"var":"p"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"}}]}]},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"l"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.rider_crossing_motion_cos"}]}]},"exists_region":{"lit":"lane"},"var":"l"},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.rider_crossing_motion_cos"}]}]}]},"exists_region":{"lit":"roadway"},"var":"r"}]}]},"forall_region":{"lit":"highway"},"var":"h"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}},{"body":{"and":[{"or":[{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"p"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"}]},{"and":[{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"p"}],"measure":"st_lane_width"},"rhs":{"param":"p.usable_path_width_min"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"closed_to_traffic"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"bicycles_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}},{"not":{"body":{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"}}]}]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"},{"body":{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"roadway"},"var":"r"}]}]},"exists_region":{"lit":"highway"},"var":"h"}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-082::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"subject"},{"lit":"DEF-LVMC-11-02-083::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"subject"}],"id":"LVMC_11_40_120","intentions":[],"laws":["LVMC-11-40-120"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"r"},{"and":[{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"p"}],"measure":"st_lane_width"},"rhs":{"param":"p.usable_path_width_min"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"closed_to_traffic"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"bicycles_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}},{"not":{"body":{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"}}]}]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"},{"not":{"body":{"and":[{"args":[{"var":"p"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"p"}],"measure":"st_lane_width"},"rhs":{"param":"p.usable_path_width_min"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"closed_to_traffic"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"lit":"bicycles_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}},{"not":{"body":{"args":[{"var":"d"},{"var":"p"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"temporary_traffic_control"},"var":"d"}}]}]},{"args":[{"var":"subject"},{"var":"p"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"p"}}]}]},{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"l"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"l"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.rider_crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]}]},"exists_region":{"lit":"lane"},"var":"l"},{"body":{"and":[{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.rider_crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]}]}]},"exists_region":{"lit":"roadway"},"var":"r"}]}]},"forall_region":{"lit":"highway"},"var":"h"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_complete_halt,st_highway,st_roadway,st_on_way,rel_occupies,st_bicycle_lane_or_path,st_lane_width,dev_regulatory_sign,dev_governs,dev_regulatory_sign_code,dev_temporary_traffic_control,st_lane,drv_motion_moving_across_carrier
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-025::bicycle	DEF-LVMC-11-02-082::electric_bicycle	DEF-LVMC-11-02-083::electric_scooter
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.velocity
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?h
+OCC	?r
+OCC	r,h
+OCC	subject,r
+OCC	?p
+OCC	p,h
+OCC	subject,p
+OCC	?p
+OCC	p,h
+OCC	p
+OCC	?d
+OCC	d,p
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,p
+OCC	?r
+OCC	r,h
+OCC	?h
+OCC	?r
+OCC	r,h
+OCC	subject,r
+OCC	?p
+OCC	p,h
+OCC	p
+OCC	?d
+OCC	d,p
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,p
+OCC	?p
+OCC	p,h
+OCC	p
+OCC	?d
+OCC	d,p
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,p
+OCC	subject,p
+OCC	?l
+OCC	subject,l
+OCC	subject,l
+OCC	?r
+OCC	r,h
+OCC	subject,r
+OCC	subject,r
+TIME	occurrences	0
+TIME	checks	7
+TIME	lint	134
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	15
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	11
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	10
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	16
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	13
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	11
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	11
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	11
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	13
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	12
+SCEN	branch_7	not_applicable	not_applicable	ok
+TIME	scenario:branch_7	12
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	16
+SCEN	branch_9	violated	violated	ok
+TIME	scenario:branch_9	15
+SCEN	branch_10	violated	violated	ok
+TIME	scenario:branch_10	14
+TIME	witnesses	180
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_40_120.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_40_120.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_40_120	32	13
+TIME	adequacy_start	9
+TIME	adequacy	3540
+DONE

@@ -1,0 +1,517 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 14 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "since": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "i"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "c"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "atom": "st_lane_enters",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "s"
+                },
+                {
+                 "var": "c"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              },
+              {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "s"
+                  },
+                  {
+                   "lit": "flashing_yellow_arrow(left)"
+                  }
+                 ],
+                 "atom": "dev_traffic_signal_shows",
+                 "params": []
+                },
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "s"
+                    },
+                    {
+                     "lit": "flashing_yellow_arrow(right)"
+                    }
+                   ],
+                   "atom": "dev_traffic_signal_shows",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "s"
+                    },
+                    {
+                     "lit": "flashing_yellow_arrow(u_turn)"
+                    }
+                   ],
+                   "atom": "dev_traffic_signal_shows",
+                   "params": []
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "travel_region"
+        },
+        "var": "c"
+       }
+      ]
+     },
+     "exists_device": {
+      "lit": "traffic_signal"
+     },
+     "var": "s"
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-285::traffic"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-320::vehicle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_307_7a_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-307-7a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "body": {
+        "since": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "c"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "c"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "st_lane_enters",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "s"
+                  },
+                  {
+                   "var": "c"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                },
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "s"
+                    },
+                    {
+                     "lit": "flashing_yellow_arrow(left)"
+                    }
+                   ],
+                   "atom": "dev_traffic_signal_shows",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "s"
+                      },
+                      {
+                       "lit": "flashing_yellow_arrow(right)"
+                      }
+                     ],
+                     "atom": "dev_traffic_signal_shows",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "s"
+                      },
+                      {
+                       "lit": "flashing_yellow_arrow(u_turn)"
+                      }
+                     ],
+                     "atom": "dev_traffic_signal_shows",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "travel_region"
+          },
+          "var": "c"
+         }
+        ]
+       },
+       "exists_device": {
+        "lit": "traffic_signal"
+       },
+       "var": "s"
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "p"
+              },
+              {
+               "var": "subject"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "p"
+               },
+               {
+                "lit": "DEF-NRS-484A-165::pedestrian"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "p"
+                 },
+                 {
+                  "var": "i"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "p"
+                    },
+                    {
+                     "var": "w"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "not": {
+                       "same": [
+                        {
+                         "var": "c2"
+                        },
+                        {
+                         "var": "i"
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "w"
+                         },
+                         {
+                          "var": "c2"
+                         }
+                        ],
+                        "atom": "st_entrance_of",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "c2"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ],
+                        "atom": "st_lane_enters",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "travel_region"
+                   },
+                   "var": "c2"
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "crosswalk"
+                },
+                "var": "w"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "and": [
+              {
+               "cmp": "gt",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "measure": "kin_speed"
+               },
+               "rhs": {
+                "param": "p.halt_speed_tolerance"
+               }
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  },
+                  {
+                   "var": "p"
+                  }
+                 ],
+                 "derived": "prim_closest_approach_within",
+                 "params": [
+                  {
+                   "param": "p.conflict_horizon"
+                  }
+                 ]
+                },
+                {
+                 "cmp": "lt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "p"
+                   }
+                  ],
+                  "params": [
+                   {
+                    "param": "p.conflict_horizon"
+                   }
+                  ],
+                  "quantity": "prim_closest_approach_distance"
+                 },
+                 "rhs": {
+                  "param": "p.conflict_centre_clearance"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           },
+           {
+            "not": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "p"
+              }
+             ],
+             "atom": "rel_contact",
+             "params": []
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "forall_user": "p"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "006852b4dcafeb9c2dcf08c2",
+  "candidate_digest": "d2dca68c623cd49b10a48833b1f18eaed31b900171180647b3ccc522f154a363"
+ }
+}

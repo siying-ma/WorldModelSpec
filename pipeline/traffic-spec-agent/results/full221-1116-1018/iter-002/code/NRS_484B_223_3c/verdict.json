@@ -1,0 +1,364 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-285::traffic"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     {
+      "body": {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "c"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         {
+          "since": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "derived": "drv_motion_left_turn",
+                "params": [
+                 {
+                  "param": "p.vehicle_turn_window"
+                 },
+                 {
+                  "param": "p.turn_heading_min"
+                 },
+                 {
+                  "param": "p.u_turn_heading_min"
+                 },
+                 {
+                  "param": "p.turn_yaw_rate_tol"
+                 }
+                ]
+               },
+               {
+                "not": {
+                 "body": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "h"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 "holds_for": "time",
+                 "length": {
+                  "param": "p.vehicle_turn_window"
+                 },
+                 "subject": "subject"
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "highway"
+       },
+       "var": "h"
+      },
+      "exists_region": {
+       "lit": "centre_turn_lane"
+      },
+      "var": "c"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_223_3c",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-223-3c"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "implies": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "c"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         {
+          "since": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "derived": "drv_motion_left_turn",
+                "params": [
+                 {
+                  "param": "p.vehicle_turn_window"
+                 },
+                 {
+                  "param": "p.turn_heading_min"
+                 },
+                 {
+                  "param": "p.u_turn_heading_min"
+                 },
+                 {
+                  "param": "p.turn_yaw_rate_tol"
+                 }
+                ]
+               },
+               {
+                "not": {
+                 "body": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "h"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 "holds_for": "time",
+                 "length": {
+                  "param": "p.vehicle_turn_window"
+                 },
+                 "subject": "subject"
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "cmp": "le",
+        "lhs": {
+         "distance_while": "subject",
+         "holds": {
+          "since": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "subject"
+                 }
+                ],
+                "derived": "drv_motion_left_turn",
+                "params": [
+                 {
+                  "param": "p.vehicle_turn_window"
+                 },
+                 {
+                  "param": "p.turn_heading_min"
+                 },
+                 {
+                  "param": "p.u_turn_heading_min"
+                 },
+                 {
+                  "param": "p.turn_yaw_rate_tol"
+                 }
+                ]
+               },
+               {
+                "not": {
+                 "body": {
+                  "args": [
+                   {
+                    "var": "subject"
+                   },
+                   {
+                    "var": "h"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 "holds_for": "time",
+                 "length": {
+                  "param": "p.vehicle_turn_window"
+                 },
+                 "subject": "subject"
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "rhs": {
+         "lit": {
+          "den": 25,
+          "num": 381
+         },
+         "unit": "metre"
+        }
+       }
+      ]
+     },
+     "forall_region": {
+      "lit": "highway"
+     },
+     "var": "h"
+    },
+    "forall_region": {
+     "lit": "centre_turn_lane"
+    },
+    "var": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "4f8a5c4bf0caa8c3da45bc64",
+  "candidate_digest": "104191a531b83507c0cc28563332ad6c4ae58a2c341ed9165d9527b558020fe8"
+ }
+}

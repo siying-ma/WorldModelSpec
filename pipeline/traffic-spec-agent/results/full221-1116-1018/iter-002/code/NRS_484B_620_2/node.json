@@ -1,0 +1,162 @@
+{
+ "node_id": "NRS_484B_620_2",
+ "law_refs": [
+  "NRS-484B-620-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "After the establishment of a speed zone and the installation of appropriate signs to control speed,",
+   "role": "condition"
+  },
+  {
+   "id": "t2",
+   "text": "it is unlawful for any person to drive a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "t3",
+   "text": "upon the road",
+   "role": "condition"
+  },
+  {
+   "id": "t4",
+   "text": "and in the speed zone",
+   "role": "condition"
+  },
+  {
+   "id": "t5",
+   "text": "in excess of the speed therein authorized.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t1",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.speed_limit_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The established speed zone and its installed signs are read by their presence: dev.zone_sign of kind speed_zone, 'a sign that begins or ends a signed zone along the road', and dev.speed_limit_sign, 'sign stating a maximum or minimum speed, with value and unit; kind ∈ {maximum, minimum, structure_maximum, zone}', both governing (dev.governs, 'the travel regions whose traffic the device controls') the travel region the subject occupies (rel.occupies, st.travel_region). dev.zone_sign is 'Not a stand-in for: whether the condition holds now'; no posted conditions are read here, the zone sign's presence is the zone. The establishment by an authority is a status read from the signs (observable_reading status)."
+  },
+  {
+   "span": "t2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'motor vehicle' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter'); ru.aggregate is 'membership of a legal aggregate'. 'any person to drive' is read through the vehicle's controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "t4",
+   "atoms": [
+    "rel.occupies",
+    "st.travel_region",
+    "dev.governs",
+    "dev.zone_sign",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "In the speed zone: the subject's footprint overlaps (rel.occupies) a travel region (st.travel_region) that a dev.zone_sign of kind speed_zone, not marking the zone's end, governs (dev.governs) and that lies on a highway (st.on_way, 'the public way (a highway region) a structure region lies on'; st.highway): the road of DEF-NRS-484A-215 is 'the entire width between the boundary lines of every highway' outside a city, whose observable part is the highway."
+  },
+  {
+   "span": "t5",
+   "atoms": [
+    "kin.speed",
+    "dev.speed_limit_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The speed therein authorized is the value of a dev.speed_limit_sign of kind zone or maximum ('sign stating a maximum or minimum speed, with value and unit') governing a travel region the subject occupies; in excess is kin.speed ('magnitude of velocity', m/s) above that value."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "t3",
+   "id": "asm.within_incorporated_city",
+   "meaning": "the place of the road user at the observation lies within the territorial limits of an incorporated city, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a motor vehicle (ru.aggregate DEF-NRS-484A-130::motor_vehicle); its place is not within an incorporated city (the assumption asm.within_incorporated_city is declared false: a road is, by DEF-NRS-484A-215, a highway 'outside the territorial limits of a city'); and it occupies a travel region r lying on a highway that is governed by a zone sign of kind speed_zone (not an end sign) and by a speed limit sign of kind zone or maximum.",
+ "obligation": "Re-binding every travel region the subject occupies that lies on a highway and is governed by a zone sign of kind speed_zone (not an end sign), the subject's speed is at or below the value of every speed limit sign of kind zone or maximum governing that region. A speed above such a value is violated.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "t1",
+   "why": "The establishment of the zone and the installation of its signs by an authority are read from the presence of the speed-zone sign and the speed limit sign governing the subject's region.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "t2",
+   "why": "'any person to drive' is read through the motor vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "t5",
+   "why": "The speed 'therein authorized' is read as the value of a speed limit sign of kind zone or maximum governing the subject's region; a minimum speed sign authorizes no maximum and is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car outside any incorporated city (asm.within_incorporated_city false) occupies a lane on a highway governed by a speed_zone zone sign and a zone speed limit sign of 20 m/s; its speed is 25 m/s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same scene with the car at 18 m/s."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car outside any city on a highway lane that no speed_zone zone sign governs; only a general maximum speed sign is present."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not supply the car's speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As in forbid, but the reading declares the place within an incorporated city (asm.within_incorporated_city true): it is no road."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

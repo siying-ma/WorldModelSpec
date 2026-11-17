@@ -1,0 +1,53 @@
+'TrafficSpec.Rules.LVMC_11_52_040_A.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_52_040_A.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_52_040_A","intentions":[],"laws":["LVMC-11-52-040-A"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"args":[{"var":"subject"}],"derived":"drv_motion_parked","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.standing_min_duration"}]},{"and":[{"body":{"args":[{"var":"subject"},{"var":"rw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"rw"},{"not":{"body":{"body":{"and":[{"args":[{"var":"subject"},{"var":"tr"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"d"},{"var":"tr"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"lit":"angle_parking"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_region":{"lit":"travel_region"},"var":"tr"},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_040_A","intentions":[],"laws":["LVMC-11-52-040-A"],"narrowings":[],"obligation":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"body":{"implies":[{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"l"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"l"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"param":"p.parked_heading_cos"}}]},"forall_region":{"lit":"travel_region"},"var":"l"}]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"holds_for":"time","length":{"param":"p.standing_min_duration"},"subject":"subject"},{"and":[{"body":{"args":[{"var":"subject"},{"var":"rw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"rw"},{"not":{"body":{"body":{"and":[{"args":[{"var":"subject"},{"var":"tr"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"d"},{"var":"tr"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"lit":"angle_parking"}],"atom":"dev_regulatory_sign_code","params":[]}]}]},"exists_region":{"lit":"travel_region"},"var":"tr"},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_52_040_A","intentions":[],"laws":["LVMC-11-52-040-A"],"narrowings":[],"obligation":{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"body":{"implies":[{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"l"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"l"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"param":"p.parked_heading_cos"}}]},"forall_region":{"lit":"travel_region"},"var":"l"}]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_parked,st_roadway,rel_occupies,dev_regulatory_sign,st_travel_region,dev_governs,dev_regulatory_sign_code,kin_heading,st_lane_direction
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.lane_direction
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	subject
+OCC	subject
+OCC	?rw
+OCC	subject,rw
+OCC	?d
+OCC	?tr
+OCC	subject,tr
+OCC	d,tr
+OCC	d
+OCC	subject
+OCC	?l
+OCC	subject,l
+OCC	subject
+OCC	l
+OCC	subject
+OCC	l
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	104
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	44
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	42
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	41
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	44
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	42
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	42
+TIME	witnesses	255
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_52_040_A.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_52_040_A.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_52_040_A	8	5
+TIME	adequacy_start	8
+TIME	adequacy	2365
+DONE

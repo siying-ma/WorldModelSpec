@@ -1,0 +1,238 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "ad5f42a1def947f3931bf04937d0d8e3",
+ "result": {
+  "duration_api_ms": 34171,
+  "stop_reason": "end_turn",
+  "session_id": "bd57ec27-4cf2-4413-9a17-7f7c7268b8f0",
+  "total_cost_usd": 0.51046468,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 46972,
+   "cache_read_input_tokens": 48130,
+   "output_tokens": 3721,
+   "output_tokens_details": {
+    "thinking_tokens": 1124
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 46972,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "us",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 544,
+     "cache_read_input_tokens": 45876,
+     "cache_creation_input_tokens": 3350,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3350
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42083,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004642880000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3721,
+    "cacheReadInputTokens": 48130,
+    "cacheCreationInputTokens": 46972,
+    "webSearchRequests": 0,
+    "costUSD": 0.5058218,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1124,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46972,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "preference",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote `record.jsonl` with a revised record for `drv.motion.right_turn_through_region`. It keeps the same id and the same contract, formals, params, act and elements; only the scenarios and `used_by` changed.\n\n**What actually failed:** the contract is fine. The coder's note blamed a scope violation, but the verdict shows the gate rejected the witness traces. In `holds` (and `blind`, which reuses it), track 1 kept heading east at 3 s and kept the previous scene's heading at 5 s while its yaw rate was −30°/s. The adapter can't produce that, because it treats the rate at a scene as covering the interval before it.\n\n**Changes:**\n- **`holds` scenario:** the narrative now says the heading must follow the yaw rate. At each scene, the heading is the previous scene's heading turned by the rate observed there times the interval. So it turns from east through in-between directions to south, and is never held while the rate is non-zero.\n- **`blind` scenario:** it now explicitly keeps those same turning headings and only masks `kin.yaw_rate`.\n- **`fails` scenario:** it now states that its constant east heading and zero yaw rate agree with each other. Two of the three scenarios now also say each is judged at the exit observation.\n- **`used_by`:** expanded from the one law the record listed to all nine users given in the prompt. That's my own call; the record had listed only `LVMC_11_43_010_C2`.\n\nThe revised record still has to be coded, gated and reviewed again before it is accepted.",
+  "ttft_ms": 12925,
+  "type": "result",
+  "duration_ms": 34240,
+  "uuid": "6a81d811-3f32-41ec-8d4c-6c495e338e5f",
+  "ttft_stream_ms": 1948,
+  "time_to_request_ms": 630,
+  "time_to_request_phases_ms": {
+   "other": 5,
+   "system_prompt": 80,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 17,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "transcript_persist": 23,
+   "tool_pool_refresh": 2,
+   "init_message": 4,
+   "init_frame_send": 6,
+   "engine_pickup": 9,
+   "loop_entry": 5,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 453,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 4,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 65,
+  "time_to_request_cpu_ms": 462,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 18,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 4,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 5,
+   "render_ms": 2,
+   "producers": 43,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 3,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 3,
+   "new_schemas": 3
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1949,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42083,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004642880000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5": {
+    "inputTokens": 4,
+    "outputTokens": 3721,
+    "cacheReadInputTokens": 48130,
+    "cacheCreationInputTokens": 46972,
+    "webSearchRequests": 0,
+    "costUSD": 0.5058218,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1124,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 46972,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "credential_expires_at": "2026-12-13T06:05:43.813Z"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

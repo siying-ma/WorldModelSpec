@@ -1,0 +1,366 @@
+{
+ "node_id": "NRS_484B_507_1",
+ "law_refs": [
+  "NRS-484B-507-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person shall not stop, stand or park a vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "s2",
+   "text": "for any purpose or length of time",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "other than for the expeditious",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "unloading and delivery or pickup and loading of materials",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "in any place marked as a freight curb loading zone",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "during hours when the provisions applicable to such zones are in effect.",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "The driver of a vehicle",
+   "role": "exception"
+  },
+  {
+   "id": "s8",
+   "text": "may stop temporarily",
+   "role": "standard"
+  },
+  {
+   "id": "s9",
+   "text": "at a place marked as a freight curb loading zone",
+   "role": "exception"
+  },
+  {
+   "id": "s10",
+   "text": "for the purpose of and while actually engaged in loading or unloading passengers,",
+   "role": "exception"
+  },
+  {
+   "id": "s11",
+   "text": "when such stopping does not interfere with",
+   "role": "standard"
+  },
+  {
+   "id": "s12",
+   "text": "any motor vehicle used for the transportation of materials",
+   "role": "exception"
+  },
+  {
+   "id": "s13",
+   "text": "which is waiting to enter or about to enter such zone.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.governs",
+    "dev.human_direction",
+    "dev.railway_signal_or_gate",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.yield_sign",
+    "rel.ahead_behind_in_lane",
+    "rel.occupies",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Stop' when prohibited is 'any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device' (DEF-NRS-484A-260, the definition the table resolves for 'stopping' in this law); 'stand' is 'the halting of a vehicle, whether occupied or not' (DEF-NRS-484A-250) and 'park' 'the standing of a vehicle' (DEF-NRS-484A-155): together a halt, drv.motion.complete_halt ('at rest at the observation ... its speed at or below a tolerance', p.halt_speed_tolerance). The definition's exclusions are carried beside it: a halt with another road user ahead in the same lane (rel.ahead_behind_in_lane) within p.queue_halt_gap of the body (rel.surface_gap, 'distance between the nearest points of two bodies', not a centre distance) avoids conflict with other traffic; a halt on a travel region the subject occupies (rel.occupies, st.travel_region) governed (dev.governs) by a stop sign, a yield sign, a traffic signal showing red or yellow, a railway signal flashing or a gate not up, or a police officer's stop indication (dev.stop_sign, dev.yield_sign, dev.traffic_signal, dev.railway_signal_or_gate, dev.human_direction) complies with a device or an officer. 'Vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "sig.door_open",
+    "ru.truck",
+    "ru.commercial_motor_vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "The purpose 'unloading and delivery or pickup and loading of materials' is read by the conduct it explains: a halt (drv.motion.complete_halt) during which a door of the vehicle is open (sig.door_open, 'a door open'), made by a vehicle built or licensed to carry goods (ru.truck, 'motor vehicle for carrying goods, with a body built for that purpose'; ru.commercial_motor_vehicle, 'vehicle over the jurisdiction's commercial mass class or marked as commercially licensed'), which tells the loading of materials from the loading of passengers that s10 excepts on its own terms. The freight zone is 'for the exclusive use of vehicles during the loading or unloading of freight' (DEF-NRS-484B-023)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "'Freight curb loading zone' is 'a space adjacent to a curb for the exclusive use of vehicles during the loading or unloading of freight' (DEF-NRS-484B-023): st.curb_zone of kind freight_loading, 'a signed or marked length of curb', which the subject's footprint overlaps (rel.occupies). The marking is the evidence of the designation."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "prim.conditions_hold",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The hours of the zone are those its posting states: a zone sign of kind parking_restricted (dev.zone_sign, with its 'conditions attribute ... a list of time windows'; an unrestricted legend is 'the empty set (unconditional)') governing (dev.governs) a travel region (st.travel_region) the subject occupies (rel.occupies); whether its hours hold now is prim.conditions_hold, never the sign itself (dev.zone_sign is 'not a stand-in for whether the condition holds now')."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Driver' is 'every person who drives or is in actual physical control of a vehicle' (DEF-NRS-484A-080): a role, read through the vehicle's controlled motion; 'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle. The driver is the subject's own vehicle."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "The same freight_loading curb zone (st.curb_zone, 'a signed or marked length of curb') the subject's footprint overlaps (rel.occupies), re-bound with the selection of s5."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "sig.door_open"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "The purpose and engagement 'in loading or unloading passengers' are read by the conduct: a door of the halted vehicle (drv.motion.complete_halt) open (sig.door_open, 'a door open') during the halt, the act through which passengers board or alight."
+  },
+  {
+   "span": "s12",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+    "ru.truck"
+   ],
+   "derived": [],
+   "justification": "'Motor vehicle' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'); a motor vehicle 'used for the transportation of materials' is the class whose contract is exactly that: ru.truck, 'motor vehicle for carrying goods, with a body built for that purpose', carried beside the aggregate, not in place of it."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone",
+    "st.region_geometry"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'Waiting to enter or about to enter such zone' is read by the conduct: the goods vehicle does not overlap the zone (rel.occupies, st.curb_zone of kind freight_loading, the zone of s5) and is halted (drv.motion.complete_halt) with the ground distance from its body to the zone (st.region_geometry, 'the ground distance from a road user's body outline to it') within p.zone_entry_wait_reach. The relation is the distance the words imply ('waiting to enter'), not a belonging."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "expeditious",
+   "concepts": [
+    "drv.motion.parked"
+   ],
+   "params": [
+    "p.commercial_loading_max_halt",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "commercial loading zone time limit: a halt counts as expeditious loading or unloading of materials while it has not lasted as long as the thirty-minute limit common to commercial loading zones, i.e. while the subject is not at rest at every observation of a window of length p.commercial_loading_max_halt behind the observation (drv.motion.parked)",
+   "surrogate": false
+  },
+  {
+   "span": "s8",
+   "standard": "temporarily",
+   "concepts": [
+    "drv.motion.parked"
+   ],
+   "params": [
+    "p.standing_min_duration",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "curbside passenger pick-up dwell: a stop counts as temporary while it has not lasted as long as a passenger pick-up dwell, i.e. while the subject is not at rest at every observation of a window of length p.standing_min_duration behind the observation (drv.motion.parked)",
+   "surrogate": false
+  },
+  {
+   "span": "s11",
+   "standard": "does not interfere with",
+   "concepts": [
+    "drv.motion.complete_halt",
+    "st.region_geometry",
+    "rel.occupies"
+   ],
+   "params": [
+    "p.zone_entry_wait_reach",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "queueing at a curb space: a stop interferes with a goods vehicle where, at some observation of the stop so far, that vehicle stands halted outside the zone within one passenger-car length plus a queue spacing of it (p.zone_entry_wait_reach), the place a vehicle waits to take the space",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s2",
+   "why": "'For any purpose or length of time' excludes no halt: every halt is within the prohibition whatever its purpose and length, so the duty is the same whether or not these words are read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) whose footprint overlaps (rel.occupies) a curb zone z of kind freight_loading (st.curb_zone), and the zone's provisions are in effect: every zone sign of kind parking_restricted (dev.zone_sign) that governs (dev.governs) a travel region (st.travel_region) the subject occupies has its conditions holding for the subject (prim.conditions_hold); where no such sign governs, the marked zone is read as in effect at all hours.",
+ "obligation": "Wherever the subject occupies such a zone z in effect (selected again as in the applicability), the subject is not halted (drv.motion.complete_halt with p.halt_speed_tolerance), except a halt that is (a) to avoid conflict with other traffic: some other road user is ahead of the subject in the same lane (rel.ahead_behind_in_lane) with a gap between bodies (rel.surface_gap) at most p.queue_halt_gap; or (b) in compliance with a device or an officer: a travel region the subject occupies is governed (dev.governs) by a stop sign, a yield sign, a traffic signal displaying a red or yellow indication or flashing_red, a railway signal or gate with lights flashing or gate not up, or a person in the role police_officer giving the indication stop; or (c) expeditious loading of materials: the subject is a truck or a commercial motor vehicle (ru.truck or ru.commercial_motor_vehicle), it is not parked with min_duration p.commercial_loading_max_halt (drv.motion.parked), and a door of the subject is open (sig.door_open) at some observation of the same halt, before or after the observation; or (d) a temporary stop for passengers: the subject is not parked with min_duration p.standing_min_duration, a door of the subject is open at some observation of the same halt, before or after the observation, and at no observation of the halt up to the judged one is there a road user other than the subject that is a motor vehicle (ru.aggregate DEF-NRS-484A-130::motor_vehicle) and a truck (ru.truck), whose footprint does not overlap z, which is halted (drv.motion.complete_halt), and whose body's ground distance to z (st.region_geometry) is at most p.zone_entry_wait_reach.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap",
+  "p.commercial_loading_max_halt",
+  "p.standing_min_duration",
+  "p.zone_entry_wait_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'A person shall not stop, stand or park a vehicle' is read on the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s7",
+   "why": "'The driver of a vehicle' is read on the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "The loading or delivery of materials is read by the conduct it explains: a door open during the halt of a truck or a commercial motor vehicle; a delivery made from a passenger car is not told from a passenger pick-up and is judged under the passenger exception.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s10",
+   "why": "The purpose of and engagement in loading or unloading passengers are read by a door of the halted vehicle open during the halt.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s13",
+   "why": "'Waiting to enter or about to enter' is read by the conduct it leads to: a goods vehicle halted outside the zone within the waiting reach of it; one still moving toward the zone is not read as waiting.",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s5",
+   "why": "'Marked as' a freight curb loading zone is read from the presence of the curb zone of that kind.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A passenger car halts inside a freight_loading curb zone that no sign governs, for longer than the standing duration, doors closed; no road user ahead and no stop control governs its lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A truck halts in the zone with its curb-side door open and moves off before the commercial loading duration has elapsed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A passenger car halts at a curb where there is no curb zone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A passenger car halts in the zone briefly, shorter than the standing duration, and the source does not observe its doors.",
+   "masked": [
+    "sig.door_open"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A passenger car halts briefly in the zone with a door open while a truck stands halted just outside the zone, within the waiting reach of it."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A passenger car halts briefly in the zone with a door open; no other road user is in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source (sensor or simulator specification)"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "HCM queue spacing of stopped vehicles"
+  },
+  {
+   "name": "p.commercial_loading_max_halt",
+   "unit": "s",
+   "value": 1800.0,
+   "convention": "the longest halt of a commercial vehicle counted as expeditious loading or unloading of goods or passengers: the thirty-minute limit common to commercial loading zones",
+   "source": "municipal commercial loading zone time limits"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "curbside passenger pick-up dwell observations (ITE curbside management practice)"
+  },
+  {
+   "name": "p.zone_entry_wait_reach",
+   "unit": "m",
+   "value": 10.0,
+   "convention": "the ground distance from a halted vehicle's body to a curb zone within which the vehicle counts as waiting to enter the zone: about one design passenger-car length plus the spacing of halted vehicles in a queue",
+   "source": "AASHTO Green Book design vehicle dimensions; HCM queue spacing"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

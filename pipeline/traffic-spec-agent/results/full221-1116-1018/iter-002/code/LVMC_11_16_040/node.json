@@ -1,0 +1,257 @@
+{
+ "node_id": "LVMC_11_16_040",
+ "law_refs": [
+  "LVMC-11-16-040"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "The prima facie speed limit shall be fifteen miles per hour",
+   "role": "obligation"
+  },
+  {
+   "id": "d2",
+   "text": "when traversing any intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "d3",
+   "text": "or street or highway",
+   "role": "condition"
+  },
+  {
+   "id": "d4",
+   "text": "if during the last one hundred feet of his approach to such intersection",
+   "role": "condition"
+  },
+  {
+   "id": "d5",
+   "text": "the driver",
+   "role": "subject"
+  },
+  {
+   "id": "d6",
+   "text": "does not have a clear and unobstructed view of such intersection",
+   "role": "condition"
+  },
+  {
+   "id": "d7",
+   "text": "and of any traffic upon all of the streets or highways entering such intersection",
+   "role": "condition"
+  },
+  {
+   "id": "d8",
+   "text": "for a distance of one hundred feet along all such streets or highways",
+   "role": "condition"
+  },
+  {
+   "id": "d9",
+   "text": "except on a through street or highway",
+   "role": "exception"
+  },
+  {
+   "id": "d10",
+   "text": "or at a traffic-controlled intersection",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed 'magnitude of velocity' in m/s is the speed the limit bounds; its exclusion of acceleration does not apply."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "st.intersection 'the region where two roadways meet' (DEF-NRS-484A-105 'the area embraced within the prolongation or connection of the lateral curb lines'); traversing it is the subject's footprint overlapping it (rel.occupies). Its exclusion 'a crosswalk or a stop line' does not apply: the region itself is read."
+  },
+  {
+   "span": "d4",
+   "atoms": [
+    "kin.path_length",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'the last one hundred feet of his approach' is a .path window, reading kin.path_length 'distance travelled along the body's path', ending at the observation at which the subject's occupancy of j (rel.occupies, st.intersection) rose; the window is the subject's own path before that entry."
+  },
+  {
+   "span": "d5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver' (DEF-NRS-484A-080 'every person who drives or is in actual physical control of a vehicle') is read through the controlled motion of the vehicle, the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate's exclusion of 'who drives or controls a vehicle' is respected: the role is read through motion, the aggregate gives the class."
+  },
+  {
+   "span": "d6",
+   "atoms": [
+    "st.sight_distance",
+    "st.region_geometry",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "st.sight_distance 'the distance along the road within which a vehicle at a point and another vehicle on the road could see each other ... whether or not any road user is there': the view of the intersection is clear where the sight distance at the subject's point is at least the ground distance from its body to j (st.region_geometry 'the ground distance from a road user's body outline to it'). Its exclusions (rel.visible, env.visibility) do not apply: the view of a place, not of an actual road user, is read."
+  },
+  {
+   "span": "d7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.visible",
+    "rel.occupies",
+    "st.on_way",
+    "st.highway",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic. The streets or highways entering j are the ways w (st.highway 'the entire public way between its boundary lines') with st.on_way(j, w) ('an intersection lies on every way that meets there'). A view of any traffic upon them is, for every traffic member o occupying w (rel.occupies) whose ground distance to j (st.region_geometry) is within one hundred feet, rel.visible(subject, o) 'an unobstructed line of sight from a's reference point to b's body'; its exclusion of the sight distance of a place does not apply since d8 carries that."
+  },
+  {
+   "span": "d8",
+   "atoms": [
+    "st.sight_along_way",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.sight_along_way 'the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen from the road user's eye ...; the smaller of the two directions' is read for every way w with st.on_way(j, w) and compared with the literal one hundred feet; its exclusions (st.sight_distance, rel.visible) do not apply: the sight along each entering way is what the words measure."
+  },
+  {
+   "span": "d9",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.traffic_signal",
+    "dev.governs",
+    "st.lane_enters",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "DEF-NRS-484A-275 'at the entrances to which vehicular traffic from intersecting highways is required by law to yield right-of-way to vehicles on such through highway in obedience to either an authorized stop sign or a yield sign, or other official traffic-control device': the subject's approach carrier c (the carrier it occupied, st.lane_enters(c, j), at the last observation before its entry into j) is governed (dev.governs) by no stop sign, yield sign or flashing-red traffic signal, while another carrier entering j is governed by one of them. Same reading as LVMC_11_12_070_B s7. dev.governs 'Not a stand-in for: a position' does not apply."
+  },
+  {
+   "span": "d10",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "A traffic-controlled intersection is one whose traffic a control device controls: a traffic signal ('a signal head') in a state other than dark, a stop sign or a yield sign governs (dev.governs: 'the travel regions whose traffic the device controls ... or an intersection') j itself or a carrier c with st.lane_enters(c, j). dev.governs 'no closure to the lanes that enter it' is respected by reading both the junction and the entering carriers explicitly."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "d3",
+   "why": "every intersection is, by DEF-NRS-484A-105, a junction of highways and streets; the words add no region beyond the intersection whose approach the condition measures, so the duty is the same whether or not they are read",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies an intersection j (st.intersection); and at some observation of the .path window of one hundred feet (kin.path_length) behind the observation at which its occupancy of j rose, the view was not clear: the subject's st.sight_distance was below its ground distance to j, or for some way w with st.on_way(j, w) its st.sight_along_way(w) was below one hundred feet, or some traffic member o (ru.aggregate DEF-NRS-484A-285::traffic) occupying such a w within one hundred feet of j (st.region_geometry distance) was not rel.visible from the subject; and not (d9) the subject's approach carrier at its entry into j was governed by no stop sign, yield sign or flashing-red signal while another carrier entering j was governed by one; and not (d10) a traffic signal in a state other than dark, a stop sign or a yield sign governs j or a carrier entering j.",
+ "obligation": "At every observation at which the subject occupies j, its kin.speed is at most fifteen miles per hour.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "d1",
+   "why": "a prima facie limit is read as a maximum: a speed above it is reported violated; the rebuttal a court may admit is not modelled",
+   "kind": "reading"
+  },
+  {
+   "span": "d5",
+   "why": "'the driver' is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "d9",
+   "why": "the legal designation 'through street or highway' is read through the devices on the road that display it (stop sign, yield sign, flashing-red signal governing the entering approaches)",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Uncontrolled intersection, hedges limit sight along the cross street to 20 m during the last 100 ft of the subject's approach; it traverses j above fifteen mph."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, traversing j at or below fifteen mph."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Same restricted view, but a traffic signal (circular_green) governs the subject's approach lane."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Uncontrolled intersection; the source does not supply sight along the ways, and the subject traverses above fifteen mph.",
+   "masked": [
+    "st.sight_along_way"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Uncontrolled intersection, no other road user in the scene; a wall limits sight along one cross way below one hundred feet during the last 100 ft of the approach; the subject traverses at or below fifteen mph. The traffic quantifier is empty and the verdict is still decided by the sight along the way."
+  }
+ ],
+ "literals": [
+  {
+   "span": "d1",
+   "text": "fifteen miles per hour",
+   "value": 15,
+   "unit": "mph"
+  },
+  {
+   "span": "d4",
+   "text": "one hundred feet",
+   "value": 100,
+   "unit": "ft"
+  },
+  {
+   "span": "d8",
+   "text": "one hundred feet",
+   "value": 100,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

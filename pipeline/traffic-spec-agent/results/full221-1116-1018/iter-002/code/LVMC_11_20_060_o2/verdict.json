@@ -1,0 +1,224 @@
+{
+ "verdict": "OK",
+ "details": [
+  "13 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "asm": "asm.business_or_residence_district"
+     },
+     {
+      "and": [
+       {
+        "or": [
+         {
+          "body": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "d"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          "exists_region": {
+           "lit": "driveway_or_alley_entrance"
+          },
+          "var": "d"
+         },
+         {
+          "body": {
+           "args": [
+            {
+             "var": "subject"
+            },
+            {
+             "var": "d"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          "exists_region": {
+           "lit": "alley"
+          },
+          "var": "d"
+         }
+        ]
+       },
+       {
+        "body": {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "s"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "sidewalk"
+        },
+        "var": "s"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.business_or_residence_district"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_20_060_o2",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-20-060"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "p"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "args": [
+          {
+           "var": "p"
+          },
+          {
+           "lit": "DEF-NRS-484A-165::pedestrian"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "not": {
+          "and": [
+           {
+            "cmp": "gt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              }
+             ],
+             "measure": "kin_speed"
+            },
+            "rhs": {
+             "param": "p.halt_speed_tolerance"
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "p"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "p"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        },
+        {
+         "not": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "p"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "p"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "741fb43967d66b033bba0a5f",
+  "candidate_digest": "fe52287461f53a62a5159abde05dc2034a7a9ad58e030f170de75f0663e2593f"
+ }
+}

@@ -1,0 +1,62 @@
+'TrafficSpec.Rules.NRS_484B_407.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_407.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_407","intentions":[],"laws":["NRS-484B-407"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"subject"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_yaw_rate_tol"}},{"and":[{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"curveWay"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"curveWay"}],"measure":"st_curvature"},"rhs":{"param":"p.curvature_resolution"}}]},"exists_region":{"lit":"roadway"},"var":"curveWay"},{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"crest"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.crest_near_reach"}},"exists_region":{"lit":"crest"},"var":"crest"}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"sightWay"}],"atom":"rel_occupies","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"sightWay"}],"measure":"st_sight_distance"},"rhs":{"lit":{"den":5,"num":762},"unit":"metre"}}]},"exists_region":{"lit":"roadway"},"var":"sightWay"}]}]}},"holds_for":"time","length":{"param":"p.vehicle_turn_window"},"subject":"subject"}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_407","intentions":[],"laws":["NRS-484B-407"],"narrowings":[],"obligation":{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_u_turn","params":[{"param":"p.vehicle_turn_window"},{"param":"p.u_turn_heading_min"},{"param":"p.turn_yaw_rate_tol"}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"subject"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_yaw_rate_tol"}},{"and":[{"or":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"curveWay"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"curveWay"}],"measure":"st_curvature"},"rhs":{"param":"p.curvature_resolution"}}]},"exists_region":{"lit":"roadway"},"var":"curveWay"},{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"crest"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.crest_near_reach"}},"exists_region":{"lit":"crest"},"var":"crest"}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"sightWay"}],"atom":"rel_occupies","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"sightWay"}],"measure":"st_sight_distance"},"rhs":{"lit":{"den":5,"num":762},"unit":"metre"}}]},"exists_region":{"lit":"roadway"},"var":"sightWay"}]}]}},"holds_for":"time","length":{"param":"p.vehicle_turn_window"},"subject":"subject"}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_407","intentions":[],"laws":["NRS-484B-407"],"narrowings":[],"obligation":{"not":{"rises":{"and":[{"and":[{"cmp":"ge","lhs":{"abs":{"args":[{"var":"subject"}],"params":[{"param":"p.vehicle_turn_window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"p.u_turn_heading_min"}},{"cmp":"le","lhs":{"abs":{"args":[{"var":"subject"}],"params":[{"param":"p.vehicle_turn_window"}],"quantity":"prim_heading_change"}},"rhs":{"sub":[{"lit":{"den":1,"num":360},"unit":"degree"},{"param":"p.u_turn_heading_min"}]}}]},{"cmp":"le","lhs":{"abs":{"args":[{"var":"subject"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_yaw_rate_tol"}}]}}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,kin_time,kin_yaw_rate,st_roadway,rel_occupies,st_curvature,st_crest,st_region_geometry_distance,st_sight_distance,drv_motion_u_turn
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.sight_distance
+MANIFEST	occasion_s3	
+MANIFEST	occasion_s3_outside	
+MANIFEST	occasion_s4	
+MANIFEST	occasion_s4_outside	
+MANIFEST	occasion_s5	
+MANIFEST	occasion_s5_outside	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?curveWay
+OCC	subject,curveWay
+OCC	curveWay
+OCC	?crest
+OCC	subject,crest
+OCC	?sightWay
+OCC	subject,sightWay
+OCC	sightWay
+OCC	subject
+LITERAL	762/5	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	7
+TIME	lint	264
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	62
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	60
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	60
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	63
+SCEN	occasion_s3	violated	violated	ok
+TIME	scenario:occasion_s3	60
+SCEN	occasion_s3_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s3_outside	61
+SCEN	occasion_s4	violated	violated	ok
+TIME	scenario:occasion_s4	92
+SCEN	occasion_s4_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s4_outside	93
+SCEN	occasion_s5	violated	violated	ok
+TIME	scenario:occasion_s5	61
+SCEN	occasion_s5_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s5_outside	60
+TIME	witnesses	672
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_407.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_407.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_407	7	9
+TIME	adequacy_start	13
+TIME	adequacy	4383
+DONE

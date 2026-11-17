@@ -1,0 +1,25 @@
+{
+ "reviewer_verdict": "accept",
+ "rulings": [],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "b8d4ae5b81009026b5663e8545d2bcd6df59b063ee3a6ffee285efcec63cfa22",
+ "rulings_at": 1,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "The harness requires consecutive observations in a look-back window to be at most half the window's length apart. The contract states no sampling-gap limit, but the harness rejected the sparse-window example as incomplete, so no divergence was confirmed.",
+   "The boundary test agreed with the contract: a speed above tolerance exactly min_duration before the current observation makes the body fail."
+  ],
+  "defer_stage": null
+ },
+ "rows": []
+}

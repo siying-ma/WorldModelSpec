@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.motion.parked.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.parked.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.parked.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"body":{"args":[{"var":"a"}],"derived":"drv_motion_complete_halt","params":[{"param":"speed_tol"}]},"holds_for":"time","length":{"param":"min_duration"},"subject":"a"},"contract":"Road user a is parked: \"the standing of a vehicle, whether occupied or not\", observed as a at rest at every observation of the window behind the observation, of length min_duration: at each of them a's speed (kin.speed, read through drv.motion.complete_halt) is at or below speed_tol. A halt shorter than min_duration, which may be the temporary halt the definition leaves out, is not denoted. It denotes a state at one observation: it says nothing of whether a rider is on a, of where a stands, or of why it stands. Not denoted: a road user whose speed was above speed_tol at some observation of that window. Where the window reaches before the start of the recording or a speed in it is unobserved, it is unknown.","definition":"DEF-NRS-484A-155","id":"drv.motion.parked","kind":"formula","narrowings":[],"params":[{"name":"speed_tol","unit":"metre_per_second"},{"name":"min_duration","unit":"second"}],"residues":["a purpose is not observable; the definition's exclusion of a temporary halt is read only by the halt's duration (min_duration): a halt held longer than min_duration while loading is denoted, a halt shorter than it for any purpose is not"],"supersedes":null}
+ATOMS	kin_time,drv_motion_complete_halt
+READS	kin_time,kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"body":{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tol"}},"holds_for":"time","length":{"param":"min_duration"},"subject":"a"}
+WITNESS	holds	drv.motion.parked@w
+WITNESS	fails	drv.motion.parked@w
+WITNESS	blind	drv.motion.parked@w
+OCC	a
+OCC	a
+INST	drv.motion.parked@w	ok
+TIME	checks	4
+TIME	lint	3
+SCEN	holds	drv.motion.parked@w	compliant	compliant	ok
+TIME	scenario:drv.motion.parked@w/holds	16
+SCEN	fails	drv.motion.parked@w	violated	violated	ok
+TIME	scenario:drv.motion.parked@w/fails	15
+SCEN	blind	drv.motion.parked@w	unknown	unknown	ok
+TIME	scenario:drv.motion.parked@w/blind	17
+TIME	witnesses	48
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.parked.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.parked.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.parked.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.parked@w	1	2
+TIME	adequacy_start	11
+TIME	adequacy	60
+DONE

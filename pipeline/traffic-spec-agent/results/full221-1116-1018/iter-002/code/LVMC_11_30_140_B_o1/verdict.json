@@ -1,0 +1,179 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "blind_person"
+           },
+           {
+            "var": "subject"
+           }
+          ]
+         }
+        },
+        {
+         "args": [
+          {
+           "var": "blind_person"
+          }
+         ],
+         "atom": "ru_pedestrian_with_white_cane_or_guide_animal",
+         "params": []
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "rises": {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "blind_person"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         }
+        },
+        {
+         "and": [
+          {
+           "rises": {
+            "cmp": "le",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "blind_person"
+              }
+             ],
+             "measure": "rel_centre_distance"
+            },
+            "rhs": {
+             "param": "p.blind_person_approach_reach"
+            }
+           }
+          },
+          {
+           "not": {
+            "args": [
+             {
+              "var": "subject"
+             }
+            ],
+            "derived": "drv_motion_complete_halt",
+            "params": [
+             {
+              "param": "p.halt_speed_tolerance"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "blind_person"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "lit": "DEF-NRS-484A-165::pedestrian"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "not": {
+           "args": [
+            {
+             "var": "subject"
+            }
+           ],
+           "atom": "ru_pedestrian_with_white_cane_or_guide_animal",
+           "params": []
+          }
+         }
+        ]
+       },
+       {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "lit": "DEF-NRS-484A-320::vehicle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       }
+      ]
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_30_140_B_o1",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-140-B"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "derived": "drv_motion_complete_halt",
+     "params": [
+      {
+       "param": "p.halt_speed_tolerance"
+      }
+     ]
+    },
+    "length": {
+     "param": "p.immediate_stop_window"
+    },
+    "subject": "subject",
+    "within": "time"
+   },
+   "residues": [
+    "'with wisdom' qualifies the person assisting, not the person protected; that the person assisted is wholly or partially blind and is being assisted is what identifies the protected person, and a helper's wisdom, a state of mind no trace shows, does not change that identification, so the duty owed to the person assisted is the same whether or not the helper's wisdom holds."
+   ],
+   "surrogate": false
+  },
+  "context": "5113ca4449397369297ebfe9",
+  "candidate_digest": "47051c0df001cbd1a72964258108415913e3f80e3f7d41ff03cc57ff0bc4d556"
+ }
+}

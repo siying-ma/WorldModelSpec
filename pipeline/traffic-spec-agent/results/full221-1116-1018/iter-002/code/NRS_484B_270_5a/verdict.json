@@ -1,0 +1,204 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": "tt",
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_270_5a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-270-5a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "implies": [
+     {
+      "cmp": "gt",
+      "lhs": {
+       "args": [
+        {
+         "var": "subject"
+        }
+       ],
+       "measure": "kin_speed"
+      },
+      "rhs": {
+       "param": "p.halt_speed_tolerance"
+      }
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "b"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "b"
+                },
+                {
+                 "lit": "DEF-NRS-484A-025::bicycle"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "b"
+                  },
+                  {
+                   "lit": "DEF-NRS-484B-017::electric_bicycle"
+                  }
+                 ],
+                 "atom": "ru_aggregate",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "b"
+                  },
+                  {
+                   "lit": "DEF-NRS-484B-018::electric_scooter"
+                  }
+                 ],
+                 "atom": "ru_aggregate",
+                 "params": []
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "cmp": "gt",
+             "lhs": {
+              "args": [
+               {
+                "var": "b"
+               }
+              ],
+              "measure": "kin_speed"
+             },
+             "rhs": {
+              "param": "p.halt_speed_tolerance"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "atom": "rel_contact",
+            "params": []
+           }
+          },
+          {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "var": "b"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "subject"
+                },
+                {
+                 "var": "b"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_centre_clearance"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "forall_user": "b"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "02aadc8d2f2d811ddba90ccc",
+  "candidate_digest": "39fb8e101a19be6fe15985764659485cc3ab830a87d5787a008c73daa28763c8"
+ }
+}

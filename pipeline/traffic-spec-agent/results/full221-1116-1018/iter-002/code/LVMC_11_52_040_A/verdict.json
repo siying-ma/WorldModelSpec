@@ -1,0 +1,238 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       }
+      ],
+      "derived": "drv_motion_parked",
+      "params": [
+       {
+        "param": "p.halt_speed_tolerance"
+       },
+       {
+        "param": "p.standing_min_duration"
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "rw"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "roadway"
+        },
+        "var": "rw"
+       },
+       {
+        "not": {
+         "body": {
+          "body": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "tr"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "var": "tr"
+                }
+               ],
+               "atom": "dev_governs",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "d"
+                },
+                {
+                 "lit": "angle_parking"
+                }
+               ],
+               "atom": "dev_regulatory_sign_code",
+               "params": []
+              }
+             ]
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "travel_region"
+          },
+          "var": "tr"
+         },
+         "exists_device": {
+          "lit": "regulatory_sign"
+         },
+         "var": "d"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_52_040_A",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-52-040-A"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-285::traffic"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "args": [
+          {
+           "var": "subject"
+          },
+          {
+           "var": "l"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "cmp": "ge",
+         "lhs": {
+          "add": [
+           {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "kin_heading"
+             },
+             {
+              "args": [
+               {
+                "var": "l"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "st_lane_direction"
+             }
+            ]
+           },
+           {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "kin_heading"
+             },
+             {
+              "args": [
+               {
+                "var": "l"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "st_lane_direction"
+             }
+            ]
+           }
+          ]
+         },
+         "rhs": {
+          "param": "p.parked_heading_cos"
+         }
+        }
+       ]
+      },
+      "forall_region": {
+       "lit": "travel_region"
+      },
+      "var": "l"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "ba7cd5e3d57bcaf4af750caa",
+  "candidate_digest": "00cd4b86447082f213fa35d826f98662051d3a47547f4da2c7f1800c4cc8aacc"
+ }
+}

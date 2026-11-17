@@ -1,0 +1,211 @@
+{
+ "node_id": "NRS_484B_203_1_o2",
+ "law_refs": [
+  "NRS-484B-203-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "h1",
+   "text": "Drivers of vehicles proceeding in opposite directions",
+   "role": "subject"
+  },
+  {
+   "id": "h2",
+   "text": "shall pass each other keeping to the right,",
+   "role": "sibling"
+  },
+  {
+   "id": "h3",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "h4",
+   "text": "upon highways having width for not more than one line of traffic in each direction,",
+   "role": "condition"
+  },
+  {
+   "id": "h5",
+   "text": "each driver shall give to the other at least one-half of the paved portion of the highway",
+   "role": "obligation"
+  },
+  {
+   "id": "h6",
+   "text": "as nearly as possible.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "h1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.oncoming"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'vehicles' is admitted as DEF-NRS-484A-320::vehicle, for the subject and the other. 'proceeding in opposite directions': rel.oncoming, 'headings opposed and closing'; its exclusion concerns the direction of approach to an intersection, which these words do not name. 'proceeding': the subject is not at rest (negation of drv.motion.complete_halt). 'Drivers' is read through the vehicles' controlled motion."
+  },
+  {
+   "span": "h4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "'highways having width for not more than one line of traffic in each direction': st.lane, 'a longitudinal strip of roadway for one line of vehicles', and st.lane_adjacency, 'the count of lanes in that direction', at most the stated figure, read on the lane the subject occupies (rel.occupies) on a highway (st.highway) it occupies."
+  },
+  {
+   "span": "h5",
+   "atoms": [
+    "st.centre_line",
+    "st.on_way",
+    "prim.region_lateral_offset",
+    "kin.extent",
+    "prim.closest_approach_within",
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [],
+   "justification": "'one-half of the paved portion of the highway': the half on the subject's side of st.centre_line, 'the marking, or the geometric centre, dividing the two directions of a two-way roadway', of the way the subject is on (st.on_way, 'the public way … a structure region lies on'). 'give to the other': the subject's body stays on its own half: prim.region_lateral_offset of the centre line from the subject ('signed lateral offset … left positive') is at least half the subject's full width (kin.extent). 'the other' is the oncoming vehicle met: it closes on the subject within a horizon (prim.closest_approach_within, centres under constant velocities, not a contact or clearance) or is alongside (rel.longitudinal_overlap)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "h6",
+   "standard": "as nearly as possible",
+   "concepts": [
+    "prim.region_lateral_offset",
+    "st.road_edge",
+    "st.region_geometry"
+   ],
+   "params": [
+    "p.lateral_position_tolerance"
+   ],
+   "convention": "The subject gives the other half of the paved portion as nearly as possible where its body crosses the centre line by no more than a lateral positioning tolerance p.lateral_position_tolerance, or where its body is already within that tolerance of the road edge on its right (st.road_edge, ground distance through st.region_geometry, on the right per prim.region_lateral_offset), so that no more room is available to it.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle that is not at rest (not drv.motion.complete_halt with p.halt_speed_tolerance), occupying a highway (rel.occupies, st.highway) and a lane (st.lane) whose lane count in its direction (st.lane_adjacency count) is at most one.",
+ "obligation": "For every road user c that is a vehicle, occupies the highway the subject occupies, is oncoming to the subject (rel.oncoming with p.oncoming_heading_cos) and is meeting it (prim.closest_approach_within(subject, c, p.meeting_horizon) or rel.longitudinal_overlap: projections share length), and for every centre line l lying on that highway (st.centre_line, st.on_way): prim.region_lateral_offset(l, subject) is at least half the subject's full width (kin.extent) less p.lateral_position_tolerance, or the subject's body is within p.lateral_position_tolerance of a road edge (st.road_edge, st.region_geometry distance) lying on its right (prim.region_lateral_offset negative). Violated where neither holds.",
+ "params": [
+  "p.oncoming_heading_cos",
+  "p.halt_speed_tolerance",
+  "p.meeting_horizon",
+  "p.lateral_position_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "h1",
+   "why": "'Drivers' is read through the vehicles' controlled motion, whoever or whatever controls them.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "h5",
+   "why": "'the paved portion of the highway' is read as the roadway the centre line divides; a paved shoulder is not added to either half. Its half is given while the other vehicle approaches within p.meeting_horizon or is alongside.",
+   "kind": "reading"
+  },
+  {
+   "span": "h6",
+   "why": "'as nearly as possible' is read through the subject's room to its right road edge; obstacles on the subject's half are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two-lane two-way road; the moving subject car straddles the centre line by 1 m while an oncoming car approaches 2 s away, with 2 m of room to its right road edge."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same road; the subject car keeps its body right of the centre line as the oncoming car passes."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car drives on a highway whose lane counts two lanes in its direction."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Two-lane road with an oncoming car approaching; the source maps regions without their outline (st.region_geometry absent), so the offset from the centre line is unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject car drives over the centre line on a two-lane road with no other vehicle in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A very narrow paved road; the subject's body crosses the centre line by 0.5 m while its right side is at the road edge, as an oncoming car passes."
+  }
+ ],
+ "literals": [
+  {
+   "span": "h4",
+   "text": "one",
+   "value": 1,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.oncoming_heading_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle off exactly opposed headings (about 25 degrees) at which two vehicles count as proceeding in opposite directions",
+   "source": "heading tolerance of road-geometry alignment; lane-change heading angles"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source"
+  },
+  {
+   "name": "p.meeting_horizon",
+   "unit": "s",
+   "value": 5.0,
+   "convention": "the time ahead within which two vehicles closing head-on on a narrow two-way road count as meeting, so that each keeps to its half: the decision-and-steering time of a driver adjusting lateral position",
+   "source": "AASHTO decision sight distance (avoidance manoeuvre times)"
+  },
+  {
+   "name": "p.lateral_position_tolerance",
+   "unit": "m",
+   "value": 0.3,
+   "convention": "the lateral margin within which a vehicle body counts as at a line or an edge: lane-keeping variability of a driven vehicle plus the source's position error",
+   "source": "lane-keeping lateral deviation studies"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

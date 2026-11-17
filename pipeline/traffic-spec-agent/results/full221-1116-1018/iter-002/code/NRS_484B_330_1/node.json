@@ -1,0 +1,216 @@
+{
+ "node_id": "NRS_484B_330_1",
+ "law_refs": [
+  "NRS-484B-330-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It is unlawful for a driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "to fail or refuse to comply with any signal",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "of an authorized flagger serving in a traffic control capacity",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "in a clearly marked area of highway construction or maintenance",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "or any other area which has been designated as a temporary traffic control zone.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'driver' is a role read through the vehicle's controlled motion, as the index maps 'The driver of a vehicle' (LVMC_11_20_060_o1)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.human_direction",
+    "dev.position",
+    "kin.position",
+    "kin.heading",
+    "kin.accel_longitudinal",
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "The flagger's signal is dev.human_direction's 'indication in {stop, proceed, slow, turn(dir)}'. Compliance is read in the subject's motion relative to the flagger's location (dev.position, 'location of the device head', used here as the flagger's place, not as a stop line): the flagger lies ahead of the subject where the vector from kin.position to dev.position has a positive component along kin.heading; passing the flagger is that component turning from positive to not positive. Slowing is read from kin.accel_longitudinal ('acceleration along heading, signed'; not a stand-in for speed); a turn from the heading change integrated from kin.yaw_rate (Term.headingSince)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "A flagger is dev.human_direction with role flagger ('a person directing traffic and the direction given'); serving in a traffic control capacity for the subject is the flagger governing (dev.governs) the travel region the subject occupies (rel.occupies, st.travel_region). Governance is control, not a position."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "dev.temporary_traffic_control",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "dev.temporary_traffic_control: 'cones, barricades, temporary signs and flashers marking works, a closure or an obstruction'. The area of highway construction or maintenance is a travel region lying on a highway (st.on_way, st.highway) that such a device governs (dev.governs) and the subject occupies (rel.occupies)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.zone_sign kind temporary_traffic_control, 'a sign that begins or ends a signed zone along the road', governing (dev.governs) the travel region the subject occupies: the designated temporary traffic control zone is read from its sign; a sign marking the zone's end ('end' attribute) does not designate it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate vehicle). At the judged observation the subject occupies a travel region r governed (dev.governs) by a dev.human_direction f with role flagger giving an indication, and r is governed by a dev.temporary_traffic_control device and lies on a highway, or is governed by a dev.zone_sign of kind temporary_traffic_control that does not mark the zone's end.",
+ "obligation": "Re-binding f by the same selection (the flagger governing the region the subject occupies, in such a zone), with 'ahead' meaning the vector from the subject's kin.position to f's dev.position has a positive component along the subject's kin.heading: (stop) it is not the case that f indicates stop at the judged and at the previous observation, f was ahead of the subject at the previous observation and is not ahead at the judged one (the subject passes a flagger showing stop); (slow) it is not the case that f indicates slow and is ahead of the subject while the subject's kin.accel_longitudinal is at or above p.speed_decrease_decel_min (the subject speeds up toward a flagger showing slow); (turn) it is not the case that the subject passes f (ahead at the previous observation, not ahead at the judged one) while f indicates turn(dir) and the subject's heading change since f's turn(dir) indication last rose (Term.headingSince with step p.heading_since_step_carla_scene_graph) is not a turn toward dir: for left at least p.turn_heading_min to the left, for right at least p.turn_heading_min to the right, for u_turn of magnitude at least p.u_turn_heading_min. A proceed indication requires no further act.",
+ "params": [
+  "p.speed_decrease_decel_min",
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_heading_min",
+  "p.u_turn_heading_min"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion, whoever or whatever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'authorized' and 'serving in a traffic control capacity' are the flagger's status and role, read through the flagger's presence directing the region the subject occupies.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "'clearly marked' is read through the presence of temporary traffic control devices governing the region; their clarity is not modelled.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "'designated' is read through the presence of a temporary traffic control zone sign governing the region.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "Compliance is read per indication: stop as not passing the flagger while the stop holds; slow as not speeding up toward the flagger; turn(dir) as having turned toward dir by the time the subject passes the flagger; proceed as a permission whose non-use is not judged.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies a lane governed by a dev.temporary_traffic_control device and by a flagger (dev.human_direction, role flagger) indicating stop; the flagger is ahead of the car, and the car drives past the flagger's position while the indication stays stop."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As in forbid, but the car halts short of the flagger and moves past only after the indication has changed to proceed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No flagger governs the car's lane; cones mark a work area."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the flagger's indication is not observed (dev.human_direction absent).",
+   "masked": [
+    "dev.human_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The flagger ahead indicates slow; the car's longitudinal acceleration stays above the threshold as it approaches the flagger."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The flagger indicates turn(left); the car drives straight past the flagger's position with almost no heading change since the indication began."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "A person directing traffic with role flagger governs the car's lane but no temporary traffic control device or temporary traffic control zone sign governs it."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_decrease_decel_min",
+   "unit": "m/s^2",
+   "value": 0.3,
+   "convention": "the longitudinal deceleration at or beyond which a sampled acceleration counts as a decrease of speed rather than noise or rolling resistance: the acceleration resolution of the source",
+   "source": "acceleration resolution of automotive perception and simulator sources"
+  },
+  {
+   "name": "p.turn_heading_min",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "the smallest heading change over the turn window at which a change of course counts as a turn rather than a lane change or a drift",
+   "source": "intersection turning geometry; lane-change heading changes stay well below it"
+  },
+  {
+   "name": "p.u_turn_heading_min",
+   "unit": "deg",
+   "value": 135.0,
+   "convention": "the smallest heading change magnitude over the turn window at which a turn counts as a reversal of direction",
+   "source": "intersection turning geometry"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

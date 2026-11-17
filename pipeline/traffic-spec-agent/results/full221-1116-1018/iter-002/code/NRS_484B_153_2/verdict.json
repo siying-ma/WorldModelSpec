@@ -1,0 +1,183 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "args": [
+     {
+      "var": "subject"
+     },
+     {
+      "lit": "traffic"
+     }
+    ],
+    "atom": "sig_door_open",
+    "params": []
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_153_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-153-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "not": {
+      "and": [
+       {
+        "and": [
+         {
+          "not": {
+           "same": [
+            {
+             "var": "c"
+            },
+            {
+             "var": "subject"
+            }
+           ]
+          }
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "c"
+             },
+             {
+              "lit": "DEF-NRS-484A-285::traffic"
+             }
+            ],
+            "atom": "ru_aggregate",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "lit": "DEF-NRS-484A-320::vehicle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "c"
+                }
+               ],
+               "derived": "drv_motion_complete_halt",
+               "params": [
+                {
+                 "param": "p.halt_speed_tolerance"
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "cmp": "gt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "c"
+              }
+             ],
+             "measure": "rel_longitudinal_overlap"
+            },
+            "rhs": {
+             "lit": {
+              "den": 1,
+              "num": 0
+             },
+             "unit": "metre"
+            }
+           },
+           {
+            "cmp": "le",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "c"
+              },
+              {
+               "lit": "lateral"
+              }
+             ],
+             "measure": "rel_surface_gap"
+            },
+            "rhs": {
+             "param": "p.door_swing_reach"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "forall_user": "c"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "6acf01d32341b11230315e46",
+  "candidate_digest": "4dc6c528743cee129557a5a83103fb29acbbd4cfcfb821dc35682fd2ded51c4c"
+ }
+}

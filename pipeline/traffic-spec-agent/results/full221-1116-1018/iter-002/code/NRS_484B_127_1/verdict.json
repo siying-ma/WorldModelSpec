@@ -1,0 +1,345 @@
+{
+ "verdict": "OK",
+ "details": [
+  "11 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": "tt",
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_127_1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-127-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "other"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "other"
+          },
+          {
+           "var": "subject"
+          }
+         ],
+         "atom": "rel_ahead_behind_in_lane",
+         "params": []
+        }
+       ]
+      },
+      {
+       "cmp": "ge",
+       "lhs": {
+        "args": [
+         {
+          "var": "subject"
+         },
+         {
+          "var": "other"
+         },
+         {
+          "lit": "longitudinal"
+         }
+        ],
+        "measure": "rel_surface_gap"
+       },
+       "rhs": {
+        "cond": {
+         "args": [],
+         "atom": "env_ice_or_snow",
+         "params": []
+        },
+        "else": {
+         "cond": {
+          "or": [
+           {
+            "args": [],
+            "atom": "env_wet_road",
+            "params": []
+           },
+           {
+            "args": [],
+            "atom": "env_precipitation",
+            "params": []
+           }
+          ]
+         },
+         "else": {
+          "add": [
+           {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               }
+              ],
+              "measure": "kin_speed"
+             },
+             {
+              "param": "p.following_headway_dry"
+             }
+            ]
+           },
+           {
+            "div": [
+             {
+              "sub": [
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 }
+                ]
+               },
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "other"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "other"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "add": [
+               {
+                "param": "p.following_decel_dry"
+               },
+               {
+                "param": "p.following_decel_dry"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "then": {
+          "add": [
+           {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "subject"
+               }
+              ],
+              "measure": "kin_speed"
+             },
+             {
+              "param": "p.following_headway_wet"
+             }
+            ]
+           },
+           {
+            "div": [
+             {
+              "sub": [
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "subject"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 }
+                ]
+               },
+               {
+                "mul": [
+                 {
+                  "args": [
+                   {
+                    "var": "other"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "other"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "add": [
+               {
+                "param": "p.following_decel_wet"
+               },
+               {
+                "param": "p.following_decel_wet"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "then": {
+         "add": [
+          {
+           "mul": [
+            {
+             "args": [
+              {
+               "var": "subject"
+              }
+             ],
+             "measure": "kin_speed"
+            },
+            {
+             "param": "p.following_headway_ice"
+            }
+           ]
+          },
+          {
+           "div": [
+            {
+             "sub": [
+              {
+               "mul": [
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  }
+                 ],
+                 "measure": "kin_speed"
+                },
+                {
+                 "args": [
+                  {
+                   "var": "subject"
+                  }
+                 ],
+                 "measure": "kin_speed"
+                }
+               ]
+              },
+              {
+               "mul": [
+                {
+                 "args": [
+                  {
+                   "var": "other"
+                  }
+                 ],
+                 "measure": "kin_speed"
+                },
+                {
+                 "args": [
+                  {
+                   "var": "other"
+                  }
+                 ],
+                 "measure": "kin_speed"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "add": [
+              {
+               "param": "p.following_decel_ice"
+              },
+              {
+               "param": "p.following_decel_ice"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       }
+      }
+     ]
+    },
+    "forall_user": "other"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "3cd7e9138e44c036b20d0600",
+  "candidate_digest": "f0094b8bde68974dc47ce3470c54f7eb9c16551d84f255e6f704ac3e09cb6c60"
+ }
+}

@@ -1,0 +1,254 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 13 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "not": {
+     "body": {
+      "not": {
+       "and": [
+        {
+         "cmp": "gt",
+         "lhs": {
+          "abs": {
+           "args": [
+            {
+             "var": "subject"
+            }
+           ],
+           "measure": "kin_yaw_rate"
+          }
+         },
+         "rhs": {
+          "param": "p.turn_yaw_rate_tol"
+         }
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "lit": "no_u_turn"
+             }
+            ],
+            "atom": "dev_regulatory_sign_code",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "d"
+               },
+               {
+                "var": "subject"
+               }
+              ],
+              "derived": "prim_conditions_hold",
+              "params": []
+             },
+             {
+              "or": [
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "travel_region"
+                },
+                "var": "r"
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "subject"
+                    },
+                    {
+                     "var": "i"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "var": "l"
+                       }
+                      ],
+                      "atom": "dev_governs",
+                      "params": []
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "l"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ],
+                        "atom": "st_lane_enters",
+                        "params": []
+                       },
+                       {
+                        "since": [
+                         {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "i"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "subject"
+                           },
+                           {
+                            "var": "l"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "lane"
+                   },
+                   "var": "l"
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "intersection"
+                },
+                "var": "i"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "exists_device": {
+          "lit": "regulatory_sign"
+         },
+         "var": "d"
+        }
+       ]
+      }
+     },
+     "holds_for": "time",
+     "length": {
+      "param": "p.vehicle_turn_window"
+     },
+     "subject": "subject"
+    }
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "NRS_484B_403_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-403-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "args": [
+      {
+       "var": "subject"
+      }
+     ],
+     "derived": "drv_motion_u_turn",
+     "params": [
+      {
+       "param": "p.vehicle_turn_window"
+      },
+      {
+       "param": "p.u_turn_heading_min"
+      },
+      {
+       "param": "p.turn_yaw_rate_tol"
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "f7fbb6d205c5833af0b53fb1",
+  "candidate_digest": "4a6bd68da14a3b89739be52f2b60a4c8d3aed06b4452f56b3dd6d14f71eb4184"
+ }
+}

@@ -1,0 +1,162 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "args": [
+        {
+         "var": "subject"
+        },
+        {
+         "var": "hw"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      "exists_region": {
+       "lit": "highway"
+      },
+      "var": "hw"
+     },
+     {
+      "and": [
+       {
+        "asm": "asm.within_city_limits"
+       },
+       {
+        "cmp": "gt",
+        "lhs": {
+         "args": [
+          {
+           "var": "subject"
+          }
+         ],
+         "measure": "kin_speed"
+        },
+        "rhs": {
+         "param": "p.halt_speed_tolerance"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.within_city_limits"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "subject"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "subject"
+    }
+   ],
+   "id": "LVMC_11_22_020",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-22-020"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "and": [
+       {
+        "not": {
+         "same": [
+          {
+           "var": "other"
+          },
+          {
+           "var": "subject"
+          }
+         ]
+        }
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "subject"
+           },
+           {
+            "var": "other"
+           }
+          ],
+          "atom": "rel_contact",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "subject"
+             },
+             {
+              "var": "other"
+             }
+            ],
+            "derived": "prim_closest_approach_within",
+            "params": [
+             {
+              "param": "p.conflict_horizon"
+             }
+            ]
+           },
+           {
+            "cmp": "lt",
+            "lhs": {
+             "args": [
+              {
+               "var": "subject"
+              },
+              {
+               "var": "other"
+              }
+             ],
+             "params": [
+              {
+               "param": "p.conflict_horizon"
+              }
+             ],
+             "quantity": "prim_closest_approach_distance"
+            },
+            "rhs": {
+             "param": "p.conflict_centre_clearance"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "exists_user": "other"
+    }
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "context": "715ee403728b8e94d3f44a00",
+  "candidate_digest": "fa0e4d822db180aaf247668173511082393a320bd732c0d87acd3c1b48731c45"
+ }
+}

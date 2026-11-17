@@ -1,0 +1,126 @@
+{
+ "node_id": "NRS_484B_110",
+ "law_refs": [
+  "NRS-484B-110"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "No vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall at any time be driven",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "through or within a safety zone.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a defined term whose admitted aggregate is DEF-NRS-484A-320::vehicle; claimed as the aggregate. Same mapping as the index's 'No vehicle'."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'be driven' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven. Moving is the negation of drv.motion.complete_halt ('at rest at the observation ... its speed (kin.speed) at or below a tolerance'). 'at any time' makes every observation a judged one."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.safety_zone"
+   ],
+   "derived": [],
+   "justification": "'safety zone' (DEF-NRS-484B-057: 'the area officially set aside within a highway for the exclusive use of pedestrians and which is so plainly marked') is st.safety_zone, 'an area within the highway marked off for pedestrians only'; 'through or within' it is the vehicle's footprint overlapping it (rel.occupies: 'a road user's footprint overlaps a lane / region (..., safety zone, ...)')."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) that is moving at the observation: not drv.motion.complete_halt(subject) with speed_tol = p.halt_speed_tolerance.",
+ "obligation": "At every such observation the subject's footprint overlaps no safety zone: for every region z of kind st.safety_zone, not rel.occupies(subject, z).",
+ "params": [
+  "p.halt_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'be driven' is read through the vehicle's motion: a moving vehicle is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "A safety zone 'officially set aside' and 'plainly marked' is read by the presence of the marked st.safety_zone region.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car moving at 8 m/s crosses a marked safety zone: its footprint overlaps the zone at several observations."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car moving at 8 m/s passes beside the safety zone, its footprint never overlapping it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car stays at rest at the curb for the whole recording."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car moves past a safety zone; the source does not report which regions the car's footprint overlaps.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; speed resolution of the acquisition standard"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

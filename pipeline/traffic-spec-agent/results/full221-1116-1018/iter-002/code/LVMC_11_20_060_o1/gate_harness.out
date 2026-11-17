@@ -1,0 +1,59 @@
+'TrafficSpec.Rules.LVMC_11_20_060_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_20_060_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.business_or_residence_district"],"binders":["subject"],"id":"LVMC_11_20_060_o1","intentions":[],"laws":["LVMC-11-20-060"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"asm":"asm.business_or_residence_district"},{"body":{"and":[{"rises":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"or":[{"body":{"args":[{"var":"subject"},{"var":"d"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"d"},{"body":{"args":[{"var":"subject"},{"var":"a"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"alley"},"var":"a"}]}]},"exists_region":{"lit":"sidewalk"},"var":"s"}]},"assumptions":["asm.business_or_residence_district"],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_20_060_o1","intentions":[],"laws":["LVMC-11-20-060"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"rises":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"or":[{"body":{"args":[{"var":"subject"},{"var":"d"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"d"},{"body":{"args":[{"var":"subject"},{"var":"a"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"alley"},"var":"a"}]}]},{"rises":{"not":{"since":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"and":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}]}]}}}]},"forall_region":{"lit":"sidewalk"},"var":"s"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"asm":"asm.business_or_residence_district"},{"body":{"and":[{"rises":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"or":[{"body":{"args":[{"var":"subject"},{"var":"d"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"d"},{"body":{"args":[{"var":"subject"},{"var":"a"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"alley"},"var":"a"}]}]},"exists_region":{"lit":"sidewalk"},"var":"s"}]},"assumptions":["asm.business_or_residence_district"],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_20_060_o1","intentions":[],"laws":["LVMC-11-20-060"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"rises":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"or":[{"body":{"args":[{"var":"subject"},{"var":"d"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"d"},{"body":{"args":[{"var":"subject"},{"var":"a"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"alley"},"var":"a"}]}]},{"rises":{"not":{"since":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"and":[{"and":[{"not":{"args":[{"var":"subject"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]},{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}]}]}}}]},"forall_region":{"lit":"sidewalk"},"var":"s"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_sidewalk,rel_occupies,st_driveway_or_alley_entrance,st_alley,st_region_geometry_distance,drv_motion_complete_halt
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	history_boundary	
+BOUNDARY	history_boundary
+OCC	subject
+OCC	?s
+OCC	subject,s
+OCC	?d
+OCC	subject,d
+OCC	?a
+OCC	subject,a
+OCC	?s
+OCC	subject,s
+OCC	?d
+OCC	subject,d
+OCC	?a
+OCC	subject,a
+OCC	subject,s
+OCC	subject,s
+OCC	subject,s
+OCC	subject,s
+OCC	subject
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	41
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	21
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	20
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	19
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	22
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	20
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	19
+SCEN	history_boundary	unknown	unknown	ok
+TIME	scenario:history_boundary	17
+TIME	witnesses	138
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_20_060_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_20_060_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_20_060_o1	12	5
+TIME	adequacy_start	5
+TIME	adequacy	819
+DONE

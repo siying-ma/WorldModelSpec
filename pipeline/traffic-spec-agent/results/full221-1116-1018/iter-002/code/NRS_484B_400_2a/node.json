@@ -1,0 +1,175 @@
+{
+ "node_id": "NRS_484B_400_2a",
+ "law_refs": [
+  "NRS-484B-400-2a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "intends to turn",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "at an intersection and:",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "Both intersecting highways are two-directional:",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "The approach for a left turn must be made in that portion of the right half of the highway nearest the centerline thereof.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.aggregate: 'membership of a legal aggregate'. The definitions table admits DEF-NRS-484A-320::vehicle for 'vehicle' (DEF-NRS-484A-320: 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway, except: (1) Devices moved by human power ...'); claimed as the aggregate, never expanded. 'driver' (DEF-NRS-484A-080: 'every person who drives or is in actual physical control of a vehicle') is a relational role read through the vehicle's controlled motion (observable_reading agency); the aggregate carries only the class."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.lane",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "st.intersection: 'the region where two roadways meet, bounded by the prolongation of their edges' (DEF-NRS-484A-105 'the area embraced within the prolongation or connection of the lateral curb lines ... of two highways which join one another'); i is the target region of the declared intention and the region whose entry ends the approach: the subject enters i at the observation e at which its footprint overlaps i (rel.occupies: 'a road user's footprint overlaps a lane / region') having not overlapped it at the observation before. Its approach is a carrier it occupies whose entrance end is i (st.lane_enters: 'the intersection region a directed approach carrier runs into at its entrance end'): a lane (st.lane) or a roadway recorded as a directed approach segment (st.roadway). st.intersection is 'not a stand-in for a crosswalk or a stop line'; st.lane_enters is 'not a stand-in for ... the subject's presence in the intersection'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.intersection",
+    "st.median_or_divider",
+    "st.lane",
+    "st.roadway",
+    "st.lane_direction"
+   ],
+   "derived": [],
+   "justification": "'two-directional' uses DEF-NRS-484B-073: 'an undivided highway upon which vehicles are allowed to proceed in opposite directions'. The intersecting highways are the highways i lies on (st.on_way: 'an intersection lies on every way that meets there'; st.highway: 'the entire public way between its boundary lines'). 'undivided' is read with DEF-NRS-484A-070 ('divided into two or more roadways by means of a physical barrier or dividing section'): no st.median_or_divider ('physical barrier or dividing section between roadways') lies on h. 'allowed to proceed in opposite directions' is two carriers lying on h (lanes or roadway directed segments) whose designated directions (st.lane_direction: 'direction of travel designated for a structure a vehicle travels in') are opposed, the cosine at or below minus p.lane_opposed_direction_cos. 'Both' is every highway i lies on. st.on_way is 'not a stand-in for nearness to a way': no distance is read."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_enters",
+    "st.lane_direction",
+    "st.on_way",
+    "st.highway",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "'centerline' uses DEF-NRS-484A-040: 'a continuous or broken line marked upon the surface of a highway by paint or otherwise to indicate each portion of a highway allocated to traffic proceeding in the two opposite directions'; the right half is therefore the carriers allocated to the subject's direction, and the side of the centerline is read by designated directions (st.lane_direction), not by a lane ordinal alone (st.lane: 'lane ordinal equals roadway half only on a two-lane road'). 'The approach for a left turn' is the approach that ends at the subject's entry into i: at the observation before entry the subject's footprint overlaps (rel.occupies) a carrier c entering i (st.lane_enters). 'that portion of the right half ... nearest the centerline' is the lane of the subject's direction next to the centerline: st.lane_adjacency, 'ordinal 1 is the leftmost lane, looking along the lane's direction'; where the subject occupies no lane entering i, a roadway directed approach segment entering i (st.roadway) carries a single line of traffic, itself that portion. 'in ... the right half' is also the subject occupying no lane or roadway segment lying on the same way as c (st.on_way, st.highway) whose designated direction is opposed to c's (cosine at or below minus p.lane_opposed_direction_cos). st.lane_adjacency is 'not a stand-in for the marking between two lanes'."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s2",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the left at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle). The judged observation e is one at which the subject's footprint overlaps an intersection i (rel.occupies) and did not at the observation before (its entry). int.left_turn(subject, i) is declared true at the observation before e (s2; the turn is the left turn s5 names). Every highway h that i lies on (st.on_way i h) is two-directional: no st.median_or_divider lies on h, and two lanes or roadway segments lying on h carry designated directions (st.lane_direction) whose cosine is at or below minus p.lane_opposed_direction_cos. Whether the entry occurred is unknown where the observation before e does not show the subject's place.",
+ "obligation": "At the observation before e the subject's footprint overlaps (rel.occupies) a carrier c entering i (st.lane_enters c i) that is the portion of the right half nearest the centerline: a lane of st.lane_adjacency ordinal 1, or, where the subject occupies no lane entering i, a roadway directed approach segment entering i; and the subject occupies no lane or roadway segment lying on the same highway as c (st.on_way) whose designated direction makes with c's a cosine at or below minus p.lane_opposed_direction_cos. Approaching only in a lane of higher ordinal, or with the footprint over an opposing carrier, violates the duty; an unobserved ordinal or direction makes it unknown where the verdict turns on it.",
+ "params": [
+  "p.lane_opposed_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'driver' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'The approach' is read at its end, the observation before the entry into the intersection; 'that portion ... nearest the centerline' is read at the granularity of lanes: the lane of the subject's direction next to the centerline, and, on an approach with a single line of traffic, that whole line. A lateral position within the lane is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two two-way undivided highways meet; two lanes of the subject's direction enter the intersection; the subject, with int.left_turn declared at the intersection, occupies the lane of ordinal 2 at the observation before it enters."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same layout; the subject occupies the lane of ordinal 1 and no opposing lane at the observation before it enters, with int.left_turn declared."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject enters from the lane of ordinal 2 with int.left_turn declared, but the cross street is one-way: its lanes carry no opposed directions."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same as forbid, but the source declares st.lane_adjacency absent, so the lane next to the centerline is unknown.",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Same layout as permit, but the subject's footprint also overlaps the opposing lane (its direction opposed to the subject's lane) at the observation before entry."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A st.median_or_divider lies on the highway the subject approaches on (a divided highway); the subject enters from lane 2 with int.left_turn declared."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.lane_opposed_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle (about twenty-five degrees) off exactly opposed at which the designated directions of two mapped lanes of one way count as opposite directions of travel: the direction noise of map lane segments along a gently curving way",
+   "source": "proposed this iteration by NRS_484B_307_8a_o2"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

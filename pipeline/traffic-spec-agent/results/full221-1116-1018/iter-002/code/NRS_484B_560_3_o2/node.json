@@ -1,0 +1,216 @@
+{
+ "node_id": "NRS_484B_560_3_o2",
+ "law_refs": [
+  "NRS-484B-560-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "When stopping is required",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "at a railroad crossing",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "the driver",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "shall keep as far to the right of the highway",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "as possible",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s7",
+   "text": "shall not form two lanes of traffic",
+   "role": "obligation"
+  },
+  {
+   "id": "s8",
+   "text": "unless the highway is marked for four or more lanes of traffic.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.governs",
+    "dev.railway_signal_or_gate",
+    "dev.stop_sign",
+    "dev.traffic_signal",
+    "dev.human_direction",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"Stopping\" (DEF-NRS-484A-260) is \"any halting, even momentarily, of a vehicle\"; that it is required is read through the devices in the scene that require a halt of the subject's traffic: dev.railway_signal_or_gate, \"the devices at a level crossing; lights in {flashing, dark}; gate in {up, lowering, down, raising, none}\", with lights flashing or the gate lowering or down; dev.stop_sign, \"regulatory sign requiring a full halt\"; dev.traffic_signal showing circular_red; dev.human_direction with indication stop and role police_officer or railroad_flagger. Each must govern (dev.governs, \"the travel regions whose traffic the device controls\") a travel region (st.travel_region) the subject's footprint overlaps (rel.occupies, \"a road user's footprint overlaps a lane / region\"). dev.governs is \"not a stand-in for a position\": the place of the stop is not read from governance but from s2's distance to the crossing. dev.traffic_signal is not a sign; the signal's state is read, not a sign's."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.railway_crossing",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "st.railway_crossing: \"level crossing of a railway with the roadway, and its nearest rail\"; \"railroad\" (DEF-NRS-484A-200) is \"a carrier of persons or property upon cars, other than streetcars, operated upon stationary rails\": a level crossing of a railway with the roadway is a railroad crossing, and a streetcar line laid along the street forms no level crossing of a railway with the roadway, so the definition's exclusion is already made by the contract. The subject is at the crossing where st.region_geometry, \"the ground distance from a road user's body outline to it (zero when they overlap)\", is within p.railroad_crossing_approach_reach; region_geometry is not a stand-in for occupancy, and no occupancy is read from it."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"Driver\" (DEF-NRS-484A-080) means \"every person who drives or is in actual physical control of a vehicle\": the duty binds the conduct of a vehicle, the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"); ru.aggregate is not a stand-in for the relational role of who drives, which is read through the vehicle's controlled motion (observable_reading, agency)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.same_direction",
+    "rel.longitudinal_overlap",
+    "rel.occupies",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "Two lanes of traffic are formed at the crossing where another member of \"traffic\" (DEF-NRS-484A-285, \"pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel\", the admitted aggregate) stands or moves beside the subject in a lane (st.lane, \"a longitudinal strip of roadway for one line of vehicles\"; rel.occupies), so that two lines of traffic face the crossing side by side: rel.same_direction, \"headings aligned: the cosine of the angle between the headings is above its tolerance\", and rel.longitudinal_overlap positive, \"the bodies overlap along the subject's heading (side by side)\" — a projection, \"neither a contact nor a distance between the bodies\", and only side-by-side position is read from it. The other road user is at the same crossing c where its body is within p.railroad_crossing_approach_reach of c (st.region_geometry, claimed with s2). Requiring the other to occupy a lane leaves out a pedestrian on a sidewalk, which forms no lane of traffic."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "st.lane",
+    "st.on_way",
+    "st.highway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "The highway the subject occupies (st.highway, rel.occupies) is marked for four or more lanes where at least four distinct lanes (st.lane, \"a longitudinal strip of roadway for one line of vehicles\") lie on it (st.on_way, \"the public way a structure region lies on\"), counted over both directions; st.lane is not a half of the roadway, and the count is of lane regions, not of lateral positions. The literal four is the text's figure."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle; its body is within p.railroad_crossing_approach_reach of a railroad crossing c (st.railway_crossing, st.region_geometry); and some device d governs (dev.governs) a travel region r whose footprint the subject overlaps (rel.occupies) and requires a halt of r's traffic at this observation: a dev.railway_signal_or_gate whose lights are flashing or whose gate is lowering or down, a dev.stop_sign, a dev.traffic_signal displaying circular_red, or a dev.human_direction of role police_officer or railroad_flagger with indication stop. Exception: the duty does not apply where the highway h the subject occupies has at least four pairwise distinct lanes lying on it (st.lane, st.on_way(l, h)).",
+ "obligation": "At every such observation, no road user v other than the subject (not same(v, subject)), a member of DEF-NRS-484A-285::traffic, occupying a lane (st.lane, rel.occupies), whose body is within p.railroad_crossing_approach_reach of the same crossing c, travels in the subject's direction (rel.same_direction with tolerance p.side_by_side_same_direction_cos) side by side with the subject (rel.longitudinal_overlap of subject and v positive). Where such a v exists the duty is violated; where none can exist it is complied with, also when the subject is alone.",
+ "params": [
+  "p.railroad_crossing_approach_reach",
+  "p.side_by_side_same_direction_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "\"the driver\" is read through the vehicle's controlled motion; whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s1",
+   "why": "That a device is official is read from its presence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s7",
+   "why": "Forming two lanes is read as the subject standing or moving side by side with another road user in a lane, both at the crossing; which of the two came alongside the other is not told apart, so both are held to have formed the second line.",
+   "kind": "reading"
+  },
+  {
+   "span": "s8",
+   "why": "\"marked\" lanes are read from the mapped lane regions: a represented lane is read as a marked one.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two-lane two-way highway (two lanes on the way); railway lights flashing govern the subject's lane; another car halts 10 m from the crossing in the right lane, and the subject car pulls up beside it in the opposing lane, same direction, longitudinal overlap 3 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same two-lane highway and flashing lights; the subject car halts in the right lane 8 m behind the other car (longitudinal overlap negative); no road user beside it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Lights dark and gate up at the crossing, no stop sign, red signal or stop direction governs the subject's lane; two cars pass side by side."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Flashing lights govern the subject's lane on a two-lane highway; another car halts beside it at the crossing in the same direction, but the longitudinal overlap is unobserved.",
+   "masked": [
+    "rel.longitudinal_overlap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "Four-lane highway (four lanes lie on the way, two per direction); flashing lights; the subject car halts in the left same-direction lane beside a car in the right lane."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Two-lane highway, flashing lights; the subject car halts alone at the crossing, no other road user in the scene."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s8",
+   "text": "four",
+   "value": 4,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.railroad_crossing_approach_reach",
+   "unit": "m",
+   "value": 15.2,
+   "convention": "the ground distance from a vehicle's body to a railroad grade crossing within which the vehicle is at the crossing, on the stretch where a halt for the crossing is made: the 50-ft outer bound of the zone in which grade-crossing practice places the halt before the nearest rail",
+   "source": "MUTCD Part 8 highway-rail grade crossing stop-line placement and the Uniform Vehicle Code grade-crossing stop zone"
+  },
+  {
+   "name": "p.side_by_side_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two road users standing or moving side by side count as travelling the same way: the heading spread of vehicles queued in adjacent lanes",
+   "source": "lane-change and queue heading variability in naturalistic driving data"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

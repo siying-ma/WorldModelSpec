@@ -1,0 +1,391 @@
+{
+ "node_id": "NRS_484B_307_8a_o3",
+ "law_refs": [
+  "NRS-484B-307-8a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Where the signal is a steady red signal alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "Vehicular traffic facing the signal",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "must stop before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made, or in the absence of any such crosswalk, sign or marking, then before entering the intersection,",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "and,",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s5",
+   "text": "except as otherwise provided in paragraphs (c) and (d) [(c) is appended below, NRS-484B-307-8d],",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "must remain stopped or standing until the green signal is shown.",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "After complying with the requirement to stop,",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "vehicular traffic facing such a signal and situated on the extreme right of the highway",
+   "role": "subject"
+  },
+  {
+   "id": "s9",
+   "text": "may proceed into the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s10",
+   "text": "for a right turn",
+   "role": "condition"
+  },
+  {
+   "id": "s11",
+   "text": "only when the intersecting highway is two-directional or one-way to the right,",
+   "role": "condition"
+  },
+  {
+   "id": "s12",
+   "text": "or vehicular traffic facing such a signal and situated on the extreme left of a one-way highway",
+   "role": "subject"
+  },
+  {
+   "id": "s13",
+   "text": "may proceed into the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s14",
+   "text": "for a left turn",
+   "role": "condition"
+  },
+  {
+   "id": "s15",
+   "text": "only when the intersecting highway is one-way to the left,",
+   "role": "condition"
+  },
+  {
+   "id": "s16",
+   "text": "but must yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s17",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s18",
+   "text": "to pedestrians and other traffic proceeding as directed by the signal at the intersection.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal, 'a signal head; state ∈ {circular_green, circular_yellow, circular_red, ...}; several states may be displayed at once': a steady red signal alone is circular_red and no other state (not flashing_red, and no arrow beside it). Same atom as the index for the signal words of NRS_484B_307_2a."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'Vehicular traffic': the admitted aggregates DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle, claimed as ru.aggregate, never expanded. 'facing the signal': the subject occupies (rel.occupies) a travel region c (st.travel_region) whose entrance end is intersection i (st.lane_enters; st.intersection) and which the head governs (dev.governs, 'the travel regions whose traffic the device controls'). Not a stand-in: dev.governs is not a position, st.lane_enters not presence in i. Same words, same atoms as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "prim.region_offset_along",
+    "rel.occupies",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.intersection",
+    "st.lane_direction",
+    "st.region_geometry",
+    "st.stop_line"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'After complying with the requirement to stop' refers to s3 of this line and requires the halt itself with every qualification s3 states: 'must stop before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made, or in the absence of any such crosswalk, sign or marking, then before entering the intersection'. A complete halt (drv.motion.complete_halt; DEF-NRS-484A-255, 'complete cessation from movement') at that place — the stop line (st.stop_line) recorded as marking c's entrance (st.entrance_of), else the crosswalk (st.crosswalk) marking it, else c's entrance end at i (st.intersection) — with the footprint not overlapping the region (rel.occupies), on its upstream side along c's direction (st.lane_direction, sign of prim.region_offset_along) and within p.stop_point_tolerance of it (st.region_geometry), on the approach that ends in this entry: the place, zone and history bound of NRS_484B_307_8a_o1. The halt itself, not compliance with that node, which a composed rule grants where it is not engaged."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_enters"
+   ],
+   "derived": [],
+   "justification": "'vehicular traffic': the admitted aggregates DEF-NRS-484A-285::traffic and DEF-NRS-484A-320::vehicle. 'facing such a signal': the steady red head governs (dev.governs) the carrier c the subject occupies (rel.occupies), whose entrance end is i (st.lane_enters). 'situated on the extreme right of the highway': c is a lane (st.lane, 'a longitudinal strip of roadway for one line of vehicles') whose ordinal equals the count of lanes in its direction (st.lane_adjacency, 'lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane'): the rightmost lane. Not a stand-in: lane membership is read from the ordinal, never from a lateral offset."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'may proceed into the intersection': the subject's entry into intersection i (st.intersection), its footprint coming to overlap i (rel.occupies) having occupied at the observation before the travel region c (st.travel_region) whose entrance end is i (st.lane_enters); the place at which the intention of s10 is declared. As the index maps 'may proceed straight through or turn right or left' (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.intersection",
+    "st.lane",
+    "st.lane_direction",
+    "st.median_or_divider"
+   ],
+   "derived": [],
+   "justification": "'the intersecting highway': each highway region (st.highway, 'the entire public way between its boundary lines') that i lies on (st.on_way, 'an intersection lies on every way that meets there') other than a highway c lies on. 'two-directional' (DEF-NRS-484B-073, 'an undivided highway upon which vehicles are allowed to proceed in opposite directions'): no median or dividing section (st.median_or_divider, 'physical barrier or dividing section between roadways') lies on it, and two lanes (st.lane) lying on it carry designated directions (st.lane_direction) whose cosine is below minus p.lane_opposed_direction_cos. 'one-way to the right': at least one lane lies on it and every lane lying on it carries a designated direction to the right of c's designated direction, the cross product of c's direction with the lane's (d_x times l_y minus d_y times l_x) being below minus p.cross_direction_sin_min. Not a stand-in: st.on_way is the way a region lies on, not nearness; st.lane_direction is local to its carrier."
+  },
+  {
+   "span": "s12",
+   "atoms": [
+    "dev.governs",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_enters",
+    "st.one_way_roadway"
+   ],
+   "derived": [],
+   "justification": "'vehicular traffic facing such a signal': as s8. 'situated on the extreme left': c is a lane (st.lane) of ordinal 1 (st.lane_adjacency, 'ordinal 1 is the leftmost lane'); 'of a one-way highway': the subject's footprint overlaps (rel.occupies) a one-way roadway (st.one_way_roadway, 'roadway on which traffic is restricted to one direction'), as the index maps 'Upon a highway designated and signposted for one-way traffic' (NRS_484B_220_1). Not a stand-in: lane membership is read from the ordinal, never from an offset."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "As s9: the subject's entry into i from c (rel.occupies rising; st.lane_enters; st.travel_region; st.intersection), the place at which the intention of s14 is declared."
+  },
+  {
+   "span": "s15",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.intersection",
+    "st.lane",
+    "st.lane_direction"
+   ],
+   "derived": [],
+   "justification": "'the intersecting highway': each highway region (st.highway) that i lies on (st.on_way) other than a highway c lies on. 'one-way to the left': at least one lane (st.lane) lies on it and every lane lying on it carries a designated direction (st.lane_direction) to the left of c's designated direction, the cross product of c's direction with the lane's being above p.cross_direction_sin_min. Not a stand-in: st.on_way is not nearness."
+  },
+  {
+   "span": "s16",
+   "atoms": [
+    "kin.speed",
+    "rel.contact"
+   ],
+   "derived": [],
+   "justification": "'must yield': kin.speed ('magnitude of velocity') tells a subject that moves on toward the other road user from one that holds back, and rel.contact ('the bodies of two road users ... touch or overlap (a collision)') is the crash precedence exists to avoid; not a stand-in for a near miss, which the operationalization of s17 reads. Same words, same atoms as the index (NRS_484B_307_2a)."
+  },
+  {
+   "span": "s18",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "kin.speed",
+    "rel.occupies",
+    "st.intersection",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.lane_enters",
+    "st.travel_region",
+    "dev.governs",
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "'pedestrians and other traffic': road users of the admitted aggregates DEF-NRS-484A-165::pedestrian and DEF-NRS-484A-285::traffic other than the subject. 'proceeding': moving, kin.speed above p.halt_speed_tolerance. 'as directed by the signal at the intersection': it overlaps (rel.occupies) intersection i (st.intersection) or a crosswalk (st.crosswalk) recorded as marking the entrance (st.entrance_of) of a travel region that enters i (st.lane_enters, st.travel_region), or it occupies a travel region c' entering i that is governed (dev.governs) by a head displaying a green indication (dev.traffic_signal: circular_green or green_arrow). Not a stand-in: st.entrance_of is the recorded association, never a distance."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s17",
+   "standard": "the right-of-way: DEF-NRS-484A-210, 'the right of one vehicle or pedestrian to proceed in a lawful manner in preference to another vehicle or pedestrian approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other'",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "kin.speed"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "traffic-conflict technique: the danger of a crash is a closest approach of the two centres, under constant velocities, within the time-to-collision horizon (p.conflict_horizon) at a centre distance below the conflict clearance (p.conflict_centre_clearance); the subject grants precedence where, while its speed is above the halt tolerance (p.halt_speed_tolerance), no such approach to the other road user arises. Direction, speed and proximity enter by degree through the constant-velocity extrapolation of both road users.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s10",
+   "id": "int.right_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the right at the target region, the plan's preparation for that turn included"
+  },
+  {
+   "span": "s14",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user includes a turn to the left at the target region, the plan's preparation for that turn included"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of the classes traffic and vehicle, approached intersection i through a travel region c whose entrance end is i (st.lane_enters) and which a traffic signal head s governs (dev.governs), and entered i (its footprint came to overlap i, having occupied c and not i at the observation before) at an observation at which s displayed a steady red alone (circular_red, no other state), after halting at the place of the stop on that approach (s7: the place, zone and history bound of NRS_484B_307_8a_o1); at that entry either (right) c is a lane whose ordinal equals the count of lanes in its direction, int.right_turn is declared true for the subject at i, and every highway i lies on other than one c lies on is two-directional (no median or divider lies on it; two lanes on it with directions opposed within p.lane_opposed_direction_cos) or one-way to the right (every lane on it points to the right of c's direction by more than p.cross_direction_sin_min); or (left) c is a lane of ordinal 1, the subject's footprint overlaps a one-way roadway, int.left_turn is declared true for the subject at i, and every such highway is one-way to the left. Its footprint has overlapped i at every observation since that entry, the judged one included.",
+ "obligation": "For every road user p other than the subject that is of the class pedestrian or of the class traffic and is proceeding as directed by the signal at i — its speed above p.halt_speed_tolerance, and either its footprint overlaps i or a crosswalk recorded as marking the entrance of a travel region that enters i, or it occupies a travel region c' entering i governed by a head that displays circular_green or a green_arrow: it is not the case that the subject's speed is above p.halt_speed_tolerance while the closest approach of the two centres lies within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance); and the subject's body does not touch p's (rel.contact).",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance",
+  "p.lane_opposed_direction_cos",
+  "p.cross_direction_sin_min",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s16",
+   "why": "'proceeding as directed by the signal at the intersection' is read through the signal state governing the other road user's approach (a green indication) where it approaches, and through its presence within the intersection or an adjacent crosswalk where it is there; a road user that entered against its own red and is now within the intersection is yielded to as well.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car halts with its body 1 m short of the stop line of the rightmost lane c (ordinal 2 of 2), int.right_turn declared at i, the cross street undivided with lanes in both directions; it enters i under circular_red alone at 4 m/s while a car on the cross street, on a lane entering i governed by a head displaying circular_green, approaches from the left at 12 m/s, the closest approach of their centres 1.5 s ahead at 1 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same right turn on red with no other road user in the scene: the duty binds the subject alone and is met."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car halts in lane c and enters i only after s displays circular_green alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but lane ordinals and counts are not observed: whether the car is on the extreme right is unknown (c is on no one-way roadway, so the left branch is decided false).",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but the car halted 15 m short of the stop line behind a queue and rolled into i without halting at the place: the halt the words require did not occur and the duty of this paragraph does not arise."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A car halts at the stop line of the leftmost lane (ordinal 1) of a one-way roadway, int.left_turn declared at i, every lane of the cross street pointing to its left; it enters i under circular_red alone at 5 m/s while a pedestrian walking at 1.3 m/s in the crosswalk marking the entrance of a cross-street lane into i is closing on its path, the closest approach of their centres 1.2 s ahead at 0.7 m."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; repeated unchanged"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "proposed this iteration by LVMC_11_20_060_o1; repeated unchanged"
+  },
+  {
+   "name": "p.lane_opposed_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle (about twenty-five degrees) off exactly opposed at which the designated directions of two mapped lanes of one way count as opposite directions of travel: the direction noise of map lane segments along a gently curving way",
+   "source": "map lane-direction tolerance, matching the catalogue's tolerance for opposed vehicle headings (p.oncoming_heading_cos)"
+  },
+  {
+   "name": "p.cross_direction_sin_min",
+   "unit": "ratio",
+   "value": 0.5,
+   "convention": "sine of the smallest angle (thirty degrees) by which a way's designated direction lies to one side of an approach's designated direction for that way's traffic to count as flowing to that side: the legs of a junction meet at larger angles, and map direction noise is far smaller",
+   "source": "intersection design guidance limiting the skew of junction legs"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "proposed this iteration by LVMC_11_12_070_B; repeated unchanged"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "proposed this iteration by LVMC_11_12_070_B; repeated unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,132 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (holds_wrongly) at t=6000 ms: A continuous leftward turn is already under way at t=0 and is still under way at t=4000 ms; the first stopped observation is t=6000 ms. The act began before the four-second window behind that observation, but the body recognizes the in-band remainder of the turn. — contract: fails, body: holds; contract: \"The act begins within the window behind the observation at which it is recognized.\"",
+   "ruling": "dismissed",
+   "why": "The contract says conduct before the window is not read, and states the recognition condition in terms of the window alone. In the executed facts that condition holds at t=6000 ms and did not hold at t=4000 ms: yaw rate 30 deg/s at 2000 and 4000 ms gives an in-band heading change, then yaw rate 0 at 6000 ms. A reasonable reading therefore treats the recognized act as the turning within the window, so it begins there, and gives the body's verdict. — \"Conduct before the window behind is not read\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "ec4a2f3b8899b41a1614167971dd5fd6b5f5706717ccf845aa5d2610bd9064ee",
+ "rulings_at": 1,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "dismissed: divergence 1 (holds_wrongly) at t=6000 ms: A continuous leftward turn is already under way at t=0 and is still under way at t=4000 ms; the first stopped observation is t=6000 ms. The act began before the … — contract: fails, body: holds; contract: \"The act begins within the window behind the observation at which it is recognized.\" — The contract says conduct before the window is not read, and states the recognition condition in terms of the window alone. In the executed facts that condition holds at t=6000 ms and did not hold at t=4000 ms: yaw rate 30 deg/s at 2000 and 4000 ms gives an in-band heading change, then yaw rate 0 at 6000 ms. A reasonable reading therefore treats the recognized act as the turning within the window, so it begins there, and gives the body's verdict. — \"Conduct before the window behind is not read\""
+  ],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "aff197ace2210f598186",
+   "row": {
+    "key": "concept:drv.motion.left_turn",
+    "subject": "drv.motion.left_turn",
+    "iteration": 2,
+    "item": "divergence 1 (holds_wrongly) at t=6000 ms: A continuous leftward turn is already under way at t=0 and is still under way at t=4000 ms; the first stopped observation is t=6000 ms. The act began before the four-second window behind that observation, but the body recognizes the in-band remainder of the turn. — contract: fails, body: holds; contract: \"The act begins within the window behind the observation at which it is recognized.\"",
+    "ruling": "dismissed",
+    "reason": "The contract says conduct before the window is not read, and states the recognition condition in terms of the window alone. In the executed facts that condition holds at t=6000 ms and did not hold at t=4000 ms: yaw rate 30 deg/s at 2000 and 4000 ms gives an in-band heading change, then yaw rate 0 at 6000 ms. A reasonable reading therefore treats the recognized act as the turning within the window, so it begins there, and gives the body's verdict. — \"Conduct before the window behind is not read\"",
+    "schema": "concept_case/1",
+    "case_id": "5f99e842e0c68be9440601792dfba1b48b11d5ee40f4efb8a9e210317b0506ac",
+    "kind": "holds_wrongly",
+    "situation": "A continuous leftward turn is already under way at t=0 and is still under way at t=4000 ms; the first stopped observation is t=6000 ms. The act began before the four-second window behind that observation, but the body recognizes the in-band remainder of the turn.",
+    "contract_words": "The act begins within the window behind the observation at which it is recognized.",
+    "contract_verdict": "fails",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "window": [
+       4,
+       "s"
+      ],
+      "turn_min": [
+       45,
+       "deg"
+      ],
+      "u_turn_min": [
+       135,
+       "deg"
+      ],
+      "yaw_tol": [
+       1,
+       "deg/s"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "yaw_rate": 30
+         }
+        }
+       ]
+      },
+      {
+       "t": 2000,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "yaw_rate": 30
+         }
+        }
+       ]
+      },
+      {
+       "t": 4000,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "yaw_rate": 30
+         }
+        }
+       ]
+      },
+      {
+       "t": 6000,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "yaw_rate": 0
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 6000,
+    "verdict": "compliant",
+    "value": null,
+    "contract_digest": "139470b7a1b4fcdd6a77be1938dde488986521edaf6911db58e780e4d6495c9d",
+    "body_digest": "860e9e3c54ed63265ca65f7c4eb3c20c9edd718df26a1ebe9cef122341105fb5",
+    "obligation": null,
+    "ruling_id": "aff197ace2210f598186",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

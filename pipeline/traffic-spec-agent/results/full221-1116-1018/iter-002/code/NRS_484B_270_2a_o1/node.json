@@ -1,0 +1,205 @@
+{
+ "node_id": "NRS_484B_270_2a_o1",
+ "law_refs": [
+  "NRS-484B-270-2a"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "When overtaking or passing",
+   "role": "trigger"
+  },
+  {
+   "id": "a2",
+   "text": "a bicycle, an electric bicycle or an electric scooter",
+   "role": "trigger"
+  },
+  {
+   "id": "a3",
+   "text": "proceeding in the same direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "a4",
+   "text": "the driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "a5",
+   "text": "shall exercise due care and:",
+   "role": "obligation"
+  },
+  {
+   "id": "a6",
+   "text": "If there is more than one lane for traffic proceeding in the same direction,",
+   "role": "sibling"
+  },
+  {
+   "id": "a7",
+   "text": "move the vehicle to the lane to the immediate left,",
+   "role": "sibling"
+  },
+  {
+   "id": "a8",
+   "text": "if the lane is available and moving into the lane is reasonably safe.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'overtaking or passing' a road user proceeding the same way is drv.interaction.overtake_pass(subject, r): 'a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'; it denotes the relative motion only and says nothing of lanes, which the words here do not name. The pass is under way while the bodies are side by side (rel.longitudinal_overlap at or above zero: 'the bodies overlap along the subject's heading (side by side)'; a projection, not a contact or a distance), within the window behind the pass's recognition."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'a bicycle' is DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride'), 'an electric bicycle' DEF-NRS-484B-017::electric_bicycle ('a device upon which a person may ride, having two or three wheels ...'), 'an electric scooter' DEF-NRS-484B-018::electric_scooter ('a vehicle with handlebars and an electric motor that is designed to be ridden on'); each admitted aggregate claimed whole; the overtaken road user is a member of any of them."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "rel.same_direction",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'proceeding' is the overtaken road user moving (kin.speed above the halt tolerance); 'in the same direction' is rel.same_direction ('headings aligned: the cosine of the angle between the headings is above its tolerance') between the subject and it, with the overtaking heading tolerance."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'a motor vehicle' is DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter'). 'the driver' is read through the vehicle's controlled motion."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "a5",
+   "standard": "shall exercise due care",
+   "concepts": [
+    "rel.contact",
+    "kin.accel_longitudinal",
+    "rel.longitudinal_overlap"
+   ],
+   "params": [
+    "p.rider_evasive_decel"
+   ],
+   "convention": "traffic-conflict technique: the pass is made with due care where the subject's body never touches the overtaken rider's (rel.contact) and the rider is never made to brake harder than an evasive deceleration (kin.accel_longitudinal below its negative) while the two are side by side (rel.longitudinal_overlap at or above zero); care is a state of mind, read only through this outcome",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of DEF-NRS-484A-130::motor_vehicle. At the observation, drv.interaction.overtake_pass(subject, r) rises, with window p.overtake_window and same_dir_cos p.overtake_same_direction_cos, for some road user r, not the subject, a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, which at some observation of the window behind of length p.overtake_window was moving (kin.speed above p.halt_speed_tolerance) with its heading aligned with the subject's (rel.same_direction, tolerance p.overtake_same_direction_cos).",
+ "obligation": "Surrogate. For every such r (re-bound with its whole selection): at every observation of the window behind of length p.overtake_window, the subject is not in contact with r (rel.contact), and wherever the two are side by side (rel.longitudinal_overlap at or above zero) r's longitudinal acceleration (kin.accel_longitudinal) is not below the negative of p.rider_evasive_decel.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.halt_speed_tolerance",
+  "p.rider_evasive_decel"
+ ],
+ "narrowings": [
+  {
+   "span": "a4",
+   "why": "'the driver' of a motor vehicle is read through the vehicle's controlled motion",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a5",
+   "why": "'due care' is read only through the pass's outcome for the rider: no contact and no evasive braking while side by side; other aspects of care are not observed and the rule is a surrogate"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A bicycle is ridden ahead of the subject car in the same direction; the subject car overtakes it and its side touches the bicycle while the two are side by side."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same pass, made without contact; the bicyclist keeps its speed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car overtakes another car; no bicycle, electric bicycle or electric scooter is in the scene. The duty binds the subject alone."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in permit, but the source does not observe contact between bodies.",
+   "masked": [
+    "rel.contact"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject car overtakes an electric scooter without touching it, but while they are side by side the rider brakes harder than the evasive deceleration."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "overtaking-duration figures (as proposed this iteration by LVMC_11_30_030)"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading figures (as proposed this iteration by LVMC_11_30_030)"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "source speed resolution (as proposed this iteration by LVMC_11_12_070_B)"
+  },
+  {
+   "name": "p.rider_evasive_decel",
+   "unit": "m/s^2",
+   "value": 2.0,
+   "convention": "the longitudinal deceleration of a bicycle or scooter rider beyond which its braking counts as an evasive reaction to another road user rather than ordinary speed control: about 0.2 g, above comfortable bicycle braking",
+   "source": "bicycle braking studies; traffic-conflict technique"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

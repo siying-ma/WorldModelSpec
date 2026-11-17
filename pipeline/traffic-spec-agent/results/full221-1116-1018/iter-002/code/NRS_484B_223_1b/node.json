@@ -1,0 +1,185 @@
+{
+ "node_id": "NRS_484B_223_1b",
+ "law_refs": [
+  "NRS-484B-223-1b"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a highway has two or more clearly marked lanes for traffic traveling in one direction,",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "vehicles must:",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "Not be moved from that lane until the driver has given the appropriate turn signal",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "and ascertained that such movement can be made with safety.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "The subject occupies (rel.occupies) a st.lane, 'a longitudinal strip of roadway for one line of vehicles', and st.lane_adjacency gives 'the count of lanes in that direction', which is at least the literal two. Same mapping as the index's 'which has two or more clearly marked lanes for traveling in the same direction' (NRS_484B_208_1). 'Traffic' is the admitted aggregate DEF-NRS-484A-285::traffic whose direction the lanes serve. 'Clearly marked' is the lanes' presence on the road (observable_reading status); lane_adjacency's 'Not a stand-in for: the marking between two lanes' does not apply, since the count of lanes is what is read."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'Vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle; ru.aggregate is 'true when the user carries an included class'."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ],
+   "derived": [
+    "drv.lane.entering_adjacent_lane"
+   ],
+   "justification": "A move from that lane is the subject, occupying the lane l1 of s1, coming to overlap its neighbouring lane of the same direction: drv.lane.entering_adjacent_lane(subject, l1, l2, side), read at the observation at which it holds, with side left or right. The appropriate signal is the one for the side of the move: sig.turn_indicator, 'the turn indicator state ∈ {off, left, right}', showing that side, or sig.hand_signal, 'a driver's or rider's arm signal; meaning ∈ {..., left, right, ...}', meaning it; 'until ... has given' places it before the move: at the observation of the move and at the one before it. The indicator's exclusion (not the lane change itself) does not apply: the signal is read beside the move."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "such movement can be made with safety",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.contact"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "traffic-conflict technique: at the observation the move begins, no other road user is in contact with the subject and none approaches the subject's centre, under constant velocities, within the conflict horizon to a centre distance below the conflict clearance",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle, occupies a lane l1 whose direction has at least two lanes (st.lane_adjacency count, literal 2), and at the observation it begins to move into the neighbouring lane l2 of the same direction on side s (drv.lane.entering_adjacent_lane(subject, l1, l2, s), s left or right).",
+ "obligation": "At that observation and at the observation before it, the subject's turn indicator shows s or its hand signal means s; and at that observation no other road user is in contact with the subject (rel.contact) or has a closest approach to it within p.conflict_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'clearly marked' is read through the lanes' presence on the road",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'the appropriate turn signal' is read as the indicator or arm signal of the side of the move, shown at the move and at the observation before it; its duration is not read here",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "'the driver' is read through the vehicle's controlled conduct",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'ascertained' is read through the outcome it secures: the movement made without a conflict",
+   "kind": "observable_reading",
+   "category": "perception"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a carriageway with two lanes in its direction the subject, in the right lane, comes to overlap the left lane while sig.turn_indicator is off and sig.hand_signal no_signal."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject's left indicator is on for 3 s before and during its move into the left lane; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject occupies a lane whose direction has one lane (st.lane_adjacency count 1) and keeps to it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject moves into the left neighbouring lane; sig.turn_indicator is not observed and sig.hand_signal reads no_signal; no other road user.",
+   "masked": [
+    "sig.turn_indicator"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The subject signals left and moves into the left lane while a faster vehicle there has a closest approach to it in 1 s at a centre distance of 1 m."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s1",
+   "text": "two",
+   "value": 2,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique literature (Hyden 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design vehicle dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,53 @@
+'TrafficSpec.Rules.NRS_484B_223_4b.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_223_4b.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"NRS_484B_223_4b","intentions":[],"laws":["NRS-484B-223-4b"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"body":{"and":[{"and":[{"args":[{"var":"l"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]}]},{"since":[{"not":{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"turn_lane"},"var":"l"}]},"exists_region":{"lit":"intersection"},"var":"x"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_223_4b","intentions":[],"laws":["NRS-484B-223-4b"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"body":{"and":[{"and":[{"args":[{"var":"l"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]}]},{"since":[{"not":{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"turn_lane"},"var":"l"}]},{"rises":{"args":[{"var":"subject"},{"var":"x"}],"derived":"drv_motion_right_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_heading_min"},{"param":"p.u_turn_heading_min"}]}}]},"forall_region":{"lit":"intersection"},"var":"x"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"body":{"and":[{"and":[{"args":[{"var":"l"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]}]},{"since":[{"not":{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"turn_lane"},"var":"l"}]},"exists_region":{"lit":"intersection"},"var":"x"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"NRS_484B_223_4b","intentions":[],"laws":["NRS-484B-223-4b"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"body":{"and":[{"and":[{"args":[{"var":"l"},{"lit":"right"}],"atom":"st_turn_lane_side","params":[]},{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]}]},{"since":[{"not":{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"args":[{"var":"subject"},{"var":"l"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"turn_lane"},"var":"l"}]},{"rises":{"and":[{"rises":{"not":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"gt","lhs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},"rhs":{"neg":{"param":"p.u_turn_heading_min"}}},{"cmp":"le","lhs":{"heading_since":"subject","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"args":[{"var":"subject"},{"var":"x"}],"atom":"rel_occupies","params":[]}}},"rhs":{"neg":{"param":"p.turn_heading_min"}}}]}]}}]},"forall_region":{"lit":"intersection"},"var":"x"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,st_turn_lane,st_turn_lane_side,st_lane_enters,drv_motion_right_turn_through_region
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.yaw_rate
+MANIFEST	occasion_s3	
+MANIFEST	occasion_s3_outside	
+OCC	subject
+OCC	?x
+OCC	subject,x
+OCC	?l
+OCC	l
+OCC	l,x
+OCC	subject,x
+OCC	subject,l
+OCC	?x
+OCC	subject,x
+OCC	?l
+OCC	l
+OCC	l,x
+OCC	subject,x
+OCC	subject,l
+OCC	subject,x
+TIME	occurrences	0
+TIME	checks	3
+TIME	lint	582
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	75
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	72
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	73
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	77
+SCEN	occasion_s3	violated	violated	ok
+TIME	scenario:occasion_s3	74
+SCEN	occasion_s3_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s3_outside	73
+TIME	witnesses	444
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_223_4b.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_223_4b.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_223_4b	11	5
+TIME	adequacy_start	6
+TIME	adequacy	3029
+DONE

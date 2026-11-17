@@ -1,0 +1,180 @@
+{
+ "node_id": "NRS_484B_777_3",
+ "law_refs": [
+  "NRS-484B-777-3"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Persons riding bicycles, electric bicycles or electric scooters",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "upon a roadway",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "shall not ride more than two abreast",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "except on paths or parts of roadways set aside for the exclusive use of bicycles, electric bicycles and electric scooters.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "Admitted aggregates of the three defined terms, each one ru.aggregate atom ('membership of a legal aggregate'), never expanded; they class the subject and the other riders the obligation counts. 'riding' is read through the device's motion (agency reading)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder', the extent of DEF-NRS-484A-220; rel.occupies anchors the subject. As the index maps 'upon a roadway'."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.longitudinal_overlap",
+    "rel.same_direction",
+    "rel.surface_gap"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "Riding abreast is riding side by side in a row: rel.longitudinal_overlap, 'the bodies overlap along the subject's heading (side by side)', at or above zero; travelling the same way, rel.same_direction, 'headings aligned'; in one row, the body gap rel.surface_gap ('distance between the nearest points of two bodies') within the spacing of riders side by side. Riding is moving: not drv.motion.complete_halt ('The road user is at rest at the observation'). More than two abreast is the subject and two other riders of the s1 aggregates so placed. longitudinal_overlap is used as the projection it is, not as a contact or distance; surface_gap is the body gap itself."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.bicycle_lane_or_path"
+   ],
+   "derived": [],
+   "justification": "'paths or parts of roadways set aside for the exclusive use of bicycles, electric bicycles and electric scooters' is st.bicycle_lane_or_path, 'lane or separate path reserved for bicycles and the devices a jurisdiction groups with them'; rel.occupies anchors the subject on it: the riding the words except is the subject's own riding, on such a facility. The three device words name the users the facility is reserved for, the kind's own contract, not road users the duty counts."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a member of the bicycle, electric bicycle or electric scooter aggregate, is moving (not drv.motion.complete_halt with p.halt_speed_tolerance), its footprint overlaps a roadway, and it overlaps no bicycle lane or path at the observation.",
+ "obligation": "At the observation there are no two road users b and c, distinct from each other and from the subject, each a member of the bicycle, electric bicycle or electric scooter aggregate and moving (not drv.motion.complete_halt), such that for each of the three pairs among subject, b and c the bodies are side by side (rel.longitudinal_overlap at or above zero) with headings aligned (rel.same_direction, p.side_by_side_same_direction_cos), and at least two of the three pairs have a body gap (rel.surface_gap) at most p.abreast_gap_max.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.side_by_side_same_direction_cos",
+  "p.abreast_gap_max"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'Persons riding' is read through the devices' controlled motion, whoever controls them.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "Abreast is read as side by side, travelling the same way and in one row, the row being two of the three pairs within the riders' side-by-side spacing; riders side by side but lanes apart are not abreast.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Three bicycles ride side by side at 6 m/s on a roadway outside any bicycle lane, headings aligned, body gaps of 0.5 m between neighbours."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A bicycle rides alone on a roadway: no other rider is in the scene, and the duty is decided for the subject alone."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Three bicycles ride side by side on a sidewalk, overlapping no roadway."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source does not observe the longitudinal overlap of bodies.",
+   "masked": [
+    "rel.longitudinal_overlap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Three bicycles ride side by side within a bicycle lane of the roadway (exception)."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Two bicycles ride side by side on a roadway, body gap 0.5 m."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "Two bicycles ride side by side on a roadway; a third, level with them, rides two lanes away with body gaps of 7 m to each: not in their row."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "sensor speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.side_by_side_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two road users standing or moving side by side count as travelling the same way: the heading spread of vehicles queued in adjacent lanes",
+   "source": "lane geometry and queue observation practice"
+  },
+  {
+   "name": "p.abreast_gap_max",
+   "unit": "m",
+   "value": 1.5,
+   "convention": "the gap between the bodies of two riders side by side within which they ride abreast in one row: the handlebar-to-handlebar spacing of a group riding side by side plus the source's position error",
+   "source": "group-riding practice and bicyclist operating space (AASHTO)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,253 @@
+{
+ "node_id": "NRS_484B_363_1",
+ "law_refs": [
+  "NRS-484B-363-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A person shall not drive a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "at a speed in excess of 15 miles per hour",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "in an area designated as a school zone",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "except:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s5",
+   "text": "(a) On a day on which school is not in session;",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "(b) During the period from a half hour after school is no longer in operation to a half hour before school is next in operation;",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "(c) If the zone is designated by an operational speed limit beacon,",
+   "role": "exception"
+  },
+  {
+   "id": "s8",
+   "text": "during the hours when the pupils of the school are in class",
+   "role": "exception"
+  },
+  {
+   "id": "s9",
+   "text": "and the yellow lights of the speed limit beacon are not flashing in the manner which indicates that the speed limit is in effect;",
+   "role": "exception"
+  },
+  {
+   "id": "s10",
+   "text": "or (d) If the zone is not designated by an operational speed limit beacon,",
+   "role": "exception"
+  },
+  {
+   "id": "s11",
+   "text": "during the times when the sign designating the school zone indicates that the speed limit is not in effect.",
+   "role": "exception"
+  },
+  {
+   "id": "s12",
+   "text": "As used in this section, “speed limit beacon” means a device which is used in conjunction with a sign and equipped with two or more yellow lights that flash alternately to indicate when the speed limit in a school zone or school crossing zone is in effect.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "ru.aggregate: 'membership of a legal aggregate: the atom's literal argument is an aggregate id'. The definitions table admits DEF-NRS-484A-130::motor_vehicle for 'motor vehicle' (DEF-NRS-484A-130: 'every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter'); it is claimed as the aggregate and never expanded into classes. 'A person shall not drive' names no class: who drives is read through the vehicle's controlled motion (observable_reading agency), so the exclusion 'a relational role such as who drives or controls a vehicle — never membership' does not apply: the aggregate carries only the vehicle's class."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed: 'magnitude of velocity' (m/s). 'at a speed in excess of' compares the subject's speed with the figure the law states, carried as a literal (s2); the speed is a state at each observation, so the comparison is read at the judged observation. No 'not a stand-in for' clause of the contract applies."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.zone_sign: 'a sign that begins or ends a signed zone along the road; kind ∈ {school, school_crossing, ...}; end attribute'. Ontology §9: 'Where the same category is also marked on the road by a sign (dev.zone_sign), the sign is the atom and the category is not.' The school zone (DEF-NRS-484B-063: 'those sections of streets which are adjacent to school property') is that category; 'an area designated as a school zone' is the stretch a zone sign z of kind school, not an end sign, governs (dev.governs: 'the travel regions whose traffic the device controls'), read over st.travel_region, the kind dev.governs ranges over; the subject is in it where its footprint overlaps such a region r (rel.occupies: 'a road user's footprint overlaps a lane / region'). dev.zone_sign is 'not a stand-in for whether the condition holds now — that is prim.conditions_hold', which this node reads only in exception (d); dev.governs is 'not a stand-in for a position' and no halt place is read from it. 'designated' is the legal status of the sign, read by its presence (observable_reading status)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "dev.speed_limit_beacon",
+    "dev.governs",
+    "dev.inoperative",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "dev.speed_limit_beacon: 'a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect', the device the section defines (s12). The zone is designated by a beacon b where b governs the zone's region r (dev.governs over st.travel_region). 'operational' is read as b not inoperative: dev.inoperative, 'a signal head installed and uncovered but showing no valid indication', applies to the beacon's head of lamps, so a beacon present and not inoperative is operational. dev.governs is not a stand-in for a position: no place is read from it."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "dev.speed_limit_beacon"
+   ],
+   "derived": [],
+   "justification": "dev.speed_limit_beacon carries a 'flashing attribute': its lamps flash 'alternately when the sign's limit is in effect'. 'the yellow lights of the speed limit beacon are not flashing in the manner which indicates that the speed limit is in effect' is that attribute false for every operational beacon that governs r (the beacon of exception (c))."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "dev.speed_limit_beacon",
+    "dev.governs",
+    "dev.inoperative",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The negation of s7: no dev.speed_limit_beacon ('a pair or more of yellow lamps mounted with a speed sign') that governs r (dev.governs, over st.travel_region) is present and not inoperative (dev.inoperative: 'a signal head installed and uncovered but showing no valid indication'). An inoperative beacon leaves the zone 'not designated by an operational speed limit beacon'."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "dev.zone_sign",
+    "prim.conditions_hold"
+   ],
+   "derived": [],
+   "justification": "dev.zone_sign's 'conditions attribute: a structured reading of the sign's legend — a list of time windows ...; a legend read with no restriction is the empty set (unconditional), a legend not read is absent (every condition unknown)'. prim.conditions_hold: 'the structured conditions of a device (dev.zone_sign, dev.regulatory_sign) hold at the observation for a road user'. 'the sign designating the school zone indicates that the speed limit is not in effect' is prim.conditions_hold false for z, the sign of s3, and the subject. dev.zone_sign is 'not a stand-in for whether the condition holds now — that is prim.conditions_hold', which is why the primitive is read; its input env.civil_time is the primitive's own."
+  },
+  {
+   "span": "s12",
+   "atoms": [
+    "dev.speed_limit_beacon"
+   ],
+   "derived": [],
+   "justification": "The section's definition of 'speed limit beacon' ('a device which is used in conjunction with a sign and equipped with two or more yellow lights that flash alternately to indicate when the speed limit ... is in effect') is the contract of dev.speed_limit_beacon: 'a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect'. It adds no condition beyond the atom's, and the beacon is read as that atom in s7, s9 and s10."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s5",
+   "id": "asm.school_in_session_day",
+   "meaning": "the date of the observation is a day on which the school served by the signed zone at the road user's place is in session, as the reading declares from that school's calendar"
+  },
+  {
+   "span": "s6",
+   "id": "asm.school_outside_operation_margin",
+   "meaning": "the time of the observation lies in the period from a half hour after the school served by the signed zone at the road user's place ceased operation to a half hour before that school next begins operation, as the reading declares from that school's schedule"
+  },
+  {
+   "span": "s8",
+   "id": "asm.pupils_in_class",
+   "meaning": "the pupils of the school served by the signed zone at the road user's place are in class at the time of the observation, as the reading declares from that school's schedule"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a motor vehicle (ru.aggregate=DEF-NRS-484A-130::motor_vehicle). At the judged observation its footprint overlaps (rel.occupies) a travel region r that a dev.zone_sign z of kind school, not an end sign, governs (dev.governs); and, for that z and r, none of these holds at the judged observation: (a) asm.school_in_session_day is false; (b) asm.school_outside_operation_margin holds; (c) some dev.speed_limit_beacon governs r and is not dev.inoperative, asm.pupils_in_class holds, and no dev.speed_limit_beacon that governs r and is not inoperative is flashing; (d) no dev.speed_limit_beacon that governs r is present and not inoperative, and prim.conditions_hold for z and the subject is false. Where several such z and r hold, the duty applies if it applies for any of them. An undeclared assumption leaves the exception, and so the verdict where the speed exceeds the figure, unknown.",
+ "obligation": "The subject's kin.speed at the judged observation is at most the literal 15 mph of s2; a speed above it violates the duty.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'drive' is read through the vehicle's controlled motion: a motor vehicle moving on the road is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'designated' is the legal status of the zone: the zone sign governing the subject's region is the evidence, and the school property the zone adjoins is not read.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motor vehicle's footprint overlaps a lane governed by a dev.zone_sign of kind school (not an end sign) whose conditions hold now; asm.school_in_session_day true, asm.school_outside_operation_margin false; no dev.speed_limit_beacon governs the lane; kin.speed is well above the stated 15 miles per hour."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same zone and declarations as forbid; kin.speed is below the stated 15 miles per hour at every observation."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The motor vehicle travels well above the stated figure on a lane that no dev.zone_sign of kind school governs; the only zone sign nearby governs another street."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Same zone and declarations as forbid, but the source declares kin.speed absent.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A dev.speed_limit_beacon that is not inoperative governs the zone's lane; asm.pupils_in_class true; the beacon's flashing attribute is false; asm.school_in_session_day true and asm.school_outside_operation_margin false; the motor vehicle exceeds the stated figure: exception (c) holds."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Same as branch_1 but the beacon is flashing: exception (c) fails, exception (d) fails because an operational beacon designates the zone; the motor vehicle exceeds the stated figure."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "No beacon governs the zone's lane; prim.conditions_hold is false for the school zone sign (the time lies outside its posted window); the motor vehicle exceeds the stated figure: exception (d) holds."
+  },
+  {
+   "name": "branch_4",
+   "expected": "not_applicable",
+   "narrative": "asm.school_in_session_day false (a day school is not in session); the motor vehicle exceeds the stated figure in the zone: exception (a) holds."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s2",
+   "text": "15 miles per hour",
+   "value": 15,
+   "unit": "mph"
+  }
+ ],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

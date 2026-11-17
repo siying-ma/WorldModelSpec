@@ -1,0 +1,304 @@
+{
+ "node_id": "NRS_484B_457_1",
+ "law_refs": [
+  "NRS-484B-457-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except as otherwise provided in this section [(2) and (3) appended below],",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "stopped or parked",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "upon a highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "where there are adjacent curbs",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "must be stopped or parked with the right-hand wheels of the vehicle parallel to and within 18 inches of the right-hand curb.",
+   "role": "obligation"
+  },
+  {
+   "id": "s7",
+   "text": "Local authorities may by ordinance permit parking",
+   "role": "exception"
+  },
+  {
+   "id": "s8",
+   "text": "of vehicles with the left-hand wheels adjacent to and within 18 inches of the left-hand curb of a one-way highway.",
+   "role": "exception"
+  },
+  {
+   "id": "s9",
+   "text": "Local authorities may by ordinance permit angle parking on any highway, except that angle parking must not be permitted on any highway constructed and maintained by the Department of Transportation under the authority granted by chapter 408 of NRS unless the Department has determined that the highway is of sufficient width to permit angle parking without interfering with the free movement of traffic.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the term DEF-NRS-484A-320 defines ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), admitted as DEF-NRS-484A-320::vehicle; ru.aggregate: 'membership of a legal aggregate: the atom's literal argument is an aggregate id'. Its exclusion (not a stand-in for a named class with its own atom, or for a role) does not apply: the words name the defined aggregate itself."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.governs",
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.railway_signal_or_gate",
+    "dev.human_direction",
+    "st.travel_region",
+    "rel.occupies",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'stopped or parked' is a vehicle brought to rest: drv.motion.complete_halt, 'at rest at the observation ... observed as its speed (kin.speed) at or below a tolerance' (a parked vehicle is at rest too, so the halt covers both words). The section regulates the position of a vehicle at rest at the side of the way, so a halt in the stream of traffic is not the stop it speaks of (the stopping definition DEF-NRS-484A-260 itself leaves out a halt 'necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device'). That halt is read through the conduct it names: the subject occupies (rel.occupies, 'a road user's footprint overlaps a lane / region') a travel region (st.travel_region) governed (dev.governs, 'the travel regions whose traffic the device controls') by a traffic signal, stop sign, yield sign, railway signal or gate, or a person directing traffic (dev.human_direction, 'a person directing traffic and the direction given'), or it has a member of traffic (ru.aggregate=DEF-NRS-484A-285::traffic, 'pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel') ahead of it in its lane (rel.ahead_behind_in_lane, 'a is ahead of / behind b in the same lane') with a gap between bodies (rel.surface_gap, 'distance between the nearest points of two bodies') within the queue spacing. dev.governs is not a stand-in for a position: it is read only as the control of the region the subject occupies. complete_halt says nothing of why the vehicle halts; the device and queue atoms carry that."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'highway' (DEF-NRS-484A-095, 'the entire width between the boundary lines of every way dedicated to a public authority') is st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders'; 'upon' is rel.occupies, 'a road user's footprint overlaps a lane / region'. st.highway is not a stand-in for the roadway: the words name the whole way, as the atom does."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "st.lane",
+    "st.lane_marking",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "A highway 'where there are adjacent curbs' is one along which a curb runs: st.lane_marking gives 'per side of a lane: type ∈ {none, broken, solid, double_solid, solid_broken, dotted, curb}', so a lane (st.lane, 'a longitudinal strip of roadway for one line of vehicles') lying on the subject's highway (st.on_way, 'the public way (a highway region) a structure region lies on') with a side of type curb shows the curbs. st.road_edge is not used for presence: its contract is 'curb or edge of the roadway' and does not tell a curb from an uncurbed edge. st.lane is not a stand-in for a lateral position here: it is read only for its side marking."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "kin.heading",
+    "st.lane_direction",
+    "rel.occupies",
+    "st.travel_region",
+    "st.road_edge",
+    "st.on_way",
+    "st.region_geometry",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [],
+   "justification": "'parallel to ... the right-hand curb' with the right-hand wheels at it is a vehicle whose heading (kin.heading, 'direction the body points') lies along the designated direction (st.lane_direction, 'direction of travel designated for a structure a vehicle travels in') of the travel region it occupies (rel.occupies, st.travel_region), within a parallelism tolerance, pointed with that direction (the right-hand curb is the curb on the right of the direction of travel, so its right side faces it only when headed with it). 'the right-hand curb' is a road edge (st.road_edge, 'curb or edge of the roadway'; the highway's curbs are established by s5) lying on the same highway (st.on_way) on the vehicle's right: prim.region_lateral_offset, 'the signed lateral offset (m, left positive) of a structure region from a road user', below zero. 'within 18 inches' is the ground distance from the body outline to it (st.region_geometry, 'the ground distance from a road user's body outline to it (zero when they overlap)') at most the stated figure. st.region_geometry is not a stand-in for occupancy (it is read as a distance only); the lateral offset is read only for the side."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.one_way_roadway",
+    "kin.heading",
+    "st.lane_direction",
+    "st.road_edge",
+    "st.on_way",
+    "st.region_geometry",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [],
+   "justification": "The permitted alternative position: 'vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'a one-way highway' is the subject occupying (rel.occupies) a one-way roadway (st.one_way_roadway, 'roadway on which traffic is restricted to one direction'); 'the left-hand wheels adjacent to ... the left-hand curb' is the heading (kin.heading) along the roadway's designated direction (st.lane_direction) within the same parallelism tolerance, with a road edge (st.road_edge) on the same way (st.on_way) on the vehicle's left (prim.region_lateral_offset above zero); 'within 18 inches' is the body-to-edge ground distance (st.region_geometry) at most the stated figure. 'adjacent' is read as alongside, parallel to the curb, the same position as subsection 1 states for the right."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "st.travel_region",
+    "rel.occupies",
+    "st.parking_space",
+    "prim.conditions_hold",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "Angle parking permitted by the local authority shows on the road as an official traffic-control device: dev.regulatory_sign code 'angle_parking' governing (dev.governs) the travel region (st.travel_region) the subject occupies (rel.occupies), its 'structured conditions' holding (prim.conditions_hold), or a marked bay (st.parking_space, 'marked bay for standing or parking; angle attribute') whose angle stands clear of zero by the source's angle resolution. The presence of the device is the evidence of the permission and of its lawfulness, including the Department's determination for a highway it maintains (status reading): the words that limit where the authority may permit angle parking bind the authority, not the road user. A sign is not a stand-in for a manoeuvre: it is read only as the permission of the place."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s7",
+   "id": "asm.left_curb_parking_permitted",
+   "meaning": "the one-way way at the place of the road user at the observation is one on which the local authority having jurisdiction permits vehicles to park with their left-hand wheels at the left-hand curb, as the map's reading records"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s1",
+   "why": "The provisions the words point to are subsections (2) and (3), which are segments s7-s9 of this same text and are carried there as the exceptions of this node; the words add nothing beyond them, so the duty is the same whether or not they are read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle), is at rest at the observation (drv.motion.complete_halt, speed_tol p.halt_speed_tolerance); it occupies (rel.occupies) a highway region h (st.highway) on which (st.on_way) some lane (st.lane) has a side whose marking type is curb (st.lane_marking); and its halt is not one in the stream of traffic: it occupies no travel region (st.travel_region) governed (dev.governs) by a traffic signal, stop sign, yield sign, railway signal or gate, or person directing traffic (dev.human_direction), and no road user of the aggregate DEF-NRS-484A-285::traffic is ahead of it in its lane (rel.ahead_behind_in_lane) with a gap between bodies (rel.surface_gap) at or below p.queue_halt_gap.",
+ "obligation": "At that observation, with h re-bound as in the applicability (a highway the subject occupies on which a lane has a curb-marked side), one of three holds; otherwise the duty is violated. (1) Right-hand curb: the subject occupies a travel region r lying on h whose designated direction d (st.lane_direction) has a dot product with the subject's heading (kin.heading) at or above p.parked_heading_cos, and some road edge region e (st.road_edge) lying on h (st.on_way) is on the subject's right (prim.region_lateral_offset of e below zero) at a ground distance from its body (st.region_geometry) of at most 18 inches (literal). (2) Left-hand curb of a one-way highway, where asm.left_curb_parking_permitted holds: the subject occupies a one-way roadway r (st.one_way_roadway) lying on h with heading·d at or above p.parked_heading_cos, and some road edge e lying on h is on its left (offset above zero) within 18 inches of its body. (3) Angle parking permitted: the subject occupies a travel region governed (dev.governs) by a regulatory sign of code angle_parking whose conditions hold (prim.conditions_hold), or it occupies a parking space (st.parking_space) whose angle exceeds p.parking_space_angle_resolution.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap",
+  "p.parked_heading_cos",
+  "p.parking_space_angle_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "s6",
+   "why": "The wheels are not observed: the body outline stands for them. The wheels lie inside the footprint, so the body-to-curb distance is at most the wheel-to-curb distance and the reading is lenient by the wheels' inset (a few centimetres). 'parallel' is read within the tolerance p.parked_heading_cos, headed with the designated direction, since the right-hand wheels face the right-hand curb only so.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "Why a vehicle is stopped is not observed. The words speak of a vehicle stopped or parked to stand by the way (the stopping definition DEF-NRS-484A-260 itself leaves out a halt 'necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device'); a halt made for traffic is read through the conduct that shows it: a halt in a region a signal, sign, railway device or person directing traffic governs, or a halt queued behind a member of traffic within the queue spacing. A halt mid-way through a parking manoeuvre is judged like any other halt.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s9",
+   "why": "The permission given by ordinance, and its validity on a highway the Department maintains, is read from the posted angle-parking sign or the angled bay marking: the presence of the device presumes the status.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "The duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A vehicle at rest (kin.speed 0) for 30 s in the curb lane of a two-way highway whose rightmost lane's right side is marked type curb; heading along the lane direction; the right road edge lies 1.2 m from its body; no device governs its lane, nobody is ahead of it, no angle sign or bay, no left-curb declaration."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same vehicle at rest with its heading along the lane direction and the right road edge 0.25 m from its body."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The vehicle moves at 10 m/s along the curbed highway (kin.speed 10)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source declares region outlines absent, so the body-to-edge distance and the lateral offsets are unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The vehicle is at rest 1.5 m from the right edge in a lane governed by a traffic signal showing circular_red: a halt in the stream of traffic."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "On a one-way roadway with asm.left_curb_parking_permitted declared true, the vehicle is at rest heading along the roadway direction with the left road edge 0.3 m from its body and the right edge 6 m away."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "The vehicle is at rest in a parking space whose angle is 60 deg, heading 60 deg off the lane direction, far from the right edge."
+  },
+  {
+   "name": "branch_4",
+   "expected": "not_applicable",
+   "narrative": "The vehicle is at rest 2 m behind another vehicle ahead of it in the same lane, 1.5 m from the right edge: a queue halt."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s6",
+   "text": "18 inches",
+   "value": 18,
+   "unit": "in"
+  },
+  {
+   "span": "s8",
+   "text": "18 inches",
+   "value": 18,
+   "unit": "in"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; reused unchanged"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "proposed this iteration by LVMC_11_52_030_A; reused unchanged"
+  },
+  {
+   "name": "p.parked_heading_cos",
+   "unit": "ratio",
+   "value": 0.97,
+   "convention": "cosine of the largest angle (about fourteen degrees) between a standing vehicle's heading and its carrier's designated direction at which it counts as parallel with the edge and headed with traffic",
+   "source": "proposed this iteration by LVMC_11_52_040_A; reused unchanged"
+  },
+  {
+   "name": "p.parking_space_angle_resolution",
+   "unit": "deg",
+   "value": 5.0,
+   "convention": "the bay angle at or below which a mapped parking bay counts as parallel to the curb rather than angled: the source's angle resolution for mapped bays",
+   "source": "proposed this iteration by LVMC_11_52_070; reused unchanged"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,280 @@
+{
+ "node_id": "NRS_484B_213_1",
+ "law_refs": [
+  "NRS-484B-213-1"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "must not be driven to the left side of the center of a two-lane, two-directional highway and overtaking and passing another vehicle proceeding in the same direction,",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "unless such left side is clearly visible",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "and is free of oncoming traffic",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "for a sufficient distance ahead to permit such overtaking and passing to be completely made without interfering with the safe operation of any vehicle approaching from the opposite direction or any vehicle overtaken.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'A vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle (ru.aggregate: 'membership of a legal aggregate'), claimed whole."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "prim.region_lateral_offset",
+    "st.centre_line",
+    "st.on_way",
+    "st.highway",
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "'center' (DEF-NRS-484A-040) is 'a continuous or broken line marked upon the surface of a highway ... to indicate each portion of a highway allocated to traffic proceeding in the two opposite directions, and, if a line is not marked, it is an imaginary line in the highway equally distant from the edges or curbs': st.centre_line, 'the marking, or the geometric centre, dividing the two directions of a two-way roadway', lying (st.on_way) on the st.highway the subject occupies (rel.occupies). 'to the left side of the center' is prim.region_lateral_offset(subject, c), 'the signed lateral offset (m, left positive) of a structure region from a road user', being negative: the centre line lies to the right of the subject's reference point. 'two-directional highway' (DEF-NRS-484B-073) is 'an undivided highway upon which vehicles are allowed to proceed in opposite directions': the highway carries an st.centre_line, which divides 'the two directions of a two-way roadway', one roadway, so the way is undivided. 'two-lane': every st.lane lying on that highway (st.on_way) has an st.lane_adjacency 'count of the lanes in that direction' of a single lane, so the two directions carry the stated two lanes; the lane contract's exclusion ('lane ordinal equals roadway half only on a two-lane road') is met, the road being two-lane. 'overtaking and passing another vehicle proceeding in the same direction' is the act drv.interaction.overtake_pass(subject, b): 'a, travelling in the same direction as b, comes from having b ahead of it to having b behind it'; b is of DEF-NRS-484A-320::vehicle. 'driven' is read through controlled motion (agency)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "st.sight_distance"
+   ],
+   "derived": [],
+   "justification": "'such left side is clearly visible': st.sight_distance at the subject's point, 'the distance along the road within which a vehicle at a point and another vehicle on the road could see each other ... whether or not any road user is there'; what a driver could see is read through that place's sight distance (observable_reading, perception), not rel.visible, since no actual road user need be there. Its extent is bounded by the standard of s7."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.oncoming",
+    "rel.centre_distance"
+   ],
+   "derived": [],
+   "justification": "'oncoming traffic': road users of the admitted aggregate DEF-NRS-484A-285::traffic whose heading is opposed and closing to the subject's (rel.oncoming, 'headings opposed and closing'); 'free of' them for the distance of s7 is read on their rel.centre_distance to the subject, which is not used as a clearance between bodies but as the distance along the road ahead."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s7",
+   "standard": "for a sufficient distance ahead to permit such overtaking and passing to be completely made without interfering with the safe operation of any vehicle approaching from the opposite direction or any vehicle overtaken",
+   "concepts": [
+    "st.sight_distance",
+    "kin.speed",
+    "rel.centre_distance",
+    "rel.oncoming",
+    "rel.contact",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.passing_sight_time",
+    "p.oncoming_heading_cos",
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Passing sight distance: the MUTCD minimum passing sight distance by prevailing speed (Table 3B-1), expressed as the time the subject's speed takes to cover it (p.passing_sight_time), so the required distance moves with the subject's speed; both the sight distance at the subject's point and the centre distance to every oncoming road user of traffic must reach it. Interference with the safe operation of an oncoming vehicle or the vehicle overtaken: the traffic-conflict technique, a contact or a closest approach under constant velocities within p.conflict_horizon closer than p.conflict_centre_clearance.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject, of DEF-NRS-484A-320::vehicle, overtakes and passes another road user b of DEF-NRS-484A-320::vehicle: drv.interaction.overtake_pass(subject, b) with p.overtake_window and p.overtake_same_direction_cos is recognized at the judged observation. b is quantified there, not a binder.",
+ "obligation": "At every observation of the act (from its beginning, the last observation of the window behind at which b was ahead with aligned headings, to its recognition) at which the subject occupies a highway h on which an st.centre_line c lies (st.on_way) and every lane lying on h has a single lane in its direction (st.lane_adjacency count) — the two-lane, two-directional highway — and prim.region_lateral_offset(subject, c) is negative for a centre line c lying on h (the subject on the left side of the center), all of the following hold; otherwise the duty is violated: st.sight_distance at the subject's point is at least the subject's kin.speed times p.passing_sight_time; every road user u of DEF-NRS-484A-285::traffic with rel.oncoming(subject, u) under p.oncoming_heading_cos is at a rel.centre_distance of at least that same distance; and neither b nor any road user u of DEF-NRS-484A-320::vehicle oncoming to the subject is in rel.contact with the subject, or has prim.closest_approach_within(subject, u) over p.conflict_horizon with prim.closest_approach_distance below p.conflict_centre_clearance.",
+ "params": [
+  "p.overtake_window",
+  "p.overtake_same_direction_cos",
+  "p.passing_sight_time",
+  "p.oncoming_heading_cos",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driven to the left side of the center' is read as the subject's reference point lying beyond the centre line to its left; a body that only straddles the line with its reference point on the right is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "s2",
+   "why": "'driven' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'clearly visible' is read through the sight distance of the subject's place, what could be seen from it, not through any driver's perception.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "s7",
+   "why": "The exception is read at the observations of the act at which the subject is on the left side of the center: visibility and freedom from oncoming traffic are required while the left side is used.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a highway with a centre line and one lane in each direction, the subject moves left of the centre line to pass b; a road user u of traffic is oncoming in that lane at a centre distance below the subject's speed times p.passing_sight_time, and its closest approach within p.conflict_horizon falls below p.conflict_centre_clearance; the pass is recognized."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same pass with st.sight_distance at the subject's point far above its speed times p.passing_sight_time at every observation of the act and no oncoming road user in the scene; the subject keeps clear of b."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject follows b on the two-lane highway without passing it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The pass of permit with st.sight_distance not observed on the source.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The subject passes b on a highway with two lanes in each direction, using the other lane of its own direction, with an oncoming vehicle near on the far side of the centre line: the subject is never left of the centre of a two-lane highway."
+  },
+  {
+   "name": "occasion_s5",
+   "expected": "violated",
+   "narrative": "While the subject is left of the centre line, st.sight_distance at its point is above the subject's speed times p.passing_sight_time for the first part of the act and falls below it approaching a crest; no oncoming traffic."
+  },
+  {
+   "name": "occasion_s5_outside",
+   "expected": "compliant",
+   "narrative": "st.sight_distance was below the bound before the act began and is above it at every observation of the act; no oncoming traffic."
+  },
+  {
+   "name": "occasion_s6",
+   "expected": "violated",
+   "narrative": "Sight distance is ample; an oncoming road user of traffic comes within the required distance during the second half of the act while the subject is still left of the centre line."
+  },
+  {
+   "name": "occasion_s6_outside",
+   "expected": "compliant",
+   "narrative": "An oncoming road user passed the subject before the act began; during the act no oncoming road user is within the required distance."
+  }
+ ],
+ "occasion": {
+  "act": "drv.interaction.overtake_pass",
+  "boundary": "window",
+  "window": "p.overtake_window",
+  "under_way": {
+   "words": "overtaking and passing another vehicle proceeding in the same direction",
+   "atoms": [
+    "kin.velocity",
+    "rel.bearing",
+    "rel.longitudinal_overlap",
+    "rel.same_direction"
+   ],
+   "derived": [
+    "drv.interaction.overtake_pass"
+   ],
+   "justification": "An observation inside the act lies after its beginning, the last observation of the window behind at which b was ahead of the subject with headings aligned (rel.bearing longitudinal component positive, rel.longitudinal_overlap negative, rel.same_direction), and at or before its recognition, while the subject's velocity (kin.velocity), exceeding b's along its heading, carries it up to and past b. These relations read the two road users' relative motion, never a place."
+  },
+  "spans": {
+   "s5": "throughout",
+   "s6": "throughout"
+  }
+ },
+ "literals": [
+  {
+   "span": "s2",
+   "text": "two-lane",
+   "value": 2,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.overtake_window",
+   "unit": "s",
+   "value": 10.0,
+   "convention": "the longest duration of an overtaking manoeuvre on an urban street, from having the overtaken vehicle ahead to having it behind",
+   "source": "overtaking-manoeuvre durations in naturalistic driving studies"
+  },
+  {
+   "name": "p.overtake_same_direction_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest heading difference (about 25 degrees) at which two vehicles count as travelling in the same direction while one moves out to pass the other",
+   "source": "lane-change heading angles in naturalistic driving data"
+  },
+  {
+   "name": "p.passing_sight_time",
+   "unit": "s",
+   "value": 11.0,
+   "convention": "the MUTCD minimum passing sight distance (Table 3B-1, the warrant for a no-passing zone) divided by the prevailing speed it is tabulated for: about eleven seconds of travel across 25 to 70 mph; the sight distance or the clear distance a pass needs is the subject's speed times this time",
+   "source": "MUTCD 2009 Section 3B.02, Table 3B-1"
+  },
+  {
+   "name": "p.oncoming_heading_cos",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "cosine of the largest angle off exactly opposed headings (about 25 degrees) at which two vehicles count as proceeding in opposite directions",
+   "source": "heading geometry of two-way traffic"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic-conflict technique; FHWA Surrogate Safety Assessment Model"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "AASHTO passenger-car design-vehicle dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

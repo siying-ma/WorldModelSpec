@@ -1,0 +1,71 @@
+'TrafficSpec.Rules.LVMC_11_30_060_B.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_060_B.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_30_060_B","intentions":[],"laws":["LVMC-11-30-060-B"],"narrowings":[],"operationalizations":[{"concepts":["prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.conflict_horizon","p.conflict_centre_clearance"],"standard":"the right-of-way: precedence owed where direction, speed and proximity give rise to the danger of a crash","surrogate":false}],"residues":["Section 11.30.070 is no node of this run's library, neither accepted nor planned, so no rule can be composed; the condition under which it suspends this section is stated in this text's own words, 'when pedestrians are prohibited from crossing at certain designated places', carried by g8. Conditions of 11.30.070 those words do not state are not read; reported to the operator."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"or":[{"args":[{"var":"subject"},{"var":"r"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.crossing_motion_cos"}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"k"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"k"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.crossing_motion_cos"}]}]},"exists_region":{"lit":"lane"},"var":"k"}]},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"pedestrians_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.grade_separation_reach"}},"exists_region":{"lit":"pedestrian_grade_separation"},"var":"g"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_30_060_B","intentions":[],"laws":["LVMC-11-30-060-B"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"or":[{"args":[{"var":"subject"},{"var":"r"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.crossing_motion_cos"}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"k"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"subject"},{"var":"k"}],"derived":"drv_motion_moving_across_carrier","params":[{"param":"p.halt_speed_tolerance"},{"param":"p.crossing_motion_cos"}]}]},"exists_region":{"lit":"lane"},"var":"k"}]},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"pedestrians_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]},{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"r"}]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"v"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"v"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"v"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}]}}]}]},"forall_user":"v"},"residues":["Section 11.30.070 is no node of this run's library, neither accepted nor planned, so no rule can be composed; the condition under which it suspends this section is stated in this text's own words, 'when pedestrians are prohibited from crossing at certain designated places', carried by g8. Conditions of 11.30.070 those words do not state are not read; reported to the operator."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"k"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"k"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"k"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]}]},"exists_region":{"lit":"lane"},"var":"k"}]},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"pedestrians_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]},"exists_region":{"lit":"roadway"},"var":"r"},{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"g"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.grade_separation_reach"}},"exists_region":{"lit":"pedestrian_grade_separation"},"var":"g"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"subject"}],"id":"LVMC_11_30_060_B","intentions":[],"laws":["LVMC-11-30-060-B"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"and":[{"args":[{"var":"subject"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]},{"body":{"and":[{"args":[{"var":"subject"},{"var":"k"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"cmp":"le","lhs":{"abs":{"add":[{"mul":[{"args":[{"var":"subject"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"k"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"subject"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"k"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}},"rhs":{"mul":[{"param":"p.crossing_motion_cos"},{"args":[{"var":"subject"}],"measure":"kin_speed"}]}}]}]},"exists_region":{"lit":"lane"},"var":"k"}]},{"not":{"body":{"and":[{"args":[{"var":"d"},{"lit":"pedestrians_prohibited"}],"atom":"dev_regulatory_sign_code","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"}}]}]},{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"r"}]},{"and":[{"not":{"args":[{"var":"subject"},{"var":"v"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"cmp":"gt","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},{"and":[{"args":[{"var":"subject"},{"var":"v"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"subject"},{"var":"v"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]}]}}]}]},"forall_user":"v"},"residues":["Section 11.30.070 is no node of this run's library, neither accepted nor planned, so no rule can be composed; the condition under which it suspends this section is stated in this text's own words, 'when pedestrians are prohibited from crossing at certain designated places', carried by g8. Conditions of 11.30.070 those words do not state are not read; reported to the operator."],"surrogate":false}
+ATOMS	ru_aggregate,st_roadway,rel_occupies,drv_motion_moving_across_carrier,st_lane,dev_regulatory_sign,dev_regulatory_sign_code,dev_governs,st_pedestrian_grade_separation,st_region_geometry_distance,rel_contact,kin_speed,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	subject
+OCC	?r
+OCC	subject,r
+OCC	subject,r
+OCC	?k
+OCC	subject,k
+OCC	subject,k
+OCC	?d
+OCC	d
+OCC	d,r
+OCC	?g
+OCC	subject,g
+OCC	?v
+OCC	v
+OCC	?r
+OCC	subject,r
+OCC	subject,r
+OCC	?k
+OCC	subject,k
+OCC	subject,k
+OCC	?d
+OCC	d
+OCC	d,r
+OCC	v,r
+OCC	subject,v
+OCC	subject
+OCC	subject,v
+OCC	subject,v
+TIME	occurrences	0
+TIME	checks	10
+TIME	lint	51
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	18
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	15
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	16
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	20
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	22
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	13
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	21
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	12
+TIME	witnesses	137
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_30_060_B.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_060_B.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_30_060_B	19	7
+TIME	adequacy_start	7
+TIME	adequacy	2776
+DONE

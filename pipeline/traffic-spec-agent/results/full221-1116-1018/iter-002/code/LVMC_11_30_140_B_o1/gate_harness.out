@@ -1,0 +1,51 @@
+'TrafficSpec.Rules.LVMC_11_30_140_B_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_140_B_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["subject"],"id":"LVMC_11_30_140_B_o1","intentions":[],"laws":["LVMC-11-30-140-B"],"narrowings":[],"operationalizations":[{"concepts":["drv.motion.complete_halt"],"params":["p.immediate_stop_window"],"standard":"immediately","surrogate":false}],"residues":["'with wisdom' qualifies the person assisting, not the person protected; that the person assisted is wholly or partially blind and is being assisted is what identifies the protected person, and a helper's wisdom, a state of mind no trace shows, does not change that identification, so the duty owed to the person assisted is the same whether or not the helper's wisdom holds."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"and":[{"not":{"same":[{"var":"blind_person"},{"var":"subject"}]}},{"args":[{"var":"blind_person"}],"atom":"ru_pedestrian_with_white_cane_or_guide_animal","params":[]}]},{"or":[{"rises":{"args":[{"var":"subject"},{"var":"blind_person"}],"atom":"rel_contact","params":[]}},{"and":[{"rises":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"blind_person"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.blind_person_approach_reach"}}},{"not":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]}}]}]}]},"exists_user":"blind_person"},"assumptions":[],"binders":[{"cls":{"or":[{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"not":{"args":[{"var":"subject"}],"atom":"ru_pedestrian_with_white_cane_or_guide_animal","params":[]}}]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"LVMC_11_30_140_B_o1","intentions":[],"laws":["LVMC-11-30-140-B"],"narrowings":[],"obligation":{"body":{"args":[{"var":"subject"}],"derived":"drv_motion_complete_halt","params":[{"param":"p.halt_speed_tolerance"}]},"length":{"param":"p.immediate_stop_window"},"subject":"subject","within":"time"},"residues":["'with wisdom' qualifies the person assisting, not the person protected; that the person assisted is wholly or partially blind and is being assisted is what identifies the protected person, and a helper's wisdom, a state of mind no trace shows, does not change that identification, so the duty owed to the person assisted is the same whether or not the helper's wisdom holds."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"and":[{"not":{"same":[{"var":"blind_person"},{"var":"subject"}]}},{"args":[{"var":"blind_person"}],"atom":"ru_pedestrian_with_white_cane_or_guide_animal","params":[]}]},{"or":[{"rises":{"args":[{"var":"subject"},{"var":"blind_person"}],"atom":"rel_contact","params":[]}},{"and":[{"rises":{"cmp":"le","lhs":{"args":[{"var":"subject"},{"var":"blind_person"}],"measure":"rel_centre_distance"},"rhs":{"param":"p.blind_person_approach_reach"}}},{"not":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}}}]}]}]},"exists_user":"blind_person"},"assumptions":[],"binders":[{"cls":{"or":[{"and":[{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"not":{"args":[{"var":"subject"}],"atom":"ru_pedestrian_with_white_cane_or_guide_animal","params":[]}}]},{"args":[{"var":"subject"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"subject"}],"id":"LVMC_11_30_140_B_o1","intentions":[],"laws":["LVMC-11-30-140-B"],"narrowings":[],"obligation":{"body":{"cmp":"le","lhs":{"args":[{"var":"subject"}],"measure":"kin_speed"},"rhs":{"param":"p.halt_speed_tolerance"}},"length":{"param":"p.immediate_stop_window"},"subject":"subject","within":"time"},"residues":["'with wisdom' qualifies the person assisting, not the person protected; that the person assisted is wholly or partially blind and is being assisted is what identifies the protected person, and a helper's wisdom, a state of mind no trace shows, does not change that identification, so the duty owed to the person assisted is the same whether or not the helper's wisdom holds."],"surrogate":false}
+ATOMS	ru_aggregate,ru_pedestrian_with_white_cane_or_guide_animal,rel_contact,rel_centre_distance,drv_motion_complete_halt,kin_time
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.centre_distance
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	subject
+OCC	subject
+OCC	subject
+OCC	?blind_person
+OCC	blind_person,subject
+OCC	blind_person
+OCC	subject,blind_person
+OCC	subject,blind_person
+OCC	subject
+OCC	subject
+OCC	subject
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	17
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	38
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	36
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	26
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	29
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	36
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	36
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	36
+TIME	witnesses	238
+DONE_WITNESSES
+'TrafficSpec.Rules.LVMC_11_30_140_B_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.LVMC_11_30_140_B_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	LVMC_11_30_140_B_o1	5	6
+TIME	adequacy_start	6
+TIME	adequacy	559
+DONE

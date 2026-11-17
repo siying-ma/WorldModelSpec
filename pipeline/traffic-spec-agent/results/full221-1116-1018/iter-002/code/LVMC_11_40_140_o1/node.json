@@ -1,0 +1,188 @@
+{
+ "node_id": "LVMC_11_40_140_o1",
+ "law_refs": [
+  "LVMC-11-40-140"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+   "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "The operator of a bicycle, electric bicycle, or electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "within a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "e3",
+   "text": "entering into or emerging from an alley, driveway or building",
+   "role": "trigger"
+  },
+  {
+   "id": "e4",
+   "text": "shall stop such vehicle immediately prior to",
+   "role": "obligation"
+  },
+  {
+   "id": "e5",
+   "text": "driving onto a sidewalk or onto the sidewalk area extending across any alleyway, driveway or building",
+   "role": "trigger"
+  },
+  {
+   "id": "e6",
+   "text": "yielding the right-of-way to any pedestrian",
+   "role": "sibling"
+  },
+  {
+   "id": "e7",
+   "text": "as may be necessary to avoid collision",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "Each term is admitted as its aggregate: 'bicycle' DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride'), 'electric bicycle' DEF-LVMC-11-02-082::electric_bicycle ('a device upon which a person may ride ... an electric motor'), 'electric scooter' DEF-LVMC-11-02-083::electric_scooter ('a device with handlebars and an electric motor'); the subject belongs to one of them (same words as the mapping index's 'Any person operating a bicycle, electric bicycle, or electric scooter'). 'The operator' is read through the device's controlled motion."
+  },
+  {
+   "span": "e3",
+   "atoms": [
+    "rel.occupies",
+    "st.alley",
+    "st.driveway_or_alley_entrance",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'; st.alley: 'a narrow way within a block serving the rear of properties'; st.driveway_or_alley_entrance: 'private road, alley or driveway meeting the highway' (its 'not a stand-in' clause, which of them meets the highway, does not matter: alley and driveway are both named); st.highway: 'the entire public way between its boundary lines' — a road user that occupies no highway region is beyond the property line, where a building stands. Read at the entry onto the sidewalk: emerging = at the observation before the entry the subject occupies an alley or a driveway/alley entrance, or occupies no highway region; entering into = at the entry the subject occupies an alley or a driveway/alley entrance (the sidewalk area extending across it), or from the entry it occupies the sidewalk until it occupies no highway region (the movement into a building read by the movement itself)."
+  },
+  {
+   "span": "e4",
+   "atoms": [],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "Same words as the mapping index (LVMC_11_20_060_o1): drv.motion.complete_halt, whose definition DEF-NRS-484A-255 applies to 'Stop, when required' ('complete cessation from movement'); the stop is required here, so DEF-NRS-484A-260 (stopping when prohibited) does not apply. 'such vehicle' refers back to the device the subject operates; it is not a new class condition (the vehicle definition DEF-NRS-484A-320 excludes devices moved by human power, electric bicycles and electric scooters, so reading it as a class would empty the duty). 'immediately prior to' places the halt in the stopping zone just short of the sidewalk, read with e5."
+  },
+  {
+   "span": "e5",
+   "atoms": [
+    "rel.occupies",
+    "st.region_geometry",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "Same atoms as the mapping index's 'driving onto a sidewalk or onto the sidewalk area extending across any alleyway or driveway'. st.sidewalk: 'area for pedestrians between roadway and property line' (not a crosswalk: none is meant); rel.occupies marks the event, the footprint coming to overlap the sidewalk; st.region_geometry: 'the ground distance from a road user's body outline to it' bounds the stopping zone outside the sidewalk. The sidewalk area across an alleyway, driveway or building is a part of a sidewalk region."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "e2",
+   "id": "asm.business_or_residence_district",
+   "meaning": "the place of the road user at the observation lies in a business district or a residence district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-082::electric_bicycle",
+    "ru.aggregate=DEF-LVMC-11-02-083::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "The subject is a bicycle, electric bicycle or electric scooter (any of the three aggregates). For a sidewalk region s, at the observation at which the subject's footprint comes to overlap s (rel.occupies(subject, s) there and not at the observation before), asm.business_or_residence_district holds and the subject enters into or emerges from an alley, driveway or building: at that observation or the one before it occupies an st.alley or st.driveway_or_alley_entrance region; or at the observation before it occupies no st.highway region; or from that observation on it occupies s until it occupies no st.highway region.",
+ "obligation": "Act before an event (rule 4c). Event: the entry onto sidewalk s defined in the applicability. Place: the stopping zone of s, the observations at which the subject does not occupy s and the ground distance from its body to s (st.region_geometry) is at most p.stop_point_tolerance. Act: drv.motion.complete_halt(subject; p.halt_speed_tolerance) at an observation in that zone. Search: from the observation before the event back through the observations at which the subject's body stays within p.stop_point_tolerance of s; it ends at the last observation before the event at which the subject is farther than p.stop_point_tolerance from s (the approach start) or at the last observation at which it occupied s (its previous entry onto s, whose halt does not count for this one). A halt found in the zone within the search: compliant. The search reaching either end without a halt: violated. Where it reaches neither end without a halt, because the recording begins inside the zone or the distance to s or the occupancy of s is unobserved at an observation the search crosses: unknown. A reverse, a lateral move or a speed fluctuation inside the zone begins no new approach. The halt is read on s itself, the sidewalk the event enters; no other sidewalk stands for it.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.stop_point_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "e1",
+   "why": "'The operator' is read through the device's controlled motion: whoever or whatever controls it, the device's conduct is judged.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "e4",
+   "why": "'immediately prior to' is read as a halt in the stopping zone of the sidewalk being entered, outside it and within p.stop_point_tolerance of it, during the approach that leads to the entry (the ontology's convention for an act due at a place before an event); a halt made farther back does not discharge the duty.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "In a declared residence district a bicycle rides out of a driveway entrance and onto the sidewalk without its speed falling to the halt tolerance while within the stopping zone; it was farther than the tolerance from the sidewalk earlier in the recording."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same bicycle halts just short of the sidewalk, within the stopping zone and outside the sidewalk, then rides onto it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "An electric scooter rides along the sidewalk from one sidewalk region into the next, coming from the sidewalk, not from an alley, a driveway or off the public way."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A bicycle emerges from a driveway onto the sidewalk with no halt recorded, and the source maps regions without their outline, so the stopping zone and the approach start cannot be read.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the electric bicycle already within the stopping zone, moving out of a driveway; it enters the sidewalk with no halt recorded, and the search reaches the start of the recording without reaching the approach start.",
+   "boundary": "the subject's approach to the sidewalk: the last observation at which it was farther than p.stop_point_tolerance from the sidewalk lies before the recording"
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The same driveway exit without a halt, in a place the map's reading declares outside any business or residence district."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition standard's kinematic channel"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "the body-to-mark gap within which a halt counts as at the mark: a stop line's set-back before a crossing plus a placement margin",
+   "source": "MUTCD stop-line placement practice"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

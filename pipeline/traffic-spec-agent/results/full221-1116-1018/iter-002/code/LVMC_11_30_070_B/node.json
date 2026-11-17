@@ -1,0 +1,152 @@
+{
+ "node_id": "LVMC_11_30_070_B",
+ "law_refs": [
+  "LVMC-11-30-070-B"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "No pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall cross a roadway",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "other than in a marked crosswalk or within an unmarked crosswalk",
+   "role": "exception"
+  },
+  {
+   "id": "s4",
+   "text": "in any business district",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Pedestrian' is admitted as the aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); ru.aggregate carries 'membership of a legal aggregate' and is claimed as one atom, never expanded into classes. Same words, same atoms as 'No pedestrian' in LVMC_11_30_050."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.roadway"
+   ],
+   "derived": [
+    "drv.motion.moving_across_carrier"
+   ],
+   "justification": "Same words, same mapping as LVMC_11_30_050. 'a roadway' (DEF-NRS-484A-220: 'that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder') is st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder'; its exclusion (not the sidewalk) does not apply, since only the roadway is read. The pedestrian is on it by rel.occupies ('a road user's footprint overlaps a lane / region'). 'cross' is motion across the designated direction of travel of a lane ('a longitudinal strip of roadway for one line of vehicles') or of the roadway the pedestrian occupies: drv.motion.moving_across_carrier ('Road user a moves across the designated direction of travel of carrier region r'); that concept says nothing of occupancy, so occupancy is read beside it. st.lane is not used as a half of the roadway or a lateral position, as its exclusion forbids: only as a carrier of a direction."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.crosswalk"
+   ],
+   "derived": [],
+   "justification": "'a marked crosswalk or ... an unmarked crosswalk' (DEF-NRS-484A-065: '(1) That part of a highway at an intersection included within the connections of the lateral lines of the sidewalks ... or (2) Any portion of a highway at an intersection or elsewhere distinctly indicated for pedestrian crossing by lines or other markings on the surface') is st.crosswalk: 'marked crossing, or the unmarked prolongation of sidewalks at an intersection (st.intersection); marked attribute'. Both values of the marked attribute are admitted, so the definition's whole extent is kept. 'in' / 'within' is the footprint overlapping the crosswalk: rel.occupies. Same atoms as 'except in a crosswalk' (LVMC_11_30_050)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s4",
+   "id": "asm.business_district",
+   "meaning": "the place of the road user at the observation lies in a business district, as the map's reading classifies the area"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "The subject is a pedestrian (ru.aggregate=DEF-NRS-484A-165::pedestrian) whose footprint overlaps a roadway (rel.occupies, st.roadway) at a place the reading declares to lie in a business district (asm.business_district), read at the judged observation.",
+ "obligation": "At every observation at which the subject occupies a roadway and moves across a lane or roadway it occupies (drv.motion.moving_across_carrier with speed_tol p.halt_speed_tolerance and cos_max p.crossing_motion_cos, on a region of kind st.lane or st.roadway the subject occupies), the subject's footprint overlaps a crosswalk (rel.occupies, st.crosswalk, marked or unmarked). Moving across the roadway while occupying no crosswalk is violated; standing on the roadway or moving along it is not a crossing and is compliant here.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.crossing_motion_cos"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'cross a roadway' is read at each observation as moving across the designated direction of a lane or roadway the pedestrian occupies (more than p.crossing_motion_cos from it, faster than p.halt_speed_tolerance); a pedestrian standing on the roadway or walking along it is not crossing and is not judged by this rule (LVMC_11_30_090 judges walking along).",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A pedestrian (ru.pedestrian) moves at 1.4 m/s across a lane at right angles to the lane's st.lane_direction, footprint on the roadway and on no st.crosswalk, at a place declared asm.business_district true."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same pedestrian crosses the same roadway with its footprint inside a st.crosswalk with marked true at every observation of the crossing, in a business district."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian walks on a st.sidewalk and occupies no roadway, in a business district."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A pedestrian is on the roadway outside any crosswalk in a business district; the source does not observe kin.velocity, so whether it moves across the lane is unknown.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The pedestrian crosses within an unmarked crosswalk (st.crosswalk with marked false) at an intersection, in a business district."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The pedestrian crosses mid-block outside any crosswalk at a place declared asm.business_district false."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed quantisation of the acquisition standard's scene graph"
+  },
+  {
+   "name": "p.crossing_motion_cos",
+   "unit": "ratio",
+   "value": 0.94,
+   "convention": "largest absolute cosine between a pedestrian's velocity and a carrier's designated direction at which the pedestrian counts as moving across the carrier rather than along it: motion more than about 20 degrees away from the direction of travel",
+   "source": "pedestrian crossing-trajectory observation studies (FHWA pedestrian crossing behaviour)"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,206 @@
+{
+ "node_id": "LVMC_11_60_040",
+ "law_refs": [
+  "LVMC-11-60-040"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-LVMC-11-02-140::taxicab"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The operator of a taxicab",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not stand or park such vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "upon any street",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "at any place other than in a taxicab stand so designated as provided herein.",
+   "role": "exception"
+  },
+  {
+   "id": "s5",
+   "text": "This provision shall not prevent the operator of a taxicab from temporarily stopping",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "in accordance with other stopping or parking regulations",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "at any place for the purpose of and while actually engaged in the expeditious loading or unloading of passengers.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-LVMC-11-02-140::taxicab"
+   ],
+   "derived": [],
+   "justification": "'taxicab' is a defined term whose admitted aggregate is DEF-LVMC-11-02-140::taxicab ('a motor vehicle which is properly licensed under State and local law to provide taxicab service'); claimed as the aggregate, never as ru.taxicab. 'The operator of' is read through the taxicab's controlled motion (agency narrowing)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'stand' (DEF-NRS-484A-250: 'the halting of a vehicle, whether occupied or not, otherwise than for the purpose of and while actually engaged in receiving or discharging passengers') contains 'park' (DEF-NRS-484A-155: 'the standing of a vehicle ... otherwise than temporarily'), so 'stand or park' is standing. drv.motion.parked denotes the road user at rest at every observation of a window of length min_duration ('A halt shorter than min_duration ... is not denoted'); with min_duration = p.standing_min_duration the purpose exclusion of the definition is read through the halt's duration (purpose narrowing). 'such vehicle' is the taxicab, and 'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, which the taxicab carries. Same concept as the index's 'shall: Not stand or park such vehicle'."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'street' (DEF-NRS-484A-265: 'the entire width between the boundary lines of every highway inside the territorial limits of a city') is a highway: st.highway is 'the entire public way between its boundary lines, including sidewalks and shoulders' and is not a stand-in for the roadway, which the words do not narrow to. The city-limit qualification is the territorial scope of this city ordinance, within which every highway is a street. rel.occupies anchors the taxicab to the way. Same atoms as the index's 'upon any street'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.curb_zone"
+   ],
+   "derived": [],
+   "justification": "'taxicab stand' (DEF-NRS-484B-067: 'a fixed area in a highway parallel and adjacent to the curb or edge of the highway and set aside for taxicabs to stand for passengers') is st.curb_zone of kind taxicab_stand ('a signed or marked length of curb; kind ∈ {..., taxicab_stand, ...}'); rel.occupies ('a road user's footprint overlaps a lane / region (..., curb zone, ...)') places the standing taxicab in it. 'so designated as provided herein' is read by the presence of the signed or marked stand (status narrowing)."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-LVMC-11-02-140::taxicab"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "'temporarily stopping' (stopping, DEF-NRS-484A-260: 'any halting, even momentarily, of a vehicle') is a halt of the taxicab: drv.motion.complete_halt, 'at rest at the observation'. A halt that ends before p.standing_min_duration is not drv.motion.parked, so the temporary stop the words protect is outside the obligation of s2."
+  },
+  {
+   "span": "s7",
+   "atoms": [],
+   "derived": [
+    "drv.motion.parked"
+   ],
+   "justification": "'for the purpose of and while actually engaged in the expeditious loading or unloading of passengers' is a purpose, read through the halt's duration: a halt no longer than p.standing_min_duration, the passenger pick-up dwell at the curb, is not drv.motion.parked with that min_duration ('A halt shorter than min_duration, which may be the temporary halt the definition leaves out, is not denoted'), so it is excused 'at any place'."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s6",
+   "why": "'This provision shall not prevent' a temporary passenger stop: the words leave such a stop to the other stopping and parking regulations, which judge it by their own rules. A temporary stop that breaches another regulation is that regulation's violation; under this provision it is neither standing nor parking (DEF-NRS-484A-250, DEF-NRS-484A-155), so this rule's verdict is the same whether or not the stop complies with the others.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-LVMC-11-02-140::taxicab"
+   ]
+  }
+ ],
+ "applicability": "The subject is a taxicab (ru.aggregate DEF-LVMC-11-02-140::taxicab, a vehicle) whose footprint overlaps a highway (rel.occupies, st.highway) at the observation.",
+ "obligation": "Wherever the subject stands — drv.motion.parked(subject) with speed_tol = p.halt_speed_tolerance and min_duration = p.standing_min_duration, i.e. at rest at every observation of the last p.standing_min_duration — its footprint overlaps a curb zone of kind taxicab_stand (rel.occupies, st.curb_zone). A halt shorter than p.standing_min_duration, the temporary stop for loading or unloading passengers, is not standing and is compliant at any place.",
+ "params": [
+  "p.halt_speed_tolerance",
+  "p.standing_min_duration"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'The operator of a taxicab' is read through the taxicab's controlled motion and halts, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "The definitions' exclusion of a halt 'for the purpose of and while actually engaged in receiving or discharging passengers' is read through the halt's duration: standing is a halt longer than p.standing_min_duration.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s4",
+   "why": "'so designated as provided herein' is read by the presence of the signed or marked taxicab_stand curb zone.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s7",
+   "why": "The purpose of loading or unloading passengers is read through a halt no longer than p.standing_min_duration.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A taxicab halts at the curb of a city highway, outside any taxicab_stand curb zone, and stays at rest for 5 minutes."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A taxicab halts within a taxicab_stand curb zone of the highway and stays at rest for 5 minutes."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A taxicab stands for 5 minutes in a private parking lot whose footprint lies on no highway."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A taxicab is at the curb of a highway outside any taxicab stand for 5 minutes; the source supplies no speed, so whether it stands is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A taxicab halts 30 seconds at the curb outside any taxicab stand, a passenger boards, and it drives off: the halt is a temporary stop, not standing."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "proposed this iteration by LVMC_11_12_070_B; speed resolution of the acquisition standard"
+  },
+  {
+   "name": "p.standing_min_duration",
+   "unit": "s",
+   "value": 60.0,
+   "convention": "the longest halt counted as receiving or discharging passengers or loading rather than standing: a passenger pick-up dwell at the curb",
+   "source": "proposed this iteration by LVMC_11_52_040_A; curbside passenger dwell times of taxi and ride-hail pick-up studies"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

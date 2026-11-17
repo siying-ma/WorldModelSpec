@@ -1,0 +1,274 @@
+{
+ "node_id": "NRS_484B_627_2",
+ "law_refs": [
+  "NRS-484B-627-2"
+ ],
+ "subject": {
+  "binder": "subject",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "x1",
+   "text": "A person",
+   "role": "subject"
+  },
+  {
+   "id": "x2",
+   "text": "shall not bring a vehicle to a complete stop",
+   "role": "obligation"
+  },
+  {
+   "id": "x3",
+   "text": "upon a roadway",
+   "role": "condition"
+  },
+  {
+   "id": "x4",
+   "text": "so as to impede or block the normal and reasonable movement of",
+   "role": "standard"
+  },
+  {
+   "id": "x5",
+   "text": "traffic",
+   "role": "condition"
+  },
+  {
+   "id": "x6",
+   "text": "unless the stop is necessary",
+   "role": "standard"
+  },
+  {
+   "id": "x7",
+   "text": "for safe operation",
+   "role": "exception"
+  },
+  {
+   "id": "x8",
+   "text": "or in compliance with law.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "x1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Reuses the index mapping of 'A person' (LVMC_11_22_010): the person who brings a vehicle to a stop is read through the vehicle's controlled motion (observable_reading agency); the class is the admitted aggregate DEF-NRS-484A-320::vehicle, 'membership of a legal aggregate', not the role of driving."
+  },
+  {
+   "span": "x2",
+   "atoms": [
+    "drv.motion.complete_halt",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.complete_halt"
+   ],
+   "justification": "A complete stop is the concept drv.motion.complete_halt: 'The road user is at rest at the observation — \"complete cessation from movement\" — observed as its speed (kin.speed) at or below a tolerance the caller sets', filled with p.halt_speed_tolerance. Of the two stop definitions the run leaves ambiguous, DEF-NRS-484A-255 ('complete cessation from movement') and DEF-NRS-484A-260 ('any halting, even momentarily'), both denote this halt; the concept says nothing of how long the vehicle stays at rest, so a momentary halt is read too. 'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle."
+  },
+  {
+   "span": "x3",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "Upon a roadway: the subject's footprint overlaps (rel.occupies) a st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder', which is DEF-NRS-484A-220 ('improved and ordinarily used for vehicular traffic, exclusive of the shoulder'); 'Not a stand-in for: the sidewalk' — a halt on the shoulder or in a bay is not on the roadway."
+  },
+  {
+   "span": "x5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway for purposes of travel'); the traffic whose movement is impeded is a traffic road user behind the subject in the same lane (rel.ahead_behind_in_lane) at a body gap (rel.surface_gap) the operationalization of x4 bounds."
+  },
+  {
+   "span": "x7",
+   "atoms": [
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "derived": [],
+   "justification": "Safe operation requires the stop where the subject halts behind a road user ahead of it in the same lane (rel.ahead_behind_in_lane) within a queue gap between bodies (rel.surface_gap), or where some road user is predicted to come close to it (prim.closest_approach_within, prim.closest_approach_distance; 'Not a stand-in for ... the danger of a crash' alone, the bound being the operationalization of x6)."
+  },
+  {
+   "span": "x8",
+   "atoms": [
+    "dev.governs",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.traffic_signal",
+    "dev.human_direction",
+    "dev.railway_signal_or_gate",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Extends the index mapping of 'or in compliance with law' (NRS_484B_450_1a: dev.governs, dev.stop_sign, dev.traffic_signal, rel.occupies, st.travel_region) with the other controls whose indication requires a halt, as the mapping of 'shall not: Stop, stand or park a vehicle' (NRS_484B_477_1a) reads them: a stop sign (dev.stop_sign, 'regulatory sign requiring a full halt'), a yield sign (dev.yield_sign, 'requiring yielding without a mandatory halt', where a halt is how the yield is given), a traffic signal showing circular_red, a red_arrow or flashing_red (dev.traffic_signal), a person directing traffic with indication stop (dev.human_direction, role police_officer, flagger, school_crossing_guard or railroad_flagger), or railway lights flashing or a gate not up (dev.railway_signal_or_gate), governing (dev.governs) a travel region the subject occupies (rel.occupies, st.travel_region). dev.governs is 'Not a stand-in for: a position', and no position is read from it."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "x4",
+   "standard": "so as to impede or block the normal and reasonable movement of traffic",
+   "concepts": [
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "drv.motion.complete_halt",
+    "kin.accel_longitudinal"
+   ],
+   "params": [
+    "p.rear_signal_reach",
+    "p.speed_decrease_decel_min",
+    "p.halt_speed_tolerance"
+   ],
+   "convention": "Queue convention: the halt impedes or blocks traffic where a traffic road user is behind the halted subject in the same lane with the gap between bodies within p.rear_signal_reach (immediately to the rear) and that road user is itself at rest (complete halt within p.halt_speed_tolerance: blocked) or decelerating at p.speed_decrease_decel_min or more (impeded).",
+   "surrogate": false
+  },
+  {
+   "span": "x6",
+   "standard": "the stop is necessary for safe operation",
+   "concepts": [
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.queue_halt_gap",
+    "p.conflict_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Queue spacing and the traffic-conflict technique: the stop is necessary where a road user is ahead of the subject in the same lane with the body gap within p.queue_halt_gap (the subject halts behind other traffic), or where some road user's centre is predicted to come within p.conflict_centre_clearance of the subject's within p.conflict_horizon.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a vehicle (DEF-NRS-484A-320::vehicle) occupying a roadway.",
+ "obligation": "Violated where the subject is at rest (drv.motion.complete_halt with p.halt_speed_tolerance) and some traffic road user other than the subject is behind it in the same lane with the body gap within p.rear_signal_reach and is at rest or decelerating at p.speed_decrease_decel_min or more; except where (a) some road user is ahead of the subject in the same lane with the body gap within p.queue_halt_gap, or some road user's closest approach to the subject lies within p.conflict_horizon at a centre distance at or below p.conflict_centre_clearance, or (b) a control requiring a halt governs a travel region the subject occupies: a stop sign, a yield sign, a traffic signal showing circular_red, a red_arrow or flashing_red, a person directing traffic with indication stop, or railway crossing lights flashing or a gate not up. A moving subject, or one halted with no traffic held behind it, complies.",
+ "params": [
+  "p.rear_signal_reach",
+  "p.speed_decrease_decel_min",
+  "p.halt_speed_tolerance",
+  "p.queue_halt_gap",
+  "p.conflict_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "x1",
+   "why": "'A person' who brings the vehicle to a stop is read through the vehicle's controlled motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "x4",
+   "why": "'the normal and reasonable movement of traffic' is read only through traffic behind the subject in its own lane, halted or decelerating; traffic in other lanes is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car halts mid-block in a roadway lane with no road user ahead, no road user in predicted conflict and no stop sign or signal; a car behind it in the same lane halts 4 m behind."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same halt, but a bus is halted 3 m ahead of the car in its lane: the car halts behind other traffic."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car halts in a parking space off the roadway with a car passing behind it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As in forbid, but the source does not supply the in-lane ahead/behind relation, so neither the follower held behind nor the absence of a vehicle ahead is observed.",
+   "masked": [
+    "rel.ahead_behind_in_lane"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "As in forbid, but a stop sign governs the lane the car occupies."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A car halts in a roadway lane with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rear_signal_reach",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "the gap between bodies within which a following vehicle in the same lane is immediately to the rear of a vehicle: two seconds of headway at an urban speed of about 15 m/s",
+   "source": "two-second headway rule of driver manuals"
+  },
+  {
+   "name": "p.speed_decrease_decel_min",
+   "unit": "m/s^2",
+   "value": 0.3,
+   "convention": "the longitudinal deceleration at or beyond which a sampled acceleration counts as a decrease of speed rather than noise or rolling resistance: the acceleration resolution of the source",
+   "source": "IMU and trajectory acceleration resolution"
+  },
+  {
+   "name": "p.halt_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "the speed at or below which a sampled speed counts as no movement: the source's speed resolution",
+   "source": "speed resolution of the acquisition source"
+  },
+  {
+   "name": "p.queue_halt_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "the gap between bodies to a road user ahead in the same lane within which a halt is a halt behind other traffic: the spacing of halted vehicles in a queue",
+   "source": "queue spacing of halted vehicles (jam density)"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "time-to-collision threshold of the traffic-conflict technique: a closest approach later than this is not a present danger of a crash",
+   "source": "traffic conflict technique (Hyden; time-to-collision thresholds)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "centre-to-centre distance at the closest approach below which the bodies of a passenger car and another road user are taken to collide or nearly collide: about a car's half-length plus half a body width",
+   "source": "passenger car design dimensions"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}
