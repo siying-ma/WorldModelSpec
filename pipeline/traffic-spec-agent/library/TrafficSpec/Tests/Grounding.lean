@@ -53,6 +53,15 @@ def rules : List Rule := [rule, truckRule, composed]
 #guard (Rule.check rules { rule with obligation := .cmp (.quantity "prim_heading_change" [X] [.measure "kin_speed" [X]]) .ge (.lit (degrees 1) .degree) }).length = 1
 #guard (Rule.check rules { rule with obligation := .rule "nowhere/rule" [("x", "x")] }).length = 1
 #guard (Rule.check rules { rule with obligation := .existsRegion (.lit "lane") "r" (.atom "rel_occupies" [X, .var "r"] []) }) = []
+#guard (Rule.check rules { rule with obligation := .atom "sig_warning_lamp" [X, .lit "red", .lit "flashing", .lit "front"] [] }) = []
+#guard (Rule.check rules { rule with obligation := .atom "sig_warning_lamp" [X, .lit "red", .lit "flashing", .lit "ahead"] [] }).length = 1
+#guard (Rule.check rules { rule with obligation := .atom "sig_warning_lamp" [X, .lit "red", .lit "flashing", Y] [] }).length = 1
+#guard (Rule.check rules { rule with obligation := .existsDevice (.lit "zone_sign") "d" (.cmp (.sinceRise (mv "x")) .le (.measure "dev_zone_sign_duration_limit" [.var "d"])) }) = []
+#guard (Rule.check rules { rule with obligation := .cmp (.sinceRise (mv "x")) .le (.measure "dev_zone_sign_duration_limit" [X]) }).length = 1
+#guard (Rule.check rules { rule with obligation := .existsRegion (.lit "obstruction") "r" (.not (.atom "rel_contact_structure" [X, .var "r"] [])) }) = []
+#guard (Rule.check rules { rule with obligation := .not (.atom "rel_contact_structure" [X, Y] []) }).length = 1
+#guard (Rule.check rules { rule with obligation := .existsRegion (.lit "obstruction") "r" (.atom "rel_contact" [X, .var "r"] []) }).length = 1
+#guard (Rule.check rules { rule with obligation := .existsRegion (.lit "obstruction") "r" (.atom "rel_contact_structure" [X, .var "r", .lit "x"] []) }).length = 1
 #guard Rule.checkReading rules rule ρ = []
 #guard Rule.checkReading rules truckRule {} = ["test/truck_stop: parameter `p.stop_speed` is not in the reading"]
 #guard Rule.checkReading rules composed {} = ["test/truck_stop: parameter `p.stop_speed` is not in the reading"]   -- through the composition
@@ -178,7 +187,7 @@ def rep : Monitor.Report := (Monitor.check rules τ ρ full).toOption.getD defau
 #guard (rep.rules.map (·.live)) = [true, true, true]
 def text : String := Monitor.renderText rep
 #guard (text.splitOn "\n").any (·.startsWith "SOURCE\ttest\tinstants=9\tgap=2")
-#guard (text.splitOn "\n").any (· == "GROUND\ttest/gap\tx=2,y=1\tnot_applicable")
+#guard (text.splitOn "\n").any (· == "GROUND\ttest/gap\tx=2,y=1\tnot_applicable\tabstractions=\tsampled_duration=false")
 #guard (text.splitOn "\n").any (· == "TL\ttest/gap\tx=1,y=2\t2500\t4000\tunknown")
 #guard (text.splitOn "\n").any (· == "UNK\ttest/gap\tx=1,y=2\tdivision_by_zero:div\t4")
 #guard (text.splitOn "\n").any (·.startsWith "SUMMARY\tconcrete\trules=3\tsupported=3\tpartial=0\tunsupported=0\tlive=3")

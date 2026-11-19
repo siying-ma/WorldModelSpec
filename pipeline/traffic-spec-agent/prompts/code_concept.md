@@ -105,6 +105,9 @@ Run mode: `{mode}`.
    For `headingSince`, use a declared time formal directly as the step bound, including when
    forwarding it to another concept. Never use a literal, expression, or `p.*` reading parameter
    for that bound. Do not add or change formals.
+   For `durationWithin`, pass the acquisition step through a declared time formal, including when
+   forwarding it to another concept; do not fix a literal or a reading parameter inside the shared
+   concept.
 6. **Witnesses are built, not described.** One instance, three scenarios (`holds`, `fails`,
    `blind`), each a `Scenario` built with `Build.*` from the record's narratives; a supersession
    adds `counterexample`, on which the old body must give the wrong verdict. A scenario of an

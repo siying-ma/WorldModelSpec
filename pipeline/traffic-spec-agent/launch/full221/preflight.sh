@@ -15,7 +15,7 @@ ACCOUNT_FILE=${CLAUDE_CONFIG_DIR:+$CLAUDE_CONFIG_DIR/.claude.json}; ACCOUNT_FILE
 MIN_FREE_GB=${MIN_FREE_GB:-20}; MIN_CONFIG_FREE_GB=${MIN_CONFIG_FREE_GB:-5}
 OPENAI_KEY_FILE=${OPENAI_KEY_FILE:-$HOME/.config/traffic-spec/openai.env}
 PYTHON=${PYTHON:-python3}; REMOTE=${REMOTE:-origin}
-BASELINE_BRANCH=remote/full-train-generation; LAWS=laws/example/train/laws.jsonl; N_LAWS=221
+BASELINE_BRANCH=remote/full-train-generation; LAWS=laws/example/train/laws.jsonl; N_LAWS=224
 FAILS=0
 pass() { echo "PASS  $*"; }
 fail() { echo "FAIL  $*"; FAILS=$((FAILS + 1)); }
@@ -49,6 +49,11 @@ if [ -n "$RUN_ID" ]; then
   git push --dry-run -q "$REMOTE" "HEAD:refs/heads/runs/$RUN_ID" >/dev/null 2>&1 \
     && pass "a dry-run push to $REMOTE runs/$RUN_ID is accepted" || fail "a dry-run push to $REMOTE runs/$RUN_ID failed: check push access and credentials"
 fi
+TOP=$(cd "$(git rev-parse --show-toplevel)" && pwd -P); TMP=$(realpath -m "${TMPDIR:-/tmp}")
+case "$TMP/" in
+  "$TOP"/*) fail "TMPDIR ($TMPDIR) lies inside the checkout ($TOP): the claude CLI writes its task output there, and the coding gate reads it as a change to the tree; export TMPDIR=<a directory outside the checkout>" ;;
+  *) pass "TMPDIR (${TMPDIR:-unset: /tmp}) lies outside the checkout" ;;
+esac
 [ -n "$(git config user.name)" ] && [ -n "$(git config user.email)" ] \
   && pass "git identity: $(git config user.name) <$(git config user.email)>" || fail "git user.name / user.email not set (git config user.name ...; git config user.email ...)"
 

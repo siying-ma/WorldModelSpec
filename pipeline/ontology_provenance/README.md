@@ -29,7 +29,7 @@ Current (2026-09-18, Nevada Revised Statutes target):
 - `nrs_tools/sources/` — the parsed section files the generator reads (`484A.json`, `484B.json`,
   `484D.json`, `486.json`, `lvmc.json`) and the text of the City's Transportation Engineering Fact
   Sheets (March 2025), which were read and found to contribute no obligations of their own. Beside
-  them, `482.json`, `482A.json`, `489.json`, `239C.json` and `648.json` hold only the term
+  them, `482.json`, `482A.json` and `489.json` hold only the term
   definitions a corpus text takes a meaning from by citation (`INCORPORATED` in
   `nrs_tools/references.py`), written by `nrs_tools/incorporated_sources.py` from saved official
   chapter pages; `INCORPORATED_SOURCES.json` records each page's capture, address and SHA-256.

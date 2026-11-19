@@ -33,19 +33,20 @@ else
 fi
 
 # ── 3. Python dependencies ───────────────────────────────────────────────
-# The packages pyproject.toml declares: fire (the command line) and the OpenAI SDK (the concept
-# review and the aggregate verifier). Install into whatever environment is active (conda, venv, or
-# system). Only fall back to creating a local .venv if that is not possible. No API request is sent.
+# The packages pyproject.toml declares: fire (the command line), the OpenAI SDK (the concept
+# review and the aggregate verifier) and jsonschema (the behaviour-property review's answer
+# schemas). Install into whatever environment is active (conda, venv, or system). Only fall back
+# to creating a local .venv if that is not possible. No API request is sent.
 echo "==> Python dependencies"
 python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' \
   || { echo "    Python 3.11 or newer is required (python3 is $(python3 -c 'import sys; print(sys.version.split()[0])'))" >&2; exit 1; }
-PY_PACKAGES=("fire>=0.6.0" "openai>=1.66")
-PY_IMPORTS='import fire; from openai import OpenAI, APIError, APITimeoutError, RateLimitError'
+PY_PACKAGES=("fire>=0.6.0" "openai>=1.66" "jsonschema>=4.18")
+PY_IMPORTS='import fire; from openai import OpenAI, APIError, APITimeoutError, RateLimitError; import jsonschema, referencing'
 VENV_CREATED=0
 if python3 -c "$PY_IMPORTS" >/dev/null 2>&1; then
-  echo "    fire and openai already available in the active environment"
+  echo "    fire, openai and jsonschema already available in the active environment"
 elif python3 -m pip install --quiet "${PY_PACKAGES[@]}" >/dev/null 2>&1 && python3 -c "$PY_IMPORTS" >/dev/null 2>&1; then
-  echo "    installed fire and openai into the active environment"
+  echo "    installed fire, openai and jsonschema into the active environment"
 else
   echo "    could not install into the active environment; creating .venv"
   python3 -m venv .venv

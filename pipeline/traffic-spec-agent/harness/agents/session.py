@@ -165,6 +165,15 @@ def deny_rules(kind: str, run_id: str | None = None) -> list[str]:
     return rules
 
 
+def claude_billing(env: dict | None) -> str:
+    """How a Claude session launched with `env` over this process's environment is paid: `api_key`
+    (cash, ANTHROPIC_API_KEY set) or `account` (an account login, whose reported cost is the API
+    equivalent, not money spent)."""
+    import os
+    key = (env or {}).get("ANTHROPIC_API_KEY", os.environ.get("ANTHROPIC_API_KEY"))
+    return "api_key" if key else "account"
+
+
 def vendor_of(model: Optional[str]) -> str:
     """`openai` for a GPT or o-series model name (or an `openai:` prefix), else `anthropic`."""
     m = (model or "").lower()
@@ -286,6 +295,7 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
             if digest in rejected:
                 raise BadRequest(f"{label}: the API rejected this very request before; it is not sent again until it changes")
             token = ledger.reserve(name, len(text), cap or 0, row_label)    # raises BudgetPaused when the call does not fit
+            ledger.start(token, budget.usage_row(row_label, "openai", name, effort, {}, 0.0))   # RunStopped: a stop since the reservation
             _started(out_dir, label, suffix, launched)
             try:
                 code, result, timed_out = openai_runner.run_openai(
@@ -307,6 +317,7 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
         else:
             cap_usd = session_cap(opts, role)
             token = ledger.reserve_session(chosen or "", cap_usd, row_label)   # raises BudgetPaused when it does not fit
+            ledger.start(token, {**budget.usage_row(row_label, "anthropic", chosen or "", effort, {}, 0.0), "billing": claude_billing(env)})
             _started(out_dir, label, suffix, launched)
             try:
                 code, result, timed_out = runner.run_claude(
@@ -315,9 +326,11 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
                     timeout_seconds=timeout if timeout is not None else opts.session_timeout,
                     env_overrides=env, allow=allow, deny=deny, tools=tools)
             except BaseException:                          # the session may have run: its cost is not known
-                ledger.unknown(token, budget.usage_row(row_label, "anthropic", chosen or "", effort, {}, None)); raise
+                ledger.unknown(token, {**budget.usage_row(row_label, "anthropic", chosen or "", effort, {}, None),
+                                       "billing": claude_billing(env)}); raise
             row = budget.usage_row(row_label, "anthropic", chosen or "", effort, (result or {}).get("usage") or {},
                                    (result or {}).get("total_cost_usd"))
+            row["billing"] = claude_billing(env)
             if row["cost_usd"] is None:                    # an answer without its cost stays at the reservation
                 ledger.unknown(token, row)
             else:
@@ -398,7 +411,7 @@ def run_tools(prompt: str, out_dir: Path, opts: Options, tools, *, label: str, e
     Each request is reserved on its own, at its whole input and the output-token limit, and
     settled to its usage as it returns, so a review of several requests holds no more than one
     reservation at a time and a failure leaves the usage of the requests before it recorded.
-    `BudgetPaused` propagates. The whole session has one deadline, `session_timeout`; each
+    `BudgetPaused` and `RunStopped` propagate. The whole session has one deadline, `session_timeout`; each
     request's timeout is what remains, at most `REQUEST_TIMEOUT`. A refused, failed or overdue
     request is a session that did not run: it is relaunched from the start after `retry_wait` (the
     first time after `SERVER_FAILURE_WAIT` when the API failed it), within the task's launches of this
@@ -441,6 +454,7 @@ def run_tools(prompt: str, out_dir: Path, opts: Options, tools, *, label: str, e
             if digest in rejected:
                 raise BadRequest(f"{label}: the API rejected this very request before; it is not sent again until it changes")
             token = ledger.reserve(name, len(json.dumps(items, ensure_ascii=False)), cap or 0, row_label)   # raises BudgetPaused
+            ledger.start(token, budget.usage_row(row_label, "openai", name, effort, {}, 0.0))
             try:
                 code, resp, timed_out = openai_runner.request(items, model=chosen, tools=tools.specs, tool_choice=choice,
                                                               effort=effort, timeout_seconds=min(REQUEST_TIMEOUT, remaining),

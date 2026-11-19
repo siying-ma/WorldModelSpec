@@ -26,7 +26,7 @@ SOURCES = {DEF["id"]: DEF["text"]}
 AID = "DEF-TST-900A-030::lorry"
 LOCAL = "TST-900B-100:s1::lorry"
 LAW = corpus.Law("TST-900B-100", "", DEF["text"], "")
-GENERIC, SPECIFIC, OPEN = "ru.motor_vehicle", "ru.truck", "ru.trailer_or_combination"
+GENERIC, SPECIFIC, OPEN = "ru.motor_vehicle", "ru.truck", "ru.trailer"
 WORDS = "every motor vehicle used to carry goods"
 
 
@@ -167,6 +167,22 @@ class Schema(unittest.TestCase):
         self.assertRejected(mapping(reason=""), "a covered status explains")
         rec = mapping()
         next(c for c in rec["classifications"] if c["class"] == SPECIFIC)["covered_by"] = [GENERIC]
+        self.assertTrue(any("only a covered class carries" in e for e in self.defects(rec)))
+
+    def test_an_included_class_may_quote_its_own_contract_as_the_named_kind(self):
+        rec = mapping()
+        spec = next(c for c in rec["classifications"] if c["class"] == SPECIFIC)
+        spec["basis"] = [{"class": SPECIFIC, "words": contract_words(SPECIFIC)}]
+        self.assertEqual(self.defects(rec), [])
+        spec["basis"] = [{"class": GENERIC, "words": contract_words(GENERIC)}]
+        self.assertTrue(any("quotes its own contract" in e for e in self.defects(rec)))
+        spec["basis"] = [{"class": SPECIFIC, "words": "a vehicle that carries goods for hire"}]
+        self.assertTrue(any("not verbatim in the contract" in e for e in self.defects(rec)))
+        spec["basis"] = []
+        self.assertTrue(any("own contract words that name its members" in e for e in self.defects(rec)))
+        excluded = next(c for c in rec["classifications"] if c["status"] == "excluded")
+        spec.pop("basis")
+        excluded["basis"] = [{"class": excluded["class"], "words": contract_words(excluded["class"])}]
         self.assertTrue(any("only a covered class carries" in e for e in self.defects(rec)))
 
 

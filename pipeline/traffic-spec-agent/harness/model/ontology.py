@@ -7,9 +7,24 @@ from pathlib import Path
 
 ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_]+)` \| (.*)$")
 ENUM = re.compile(r"\*\*(\w+)\*\* ∈ \{([^}]*)\}")
-CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
+CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|;]+?)(?:;| \*\*Not)|\*\*code\*\*: ([^*|;]+?)(?:;| \*\*Not)")
+#: The atom ids of the road-user, structure and device families that are attributes of an entity or
+#: relations between entities, not classes or kinds of one. Every other atom of those families is a
+#: class or a kind: a constructor of Core's generated `RoadUserClass`, `StructureKind` or `DeviceKind`,
+#: and, for road users, a class an aggregate classifies.
+NOT_KINDS: dict[str, frozenset[str]] = {
+    "ru": frozenset({"ru.occupant_count", "ru.unladen_mass", "ru.disabled", "ru.rider_posture", "ru.subject", "ru.aggregate"}),
+    "st": frozenset({"st.lane_direction", "st.lane_adjacency", "st.lane_connectivity", "st.lane_enters", "st.lane_marking",
+                     "st.lane_width", "st.curvature", "st.grade", "st.sight_distance", "st.region_geometry",
+                     "st.on_way", "st.entrance_of", "st.sight_along_way"}),
+    "dev": frozenset({"dev.governs", "dev.governs_sidewalk", "dev.governs_parking_space", "dev.position", "dev.inoperative"}),
+}
 ANCHORS = {"rel.occupies", "st.region_geometry"}   # the relations that tie a feature of the scene to the subject
 AGGREGATE = "ru.aggregate"                          # the atom a legal aggregate word is claimed as
+#: A row of the catalogue of approved abstractions, in the section on what is not an atom: an id with
+#: no family prefix, and its scope.
+ABSTRACTION = re.compile(r"^\| `([a-z][a-z0-9_]*)` \| (.*?)\s*\|?\s*$")
+NOT_ATOMS = 9                                       # the section on what is not an atom
 
 
 @dataclass
@@ -19,6 +34,7 @@ class Ontology:
     atoms: dict[str, str] = field(default_factory=dict)          # id → contract
     values: set[str] = field(default_factory=set)                # "atom=value"
     primitives: dict[str, tuple[str, str]] = field(default_factory=dict)   # id → (contract, params)
+    abstractions: dict[str, str] = field(default_factory=dict)  # approved abstraction id → its scope
 
     @property
     def atom_ids(self) -> set[str]:
@@ -57,6 +73,9 @@ def load(path: Path) -> Ontology:
             section = int(m.group(1)); continue
         r = ROW.match(line)
         if not r:
+            a = ABSTRACTION.match(line) if section == NOT_ATOMS else None
+            if a:
+                o.abstractions[a.group(1)] = a.group(2).strip()
             continue
         aid, rest = r.group(1), r.group(2)
         cells = [c.strip() for c in rest.split(" | ")]

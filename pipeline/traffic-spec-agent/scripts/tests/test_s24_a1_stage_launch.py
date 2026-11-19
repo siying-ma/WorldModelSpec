@@ -32,7 +32,7 @@ class StageLaunch(unittest.TestCase):
         w = split_world()
         with Fixture(w, staged=True, **SPLIT) as f, mock.patch.object(handoff, "toolchain", lambda: TOOLCHAIN), \
                 mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
-            self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
+            self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_review"])   # a new run requires the review: generation hands to it
             rd = paths.RESULTS / "r"
             (rd / stages.STAGES_FILE).write_text(json.dumps(stage_row(rd, **over)) + "\n")
             handoff.export("r")
@@ -69,7 +69,7 @@ class StageLaunch(unittest.TestCase):
 
     def test_a_launch_on_the_stage_continues(self):
         with self.staged() as (f, w, rd):
-            self.assertEqual(f.drive(1, label_deferred=True, max_iterations=3), ["awaiting_labels"])
+            self.assertEqual(f.drive(1, label_deferred=True, max_iterations=3), ["awaiting_labels"])   # its stage record says `review: none`
 
     def test_inputs_or_policy_other_than_the_stage_are_refused(self):
         for over, words in (({"semantic": {"corpus": "other"}}, "other inputs than its active stage `G0`"),

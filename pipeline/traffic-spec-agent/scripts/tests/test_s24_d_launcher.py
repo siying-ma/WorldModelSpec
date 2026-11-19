@@ -1,5 +1,6 @@
 """The launcher with a staged run (`results/<run>/stages.jsonl`), on a temporary git repository with a
-local bare remote: `STAGE=review` and `KIND=review` refused before anything runs; `stage-enter` replacing
+local bare remote: `STAGE=review` only in a review stage of a staged run and `KIND=review` passed to the
+harness's `stage enter`; `stage-enter` replacing
 exactly the code files with the new baseline's (additions, deletions and the doctor's split tool outside
 the agent directory) and never a run artifact or a non-code file, committing one non-merge stage commit,
 pushing it, confirming the transition at it and committing its `done` state; a refusal of the harness
@@ -8,8 +9,9 @@ again; and a staged `resume` anchored on the stage's transition commit (no merge
 to the stage's baseline, the launch kind the stage's), an adopted first stage keeping the baseline rule.
 
 The harness is the stand-in of `test_split_launcher` with a stand-in `stage enter` (resumable through the
-transition states, stopping or killing the launcher where a test says) and `stage confirm` (the commit
-must be on the remote run branch). The stage record, its reader and the code digest are the real ones."""
+transition states, stopping or killing the launcher where a test says), `stage confirm` (the commit
+must be on the remote run branch) and `stage handover` (a transition the real one never makes itself
+waits; any other answers as `FAKE_HANDOVER` says for the kind entered, waiting by default). The stage record, its reader and the code digest are the real ones."""
 import json
 import os
 import shutil
@@ -32,6 +34,16 @@ def _stop(ctl, key, value):
         if ctl.get("kill"):
             os.kill(os.getppid(), 9)                   # the launcher dies here, as on a power cut
         sys.exit(1)
+if a[:2] == ["stage", "handover"]:
+    from harness.store import stages
+    rd = Path("results") / a[2]; to = opt("--to")
+    with open(os.environ["FAKE_LOG"] + ".handover", "a") as f:
+        f.write(json.dumps({"argv": a}) + "\n")
+    kind = stages.active_stage(rd)["stage_kind"]
+    if (kind, to) not in {("generation", "review"), ("review", "labels"), ("labels", "review")}:
+        print(f"wait\n- a `{kind}` stage is followed by a `{to}` stage only by the operator's stage-enter"); sys.exit(1)
+    rc = json.loads(os.environ.get("FAKE_HANDOVER") or "{}").get(to, 1)
+    print({0: "enter", 1: "wait", 4: "operator"}[rc] + ("" if rc == 0 else f"\n- the stand-in's answer for {to}")); sys.exit(rc)
 if a[:2] in (["stage", "enter"], ["stage", "confirm"]):
     import subprocess
     from harness.store import stages
@@ -92,6 +104,7 @@ def state_stub() -> str:
     names = sorted({a.name for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module == "store.state" and n.level == 2
                     for a in n.names} - {"Options", "READABLE_RUN_VERSIONS"})
     return ("from dataclasses import dataclass\n@dataclass\nclass Options:\n    label_deferred: bool = False\n    label_stage: bool = False\n"
+            "    review_stage: bool = False\n"
             f"READABLE_RUN_VERSIONS = frozenset({sorted(READABLE_RUN_VERSIONS)!r})\n" + "".join(f"{n} = None\n" for n in names))
 
 
@@ -211,26 +224,27 @@ class Staged(unittest.TestCase):
         self.assertEqual(self.head(), git(self.remote, "rev-parse", "runs/t1").stdout.strip())
         return c
 
-    # ------------------------------------------------------------------ review refused
-    def test_stage_review_is_refused_before_any_loop(self):
-        for staged in (True, False):
-            with self.subTest(staged=staged):
-                if not staged:
-                    git(self.work, "rm", "-q", "--cached", "pipeline/agent/results/t1/stages.jsonl")
-                    (self.agent / "results" / "t1" / "stages.jsonl").unlink()
-                out = self.launch("resume", [{"status": "complete"}], STAGE="review")
-                self.assertEqual(out.returncode, 2, out.stdout + out.stderr)
-                self.assertIn("the current baseline registers no reviewer", out.stderr)
-                self.assertEqual(len(self.loops()), 1)
-
-    def test_kind_review_is_refused_before_the_code_changes(self):
-        before = self.head()
-        out = self.enter(KIND="review")
+    # ------------------------------------------------------------------ the review stage
+    def test_stage_review_runs_only_in_a_review_stage(self):
+        out = self.launch("resume", [{"status": "complete"}], STAGE="review")         # the active stage is G0
         self.assertEqual(out.returncode, 2, out.stdout + out.stderr)
-        self.assertIn("the current baseline registers no reviewer", out.stderr)
-        self.assertEqual(self.stage_calls(), [])
-        self.assertEqual((self.head(), self.clean()), (before, True))
-        self.assertEqual((self.agent / "harness" / "probe.py").read_text(), "v1\n")
+        self.assertIn("allows generation launches, not STAGE=review", out.stderr)
+        git(self.work, "rm", "-q", "--cached", "pipeline/agent/results/t1/stages.jsonl")
+        (self.agent / "results" / "t1" / "stages.jsonl").unlink()
+        out = self.launch("resume", [{"status": "complete"}], STAGE="review")         # no stage record at all
+        self.assertEqual(out.returncode, 2, out.stdout + out.stderr)
+        self.assertIn("runs only in a review stage of a run with a stage record", out.stderr)
+        self.assertEqual(len(self.loops()), 1)
+
+    def test_kind_review_is_the_harness_to_judge_and_its_stage_launches_the_review(self):
+        out = self.enter(KIND="review")
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        argv = self.stage_calls()[0]["argv"]
+        self.assertEqual(argv[argv.index("--kind") + 1], "review")                   # the harness decides whether it may be entered
+        out = self.launch("resume", [{"status": "complete"}], STAGE="review")
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        self.assertIn("--review_stage", self.loops()[-1]["argv"])
+        self.assertFalse({"--label_deferred", "--label_stage", "--label_dataset"} & set(self.loops()[-1]["argv"]))
 
     # ------------------------------------------------------------------ stage-enter
     def test_stage_enter_replaces_the_code_and_confirms(self):
@@ -254,7 +268,7 @@ class Staged(unittest.TestCase):
         the run branch's checkpoint, which holds the old code and the run."""
         from unittest import mock
         from harness.tools import stage
-        out = self.enter(PROMPTS_APPROVED="abc123")
+        out = self.enter(PROMPTS_APPROVED="abc123", BEHAVIOUR_REVIEWER="fake")         # a reviewer reaches a review entry only
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
         c = self.assert_entered()
         got = []
@@ -262,7 +276,7 @@ class Staged(unittest.TestCase):
                 mock.patch.object(stage, "confirm", lambda *a: got.append(("confirm", *a))):
             for call in self.stage_calls():
                 self.assertEqual(stage.main(call["argv"][1:]), 0, call["argv"])
-        self.assertEqual(got, [("enter", "t1", "generation", "G0", "t-g1", None, "abc123", self.new_base),   # the new code's own commit
+        self.assertEqual(got, [("enter", "t1", "generation", "G0", "t-g1", None, "abc123", self.new_base, None),   # the new code's own commit
                                ("confirm", "t1", "t-g1", c, "origin", "runs/t1")])
 
     def test_a_refusal_of_the_harness_puts_the_code_back(self):

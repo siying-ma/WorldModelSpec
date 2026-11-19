@@ -33,6 +33,11 @@ label (an explicit verdict that is not a judgment call). A law's outcome over th
   that passed keeps its product, but the law is not reported aligned.
 Judgment-call labels (a verdict that turns on a parameter the pipeline chooses) never decide the
 outcome and never enter the evidence; they are listed apart for the operator's parameter review.
+A law whose rules rest on an approved abstraction (`scoring`, Coverage) is checked and routed like any
+other, but its scope is `partial_coverage`, with the abstractions named: its agreement is never
+reported as full statutory alignment. Any other law's scope is `full`: complete within the approved
+task scope (scope readings are disclosed in the rule's reading); not a word-by-word verification of
+every qualifier of the statute.
 
 A label judges the whole recording (`recorded.labels`). The monitor runs on the whole trace with
 each grounding's reason-carrying segments (`--segments`), which the window diagnosis reads.
@@ -118,8 +123,26 @@ class LawCheck:
         eligible = [s for s in self.scored if s.label is not None and not s.judgment_call]
         return {"eligible": len(eligible), "matched": sum(s.status == "match" for s in eligible)}
 
+    @property
+    def abstractions(self) -> list[str]:
+        """The approved abstractions the law's verdicts rest on, over every recording."""
+        return sorted({a for s in self.scored for a in s.abstractions})
+
+    @property
+    def sampled_duration(self) -> bool:
+        """Whether the law's verdicts rest, on some recording, on a duration read from the samples."""
+        return any(s.sampled_duration for s in self.scored)
+
+    @property
+    def scope(self) -> str:
+        """`partial_coverage` where the law's verdicts rest on an approved abstraction, else `full`:
+        complete within the approved task scope (scope readings are disclosed in the rule's
+        reading); not a word-by-word verification of every qualifier of the statute."""
+        return "partial_coverage" if self.abstractions else "full"
+
     def to_dict(self) -> dict:
         return {"law_id": self.law_id, "rules": self.rules, "outcome": self.outcome, "data_version": self.data_version,
+                "scope": self.scope, "abstractions": self.abstractions, "sampled_duration": self.sampled_duration,
                 "coverage": self.coverage, "summary": self.summary, "notes": self.notes,
                 "scored": [s.to_dict() for s in self.scored], "evidence": [_evidence_dict(e) for e in self.evidence],
                 **({"versions": self.versions} if self.versions else {}),
@@ -167,12 +190,41 @@ def _limit(memory_gb: float):
     return set_limit
 
 
+def incomplete_sets(ledger: dict[str, dict], accepted: dict[str, dict]) -> list[str]:
+    """The rule-set ids (`#requiredBy:<conduct>`, `#lawful:…`) an accepted record reads whose set may
+    lack a rule: some law of the run has a node that is not accepted, or no node at all, and nothing
+    accepted says what that law's rules would be. The monitor then never counts such a set as
+    deciding: a `requiredBy` there is never false and a `lawful` never true, unknown instead. An
+    operator with no composition id (`rule_set_id`) raises `ValueError`, never a set left out."""
+    from ..checks.gate import rule_set_id
+    read = set()
+    for ident, rec in accepted.items():
+        for x in [] if rec.get("fenced") else [x for x in rec.get("rule_sets", []) or [] if isinstance(x, dict)]:
+            try:
+                read.add(rule_set_id(x))
+            except ValueError as e:
+                raise ValueError(f"accepted record `{ident}`: {e}") from None
+    read = sorted(read)
+    missing = any(not e.get("nodes") or any(n not in accepted or accepted[n].get("fenced") for n in e.get("nodes") or [])
+                  for e in ledger.values())
+    return read if missing else []
+
+
+def run_incomplete(run) -> list[str]:
+    """`incomplete_sets` of a run: its ledger (`state.json`) and its accepted records."""
+    f = Path(run.dir) / "state.json"
+    ledger = {e["law"]: e for e in (json.loads(f.read_text(encoding="utf-8")).get("ledger") or [])} if f.exists() else {}
+    return incomplete_sets(ledger, run.all_nodes())
+
+
 def run_rule(monitor: Path, files: dict[str, Path], rule: str, reading: Path,
-             lim: Limits) -> tuple[list[str] | None, str | None]:
+             lim: Limits, incomplete: list[str] | tuple = ()) -> tuple[list[str] | None, str | None]:
     """The monitor's JSON lines for one rule on one recording, with each grounding's reason-carrying
-    segments, or its failure (`deadline` for the time or memory budget, `crash` otherwise)."""
+    segments, or its failure (`deadline` for the time or memory budget, `crash` otherwise). The
+    rule-set ids in `incomplete` are passed to the monitor as sets that may lack a rule."""
     refuse_if_deferred("the label monitor")
     cmd = [str(monitor), "--manifest", str(files["manifest"]), "--reading", str(reading), "--rules", rule,
+           *(["--incomplete", ",".join(incomplete)] if incomplete else []),
            "--json", "--segments", str(files["trace"])]
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=lim.deadline_s, preexec_fn=_limit(lim.memory_gb))
@@ -297,7 +349,8 @@ def outcome_of(scored: list[scoring.Scored], complete: bool = True) -> str:
 
 def check_law(law_id: str, rules: list[str], law_of: dict[str, str], ds: dataset_mod.Dataset, monitor: Path,
               explain: Path | None, reading: Path, lim: Limits = Limits(), artifacts: Path | None = None,
-              unavailable: dict[str, str] | None = None) -> LawCheck:
+              unavailable: dict[str, str] | None = None, incomplete: list[str] | tuple = (),
+              permissions: set[str] | frozenset = frozenset()) -> LawCheck:
     """Run the law's expected `rules` (every rule `law_of` maps to the law) on every training
     recording of the law, score each, and explain each eligible recording that does not match.
     `unavailable` maps an expected rule that is not run to its state (not accepted, fenced). A rule
@@ -307,9 +360,12 @@ def check_law(law_id: str, rules: list[str], law_of: dict[str, str], ds: dataset
     if sorted(rules) != expected:
         raise ValueError(f"{law_id}: the rules given {sorted(rules)} are not the law's expected rules {expected}")
     unavailable = {r: s for r, s in (unavailable or {}).items() if r in expected}
-    runnable = [r for r in expected if r not in unavailable]
+    runnable = [r for r in expected if r not in unavailable and r not in permissions]   # a permission is never violated: outside the check
     rows = [r for r in ds.rows if r["law_id"] == law_id]
     notes: list[str] = [f"{r}: not run ({s})" for r, s in sorted(unavailable.items())]
+    notes += [f"{r}: a permission, outside the label check" for r in expected if r in permissions]
+    if incomplete:
+        notes.append(f"rule sets the run declares incomplete (never deciding where a missing rule could): {', '.join(incomplete)}")
     if not expected:
         notes.append("the law's final plan has no node: nothing was generated for it")
 
@@ -319,7 +375,7 @@ def check_law(law_id: str, rules: list[str], law_of: dict[str, str], ds: dataset
         lab = ds.label(rid)
         per_rule, failures = {}, {}
         for r in runnable:
-            lines, failure = run_rule(monitor, files, r, reading, lim)
+            lines, failure = run_rule(monitor, files, r, reading, lim, incomplete)
             if failure:
                 failures[r] = failure
             else:
@@ -374,7 +430,12 @@ def render_evidence(chk: LawCheck, repair_goal: str | None = None) -> str:
     repair_goal = repair_goal or goal_for(chk.outcome)
     c = labels.CONTRACT
     out = ["## Label mismatches", "",
-           f"Law: {chk.law_id}. Rules checked together: {', '.join(chk.rules)}. Repair goal: {repair_goal}.",
+           f"Law: {chk.law_id}. Rules checked together: {', '.join(chk.rules)}. Repair goal: {repair_goal}."
+           + (f" The rules rest on the approved abstraction(s) {', '.join(chk.abstractions)}: their verdicts are partial "
+              "coverage, compared with the labels like any other." if chk.abstractions else "")
+           + (" The rules read a duration from the trace's samples (`durationWithin`): their verdicts judge the time the "
+              "samples show, not a proof of the continuous state between frames; this is not partial coverage, and these "
+              "recordings count in the comparison like any other." if chk.sampled_duration else ""),
            f"Label contract: a label judges the {c['subject']} (the trace's subject) over the {c['scope']}; "
            "violated = the situation was violated at least once, compliant = every occurrence complied, "
            "not_applicable = the situation never arose for the subject.",
@@ -691,10 +752,12 @@ def check_in_candidate(txn, ctx: Training, laws: dict[str, list[str]], unavailab
         index_sync.write_index()
         monitor, explain = build_tools(paths.LIBRARY)
         versions = txn.versions()
+        incomplete = run_incomplete(txn.view)
         for law, rules in sorted(laws.items()):
             ctx.check_inputs(ctx.fixed["laws"].get(law, {}).get("recordings", []))
             chk = check_law(law, sorted(rules), {r: law for r in rules}, ctx.dataset, monitor, explain, txn.view.reading_file,
-                            ctx.limits, out / "explain", unavailable)
+                            ctx.limits, out / "explain", unavailable, incomplete,
+                            {i for i, rec in txn.view.all_nodes().items() if rec.get("permission")})
             fixed = ctx.fixed["laws"].get(law, {"recordings": [], "eligible": []})
             scoring.summary(chk.scored, expected=fixed["recordings"])            # the scored set is the fixed set, or nothing is scored
             got = sorted(s.recording_id for s in chk.scored if s.label is not None and not s.judgment_call)

@@ -11,7 +11,8 @@ UNRESOLVED: line id -> [{phrase, kind, note}] references that cannot be resolved
 """
 D_480_3 = 'DEF-NRS-484A-480-3'; D_460_2 = 'DEF-NRS-484A-460-2'; D_210 = 'DEF-NRS-484D-210-1-2'
 D_420 = 'DEF-NRS-484B-420'; D_647 = 'DEF-LVMC-6-47-100-C'; D_60010 = 'DEF-LVMC-11-60-010'
-D_185A = 'DEF-LVMC-11-40-185-A'; D_135A = 'DEF-LVMC-11-52-135-A'
+D_185A = 'DEF-LVMC-11-40-185-A'; D_135A = 'DEF-LVMC-11-52-135-A'; D_38120A = 'DEF-LVMC-11-38-120-A'
+D_165_1 = 'DEF-NRS-484D-165-1'
 
 # Definitions that are operative provisions cited by a line (kind 'provision'); the term
 # definitions of the definition chapters are enumerated by make_laws.term_definitions().
@@ -25,6 +26,8 @@ DEFS = [
  (D_60010, 'LVMC', None, '11.60.010', [''], "Bus stops, bus stands, taxicab stands and route origin/destination points are designated by appropriate signs."),
  (D_185A, 'LVMC', None, '11.40.185', ['A'], "The local ordinance that NRS 484B.785(1) defers to: where an electric bicycle or electric scooter may be operated in the City."),
  (D_135A, 'LVMC', None, '11.52.135', ['A'], "How a parking space designated for the handicapped is signed."),
+ (D_38120A, 'LVMC', None, '11.38.120', ['A'], "Which lights 'the lights required by this Section' are: the headlamp and the tail lamp the Section requires a motorcycle or motor scooter to carry. The carrying requirement itself is equipment and is no corpus line."),
+ (D_165_1, 'NRS', '484D', '165', ['1'], "Which lamps 'lighted lamps meeting the requirements of subsection 1' are: the front lamps (white or amber) and rear lamps (red) every vehicle is equipped with, their visibility and their location. The equipment requirement itself is no corpus line."),
 ]
 
 # Term definitions of other chapters that a corpus definition or line incorporates by citation
@@ -33,10 +36,16 @@ DEFS = [
 INCORPORATED = [
  ('482', '029'), ('482', '0295'), ('482', '0962'), ('482', '3833'), ('482', '3837'), ('482', '3839'),
  ('482A', '025'), ('482A', '030'), ('482A', '036'),
- ('489', '113'), ('239C', '065'), ('648', '016'),
+ ('489', '113'),
 ]
 
 def _sec(prefix): return prefix  # marker: expand to every id starting with prefix
+
+# "Except as otherwise provided in NRS 484B.287, 484B.290 and 484B.350" (NRS 484B.283(1)) and
+# "Except as provided in NRS 484B.290" (NRS 484B.287(1)): each cited section's corpus lines.
+_EXCEPT_283 = [('NRS 484B.287', ['NRS-484B-287-1a', 'NRS-484B-287-1b', 'NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e']),
+               ('484B.290', ['NRS-484B-290']), ('484B.350', ['NRS-484B-350-1a', 'NRS-484B-350-1b'])]
+_EXCEPT_287 = [('Except as provided in NRS 484B.290', ['NRS-484B-290'])]
 
 # A phrase that names no provision is NOT annotated: the ids would be the editor's reading of
 # which rules 'the laws governing such movements' or 'as required by law' covers, not a
@@ -89,7 +98,7 @@ REFS = {
  'NRS-484D-215-1': [('during the times specified in NRS 484D.100', ['NRS-484D-100-1']), ('subsection 2 of NRS 484D.210', [D_210])],
  'NRS-484D-215-2': [('during the times specified in NRS 484D.100', ['NRS-484D-100-1']), ('subsection 1 of NRS 484D.210', [D_210])],
  'NRS-484D-220-1': [('At all times specified in NRS 484D.100', ['NRS-484D-100-1'])],
- 'NRS-484D-165-3': [('during the times mentioned in NRS 484D.100', ['NRS-484D-100-1'])],
+ 'NRS-484D-165-3': [('during the times mentioned in NRS 484D.100', ['NRS-484D-100-1']), ('lighted lamps meeting the requirements of subsection 1', [D_165_1])],
  'LVMC-11-22-150-A': [('Subsection (C) of Section 6.47.100', [D_647])],
  'LVMC-11-22-150-B': [('Subsection (C) of Section 6.47.100', [D_647])],
  'LVMC-11-60-030-A1': [('designated in accordance with Section 11.60.010', [D_60010])],
@@ -98,27 +107,21 @@ REFS = {
  'LVMC-11-52-250': [('Except as provided in LVMC 11.52.030', ['LVMC-11-52-030-A', 'LVMC-11-52-030-B', 'LVMC-11-52-030-E'])],
  'LVMC-11-52-260': [('Except as provided in LVMC 11.52.030', ['LVMC-11-52-030-A', 'LVMC-11-52-030-B', 'LVMC-11-52-030-E'])],
  'LVMC-11-52-030-E': [('pursuant to LVMC 11.52.135', [D_135A])],
- # ---- references whose statutory target was dropped for a narrower municipal text ----
- 'NRS-484B-283-1a': [('NRS 484B.287', ['NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e', 'LVMC-11-30-060-A', 'LVMC-11-30-060-B']), ('484B.290', ['LVMC-11-30-140-B']), ('484B.350', ['LVMC-11-46-030'])],
- 'NRS-484B-283-1b': [('NRS 484B.287', ['NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e', 'LVMC-11-30-060-A', 'LVMC-11-30-060-B']), ('484B.290', ['LVMC-11-30-140-B']), ('484B.350', ['LVMC-11-46-030'])],
- 'NRS-484B-283-1c_unused': [],
- 'NRS-484B-283-1d1': [('NRS 484B.287', ['NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e', 'LVMC-11-30-060-A', 'LVMC-11-30-060-B']), ('484B.290', ['LVMC-11-30-140-B']), ('484B.350', ['LVMC-11-46-030'])],
- 'NRS-484B-283-1d2': [('NRS 484B.287', ['NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e', 'LVMC-11-30-060-A', 'LVMC-11-30-060-B']), ('484B.290', ['LVMC-11-30-140-B']), ('484B.350', ['LVMC-11-46-030'])],
- 'NRS-484B-287-1c': [('Except as provided in NRS 484B.290', ['LVMC-11-30-140-B'])],
- 'NRS-484B-287-1d': [('Except as provided in NRS 484B.290', ['LVMC-11-30-140-B'])],
- 'NRS-484B-287-1e': [('Except as provided in NRS 484B.290', ['LVMC-11-30-140-B'])],
+ 'LVMC-11-38-120-B': [('The lights required by this Section', [D_38120A])],
+ # ---- the exceptions of NRS 484B.283(1) (NRS 484B.287, 484B.290, 484B.350) and of NRS 484B.287(1) (NRS 484B.290) ----
+ 'NRS-484B-283-1a': _EXCEPT_283, 'NRS-484B-283-1b': _EXCEPT_283, 'NRS-484B-283-1d1': _EXCEPT_283, 'NRS-484B-283-1d2': _EXCEPT_283,
+ 'NRS-484B-287-1a': _EXCEPT_287, 'NRS-484B-287-1b': _EXCEPT_287, 'NRS-484B-287-1c': _EXCEPT_287,
+ 'NRS-484B-287-1d': _EXCEPT_287, 'NRS-484B-287-1e': _EXCEPT_287,
 }
 # 283-1d3 / 1d4 also carry the lead-in
 for _i in ('NRS-484B-283-1d3', 'NRS-484B-283-1d4'):
-    REFS[_i] = [('NRS 484B.287', ['NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e', 'LVMC-11-30-060-A', 'LVMC-11-30-060-B']), ('484B.290', ['LVMC-11-30-140-B']), ('484B.350', ['LVMC-11-46-030'])] + REFS[_i]
+    REFS[_i] = _EXCEPT_283 + REFS[_i]
 for _i in ('NRS-484B-267-1a', 'NRS-484B-267-1b', 'NRS-484B-267-1c', 'NRS-484B-267-2b', 'NRS-484B-267-2c', 'NRS-484B-267-2d', 'NRS-484B-267-2e'):
     REFS[_i] = [('subsection 3 of NRS 484A.480', [D_480_3])]
-del REFS['NRS-484B-283-1c_unused']
 
 # notes on references whose target text is appended to the same line
 _APPENDED = {
  'NRS-484A-480-5': [('Except as otherwise provided in subsection 4', ['(4) appended below'])],
- 'NRS-484B-117-1': [('Except as otherwise provided in subsection 2', ['(2) appended below'])],
  'NRS-484B-210-1': [('Except as otherwise provided in subsection 4', ['(4) appended below'])],
  'NRS-484B-457-1': [('Except as otherwise provided in this section', ['(2) and (3) appended below'])],
  'NRS-484B-587-2a': [('as otherwise authorized by subsection 3', ['(3) appended below']), ('paragraphs (a) to (f), inclusive, of subsection 4 of NRS 484B.210', ['list appended below'])],
@@ -126,7 +129,6 @@ _APPENDED = {
  'NRS-484B-267-1b': [('paragraphs (a) to (f), inclusive, of subsection 4 of NRS 484B.210', ['list appended below'])],
  'NRS-484B-633-2': [('signposted as provided in this section', ['(3) appended below'])],
  'NRS-484B-637-2b': [('Except as otherwise provided in subsection 3', ['(3) and (4) appended below'])],
- 'NRS-484D-165-3': [('lighted lamps meeting the requirements of subsection 1', ['(1) appended below'])],
  'NRS-484D-545-1': [('except as provided in subsection 3', ['(3) appended below'])],
  'LVMC-11-38-130': [('as provided in Section 11.38.080', ['11.38.080 appended below'])],
 }
@@ -136,13 +138,11 @@ for _k, _v in _APPENDED.items():
 # same-section paragraphs appended in addition to the SPEC list
 APP_MORE = {
  'NRS-484A-480-5': ['4'],
- 'NRS-484B-117-1': ['2'],
  'NRS-484B-210-1': ['4'],
  'NRS-484B-457-1': ['2', '3'],
  'NRS-484B-587-2b': ['3'],
  'NRS-484B-633-2': ['3'],
  'NRS-484B-637-2b': ['3', '4'],
- 'NRS-484D-165-3': ['1'],
  'NRS-484D-545-1': ['3'],
 }
 # text from another section appended verbatim
@@ -162,7 +162,7 @@ UNRESOLVED = {
  'NRS-484A-480-7': [dict(phrase="a motorcycle pursuant to NRS 486.261", kind='external_equipment', note="a blue insert of up to one inch in a motorcycle tail lamp; not distinguishable from a blue lamp at scene scale"),
                     dict(phrase="a vehicle operated pursuant to NRS 408.437", kind='external_class', note="as for the preceding line")],
  'NRS-484B-327-2': [dict(phrase="any additional penalty set forth in NRS 484B.130 or 484B.135", kind='penalty', note="penalty clause; no conduct")],
- 'NRS-484B-550-1': [dict(phrase="Except as otherwise provided in this section", kind='penalty', note="the other subsections of 484B.550 are penalties; no conduct")],
+ 'NRS-484B-550-1': [dict(phrase="Except as otherwise provided in this section", kind='penalty', note="subsection (2), the form of the peace officer's signal, is appended to this line; subsections (3) to (5) state aggravated penalties; no conduct")],
  'NRS-484B-560-1': [dict(phrase="hazardous materials as that term is defined in 49 C.F.R. § 383.5", kind='federal_definition', note="the class is federal; the observable is the placard (ru.hazardous_materials_vehicle)")],
  'NRS-484B-560-5': [dict(phrase="commercial motor vehicle, as that term is defined in 49 C.F.R. § 383.5", kind='federal_definition', note="a weight-and-use class; estimated from vehicle class and size")],
  'NRS-484B-323-1': [dict(phrase="or established by regulation", kind='regulation', note="conditions not on the sign are not observable")],

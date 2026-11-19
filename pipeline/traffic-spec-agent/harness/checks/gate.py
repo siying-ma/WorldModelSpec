@@ -13,7 +13,7 @@ from pathlib import Path
 from ..store import paths
 from ..model import nodeid
 from ..lean import lean, index_sync, relations
-from ..model.blueprint import Node, SCENARIOS, normalize_verdict, NARROWING_KINDS, CONCEPT_NARROWING_KINDS
+from ..model.blueprint import Node, SCENARIOS, standard_scenarios, unless_case_checks, normalize_verdict, NARROWING_KINDS, CONCEPT_NARROWING_KINDS, ABSTRACTION
 from ..model.reading import Reading
 
 VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
@@ -70,9 +70,10 @@ def reads_of_used(used: set[str], accepted_concepts: dict[str, dict] | None) -> 
                 if cid.replace(".", "_") == n:
                     out.update(a.replace(".", "_") for a in rec.get("reads", []))
     return out
-#: Directories the repository digest does not enter: version control, build outputs, caches, and
-#: the per-iteration task directories (a running session writes its own stream there).
-DIGEST_SKIP_DIRS = {".git", ".lake", "__pycache__", ".venv", "node_modules", ".mypy_cache", ".pytest_cache"}
+#: Directories the repository digest does not enter: version control, build outputs, caches, the
+#: launcher's local logs (`.runtime`, kept out of git; nothing of the pipeline reads them), and the
+#: per-iteration task directories (a running session writes its own stream there).
+DIGEST_SKIP_DIRS = {".git", ".lake", "__pycache__", ".venv", "node_modules", ".mypy_cache", ".pytest_cache", ".runtime"}
 #: Offline verification and archived scratch files are outside every coding session's jail.
 DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 #: Files the harness itself writes while sessions run, and operator logs: a run's ledgers and
@@ -215,8 +216,8 @@ def scope_stray(baseline: dict[str, str], own: set[str], work: Path) -> list[str
 
 
 _OCC_DEFS = '''-- Variable connectivity: each atom, derived-concept or measure occurrence groups the variables it
--- relates (a comparison does not); `?v` marks a quantifier variable, `$` a composition (its mapped
--- variables are anchored by the composed rule). A comparison with a literal zero ties nothing: a
+-- relates (a comparison does not); `?v` marks a quantifier variable, `$` a composition or a
+-- rule-set operator (its mapped variables, or its road user, are anchored by the rules it reads). A comparison with a literal zero ties nothing: a
 -- measure compared with zero says that it is measured, not which entity it is measured of.
 def argVars (as : List TrafficSpec.Arg) : List String := as.filterMap fun a => match a with | .var v => some v | _ => none
 def isZeroLit : TrafficSpec.Term → Bool
@@ -241,12 +242,14 @@ partial def occF : TrafficSpec.Formula → List (List String)
     if isZeroLit l || isZeroLit r then (occT l ++ occT r).flatMap (·.map fun v => [v]) else occT l ++ occT r
   | .derived _ as ps => argVars as :: ps.flatMap occT
   | .rule _ m | .ruleApplies _ m => [("$" :: m.map (·.2))]
+  | .requiredBy _ w | .lawful _ w => [["$", w]]
   | .not φ | .always φ | .eventually φ => occF φ
   | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => occF φ ++ occF ψ
   | .holdsFor _ d s φ | .within _ d s φ => [s] :: (occT d ++ occF φ)
   | .untilWithin _ d s φ ψ => [s] :: (occT d ++ occF φ ++ occF ψ)
   | .atLast _ d s ψ φ => [s] :: (occT d ++ occF ψ ++ occF φ)
   | .count e s _ _ => occF e ++ occF s
+  | .durationWithin w g φ _ b => occT w ++ occT g ++ occF φ ++ occT b
   | .rises φ => occF φ
   | .definedWhen p φ => occF p ++ occF φ
   | .existsRegion _ v φ | .forallRegion _ v φ | .existsDevice _ v φ | .forallDevice _ v φ
@@ -255,6 +258,54 @@ partial def occF : TrafficSpec.Formula → List (List String)
 end
 '''
 
+
+#: The suspension controls of a case on a span an `unless` composition scopes (`unlessControls`).
+_UNLESS_DEFS = """namespace TrafficSpec
+/-- Per observation of witness `sc` within its window: the value of `target` and of case `k` of the
+    witness's rule, on the admitted trace and the grounding of the witness, with `rules`. -/
+def unlessRows (rules : List Rule) (sc : Scenario) (concepts : List Concept) (k : Nat) (target : Formula) :
+    Option (List (Tri × Tri)) :=
+  let rules := rules.map (Concept.expandRule concepts)
+  match rules.find? (·.id == sc.rule), Grounding.Setup.admit rules (maskTrace sc.manifest sc.trace) sc.reading sc.manifest.reidGap with
+  | some r, .ok S0 =>
+    (r.cases[k]?).map fun c =>
+      let S := { S0 with setRules := some (sc.setMembers.map (Concept.expandRule concepts)) }
+      let g : Grounding.Grounding := ⟨sc.grounding.map (fun (n, t) => (n, Grounding.canon S.cm t)), sc.regions⟩
+      let ctx := S.ctx g.binding
+      let cv := (RuleSet.caseRule r c).engagedAll ctx
+      let tv := Rule.evalRuleFormula ctx target
+      let vs := (Grounding.evaluate S r g).verdicts
+      (List.range vs.size).filterMap fun i =>
+        match vs[i]?, cv[i]?, tv[i]? with
+        | some (t, _), some x, some y =>
+          let inWin := match sc.window with | some (lo, hi) => lo ≤ t && t ≤ hi | none => true
+          if inWin then some (y.v, x.v) else none
+        | _, _, _ => none
+  | _, _ => none
+
+/-- The suspension controls of case `k` on witness `sc`, for an `unless` composition of rule `rid`
+    with the record's map `m` (and the case `rc` of it the composition names): the composed reading,
+    evaluated with the library's rules on the bindings the map gives, holds at some observation
+    (else the suspension is not verified); at every such observation the case does not hold with
+    the library's rules, and holds with the composed rule's applicability replaced by `.ff` on the
+    same trace. Controls on one witness, not a proof. -/
+def unlessControls (rules : List Rule) (sc : Scenario) (concepts : List Concept) (k : Nat)
+    (rid : String) (m : List (String × String)) (rc : Option String) : List String :=
+  let target : Formula := match rc with | some n => .ruleCase rid n m | none => .ruleApplies rid m
+  let off := rules.map fun x => if x.id == rid then { x with applicability := .ff } else x
+  match unlessRows rules sc concepts k target, unlessRows off sc concepts k target with
+  | some on, some without =>
+    let rows := (on.zip without).filter fun ((y, _), _) => y == .t
+    if rows.isEmpty then
+      [s!"not verified: `{rid}` applies at no observation of {sc.name} to the road users the composition maps; the witness must make it apply"]
+    else
+      (if rows.all (fun ((_, x), _) => x == .f) then []
+       else [s!"in {sc.name} the case holds, or is unknown, where `{rid}` applies: its `when` does not carry the suspension"]) ++
+      (if rows.all (fun (_, (_, x)) => x == .t) then []
+       else [s!"in {sc.name}, with the applicability of `{rid}` removed, the case does not hold where `{rid}` applied: the witness does not show that the suspension alone removes it"])
+  | _, _ => [s!"not verified: {sc.name} is not evaluated (its rule, its case or its trace)"]
+end TrafficSpec
+"""
 
 #: The two phases of a gate harness, one program: run with no argument it prints everything up to
 #: and including the witnesses and ends with `DONE_WITNESSES`; run with `adequacy` it prints the
@@ -273,7 +324,14 @@ PHASE_END = {"witnesses": "DONE_WITNESSES", "adequacy": "DONE"}
 GATE_DEADLINE = 900.0
 
 
-def _harness_source(node_id: str, reading_json_path: Path, registry: tuple[str, str]) -> str:
+def _unless_lean(checks: list[dict]) -> str:
+    """The suspension checks (`unless_case_checks`) as a Lean list literal."""
+    q = lambda x: json.dumps(str(x), ensure_ascii=True)
+    return "[" + ", ".join(f"({q(u['witness'])}, {q(u['case'])}, {q(u['rule'])}, [{', '.join(f'({q(k)}, {q(v)})' for k, v in u['map'].items())}], "
+                           + (f"some {q(u['rule_case'])}" if u.get("rule_case") else "none") + ")" for u in checks) + "]"
+
+
+def _harness_source(node_id: str, reading_json_path: Path, registry: tuple[str, str], unless: list[dict] | None = None) -> str:
     """The node's gate harness; `registry` is its own registry (`index_sync.registry_source`), so the
     evaluation reads no generated file another gate may be rewriting."""
     rns, wns = nodeid.rule_namespace(node_id), nodeid.witness_namespace(node_id)
@@ -288,6 +346,7 @@ import {nodeid.witness_module(node_id)}
 #print axioms {rns}.rule
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
+{_UNLESS_DEFS}
 {relations.lean_defs()}
 {index_sync.WITNESS_RUN_DEFS}
 def main (args : List String) : IO Unit := do
@@ -315,12 +374,19 @@ def main (args : List String) : IO Unit := do
     ("binders", Json.arr (r.binders.map fun b => Json.str b.name).toArray),
     ("assumptions", Json.arr (r.assumptions.map Json.str).toArray),
     ("intentions", Json.arr (r.intentions.map Json.str).toArray),
+    ("facts", Json.arr (r.facts.map Json.str).toArray),
     ("operationalizations", Json.arr (r.operationalizations.map fun o => Json.mkObj [("standard", o.standard), ("concepts", Json.arr (o.concepts.map Json.str).toArray), ("params", Json.arr (o.params.map Json.str).toArray), ("surrogate", o.surrogate)]).toArray),
     ("residues", Json.arr (r.residues.map Json.str).toArray),
-    ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]).toArray), ("surrogate", r.surrogate)]
+    ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]).toArray), ("surrogate", r.surrogate),
+    ("abstractions", Json.arr (r.abstractions.map Json.str).toArray),
+    ("cases", Json.arr (r.cases.map fun c => Json.mkObj [("name", c.name), ("kind", c.kind.toJson)]).toArray), ("permission", r.permission),
+    ("purposes", Json.arr (r.purposes.map fun p => Json.str p.toString).toArray),
+    ("rule_sets", Json.arr ((r.formulas.flatMap Formula.ruleSets).filterMap RuleSet.idOf |>.eraseDups.map Json.str).toArray)]
   IO.println s!"DECL\\t{{decl.compress}}"
   IO.println s!"RULEJSON\\t{{(Rule.toJson r).compress}}"
   IO.println s!"RULEXJSON\\t{{(Rule.toJson (Concept.expandRule allConcepts r)).compress}}"
+  for ((n, i), ks) in TraceLint.regionArgKinds do
+    if let some ks := ks then IO.println s!"REGIONKINDS\\t{{n}}\\t{{i}}\\t{{String.intercalate "," (ks.map (·.toString))}}"
   out.flush
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
@@ -359,6 +425,33 @@ def main (args : List String) : IO Unit := do
     out.flush
     IO.println s!"TIME\\tscenario:{{sc.name}}\\t{{(← IO.monoMsNow) - tSc}}"
     out.flush
+  for sc in scs' do
+    for k in List.range r.cases.length do
+      let (defects, controls) := Scenario.caseControls rules sc allConcepts k
+      for d in defects do IO.println s!"CASEDEFECT\\t{{k}}\\t{{d}}"
+      for c in controls do IO.println s!"CASE\\t{{sc.name}}\\t{{k}}\\t{{c}}"
+  let byName := fun (n : String) => scs'.find? (·.name == n)
+  for (c, k) in r.cases.zipIdx do
+    if c.kind == .requires .halt then
+      let (h, d, w) := Scenario.stopNames c
+      match byName h, byName d, byName w with
+      | some a, some b, some e =>
+        for x in Scenario.stopControls rules a b e allConcepts k do IO.println s!"PAIRDEFECT\\tcase {{c.name}}\\t{{x}}"
+      | _, _, _ => IO.println s!"PAIRDEFECT\\tcase {{c.name}}\\tthe witnesses {{h}}, {{d}} and {{w}} are not all written"
+  for p in r.purposes.eraseDups do
+    let (a, b) := Scenario.purposeNames p
+    match byName a, byName b with
+    | some x, some y =>
+      for e in Scenario.purposeControls rules x y allConcepts p do IO.println s!"PAIRDEFECT\\tpurpose {{p}}\\t{{e}}"
+    | _, _ => IO.println s!"PAIRDEFECT\\tpurpose {{p}}\\tthe witnesses {{a}} and {{b}} are not both written"
+  let unlessChecks : List (String × String × String × List (String × String) × Option String) := {_unless_lean(unless or [])}
+  for (w, cn, rid, m, rc) in unlessChecks do
+    match (r.cases.zipIdx.find? (·.1.name == cn)).map (·.2) with
+    | none => pure ()
+    | some k =>
+      match byName w with
+      | some sc => for e in unlessControls rules sc allConcepts k rid m rc do IO.println s!"PAIRDEFECT\\tunless {{cn}}\\t{{e}}"
+      | none => IO.println s!"PAIRDEFECT\\tunless {{cn}}\\tnot verified: the witness {{w}}, on which `{{rid}}` applies, is not written"
   IO.println s!"TIME\\twitnesses\\t{{(← IO.monoMsNow) - tWit}}"
   out.flush
   IO.println "DONE_WITNESSES"
@@ -567,7 +660,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     harness = work / "gate_harness.lean"
     reading_json = work / "reading.json"
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
-    harness.write_text(_harness_source(node.id, reading_json, index_sync.registry_source(**reg)), encoding="utf-8")
+    harness.write_text(_harness_source(node.id, reading_json, index_sync.registry_source(**reg), unless_case_checks(node)), encoding="utf-8")
     toolchain = functools.partial(_toolchain, work, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)],
                                   {rule_rel, wit_rel}, (nodeid.rule_namespace(node.id) + ".", nodeid.witness_namespace(node.id) + "."), harness)
     ran = toolchain(register=lambda: index_sync.write_index(**reg))
@@ -598,8 +691,11 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")] + [f"units: {r[1]}" for r in col("DIM")]
     checks += deep_checks(lambda: (divisions_by_measure(json.loads(col("RULEJSON")[0][0])) if col("RULEJSON") else [])
                           + (slot_range_defects(json.loads(col("RULEJSON")[0][0]), reading, accepted_concepts) if col("RULEJSON") else [])
+                          + (region_kind_defects(json.loads(col("RULEJSON")[0][0]), region_kinds_of(col("REGIONKINDS"))) if col("RULEJSON") else [])
+                          + (composition_read_defects(node, json.loads(col("RULEJSON")[0][0])) if col("RULEJSON") else [])
                           + (rule_step_defects(node.id, json.loads(col("RULEXJSON")[0][0]), acquisition, reading)
                              if col("RULEXJSON") else []))
+    checks += rule_set_defects(node)
     if checks:
         return Verdict("CHECK_FAIL", checks + cut.note())
     if cut.stopped and not cut.reached("checks"):
@@ -627,6 +723,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if decl["binders"] != exp_binders: mism.append(f"binders {decl['binders']} ≠ {exp_binders}")
     if sorted(decl["assumptions"]) != sorted(a.get("id") for a in node.get("assumptions", [])): mism.append("assumptions differ")
     if sorted(decl["intentions"]) != sorted({a.get("id") for a in node.get("intentions", [])}): mism.append("intentions differ")
+    if sorted(decl["facts"]) != sorted({a.get("id") for a in node.get("facts", [])}): mism.append("facts differ")
     if got_ops != exp_ops: mism.append(f"operationalizations {got_ops} ≠ {exp_ops}")
     node_residues = [ws(r.get("why", "")) for r in node.get("residues", [])]
     decl_residues = [ws(w) for w in decl["residues"]]
@@ -643,6 +740,21 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
             mism.append(f"narrowing on {n['span']} ({spans[n['span']].get('role')}), a span this node does not carry")
         elif n.get("kind", "reading") not in NARROWING_KINDS:
             mism.append(f"narrowing on {n['span']} has kind {n.get('kind')!r}; one of {sorted(NARROWING_KINDS)}")
+        elif n.get("kind") == ABSTRACTION:
+            mism.append(f"narrowing on {n['span']} has kind {ABSTRACTION!r}: an approved abstraction is the record's, carried by the "
+                        "rule's `abstractions`, never a narrowing the rule adds")
+    if list(decl.get("abstractions", [])) != node.abstractions():
+        mism.append(f"abstractions {list(decl.get('abstractions', []))} ≠ the record's {node.abstractions()} (the ids of its `abstraction` "
+                    "narrowings, in order)")
+    got_cases, exp_cases = sorted(case_key(c) for c in decl.get("cases", [])), sorted(record_case_key(c) for c in node.get("cases", []))
+    if got_cases != exp_cases:
+        mism.append(f"cases {got_cases} ≠ the node's {exp_cases}")
+    if sorted(set(decl.get("purposes", []))) != sorted({str(p.get("purpose")) for p in node.get("purposes", [])}):
+        mism.append(f"purposes {sorted(set(decl.get('purposes', [])))} ≠ the node's {sorted({str(p.get('purpose')) for p in node.get('purposes', [])})}")
+    if bool(decl.get("permission")) != bool(node.get("permission")):
+        mism.append(f"permission {bool(decl.get('permission'))} ≠ the node's {bool(node.get('permission'))}")
+    if sorted(set(decl.get("rule_sets", []))) != sorted({rule_set_id(x) for x in node.get("rule_sets", [])}):
+        mism.append(f"rule-set operators {sorted(set(decl.get('rule_sets', [])))} ≠ the node's {sorted({rule_set_id(x) for x in node.get('rule_sets', [])})}")
     exp_surrogate = any(o.get("surrogate") for o in node.get("operationalizations", []))
     if bool(decl["surrogate"]) != exp_surrogate: mism.append(f"surrogate {decl['surrogate']} ≠ {exp_surrogate}")
     if mism:
@@ -704,6 +816,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
         return Verdict("PARAM_MISMATCH", mism)
 
     # 7. witnesses
+    std = standard_scenarios(node)
     scen = col("SCEN")
     planned = {s["name"]: s for s in node.get("scenarios", [])}
     fails = []
@@ -723,13 +836,15 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
             fails.append(witness_failure(name, status, manifests.get(name) if expected == "unknown" else None))
         elif expected != got:
             fails.append(f"{name}: expected {expected}, got {got}")
-        elif name in planned and expected != (SCENARIOS.get(name) or normalize_verdict(planned[name].get("expected", ""))):
-            fails.append(f"{name}: the witness declares {expected}, the plan requires {SCENARIOS.get(name) or normalize_verdict(planned[name].get('expected', ''))}")
-    for name in list(SCENARIOS) + [p for p in planned if p not in SCENARIOS]:   # every planned scenario is a test
+        elif name in planned and expected != (std.get(name) or normalize_verdict(planned[name].get("expected", ""))):
+            fails.append(f"{name}: the witness declares {expected}, the plan requires {std.get(name) or normalize_verdict(planned[name].get('expected', ''))}")
+    for name in list(std) + [p for p in planned if p not in std]:   # every planned scenario is a test
         if name not in {s[0] for s in scen} and not cut.stopped:
             fails.append(f"{name}: no witness of that name")
     fails += boundary_defects({r[0] for r in col("BOUNDARY")}, {n for n, s in planned.items() if s.get("boundary")})
     fails += witness_trace_defects(col)
+    fails += [] if cut.stopped else case_defects(node, col("CASEDEFECT"), col("CASE"))
+    fails += [] if cut.stopped else [f"{r[0]}: {r[1]}" for r in col("PAIRDEFECT") if len(r) > 1]
     if fails:
         return Verdict("WITNESS_FAIL", fails + cut.note())
     if cut.stopped:
@@ -841,6 +956,289 @@ def boundary_defects(declared: set[str], planned: set[str]) -> list[str]:
     exactly where the plan declares one: the witness cannot widen what the plan let stay unknown."""
     return ([f"{n}: the witness declares a history boundary the plan does not" for n in sorted(declared - planned)]
             + [f"{n}: the plan declares a history boundary the witness does not" for n in sorted(planned - declared)])
+
+
+def rule_set_id(entry: dict) -> str:
+    """The composition id Core gives a rule-set operator the record declares, spelled as
+    `RuleSet.requiredId` and `RuleSet.lawfulId` spell it: `#requiredBy:<conduct>`; `#lawful:every`,
+    `#lawful:class:<aggregate>`, `#lawful:as:<aggregate>`, `#lawful:purpose:<purpose>` and
+    `#lawful:aspurpose:<purpose>:<aggregate>` for the scopes `every` (the default), `subject_class`,
+    `as_class`, `purpose` and `as_class_purpose`. An operator, a scope or a missing name that has no
+    such id raises `ValueError`: no id is made up for it."""
+    def name(key: str) -> str:
+        v = entry.get(key)
+        if not isinstance(v, str) or not v:
+            raise ValueError(f"rule-set operator {entry!r} names no `{key}`, which its id carries")
+        return v
+    op = entry.get("op")
+    if op == "required_by":
+        return f"#requiredBy:{name('conduct')}"
+    if op != "lawful":
+        raise ValueError(f"rule-set operator {entry!r}: `op` is neither `required_by` nor `lawful`")
+    scope = entry.get("scope", "every")
+    if scope == "every":
+        return "#lawful:every"
+    if scope == "subject_class":
+        return f"#lawful:class:{name('aggregate')}"
+    if scope == "as_class":
+        return f"#lawful:as:{name('aggregate')}"
+    if scope == "purpose":
+        return f"#lawful:purpose:{name('purpose')}"
+    if scope == "as_class_purpose":
+        return f"#lawful:aspurpose:{name('purpose')}:{name('aggregate')}"
+    raise ValueError(f"rule-set operator {entry!r}: scope {scope!r} is none of Core's (every, subject_class, as_class, purpose, "
+                     "as_class_purpose)")
+
+
+def rule_set_defects(node: Node) -> list[str]:
+    """Each rule-set operator of the record that has no composition id (`rule_set_id`)."""
+    out = []
+    for x in node.get("rule_sets", []) or []:
+        try:
+            rule_set_id(x if isinstance(x, dict) else {})
+        except ValueError as e:
+            out.append(f"{e}: the rule cannot be held to it")
+    return out
+
+
+def case_key(c: dict) -> tuple[str, str]:
+    """A case the rule declares, as (name, kind): `requires:<conduct>` or `permits`."""
+    k = c.get("kind")
+    return (str(c.get("name")), f"requires:{k['requires']}" if isinstance(k, dict) and "requires" in k else str(k))
+
+
+def record_case_key(c: dict) -> tuple[str, str]:
+    """A case the record declares, as `case_key` spells it."""
+    return (str(c.get("name")), f"requires:{c.get('conduct')}" if c.get("kind") == "requires" else str(c.get("kind")))
+
+
+@dataclass(frozen=True)
+class RuleRead:
+    """A reading of another rule in a formula: its leaf (`rule`, `rule_applies` or `rule_case`), the
+    rule, the case (`rule_case` only), the map, its sign towards a violation (`_rule_reads`), the
+    variables the quantifiers around it bind, outermost first, each with the kind of quantifier
+    (`user`, `aggregate`, or `region or device`), and whether it places a compliance's observation
+    (`_compliance_anchors`)."""
+    kind: str
+    rule: str
+    case: str | None
+    map: dict
+    sign: int = 1
+    bound: tuple = ()
+    anchor: bool = False
+
+    def show(self) -> str:
+        return f"{self.kind} `{self.rule}`" + (f" case `{self.case}`" if self.case else "") + f" map {self.map}"
+
+
+#: The operands of a formula's JSON that keep the formula's sign. `not` and the antecedent of
+#: `implies` reverse it; the formula of `duration_within` keeps it where the comparison is `gt`
+#: (more than its bound grows with the time that formula holds) and is read both ways under any
+#: other comparison; every other operand (a comparison's terms, the formula of `rises`, of `count`,
+#: of `at_last`'s `when`, a `defined_when` guard, a term's formula) is read both ways.
+_SAME_SIGN = {"and", "or", "always", "eventually", "until", "since", "body", "hold", "reach"}
+
+
+def _leaf(f, kind: str) -> tuple[str, dict] | None:
+    """The rule and map of `f` where it is exactly a `kind` leaf (`rule` or `rule_applies`)."""
+    if isinstance(f, dict) and isinstance(f.get(kind), str) and isinstance(f.get("map"), dict):
+        return f[kind], {str(k): str(v) for k, v in f["map"].items()}
+    return None
+
+
+def _compliance_anchors(f) -> set[int]:
+    """The `rule_applies` leaves (by object id) that place the observation at which a compliance is
+    judged: the `when` of an `at_last` whose `when` is exactly the composed rule's `ruleApplies` and
+    whose body is exactly its `rule`, with the same map (`atLast m d s (.ruleApplies R map) (.rule R
+    map)`: complied with at the last observation of the window behind at which it applied); and,
+    where that `at_last` is one disjunct of an `or`, the leaf of the other disjunct when that disjunct
+    is exactly `holdsFor` over the same window of `.not (.ruleApplies R map)` (it applied at no
+    observation of that window). No other leaf is an anchor."""
+    out: set[int] = set()
+
+    def anchored(x) -> tuple | None:
+        if isinstance(x, dict) and "at_last" in x:
+            w, b = _leaf(x.get("when"), "rule_applies"), _leaf(x.get("body"), "rule")
+            if w is not None and w == b:
+                return w, (x.get("at_last"), x.get("length"), x.get("subject"))
+        return None
+
+    def walk(x) -> None:
+        if isinstance(x, list):
+            for v in x:
+                walk(v)
+            return
+        if not isinstance(x, dict):
+            return
+        if anchored(x):
+            out.add(id(x["when"]))
+        ops = x.get("or")
+        if isinstance(ops, list) and len(ops) == 2:
+            for a, b in (ops, ops[::-1]):
+                at = anchored(a)
+                inner = b.get("body", {}).get("not") if isinstance(b, dict) and isinstance(b.get("body"), dict) else None
+                if at and "holds_for" in b and (b.get("holds_for"), b.get("length"), b.get("subject")) == at[1] \
+                        and _leaf(inner, "rule_applies") == at[0]:
+                    out.add(id(inner))
+        for v in x.values():
+            walk(v)
+    walk(f)
+    return out
+
+
+def _rule_reads(f, sign: int = 1, bound: tuple = (), anchors: frozenset | set = frozenset()) -> list[RuleRead]:
+    """Every reading of another rule in a formula's JSON, with its sign, the quantifiers around it and
+    whether it is one of `anchors`. The sign is 1 where the read holding can only make the formula
+    hold, -1 where it can only make it fail, 0 where it can do either."""
+    out: list[RuleRead] = []
+    if isinstance(f, list):
+        for v in f:
+            out += _rule_reads(v, sign, bound, anchors)
+        return out
+    if not isinstance(f, dict):
+        return out
+    for kind in ("rule", "rule_applies", "rule_case"):
+        if isinstance(f.get(kind), str) and isinstance(f.get("map"), dict):
+            return [RuleRead(kind, f[kind], f.get("case") if kind == "rule_case" else None,
+                             {str(k): str(v) for k, v in f["map"].items()}, sign, bound, id(f) in anchors)]
+    user = next((f[k] for k in ("exists_user", "forall_user") if isinstance(f.get(k), str)), None)
+    if user is not None:
+        bound = bound + ((user, "user"),)
+    elif isinstance(f.get("var"), str) and ("body" in f or "aggregate" in f):
+        bound = bound + ((f["var"], "aggregate" if "aggregate" in f else "region or device"),)
+    for k, v in f.items():
+        if k == "not":
+            out += _rule_reads(v, -sign, bound, anchors)
+        elif k == "implies" and isinstance(v, list) and len(v) == 2:
+            out += _rule_reads(v[0], -sign, bound, anchors) + _rule_reads(v[1], sign, bound, anchors)
+        elif k == "duration_within" and f.get("op") == "gt":
+            out += _rule_reads(v, sign, bound, anchors)
+        else:
+            out += _rule_reads(v, sign if k in _SAME_SIGN else 0, bound, anchors)
+    return out
+
+
+#: The sign towards a violation a read of a composed rule has, by the composition's kind: the
+#: composed rule holding can only remove a violation for an exception and an unless (-1), can only
+#: bring one for a condition (1), and either for a compliance (None).
+_COMPOSED_SIGN = {"exception": -1, "unless": -1, "condition": 1, "compliance": None}
+_SIGN_WORDS = {1: "where its holding can only bring a violation", -1: "where its holding can only remove a violation",
+               0: "where its holding can bring or remove a violation"}
+
+
+def _composed_form(c: dict) -> tuple[str, str | None, dict, int | None]:
+    """How an execution composition reads its rule: the leaf (`rule` for a compliance; `rule_case`
+    where the composition names a case, else `rule_applies`), the case, the record's map and the sign
+    towards a violation (`_COMPOSED_SIGN`)."""
+    kind = "rule" if c.get("as") == "compliance" else ("rule_case" if c.get("case") else "rule_applies")
+    return (kind, c.get("case") if kind == "rule_case" else None, {str(k): str(v) for k, v in (c.get("map") or {}).items()},
+            _COMPOSED_SIGN.get(c.get("as")))
+
+
+def _fits(c: dict, r: RuleRead) -> bool:
+    kind, case, m, sign = _composed_form(c)
+    return str(c.get("rule")) == r.rule and (r.kind, r.case, r.map) == (kind, case, m) and sign in (None, r.sign)
+
+
+def _show_composed(c: dict) -> str:
+    kind, case, m, sign = _composed_form(c)
+    return (f"as {c.get('as')}: {kind} `{c.get('rule')}`" + (f" case `{case}`" if case else "") + f" map {m}"
+            + (f", {_SIGN_WORDS[sign]}" if sign is not None else ""))
+
+
+def composition_read_defects(node: Node, rule_json: dict) -> list[str]:
+    """Each execution composition of the record (exception, condition, compliance, unless) read in
+    the rule exactly as the record composes it. Every read of a composed rule, in a binder's class,
+    the applicability, the obligation or a case, is one of the record's compositions of that rule:
+    the record's map variable by variable, the leaf its kind names (`ruleApplies`, or `ruleCase`
+    with the case the composition names, for an exception, a condition and an unless; `rule` for a
+    compliance, beside which the composed rule's `ruleApplies` with the same map is admitted only
+    where it places the observation compliance is judged at (`_compliance_anchors`), never counting
+    as the composition's read), and its sign towards
+    a violation: the composed rule holding can only remove a violation for an exception and an
+    unless (an odd number of negations, `not` or the antecedent of `implies`, around it in a binder's
+    class, the applicability or a case's `when`; an even number in the obligation or a case's
+    `shown`), can only bring one for a condition (the reverse), and either for a compliance; a read
+    inside a comparison, `rises`, `count`, `at_last`'s `when` or a `defined_when` guard can do both,
+    so it carries no exception, condition or unless. A variable the map names is reached as the
+    record names it: one of the rule's binders is bound by no quantifier around the read (else the
+    read ranges over the road users that quantifier admits, not the binder); any other name, a road
+    user the rule quantifies over, is bound by exactly one quantifier around the read (a second
+    re-binds it, so what the outer one states of it does not reach the read). Which road users that
+    quantifier admits is the rule's own writing, which the record does not state. Every composition
+    is read at least once, and each case the rule declares on a span an `unless` composition scopes
+    reads that composition in its `when`. A case the rule does not declare is the declaration
+    check's; an unbound variable, or a map key that is no binder of the composed rule, is Core's
+    check's."""
+    comps = [c for c in node.dependencies() if c.get("rule")]
+    if not comps:
+        return []
+    binders = {b.get("name") for b in rule_json.get("binders", []) if isinstance(b, dict)}
+    cases = [c for c in rule_json.get("cases", []) if isinstance(c, dict)]
+    formulas = ([(f"binder `{b.get('name')}`", b.get("cls"), 1) for b in rule_json.get("binders", []) if isinstance(b, dict)]
+                + [("the applicability", rule_json.get("applicability"), 1), ("the obligation", rule_json.get("obligation"), -1)]
+                + [(f"case `{c.get('name')}` {k}", c.get(k), sign) for c in cases for k, sign in (("when", 1), ("shown", -1))])
+    composed = {str(c["rule"]) for c in comps}
+    placed = lambda r: r.anchor and any(c.get("as") == "compliance" and str(c["rule"]) == r.rule
+                                         and _composed_form(c)[2] == r.map for c in comps)
+    out, read = [], set()
+    for where, f, sign in formulas:
+        for r in _rule_reads(f, sign, anchors=_compliance_anchors(f)):
+            if r.rule not in composed:
+                continue
+            fits = [i for i, c in enumerate(comps) if _fits(c, r)]
+            if not fits and not placed(r):
+                out.append(f"{where} reads {r.show()}, {_SIGN_WORDS[r.sign]}; the record composes `{r.rule}` "
+                           + " or ".join(_show_composed(c) for c in comps if str(c["rule"]) == r.rule)
+                           + ": a composed rule is read as the record composes it, its map variable by variable (an exception or an "
+                             "unless `.not (.ruleApplies …)`, or `.not (.ruleCase …)` with the case it names, in the applicability; a "
+                             "condition `.ruleApplies` or `.ruleCase` there, not negated; a compliance `.rule`, its `.ruleApplies` "
+                             "only as the `when` of an `atLast` whose body is that `.rule`, or that window's `holdsFor` of its negation "
+                             "beside it in an `or`)")
+                continue
+            read.update(fits)
+            for k, v in r.map.items():
+                again = [q for q in r.bound if q[0] == v]
+                if v in binders and again:
+                    out.append(f"{where} reads {r.show()} inside a {again[-1][1]} quantifier that binds `{v}` again: the record maps "
+                               f"`{k}` to the rule's binder `{v}`, and the read ranges over the road users that quantifier admits instead")
+                elif v not in binders and len(again) > 1:
+                    out.append(f"{where} reads {r.show()} inside {len(again)} quantifiers that bind `{v}`: the innermost re-binds the road "
+                               f"user the record maps `{k}` to, so what the outer one states of it does not reach the read")
+    for i, c in enumerate(comps):
+        if i not in read:
+            out.append(f"no formula of the rule reads `{c.get('rule')}` {_show_composed(c)}, the record's composition on span "
+                       f"{c.get('span')}")
+    when = {c.get("name"): c.get("when") for c in cases}
+    for u in unless_case_checks(node):
+        c = {"as": "unless", "rule": u["rule"], "case": u["rule_case"], "map": u["map"]}
+        if u["case"] in when and not any(_fits(c, r) for r in _rule_reads(when[u["case"]])):
+            out.append(f"case `{u['case']}`: its `when` does not read `{u['rule']}` {_show_composed(c)}: a case on a span an "
+                       "`unless` scopes conjoins that suspension")
+    return out
+
+
+def case_defects(node: Node, defects: list[list[str]], rows: list[list[str]]) -> list[str]:
+    """Each declared case held to the rule's own verdicts on the witnesses (`Scenario.caseControls`):
+    no witness breaks an invariant (a case holding where the rule is not engaged; a `requires` case
+    holding where the conduct is not shown and the rule is not violated; a `permits` case holding
+    where the act is shown and the rule is violated), and the witnesses exercise its controls: the
+    positive one (`requires`: not showing the conduct where the case holds is violated; `permits`:
+    the act shown where it holds is compliant), `met` for a `requires` case (showing the conduct
+    there is compliant), `outside` (where the classes hold and the applicability does not, the case
+    does not hold) and, for a node with an exception span not recorded as `lifts_duty`, `exception`
+    (where the rule is engaged and an exception removes the duty, the case does not hold); an
+    exception that lifts the duty leaves the rule not engaged, which `outside` exercises."""
+    out = [f"case {r[0]}: {r[1]}" for r in defects if len(r) > 1]
+    has_exception = any(s.get("role") == "exception" and node.exception_kind(s.get("id")) != "lifts_duty" for s in node.get("segmentation", []))
+    for k, c in enumerate(node.get("cases", [])):
+        got = {r[2] for r in rows if len(r) > 2 and r[1] == str(k)}
+        want = (["positive", "met"] if c.get("kind") == "requires" else ["positive"]) + ["outside"] + \
+               (["exception"] if has_exception and c.get("kind") == "requires" else [])
+        for w in want:
+            if w not in got:
+                out.append(f"case {k} (`{c.get('name')}`, span {c.get('span')}): no witness exercises its `{w}` control")
+    return out
 
 
 def witness_trace_defects(col) -> list[str]:
@@ -1033,15 +1431,20 @@ NO_LOOKBACK_PRIMITIVES = {"prim_closest_approach_within", "prim_closest_approach
                           "prim_conditions_hold", "prim_region_lateral_offset", "prim_region_offset_along"}
 
 
-def heading_steps(x) -> list:
-    """The step bound of every `heading_since` in a formula or term as Core exports it, at any depth
-    (walked with an explicit stack, so no nesting hides one)."""
+#: The operators that integrate over sampling intervals, with the key of their step bound in Core's
+#: export: each step bound is the acquisition profile's reviewed parameter.
+STEP_OPERATORS = {"heading_since": "max_step", "duration_within": "step"}
+
+
+def step_bounds(x) -> list[tuple[str, object]]:
+    """The step bound of every `heading_since` and `duration_within` in a formula or term as Core
+    exports it, with its operator, at any depth (walked with an explicit stack, so no nesting hides
+    one)."""
     out, stack = [], [x]
     while stack:
         y = stack.pop()
         if isinstance(y, dict):
-            if "heading_since" in y:
-                out.append(y.get("max_step"))
+            out += [(op, y.get(key)) for op, key in STEP_OPERATORS.items() if op in y]
             stack.extend(reversed(list(y.values())))
         elif isinstance(y, list):
             stack.extend(reversed(y))
@@ -1054,6 +1457,57 @@ TOO_DEEP = ("the formula nests deeper than the gate's static checks can read: it
             "write it with less nesting")
 
 
+def region_kinds_of(rows: list[list[str]]) -> dict[tuple[str, int], frozenset[str]]:
+    """The harness's `REGIONKINDS` rows (`TraceLint.regionArgKinds` of the Core the gate built: name,
+    argument index, the kinds admitted there), for the arguments where Core admits only some kinds."""
+    return {(r[0], int(r[1])): frozenset(k for k in r[2].split(",") if k) for r in rows if len(r) >= 3}
+
+
+def region_kind_defects(tree, admitted: dict[tuple[str, int], frozenset[str]]) -> list[str]:
+    """Every region a formula passes to an atom or a measure where Core admits only some kinds
+    (`admitted`, from `region_kinds_of`), bound by a quantifier whose kind ranges over none of them:
+    the quantifier's kind and every kind refining it meet no admitted kind. A region the formula does
+    not quantify (a concept's region formal) is the caller's quantifier's, checked where the caller is
+    gated."""
+    from ..lean import surface
+    if not admitted:
+        return []
+    parent = surface.kind_refinements()
+
+    def covers(k: str) -> set[str]:
+        out = set()
+        for j in set(parent) | set(parent.values()) | {k}:
+            i = j
+            while i and i != k:
+                i = parent.get(i)
+            if i == k:
+                out.add(j)
+        return out
+    out: list[str] = []
+    stack = [(tree, {})]
+    while stack:
+        x, env = stack.pop()
+        if isinstance(x, list):
+            stack.extend((y, env) for y in x)
+            continue
+        if not isinstance(x, dict):
+            continue
+        q = next((x[key] for key in ("exists_region", "forall_region") if key in x), None)
+        if q is not None:
+            env = {**env, x.get("var"): q.get("lit") if isinstance(q, dict) else None}
+        name = x.get("atom") or x.get("measure")
+        if isinstance(name, str):
+            for i, a in enumerate(x.get("args") or []):
+                adm = admitted.get((name, i))
+                v = a.get("var") if isinstance(a, dict) else None
+                k = env.get(v) if v is not None else None
+                if adm is not None and k and not (covers(k) & adm):
+                    out.append(f"`{name}` reads region `{v}`, quantified over `{k}`, at argument {i + 1}, where Core admits only "
+                               f"{', '.join(f'`{s}`' for s in sorted(adm))}")
+        stack.extend((y, env) for key, y in x.items() if isinstance(y, (dict, list)))
+    return sorted(set(out))
+
+
 def deep_checks(run) -> list[str]:
     """The defects `run` finds on exported formulas, or the refusal `TOO_DEEP` when parsing or walking
     them exceeds Python's recursion limit."""
@@ -1064,39 +1518,40 @@ def deep_checks(run) -> list[str]:
 
 
 def rule_step_defects(node_id: str, rule_json, profile: str | None, reading) -> list[str]:
-    """A step bound of `heading_since` is a sampling standard of the recordings, shared by every rule
-    of the run: on the rule with its concept calls expanded (`RULEXJSON`), every one is exactly the
-    reading parameter the run's acquisition profile names, and the reading holds that parameter as a
-    value the operator reviewed. A literal, any other parameter or an expression is refused, as is a
-    rule reading `heading_since` in a run whose profile does not resolve. Empty for a rule that reads
-    no `heading_since`."""
+    """A step bound of `heading_since` or `duration_within` is a sampling standard of the recordings,
+    shared by every rule of the run: on the rule with its concept calls expanded (`RULEXJSON`), every
+    one is exactly the reading parameter the run's acquisition profile names, and the reading holds
+    that parameter as a value the operator reviewed. A literal, any other parameter or an expression
+    is refused, as is a rule reading either operator in a run whose profile does not resolve. Empty
+    for a rule that reads neither."""
     from ..model import acquisition as acq
-    steps = heading_steps(rule_json)
+    steps = step_bounds(rule_json)
     if not steps:
         return []
+    ops = " and ".join(f"`{op}`" for op in STEP_OPERATORS if any(o == op for o, _ in steps))
     try:
         param = acq.step_parameter(profile)
     except acq.ProfileError as e:
-        return [f"{node_id}: the rule reads `heading_since`, and {e}; until the operator names a profile with a reviewed "
-                "parameter, no rule of this run may read `heading_since`"]
+        return [f"{node_id}: the rule reads {ops}, and {e}; until the operator names a profile with a reviewed "
+                f"parameter, no rule of this run may read {ops.replace(' and ', ' or ')}"]
     want = {"param": param}
-    out = [f"{node_id}: a `heading_since` step bound is {json.dumps(s, sort_keys=True)}; under the run's acquisition profile "
+    out = [f"{node_id}: a `{op}` step bound is {json.dumps(s, sort_keys=True)}; under the run's acquisition profile "
            f"`{profile}` it is the operator-reviewed parameter `{param}`, written `.param \"{param}\"` in the rule or passed to "
            "the step formal of the concept that reads it: no literal, no other parameter, no expression"
-           for s in steps if s != want]
+           for op, s in steps if s != want]
     data = getattr(reading, "data", None) or {}
     return list(dict.fromkeys(out)) + [f"{node_id}: {d}" for d in acq.review_defects(param, data)]
 
 
 def concept_step_defects(cid: str, body_json, formals: list[str]) -> list[str]:
-    """A shared concept serves every caller, so it takes the step bound of each `heading_since` in its
-    expanded body from its caller, as one of its own formal parameters; the caller's node gate then
-    holds the actual to the run's acquisition-profile parameter. A literal there, written in the body
-    or given to a concept it calls, is refused."""
-    out = [f"{cid}: a `heading_since` step bound is {json.dumps(s, sort_keys=True)}; a shared concept takes it from its caller "
+    """A shared concept serves every caller, so it takes the step bound of each `heading_since` and
+    `duration_within` in its expanded body from its caller, as one of its own formal parameters; the
+    caller's node gate then holds the actual to the run's acquisition-profile parameter. A literal
+    there, written in the body or given to a concept it calls, is refused."""
+    out = [f"{cid}: a `{op}` step bound is {json.dumps(s, sort_keys=True)}; a shared concept takes it from its caller "
            f"as one of its formal parameters ({', '.join(f'`{f}`' for f in formals) or 'it declares none'}), and the caller passes "
            "the run's acquisition-profile parameter: no literal, here or given to a concept it calls"
-           for s in heading_steps(body_json)
+           for op, s in step_bounds(body_json)
            if not (isinstance(s, dict) and set(s) == {"param"} and s["param"] in formals)]
     return list(dict.fromkeys(out))
 
@@ -1316,6 +1771,8 @@ def main (args : List String) : IO Unit := do
     | .formula φ => (Formula.toJson (Concept.expand cs φ)).compress
     | .quantity t => (Term.toJson (Concept.expandTerm cs t)).compress
   IO.println s!"BODY\\t{{bodyJson}}"
+  for ((n, i), ks) in TraceLint.regionArgKinds do
+    if let some ks := ks then IO.println s!"REGIONKINDS\\t{{n}}\\t{{i}}\\t{{String.intercalate "," (ks.map (·.toString))}}"
   for sc in scs do IO.println s!"WITNESS\\t{{sc.name}}\\t{{sc.rule}}"
   out.flush
   let tChk ← IO.monoMsNow
@@ -1477,6 +1934,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")] + [f"units: {r[1]}" for r in col("DIM")]
     checks += hard_coded_aggregates(cid, [a for row in col("HARDAGG") for a in row if a])
     checks += deep_checks(lambda: (divisions_by_measure(json.loads(col("BODY")[0][0]))
+                                   + region_kind_defects(json.loads(col("BODY")[0][0]), region_kinds_of(col("REGIONKINDS")))
                                    + concept_step_defects(cid, json.loads(col("BODY")[0][0]), [p.get("name") for p in rec.params()]))
                           if col("BODY") else [])
     if checks:

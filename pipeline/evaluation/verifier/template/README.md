@@ -82,6 +82,14 @@ from its groundings (one per assignment of road users to the rule's roles, e.g. 
 The first verdict of this list that occurs wins. For a violation the report gives the
 observation intervals, as `t` values of the trace.
 
+**Partial coverage.** A rule may omit, under an approved abstraction, a kind of words of its law
+(for instance an equipment specification that qualifies an act the rule checks). Such a rule, and
+every law it belongs to, carries `partial_coverage: true` and the abstractions' ids in
+`abstractions`; the report lists those laws in `partial_coverage_laws`. Its verdict checks the
+conduct the rule states, not full compliance with the law. A law with `partial_coverage: false` is
+complete within the approved task scope (scope readings are disclosed in the rule's reading); not a
+word-by-word verification of every qualifier of the statute.
+
 **Why a rule is violated.** For each violated grounding (two per rule at most) the report also
 explains the first violated observation. It walks the rule's obligation from the top with the
 monitor's own evaluator and prints, indented, the value of each part that carries the verdict:

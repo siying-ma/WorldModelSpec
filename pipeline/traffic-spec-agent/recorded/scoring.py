@@ -30,6 +30,22 @@ counts as agreement. The labelled set is fixed by the labels, never inferred fro
 judgment-call label (one whose verdict turns on a parameter the pipeline chooses) is counted apart
 from the others.
 
+Coverage. A rule whose verdicts rest on an approved abstraction (the monitor names its ids on the
+rule's line: its own, or those of a rule it reads) is partial coverage: its verdict checks the
+conduct it states, not full compliance with the law's words. A recording whose law verdict joins such
+a rule keeps the ids (`abstractions`); it is scored against its label like any other, and its status
+stays what it is, but the summary counts its agreement apart (`partial_coverage`), never in the
+main figures, which are complete within the approved task scope (scope readings are disclosed in the
+rule's reading); not a word-by-word verification of every qualifier of the statute.
+
+Sampled durations. A rule whose verdicts rest on a duration read from the trace's samples (the monitor
+marks its line `sampled_duration`: it reads `durationWithin`, itself or through a rule it reads) judges
+the time the samples show, not a time proved between them. A recording whose law verdict joins such a
+rule is flagged `sampled_duration`; it is scored like any other and stays in the figures it belongs
+to, and the summary also lists the marked recordings apart (`sampled_duration`: how many were scored,
+and the agreement of the labelled ones), so the share of agreement that rests on sampled durations
+stays visible. The mark is not partial coverage.
+
 Blockers. An unknown verdict keeps the monitor's reasons with their counts, and each reason becomes
 a blocker: the reason, its class (the kind of reason, never by itself who is at fault), its evidence
 and its handling. A handling names the party the evidence decides, and only then: `library` (a
@@ -76,6 +92,7 @@ REASONS = {
     "identity_gap": ("source_identity", "data"),
     "intention_missing": ("declaration", "data"),
     "assumption_missing": ("declaration", "data"),
+    "fact_missing": ("declaration", "data"),
     "parameter_missing": ("config", "harness"),
     "unbound_variable": ("static", "harness"),
     "malformed": ("static", "harness"),
@@ -117,6 +134,12 @@ class RuleResult:
     subject: list = field(default_factory=list)                     # the subject track(s) the report names
     judged: list[GroundingResult] = field(default_factory=list)     # the groundings joined
     others: list[GroundingResult] = field(default_factory=list)     # every other grounding, reported only
+    abstractions: list[str] = field(default_factory=list)           # the approved abstractions its verdicts rest on
+    sampled_duration: bool = False                                  # its verdicts rest on a duration read from the samples
+
+    @property
+    def partial_coverage(self) -> bool:
+        return bool(self.abstractions)
 
     @property
     def groundings(self) -> int:
@@ -163,7 +186,8 @@ def rule_results(monitor_json_lines: Iterable[str]) -> dict[str, RuleResult]:
             verdict = "contract_failed"
         else:
             verdict = join(g.verdict for g in judged)
-        out[r] = RuleResult(r, verdict, sup, list(d.get("absent", [])), binder, ego, judged, others)
+        out[r] = RuleResult(r, verdict, sup, list(d.get("absent", [])), binder, ego, judged, others,
+                            list(d.get("abstractions", [])), bool(d.get("sampled_duration", False)))
     return out
 
 
@@ -198,6 +222,12 @@ class Scored:
     partial: bool = False           # some expected rule failed and some finished: `rules` holds the finished ones, no verdict
     found_violation: dict | None = None     # on a failed recording, the finished rules that proved a violation: {nodes, complete, status}
     windows: dict | None = None     # the window evidence of an unknown recording (`diagnose_windows`)
+    abstractions: list = field(default_factory=list)   # the approved abstractions the rules with a result rest on: partial coverage
+    sampled_duration: bool = False     # a rule with a result rests on a duration read from the samples
+
+    @property
+    def partial_coverage(self) -> bool:
+        return bool(self.abstractions)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -277,8 +307,11 @@ def score(recording_id: str, law_id: str, label: str | None, results: dict[str, 
     A failure decides the status (`deadline` over `crash`) and leaves no verdict; the finished
     rules' results are kept, and a violation one of them proved is reported apart."""
     def done(verdict, status, rules=None, note="", fail=None, blockers=()):
-        return Scored(recording_id, law_id, label, verdict, "unlabelled" if label is None else status,
-                      rules or {}, note, fail, judgment_call, list(blockers))
+        s = Scored(recording_id, law_id, label, verdict, "unlabelled" if label is None else status,
+                   rules or {}, note, fail, judgment_call, list(blockers))
+        s.abstractions = list(dict.fromkeys(a for x in (rules or {}).values() for a in x.get("abstractions", [])))
+        s.sampled_duration = any(x.get("sampled_duration") for x in (rules or {}).values())
+        return s
 
     failed = dict(failed or {})
     kinds = set(failed.values()) | ({failure} if failure is not None else set())
@@ -432,9 +465,17 @@ def diagnose_windows(s: Scored, explained: list[dict], params: dict[str, tuple[s
                               "groundings_not_explained": unexplained_groundings}}
 
 
+#: What the `sampled_duration` figures of a summary are, stated with them.
+SAMPLED_DURATION_NOTE = ("verdicts on a duration read from the trace's samples, not a proof of the continuous state between "
+                         "frames; these recordings are also in the figures above; this is not partial coverage")
+
+
 def summary(scored: Iterable[Scored], expected: Iterable[str] | None = None) -> dict:
-    """Counts per status, and agreement over the labelled recordings, judgment calls apart. With
-    `expected` (every recording key of the fixed set), a missing or unexpected key is refused."""
+    """Counts per status, and agreement over the labelled recordings, judgment calls apart, and the
+    plain labels of partial coverage apart from the others, which are complete within the approved
+    task scope (scope readings are disclosed in the rule's reading); not a word-by-word verification
+    of every qualifier of the statute. With `expected` (every recording key of the fixed set), a
+    missing or unexpected key is refused."""
     s = list(scored)
     keys = [x.recording_id for x in s]
     if len(keys) != len(set(keys)):
@@ -459,5 +500,10 @@ def summary(scored: Iterable[Scored], expected: Iterable[str] | None = None) -> 
             "unlabelled_failures": sum(x.label is None and x.failure is not None for x in s),
             "partial": sum(x.partial for x in s),
             "found_violation": sum(x.found_violation is not None for x in s),
-            **figures([x for x in labelled if not x.judgment_call]),
-            "judgment_call": figures([x for x in labelled if x.judgment_call])}
+            **figures([x for x in labelled if not x.judgment_call and not x.partial_coverage]),
+            "partial_coverage": {**figures([x for x in labelled if not x.judgment_call and x.partial_coverage]),
+                                 "abstractions": sorted({a for x in s for a in x.abstractions})},
+            "judgment_call": figures([x for x in labelled if x.judgment_call]),
+            "sampled_duration": {"recordings": sum(x.sampled_duration for x in s),
+                                 **figures([x for x in labelled if not x.judgment_call and x.sampled_duration]),
+                                 "note": SAMPLED_DURATION_NOTE}}

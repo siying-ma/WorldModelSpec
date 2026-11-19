@@ -233,11 +233,14 @@ inductive SignCode
   | abandonedCrossing
   | shoulderUsePermitted
   | bicyclesProhibited
+  | bicycleEbikeEscooterProhibited
   | pedestriansProhibited
   | nonmotorizedProhibited
   | motorVehiclesProhibited
   | truckRoute
   | noTrucks
+  | lampsOn
+  | parkingPermitted
   deriving DecidableEq, Repr, Inhabited
 
 namespace SignCode
@@ -263,11 +266,14 @@ def ofString (s : String) : Option SignCode :=
   | "abandoned_crossing" => some .abandonedCrossing
   | "shoulder_use_permitted" => some .shoulderUsePermitted
   | "bicycles_prohibited" => some .bicyclesProhibited
+  | "bicycle_ebike_escooter_prohibited" => some .bicycleEbikeEscooterProhibited
   | "pedestrians_prohibited" => some .pedestriansProhibited
   | "nonmotorized_prohibited" => some .nonmotorizedProhibited
   | "motor_vehicles_prohibited" => some .motorVehiclesProhibited
   | "truck_route" => some .truckRoute
   | "no_trucks" => some .noTrucks
+  | "lamps_on" => some .lampsOn
+  | "parking_permitted" => some .parkingPermitted
   | _ => Option.none
 def toString : SignCode → String
   | .noLeftTurn => "no_left_turn"
@@ -290,11 +296,14 @@ def toString : SignCode → String
   | .abandonedCrossing => "abandoned_crossing"
   | .shoulderUsePermitted => "shoulder_use_permitted"
   | .bicyclesProhibited => "bicycles_prohibited"
+  | .bicycleEbikeEscooterProhibited => "bicycle_ebike_escooter_prohibited"
   | .pedestriansProhibited => "pedestrians_prohibited"
   | .nonmotorizedProhibited => "nonmotorized_prohibited"
   | .motorVehiclesProhibited => "motor_vehicles_prohibited"
   | .truckRoute => "truck_route"
   | .noTrucks => "no_trucks"
+  | .lampsOn => "lamps_on"
+  | .parkingPermitted => "parking_permitted"
 instance : ToString SignCode := ⟨toString⟩
 end SignCode
 
@@ -397,6 +406,7 @@ inductive HumanRole
   | flagger
   | schoolCrossingGuard
   | railroadFlagger
+  | fireOfficial
   deriving DecidableEq, Repr, Inhabited
 
 namespace HumanRole
@@ -406,12 +416,14 @@ def ofString (s : String) : Option HumanRole :=
   | "flagger" => some .flagger
   | "school_crossing_guard" => some .schoolCrossingGuard
   | "railroad_flagger" => some .railroadFlagger
+  | "fire_official" => some .fireOfficial
   | _ => Option.none
 def toString : HumanRole → String
   | .policeOfficer => "police_officer"
   | .flagger => "flagger"
   | .schoolCrossingGuard => "school_crossing_guard"
   | .railroadFlagger => "railroad_flagger"
+  | .fireOfficial => "fire_official"
 instance : ToString HumanRole := ⟨toString⟩
 end HumanRole
 

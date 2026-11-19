@@ -1,5 +1,5 @@
 {
- "_note": "The operator's acquisition profiles: for recordings of one acquisition standard, the reading parameter that bounds the integration step of `heading_since`. A run names its profile (`--acquisition_profile`); every `heading_since` step bound of its rules is that parameter, whose value the operator enters and reviews in the reading. No plan or repair proposes it. This file names parameters, never values.",
+ "_note": "The operator's acquisition profiles: for recordings of one acquisition standard, the reading parameter that bounds the integration step of `heading_since` and of `duration_within` (the key `heading_since_step` names it for both). A run names its profile (`--acquisition_profile`); every step bound of either operator in its rules is that parameter, whose value the operator enters and reviews in the reading. It is the longest sampling interval integrated as one sample, not evidence that no observation is missing. No plan or repair proposes it. This file names parameters, never values.",
  "profiles": {
   "carla_scene_graph": {
    "covers": "recordings whose traces the CARLA scene-graph generator produced at its fixed simulation step",

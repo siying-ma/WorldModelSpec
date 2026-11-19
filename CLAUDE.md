@@ -33,9 +33,17 @@ That a word has no atom of its own is never, by itself, such a reason, and a gap
 these distinctions it would change.
 
 An approved abstraction covers a kind of word across the corpus, never one law's word. It is
-written once, in the ontology's section on what is not an atom, where every role of the loop sees
-it; it is never made by editing one atom's contract for the words of one law. No abstraction relaxes
+written once, in the ontology's section on what is not an atom, where every planning and repair session sees it; it is never made by editing one atom's contract for the words of one law. No abstraction relaxes
 the checks of the distinctions above.
+
+An approved abstraction that the operator designates as a limitation to be signalled downstream with
+each verdict is listed, with its id and scope, in the ontology's catalogue of approved abstractions;
+a rule that omits words under one names it, and every verdict that rule gives, and every verdict of
+a rule that reads it, is reported as partial coverage, kept apart from full statutory compliance in
+every count. A scope reading the operator approves within the task scope without that designation is
+written in the ontology's section on what is not an atom and is not catalogued: the rule is reported
+complete within the approved task scope, which never means that every qualifier of the words was
+verified.
 
 ### Training and testing (operator, 2026-11-02)
 
@@ -86,9 +94,9 @@ removed, not kept.
 **Where not to spend (operator, 2026-11-02).** Three things are not done to raise acceptance:
 - the old node behaviour review is not brought back: it was removed on 2026-11-09, with its
   Stage A and Stage B judges and the `feedback` option, and runs it could have touched (run
-  version 2 and earlier) are refused by this harness. A new node reviewer is a separate design that
-  joins a run only after its generation stage. The concept review (reviewer, adjudicator, replay)
-  and the aggregate verifier stay;
+  version 2 and earlier) are refused by this harness. Its successor, the behaviour-property review,
+  runs in a run's review stage, after generation and before the label check. The concept review
+  (reviewer, adjudicator, replay) and the aggregate verifier stay;
 - no judge layer is added: a doubtful ruling is fixed at its cause (a convention, a prompt rule,
   a precedent), never by another judge over the judges;
 - no exemption is written for a law: a mismatch (a label the rule disagrees with, or a reviewer's
@@ -180,9 +188,48 @@ feature is not better for being there, and one whose use cannot be stated is rem
   no adapter defect and oblige no rule change. A judgment-call label (one whose verdict turns on a
   parameter the pipeline chooses) is reported apart and never drives a repair; it is confirmed by
   a scenario standard independent of the rules once the parameters are frozen. A disputed label is the operator's to decide.
-- **The concept reviewer.** No node is reviewed by a model in this pipeline: the node behaviour
-  reviewer and its Stage A and Stage B judges were removed on 2026-11-09, and a new node reviewer
-  is a separate design. The concept reviewer stays, with the concept adjudicator and the replay of
+- **The behaviour-property reviewer** checks, after generation and before the label check, that a
+  law's rules decide as its words do. One author, shown the law, its definitions, the conventions
+  and the atom table but no rule, plan, reading, label or ruling, splits the law into obligation
+  clauses and writes behaviour properties: situations the words decide, with the verdict they
+  require. A second vendor, equally blind to the rules, rates each property against the words and
+  assesses each clause, and a fixed rule adopts or rejects it. The harness checks every adopted
+  property against the law's own rules by a bounded search confirmed by Core, with no model. A
+  check passes only where Core confirms that the property's situations exist and no situation of
+  it, within the stated bounds, receives another verdict or an unknown one; a check outside the
+  encoding never passes. A confirmed divergence (a finding) goes to the repair session as
+  evidence, in the label stage; a finding the session disputes, and a property the operator
+  withdraws, are the operator's to decide, and no judge rules on them. A law is accepted only with
+  a valid review credential on its current rules and adopted properties and an accepted label
+  check; neither stands in for the other. The credential is a strict review certificate when every
+  clause is covered by passed checks, or exempt for a category only by the second vendor's explicit
+  confirmation. Under the coverage policy `bounded`, chosen when the run starts (the default is
+  `strict`), it may instead be a bounded conditional credential: no check failed or was undecided,
+  every hole is listed with the counts of adopted, executed and passed properties (executed may be
+  zero), it is counted apart, never as reviewed, and it is inherited by the laws that compose it.
+  When a law still has no adopted property after its allowed property sets, the harness classifies
+  the cause from the second vendor's stated reasons: a law whose words both authors explicitly
+  state decide no checkable conduct holds a no-checkable-behaviour exemption, counted apart, never
+  as reviewed, and still needs its label check; a cause on the reviewer's side (what the prompts,
+  the models, the property language or the atoms cannot express), a disagreement of the two
+  authors on the law's meaning, and a mixed or unclear cause are the operator's.
+  The classification is evidence about the law's words and may be reused when only its rules
+  change. Its current exemption credential still binds the current plan and dependency context;
+  rule changes require a fresh validation and the applicable label check, not a new blind draft.
+  Readers list this exemption among their dependencies and check its effects in their own rules;
+  it is not a bounded coverage condition and is never counted as a passed property check.
+  When both kinds of problem are known, review repair precedes label repair. Each has its own
+  goal and attempt counter and must preserve the other check's established results.
+  A law whose every node is a permission is
+  accepted in the review stage on a permission exemption, without a label check, and never counted
+  as reviewed. The reviewer's implementation, models, prompts, schemas, premises and bounds are
+  fixed when the run first enters its review stage, then kept for the run's life. Production v1 is
+  to use only the single-scorer reviewer S. The author, second-vendor and bounded-check design
+  described above is retained as a deferred fallback, outside production v1. **Status:** the harness
+  registers no production reviewer yet, and a run that requires the review generates and then waits
+  before its review stage until one is registered. Of the operator's `review_decide` decisions only
+  `acknowledge` and a prototype `reconcile` exist (see `README.md`).
+- **The concept reviewer.** The concept reviewer stays, with the concept adjudicator and the replay of
   upheld items (operator, 2026-11-03), because the labels reach a shared concept only through the
   laws that use it. It checks that a concept's code meets its contract, never that the contract
   suits the driving task: that is the label check's and the planner's. Every change to a concept,
@@ -230,7 +277,7 @@ feature is not better for being there, and one whose use cannot be stated is rem
   operator reviews it; the doctor lists every unreviewed proposal, and `init --fresh` archives
   the unreviewed ones with the run's library, so a new run is never guided by the last run's
   guesses. The reading also holds `declarations`, the one catalogue of declared-fact ids
-  (assumptions `asm.*` and declared intentions `int.*`) with their meanings: a plan proposes an id
+  (assumptions `asm.*`, declared intentions `int.*` and declared facts `fact.*`) with their meanings: a plan proposes an id
   with its meaning, the harness enters it marked `proposed` when the node is coded, and the doctor
   lists it and `init --fresh` archives it like a parameter until the operator reviews it. A figure the statute states is
   declared on its span in the blueprint and written through a `Units` constructor.
@@ -307,9 +354,11 @@ feature is not better for being there, and one whose use cannot be stated is rem
 **What they are for.** Every smoke and demo is part of the training phase: its purpose is to
 find the pipeline's defects and remove them, until the pipeline is complete enough to run on the
 whole training split and then on the held-out and test splits. A development run's acceptance
-count is a diagnostic, not a result. In training mode a node is accepted when the gate passes and
-its verdicts agree with the labels of its law's training recordings; a law with no usable labelled
-recording is accepted on the gate alone and reported as not aligned. The figures a run reports are
+count is a diagnostic, not a result. In training mode a node is accepted when the gate passes, its
+law holds a valid review credential on its current rules, and its verdicts agree with the labels of
+its law's training recordings; a law with no usable labelled recording is accepted on the gate and
+its review credential alone and reported as not aligned; a law whose every node is a permission is
+accepted on its permission exemption. The figures a run reports are
 agreement with the training labels (training fit) and, once, agreement on the test recordings.
 demo14 is a fresh run (`init --fresh`): no record built by an earlier pipeline enters it.
 
@@ -392,7 +441,7 @@ exposes are fixed:
 ## Commands
 
 From `pipeline/traffic-spec-agent/`: `python -m harness init | doctor | loop | validate | gate |
-surface | verify | label_check | index | status | reopen | gap | split | score_split` (see `README.md`). Run `lake` only inside `library/`.
+surface | verify | label_check | review_decide | index | status | reopen | gap | split | score_split` (see `README.md`). Run `lake` only inside `library/`.
 Regenerate the ontology's Lean files with `python -m scripts.gen_ontology`; regenerate the
 corpus and its split from `pipeline/ontology_provenance/nrs_tools/` (`make_laws`, `publish`,
 `split`, `atoms_train`), never by hand.

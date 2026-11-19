@@ -126,13 +126,27 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
     if "int" in f:
         who, target = f["args"]
         return f"road user {_arg(who)} is declared to intend `{f['int']}` at region {_arg(target)}"
+    if "fact" in f:
+        g = gloss(f["fact"], glosses).removeprefix(DECLARED_BY_SOURCE)
+        return (f"the source declares `{f['fact']}` true of {_args(f.get('args', []))}" + (f" [{g}]" if g else ""))
     if "not" in f and isinstance(f["not"], dict) and set(f["not"]) == {"asm"}:
         # a direct negation of an assumption holds exactly where the source declares it false
         aid = f["not"]["asm"]
         g = gloss(aid, glosses).removeprefix(DECLARED_BY_SOURCE)
         return f"the source declares the assumption `{aid}`" + (f" [{g}]" if g else "") + " false"
+    if "not" in f and isinstance(f["not"], dict) and set(f["not"]) == {"fact", "args"}:
+        # a direct negation of a declared fact holds exactly where the source declares it false
+        fid = f["not"]["fact"]
+        g = gloss(fid, glosses).removeprefix(DECLARED_BY_SOURCE)
+        return f"the source declares `{fid}` false of {_args(f['not'].get('args', []))}" + (f" [{g}]" if g else "")
     if "not" in f:
         return f"it is not the case that ({formula(f['not'], glosses, depth)})"
+    if "duration_within" in f:
+        return (f"the time ({formula(f['duration_within'], glosses, depth)}) held in the last {term(f['length'], glosses)} of time, "
+                f"as the samples show it (an interval of at most {term(f['step'], glosses)} ending at an observation counts as "
+                "held where that holds there and as not held where it fails; a longer interval, an unknown value and time before "
+                f"the trace count as either) {_CMP[f['op']]} {term(f['bound'], glosses)}, decided only where every such count "
+                "agrees")
     if "count" in f:
         return (f"the number of times ({formula(f['count'], glosses, depth)}) became true since "
                 f"({formula(f['since'], glosses, depth)}) last became true {_CMP[f['op']]} {f['n']}")
@@ -165,6 +179,17 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
         return f"the rule `{f['rule']}` is complied with (binders {f.get('map')})"
     if "rule_applies" in f:
         return f"the rule `{f['rule_applies']}` is engaged (binders {f.get('map')})"
+    if "rule_case" in f:
+        return f"the case `{f['case']}` of rule `{f['rule_case']}` holds (binders {f.get('map')})"
+    if "required_by" in f:
+        return f"some rule of the library requires {f['required_by']} of `{f.get('who')}` here"
+    if "lawful" in f:
+        sc = f["lawful"]
+        scope = ("every rule" if sc == "every" else f"every rule whose subject is of `{sc['subject_class']}`" if "subject_class" in sc
+                 else f"every rule for the purpose `{sc['purpose']}`" if set(sc) == {"purpose"}
+                 else f"every rule whose subject is of `{sc.get('as_class')}`" + (f" for the purpose `{sc['purpose']}`" if "purpose" in sc else "")
+                 + f", read as binding `{f.get('who')}` whatever its class")
+        return f"`{f.get('who')}` complies here with {scope} engaged for it"
     for key, phrase in (("exists_user", "some road user `{v}` of the scene"), ("forall_user", "every road user `{v}` of the scene"),
                         ("exists_region", "some region `{v}` of kind '{k}'"), ("forall_region", "every region `{v}` of kind '{k}'"),
                         ("exists_device", "some device `{v}` of kind '{k}'"), ("forall_device", "every device `{v}` of kind '{k}'")):
@@ -283,7 +308,7 @@ def trace_facts(trace: dict, grounding: dict, at: int, instance: dict | None = N
     """Every input Core reads that the trace states, scene by scene in time order: each user (its
     classes, kinematics, posture, signals, everything written), each structure and device with
     every attribute, the environment, the assumptions, each declared intention with the source that
-    declares it, the supplied relations, the occupancy as
+    declares it, each declared fact with its subjects, the supplied relations, the occupancy as
     written; then the occupancy the harness derived from the geometry before running (`occupancy`,
     by timestamp: `track-region` pairs), apart. A field the body reads (`read`: trace paths such as
     `users[].kin.speed`) that a user, structure or device leaves out is written "not observed",
@@ -339,7 +364,10 @@ def trace_facts(trace: dict, grounding: dict, at: int, instance: dict | None = N
                 vals = "; ".join(f"`{v[0]}` {_value(v[1])}" for v in d.get("values") or [] if isinstance(v, list) and len(v) == 2)
                 out.append(f"- declared intention of track {d.get('vehicle')} at region {d.get('target')} (declared by: {d.get('source')}): "
                            + (vals or "no id decided"))
-        rest = {k: v for k, v in sc.items() if k not in ("t", "users", "structures", "devices", "relations", "intents")}
+        for d in sc.get("facts") or []:
+            if isinstance(d, dict):
+                out.append(f"- declared fact `{d.get('id')}` of track(s) {', '.join(str(x) for x in d.get('subjects') or [])}: {_value(d.get('value'))}")
+        rest = {k: v for k, v in sc.items() if k not in ("t", "users", "structures", "devices", "relations", "intents", "facts")}
         for k, v in rest.items():
             out.append(f"- {k}: " + ("; ".join(_fields(v)) if isinstance(v, dict) else _value(v)))
         derived = (occupancy or {}).get(sc.get("t"))

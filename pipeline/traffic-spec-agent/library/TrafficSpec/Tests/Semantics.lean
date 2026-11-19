@@ -440,4 +440,43 @@ def cdev : SemCtx := SemCtx.mk' ((List.range 9).map fun k =>
 #guard (Formula.params stopped) = ["p.stop_speed"]
 #guard (Formula.composed (.and (.rule "a" []) (.rule "b" []))) = ["a", "b"]
 
+-- `sig_warning_lamp` in its three forms, and the duration-limit measure, through the evaluator.
+private def lampCtx (ls : Option (List WarningLamp)) : SemCtx :=
+  SemCtx.mk' [{ t := 0, users := [{ track := 1, sig := { warningLamps := ls } }] }] {} β
+private def lamp (args : List Arg) : Formula := .atom "sig_warning_lamp" (X :: args) []
+private def redRear : WarningLamp := { colour := .red, mode := .flashing, facing := .rear }
+private def whiteFront : WarningLamp := { colour := .white, mode := .flashing, facing := .front }
+#guard evalTri (lampCtx (some [redRear, whiteFront])) 0 (lamp [.lit "red", .lit "flashing", .lit "front"]) = .f
+#guard evalTri (lampCtx (some [redRear])) 0 (lamp [.lit "red", .lit "flashing", .lit "front"]) = .f
+#guard evalTri (lampCtx none) 0 (lamp [.lit "red", .lit "flashing", .lit "front"]) = .u
+#guard evalTri (lampCtx (some [redRear, whiteFront])) 0 (lamp [.lit "red", .lit "flashing", .lit "rear"]) = .t
+#guard evalTri (lampCtx (some [redRear, whiteFront])) 0 (lamp [.lit "red", .lit "flashing"]) = .t
+#guard evalTri (lampCtx (some [redRear, whiteFront])) 0 (lamp [.lit "red"]) = .t
+#guard (eval (lampCtx (some [redRear])) 0 (lamp [.lit "red", .lit "flashing", .lit "up"])).why = [.malformed "up"]
+#guard atomArgSorts "sig_warning_lamp" = some [some .track, none, none, none]
+private def limitCtx (cd : Option Conditions) : SemCtx :=
+  SemCtx.mk' [{ t := 0, devices := [{ id := 5, kind := .zoneSign, conditions := cd }] }] {} (({} : Binding).bind "d" (.device 5))
+private def underLimit : Formula := .cmp (.lit (minutes 20) .second) .le (.measure "dev_zone_sign_duration_limit" [.var "d"])
+#guard evalTri (limitCtx (some { durationLimit := some (minutes 30) })) 0 underLimit = .t
+#guard evalTri (limitCtx (some { durationLimit := some (minutes 10) })) 0 underLimit = .f
+#guard evalTri (limitCtx (some {})) 0 underLimit = .u
+#guard evalTri (limitCtx none) 0 underLimit = .u
+#guard knowsAtom "dev_zone_sign_duration_limit"
+
+-- A count's bound is a literal in unit count; a zero bound is none, as a zero quantity is none.
+#guard Formula.literals (.count .tt .ff .le 1) = [(Q.ofInt 1, .count)]
+#guard Formula.literals (.count .tt .ff .ge 2) = [(Q.ofInt 2, .count)]
+#guard Formula.literals (.count .tt .ff .eq 0) = []
+#guard Formula.literals (.count (.cmp (.measure "kin_speed" [X]) .ge (mps 3)) .tt .ge 2) = [(metresPerSecond 3, .metrePerSecond), (Q.ofInt 2, .count)]
+
+-- `rel_contact_structure` through the evaluator, with its sorts.
+private def contactCtx (bd : Option (List Vec)) : SemCtx :=
+  SemCtx.mk' [{ (sceneAt 0) with structures := [{ id := 30, kind := .obstruction, boundary := bd }] }] ρ (β.bind "r" (.region 30))
+private def touches : Formula := .atom "rel_contact_structure" [X, .var "r"] []
+#guard evalTri (contactCtx (some [(metres 2, metres (-1)), (metres 3, metres (-1)), (metres 3, metres 1)])) 0 touches = .t
+#guard evalTri (contactCtx (some [(metres 5, metres (-1)), (metres 6, metres (-1)), (metres 6, metres 1)])) 0 touches = .f
+#guard evalTri (contactCtx none) 0 touches = .u
+#guard atomArgSorts "rel_contact_structure" = some [some .track, some .region]
+#guard atomArgSorts "rel_contact" = some [some .track, some .track]
+
 end TrafficSpec.Tests.Semantics

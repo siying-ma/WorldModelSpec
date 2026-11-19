@@ -116,10 +116,22 @@ def formula_restrictions() -> str:
             "the constructors it restricts:\n" + "\n".join(rows) + "\n")
 
 
+def conducts() -> set[str]:
+    """The conducts Core declares a rule's case may require and `requiredBy` asks about, as spelled
+    (`Conduct.toString` in `Language/Formula.lean`)."""
+    return set(re.findall(r'\| \.\w+ => "([a-z_]+)"', _block(_read("Language/Formula.lean"), "def Conduct.toString", r"^instance")))
+
+
+def purposes() -> set[str]:
+    """The purposes Core declares a rule may claim (`Purpose.toString` in `Language/Formula.lean`)."""
+    return set(re.findall(r'\| \.\w+ => "([a-z_]+)"', _block(_read("Language/Formula.lean"), "def Purpose.toString", r"^instance")))
+
+
 def formula_language() -> str:
     t = _read("Language/Formula.lean"); time = _read("Foundations/Time.lean")
     return ("### Formula language (`library/TrafficSpec/Core/Language/Formula.lean`; `Measure` from `Foundations/Time.lean`)\n```lean\n"
             + _inductive(t, "Arg") + "\n" + _inductive(t, "CmpOp") + "\n" + _inductive(time, "Measure") + "\n"
+            + _inductive(t, "Conduct") + "\n" + _inductive(t, "Purpose") + "\n" + _inductive(t, "RuleScope") + "\n"
             + _without_constructor_docs(_language_listing()) + "end\n```\n"
             "Notes. `Arg.var` names a binder or a quantifier variable; `Arg.lit` an enumeration spelling or an\n"
             "attribute selector (`\"x\"`, `\"y\"`, `\"width\"`, `\"length\"`, `\"lateral\"`, `\"longitudinal\"`, a side);\n"
@@ -141,18 +153,25 @@ def formula_language() -> str:
             "`within` looks ahead; `atLast m d s ψ φ`: φ at the last observation in the window behind at which ψ held\n"
             "(false where ψ held nowhere in a covered window). A window that reaches past the start of the trace is unknown (`windowTruncated`),\n"
             "so a witness of a rule that looks back names `window`. `rule id map` / `ruleApplies id map`: `map` pairs\n"
-            "the composed rule's binder names with this rule's variables.\n\n" + formula_restrictions())
+            "the composed rule's binder names with this rule's variables. `requiredBy k who` and `lawful scope who` name no\n"
+            "rule: they read the rules of the library (the cases they declare, their verdicts) for the road user `who`.\n"
+            "`ruleCase id name map` reads the case `name` rule `id` declares, mapped like `ruleApplies`: a composition.\n\n"
+            + formula_restrictions())
 
 
 def rule_and_scenario() -> str:
     r = _read("Language/Rule.lean"); b = _read("Evidence/Builders.lean"); p = _read("Vocab/Params.lean")
     return ("### The `Rule`, `Binder`, `Operationalization` and `Scenario` values (`Language/Rule.lean`, `Vocab/Params.lean`, `Evidence/Builders.lean`)\n```lean\n"
-            + _structure(r, "Binder") + "\n" + _structure(r, "Rule") + "\n" + _structure(p, "Operationalization") + "\n"
+            + _structure(r, "Binder") + "\n" + _inductive(r, "CaseKind") + "\n" + _structure(r, "RuleCase where") + "\n"
+            + _structure(r, "Rule where") + "\n" + _structure(p, "Operationalization") + "\n"
             + _inductive(r, "Verdict") + "\n" + _structure(b, "Scenario") + "```\n"
             "`AsmId` and `ParamName` are `String`. A witness's `expected` is `.violated`, `.compliant`, `.notApplicable`\n"
             "or `.unknown []` (compared by tag). `grounding` maps binder names to track ids; `window` is a closed range\n"
             "of timestamps (milliseconds). `boundary` is set only on a scenario the plan declares a history boundary for:\n"
-            "that witness stays unknown for a window truncated at its trace's start, and for nothing else.\n")
+            "that witness stays unknown for a window truncated at its trace's start, and for nothing else.\n"
+            "`setMembers` holds the rules a `requiredBy` or `lawful` of the rule ranges over in that witness, written in\n"
+            "the witness file as small rules of their own (binders, applicability, obligation, cases): the library is\n"
+            "never read by a witness, so its verdict does not change as the library grows.\n")
 
 
 def world_records() -> str:
@@ -619,10 +638,10 @@ def _dimensions() -> tuple[dict[str, tuple[int, int, int]], dict[str, tuple]]:
     return measures, prims
 
 
-def render_dim(dim: tuple[int, int, int] | None) -> str:
+def render_dim(dim: tuple[int, int, int, int] | None) -> str:
     if dim is None:
         return "true / false"
-    parts = [u if e == 1 else f"{u}^{e}" for u, e in zip(("m", "s", "deg"), dim) if e]
+    parts = [u if e == 1 else f"{u}^{e}" for u, e in zip(("m", "s", "deg", "kg"), dim) if e]
     return "·".join(parts) or "1 (no unit)"
 
 
@@ -672,6 +691,12 @@ def _sorts_of(name: str, explicit: dict) -> list[str | None]:
     if name.startswith("dev_"):
         return ["device", None, None]
     return []
+
+
+def atom_sorts(name: str) -> list[str | None]:
+    """The sort of each argument of an atom, by its Lean name, as Core's `Semantics.atomArgSorts`
+    declares it: `track`, `region`, `device`, or None for a literal position."""
+    return _sorts_of(name, _arg_sorts(_read("Language/Semantics.lean"))[0])
 
 
 def _literal_spellings(arm: str, var: str, spell: dict[str, set[str]]) -> str:
@@ -728,7 +753,7 @@ def case_catalogue(onto) -> list[dict]:
         return out
     for n in sorted(set(bools) - {"ru_aggregate"}):
         ps = [p for _vars, arm in atom_arms.get(n, []) for p in _atom_params(n, arm)]
-        tail = f" params [{', '.join(f'{p}: {render_dim((0, 0, 0))}' for p in ps)}]" if ps else ""
+        tail = f" params [{', '.join(f'{p}: {render_dim((0, 0, 0, 0))}' for p in ps)}]" if ps else ""
         entry(n, "boolean atom", [s + tail for s in sigs(n, atom_arms, _sorts_of(n, explicit))], None)
     for n in classes:
         if n not in bools:
@@ -763,10 +788,10 @@ _RECORDS = {"scene": "scene", "roadUser": "user (scene.users[])", "kin": "kin (u
             "device": "device (scene.devices[])", "conditions": "conditions (device.conditions)",
             "timeWindow": "time window (conditions.windows[])", "env": "env (scene.env)",
             "civilTime": "civil time (env.civil_time)", "relation": "relation (scene.relations[])",
-            "declaredIntent": "intent (scene.intents[])"}
+            "declaredIntent": "intent (scene.intents[])", "declaredFact": "fact (scene.facts[])"}
 _SUB = {"roadUser": "user", "kin": "kin", "signals": "sig", "posture": "posture", "warningLamp": "warning lamp",
         "structure'": "structure", "laneInfo": "lane", "device": "device", "conditions": "conditions",
-        "timeWindow": "time window", "env": "env", "civilTime": "civil time", "relation": "relation", "declaredIntent": "intent",
+        "timeWindow": "time window", "env": "env", "civilTime": "civil time", "relation": "relation", "declaredIntent": "intent", "declaredFact": "fact",
         "marking": "[marking type, marking colour]"}
 _PRIM = {"vec": "[x, y]", "num": "number", "bool": "bool", "nat": "nat", "int": "int", "str": "string"}
 
@@ -776,6 +801,10 @@ def _decoder_type(tok: str, key: str) -> str:
         return "[half_length, half_width, half_height]"
     if key == "values":
         return "[[int.<name>, bool], ...]"
+    if key == "subjects":
+        return "[track] or [track, track], in the order the fact's meaning names them"
+    if key == "legend_angle":
+        return 'number (degrees) or "none" (the legend states no angle)'
     if tok in _PRIM:
         return _PRIM[tok]
     if tok in _SUB:

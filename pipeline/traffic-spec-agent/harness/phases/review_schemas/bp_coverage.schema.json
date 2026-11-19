@@ -1,0 +1,161 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:traffic-spec:bp_coverage",
+ "title": "the coverage of one check (written by the harness)",
+ "description": "Each clause's state per category and every hole, with the counts of adopted, executed and passed properties. The harness writes every field.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema",
+  "clauses",
+  "holes",
+  "counts",
+  "policy"
+ ],
+ "properties": {
+  "schema": {
+   "const": "bp_coverage/1"
+  },
+  "clauses": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "clause_key",
+     "display_id",
+     "source",
+     "categories"
+    ],
+    "properties": {
+     "clause_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+     },
+     "display_id": {
+      "type": "string",
+      "minLength": 1
+     },
+     "source": {
+      "enum": [
+       "author",
+       "reviewer"
+      ]
+     },
+     "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "must_detect",
+       "must_not_flag"
+      ],
+      "properties": {
+       "must_detect": {
+        "enum": [
+         "covered",
+         "exempt_confirmed",
+         "hole"
+        ]
+       },
+       "must_not_flag": {
+        "enum": [
+         "covered",
+         "exempt_confirmed",
+         "hole"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "holes": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "hole_key",
+     "kind",
+     "clause_key",
+     "category",
+     "antecedent_sha",
+     "detail"
+    ],
+    "properties": {
+     "hole_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+     },
+     "kind": {
+      "enum": [
+       "no_adopted_property",
+       "exemption_not_confirmed",
+       "rejected",
+       "expression_gap",
+       "count_or_size_refused",
+       "outside_fragment",
+       "multi_binder_not_supported",
+       "not_executed",
+       "missed_obligation",
+       "uncovered_situation"
+      ]
+     },
+     "clause_key": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+     },
+     "category": {
+      "enum": [
+       "must_detect",
+       "must_not_flag",
+       null
+      ]
+     },
+     "antecedent_sha": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+     },
+     "detail": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "counts": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "adopted",
+    "executed",
+    "passed"
+   ],
+   "properties": {
+    "adopted": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "executed": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "passed": {
+     "type": "integer",
+     "minimum": 0
+    }
+   }
+  },
+  "policy": {
+   "enum": [
+    "strict",
+    "bounded"
+   ]
+  }
+ }
+}

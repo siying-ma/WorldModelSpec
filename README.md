@@ -1,7 +1,7 @@
-# WorldModelSpec: the 221-law generation run
+# WorldModelSpec: the full training-split generation run
 
 This branch, `remote/full-train-generation`, launches one job on the server: the pipeline's generation stage over
-all 221 training laws. It plans, codes and checks each law with Claude, and uses OpenAI for the concept reviewer
+all 224 laws of the training split. It plans, codes and checks each law with Claude, and uses OpenAI for the concept reviewer
 and the aggregate verifier. It reads no driving recordings. The run finds which laws can be formalized, which
 gaps block the others, and why; it is not a final result.
 
@@ -19,10 +19,12 @@ bash launch/full221/launch.sh
 
 Before you start: the server needs git, curl and Python 3.11 or newer as `python3` (`setup.sh` checks it). Log in to the Claude account to bill (`claude`, then `/login`; set `CLAUDE_CONFIG_DIR` first if
 that account uses another config directory, and keep it set for every later command), and put the OpenAI key in
-`~/.config/traffic-spec/openai.env` as `OPENAI_API_KEY=...` with mode 600.
+`~/.config/traffic-spec/openai.env` as `OPENAI_API_KEY=...` with mode 600. Set `TMPDIR` to a directory outside
+the clone (for example `export TMPDIR=$HOME/tmp`) and keep it set for every later command: the claude CLI writes
+its task output there, and inside the clone the coding gate reads it as a change to the tree.
 
 `launch.sh` first runs `launch/full221/preflight.sh` (clone at the branch tip and clean, accounts and keys, tools,
-disk, the 221 laws, the Lean build, the doctor). If any check fails, nothing starts: send `preflight-<run id>.txt`.
+disk, the 224 laws, TMPDIR outside the clone, the Lean build, the doctor). If any check fails, nothing starts: send `preflight-<run id>.txt`.
 Keep the clone's normal all-branch fetch configuration: the launcher needs `origin/runs/<run id>` after each
 checkpoint to verify the run branch and to resume after a failed push. Do not clone with `--single-branch`.
 
@@ -30,8 +32,8 @@ checkpoint to verify the run branch and to resume after a failed push. Do not cl
 
 | Setting | Value |
 |---|---|
-| Laws | all 221 laws of the training split (`laws/example/train/laws.jsonl`) |
-| Stage | generation only |
+| Laws | all 224 laws of the training split (`laws/example/train/laws.jsonl`) |
+| Stage | generation only; the run records that its laws need a review before any label check, and no reviewer is named here |
 | Workers | 16 Claude sessions at once |
 | Claude model | `claude-opus-5-5[1m]` (planning and coding effort high, judging medium) |
 | OpenAI model | `gpt-6.1-sol` for the concept reviewer and the aggregate verifier (effort high) |
@@ -61,9 +63,9 @@ launcher ends, its exit status is written to `launch-<run id>.exit` (after a res
 
 | Exit | `status` in `results/<run id>/summary.json` | What to do |
 |---|---|---|
-| 0 | `awaiting_labels` or `complete` | Done (the normal end): send back (below) |
+| 0 | `awaiting_review`, `awaiting_labels` or `complete` | Done (the normal end): send back (below). `awaiting_review` is the expected end: the run waits at its checkpoint for the review stage, which is not run here |
 | 0 | `incomplete` (the 40-iteration safety bound was used up) | Send back; do not resume without our word |
-| 4 | `paused_budget` or `awaiting_operator` | Stop and send back; do not resume |
+| 4 | `paused_budget`, `paused_defect`, `awaiting_operator`, or a handover that needs the operator (`.runtime/<run id>/launcher.log`) | Stop and send back; do not resume |
 | 5 | `infrastructure_failure`: something the iteration needs did not run; `stop_reason` in `summary.json` (also the last line of `.runtime/<run id>/launcher.log`) says what | Resume yourself only when `stop_reason` reads `<…> session could not be launched: …` followed by `rate limit`, `session refused` (a usage, weekly, daily or session limit, overloaded, credit balance) or `API error`: wait until that has cleared, then `RUN_ID=<run id> bash launch/full221/resume.sh`. Any other reason, `no result line` included (the CLI may have crashed or been killed), or 5 again at once after a resume: stop and send back |
 | 1 | an error | Stop and send back; do not resume |
 | 143 | the launcher was ended (as below, when we asked) | Resume only when we ask |

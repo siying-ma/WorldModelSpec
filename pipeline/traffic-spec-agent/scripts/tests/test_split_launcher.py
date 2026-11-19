@@ -58,7 +58,7 @@ if a[0] == "loop":
     rd.mkdir(parents=True, exist_ok=True)
     it = int(opt("--max_iterations"))
     (rd / "state.json").write_text(json.dumps({"iteration": it, "prog": {"stage": o.get("stage", "done")}}))
-    (rd / "summary.json").write_text(json.dumps({"status": o["status"], "stop": o.get("stop", ""), "n": n}))
+    (rd / "summary.json").write_text(json.dumps({"status": o["status"], "stop": o.get("stop", ""), "n": n, **({"stops": o["stops"]} if "stops" in o else {})}))
     for rel, text in o.get("files", {}).items():
         Path(rel).parent.mkdir(parents=True, exist_ok=True); Path(rel).write_text(text)
     for rel in o.get("delete", []):

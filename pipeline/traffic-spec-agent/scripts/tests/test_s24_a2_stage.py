@@ -844,13 +844,19 @@ class Commands(unittest.TestCase):
             self.assertEqual(stage.main(["confirm", "r", "--transition", "t1", "--commit", "12e4567", "--remote", "up"]), 0)
             self.assertEqual(stage.main(["enter", "r", "--kind", "generation", "--from", "G0", "--transition", "t1",
                                          "--prompts_approved", "d", "--source_commit", "c"]), 0)
+            self.assertEqual(stage.main(["enter", "r", "--kind", "review", "--from", "G0", "--transition", "t2",
+                                         "--behaviour-reviewer", "fake"]), 0)
+            self.assertEqual(stage.main(["enter", "r", "--kind", "review", "--from", "G0", "--transition", "t2",
+                                         "--behaviour_reviewer", "fake"]), 0)
             self.assertEqual(stage.main(["adopt", "r", "--old_checkout", "/o", "--transition", "t0"]), 0)
             self.assertEqual(stage.main(["adopt", "r", "--old-checkout", "/o", "--transition", "t0"]), 0)
             self.assertEqual(stage.main(["verify", "r", "G0"]), 1)
             self.assertEqual(stage.main(["restore", "r", "G0", "--into", "/d"]), 0)
-        self.assertEqual(calls, [("enter", ("r", "generation", "G0", "t1", "s.json", "1e5", None)),
+        self.assertEqual(calls, [("enter", ("r", "generation", "G0", "t1", "s.json", "1e5", None, None)),
                                  ("confirm", ("r", "t1", "12e4567", "up", None)),
-                                 ("enter", ("r", "generation", "G0", "t1", None, "d", "c")), ("adopt", ("r", "/o", "t0")),
+                                 ("enter", ("r", "generation", "G0", "t1", None, "d", "c", None)),
+                                 ("enter", ("r", "review", "G0", "t2", None, None, None, "fake")),
+                                 ("enter", ("r", "review", "G0", "t2", None, None, None, "fake")), ("adopt", ("r", "/o", "t0")),
                                  ("adopt", ("r", "/o", "t0")),
                                  ("verify", "r", "G0"), ("restore", "r", "G0", Path("/d"))])
 

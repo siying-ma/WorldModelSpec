@@ -1,0 +1,417 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:traffic-spec:bp_candidate",
+ "title": "behaviour properties of one law: role A's answer",
+ "description": "The clauses of one law and the candidate behaviour properties role A writes for them, with the five distinctions of the driving task each answered. Written by the model; the harness writes none of it. A count or length beyond a bound makes the whole answer invalid: it is recorded, never truncated.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "clauses",
+  "candidates",
+  "distinctions"
+ ],
+ "properties": {
+  "clauses": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/clause"
+   },
+   "minItems": 1,
+   "maxItems": 24
+  },
+  "candidates": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/candidate"
+   },
+   "minItems": 0,
+   "maxItems": 48
+  },
+  "distinctions": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "action",
+    "place",
+    "time_or_order",
+    "road_users",
+    "feasibility"
+   ],
+   "properties": {
+    "action": {
+     "$ref": "#/$defs/distinction_coverage"
+    },
+    "place": {
+     "$ref": "#/$defs/distinction_coverage"
+    },
+    "time_or_order": {
+     "$ref": "#/$defs/distinction_coverage"
+    },
+    "road_users": {
+     "$ref": "#/$defs/distinction_coverage"
+    },
+    "feasibility": {
+     "$ref": "#/$defs/distinction_coverage"
+    }
+   }
+  }
+ },
+ "$defs": {
+  "clause": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "quote"
+   ],
+   "properties": {
+    "id": {
+     "type": "string",
+     "pattern": "^C[0-9]{1,2}$"
+    },
+    "quote": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 600
+    },
+    "occurrence": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "no_property": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/no_property"
+     },
+     "minItems": 0,
+     "maxItems": 2,
+     "uniqueItems": true,
+     "allOf": [
+      {
+       "contains": {
+        "properties": {
+         "category": {
+          "const": "must_detect"
+         }
+        }
+       },
+       "minContains": 0,
+       "maxContains": 1
+      },
+      {
+       "contains": {
+        "properties": {
+         "category": {
+          "const": "must_not_flag"
+         }
+        }
+       },
+       "minContains": 0,
+       "maxContains": 1
+      }
+     ]
+    }
+   }
+  },
+  "no_property": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "category",
+    "reason"
+   ],
+   "properties": {
+    "category": {
+     "enum": [
+      "must_detect",
+      "must_not_flag"
+     ]
+    },
+    "reason": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 400
+    }
+   }
+  },
+  "candidate": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "clause",
+    "span_quote",
+    "category",
+    "binders",
+    "conditions",
+    "exceptions",
+    "observations",
+    "open_questions",
+    "antecedent",
+    "expected",
+    "gaps"
+   ],
+   "properties": {
+    "id": {
+     "type": "string",
+     "pattern": "^P[0-9]{1,3}$"
+    },
+    "clause": {
+     "type": "string",
+     "pattern": "^C[0-9]{1,2}$"
+    },
+    "span_quote": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 400
+    },
+    "category": {
+     "enum": [
+      "must_detect",
+      "must_not_flag"
+     ]
+    },
+    "binders": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "name",
+       "cls"
+      ],
+      "properties": {
+       "name": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{0,11}$"
+       },
+       "cls": {
+        "type": "object",
+        "description": "the binder's class: a formula of the property language (bp_formula.schema.json, $defs/formula), checked candidate by candidate by the adoption gate; at most the `binder_class` bytes of bp_limits.json as compact JSON (UTF-8)"
+       },
+       "subject": {
+        "type": "boolean"
+       }
+      }
+     },
+     "minItems": 1,
+     "maxItems": 3
+    },
+    "conditions": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "text",
+       "quote"
+      ],
+      "properties": {
+       "text": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 200
+       },
+       "quote": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+       }
+      }
+     },
+     "minItems": 1,
+     "maxItems": 6
+    },
+    "exceptions": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "text",
+       "quote",
+       "use"
+      ],
+      "properties": {
+       "text": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 200
+       },
+       "quote": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+       },
+       "use": {
+        "enum": [
+         "excluded",
+         "premise"
+        ]
+       }
+      }
+     },
+     "minItems": 0,
+     "maxItems": 4,
+     "description": "every exception the text states, quoted; an empty list asserts the text states none"
+    },
+    "observations": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 40
+     },
+     "minItems": 1,
+     "maxItems": 20,
+     "description": "the atom ids the antecedent reads"
+    },
+    "open_questions": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "situation",
+       "why_open"
+      ],
+      "properties": {
+       "situation": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 200
+       },
+       "why_open": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 200
+       }
+      }
+     },
+     "minItems": 0,
+     "maxItems": 3
+    },
+    "antecedent": {
+     "type": "object",
+     "description": "a formula of the property language (bp_formula.schema.json, $defs/formula), true exactly in the situations the property constrains; its structure, units, coordinates, constants and observations are checked candidate by candidate by the adoption gate; at most the `antecedent` bytes of bp_limits.json as compact JSON (UTF-8)"
+    },
+    "expected": {
+     "enum": [
+      "violated",
+      "not_violated"
+     ]
+    },
+    "gaps": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "words",
+       "distinction",
+       "why_no_atom"
+      ],
+      "properties": {
+       "words": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+       },
+       "distinction": {
+        "enum": [
+         "action",
+         "place",
+         "time_or_order",
+         "road_users",
+         "feasibility"
+        ]
+       },
+       "why_no_atom": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 200
+       }
+      }
+     },
+     "minItems": 0,
+     "maxItems": 3
+    }
+   },
+   "allOf": [
+    {
+     "if": {
+      "properties": {
+       "category": {
+        "const": "must_detect"
+       }
+      },
+      "required": [
+       "category"
+      ]
+     },
+     "then": {
+      "properties": {
+       "expected": {
+        "const": "violated"
+       },
+       "exceptions": {
+        "items": {
+         "properties": {
+          "use": {
+           "const": "excluded"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "category": {
+        "const": "must_not_flag"
+       }
+      },
+      "required": [
+       "category"
+      ]
+     },
+     "then": {
+      "properties": {
+       "expected": {
+        "const": "not_violated"
+       }
+      }
+     }
+    }
+   ]
+  },
+  "distinction_coverage": {
+   "oneOf": [
+    {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "pattern": "^P[0-9]{1,3}$"
+     },
+     "minItems": 1,
+     "uniqueItems": true
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "not_applicable"
+     ],
+     "properties": {
+      "not_applicable": {
+       "type": "string",
+       "minLength": 1
+      }
+     }
+    }
+   ]
+  }
+ }
+}

@@ -169,6 +169,14 @@ class StatedFigures(unittest.TestCase):
         self.assertEqual(self.read("1,000 feet")[0][1], 304.8)
         self.assertEqual(self.read("from a half hour after")[0][:2], ("half hour", 1800.0))
 
+    def test_a_mass_reads_in_kilograms(self):
+        from harness.model.units import stated_figures, DIMS
+        self.assertEqual(self.read("in excess of eight thousand pounds unladen")[0][:2], ("eight thousand pounds", 3628.73896))
+        self.assertEqual(self.read("10,000 lbs. or more")[0][1], 4535.9237)
+        self.assertEqual(stated_figures("eight thousand pounds")[0].core, "kilogram")
+        self.assertEqual(DIMS["kilogram"], (0, 0, 0, 1))
+        self.assertNotEqual(DIMS["kilogram"], DIMS["ratio"])
+
     def test_no_figure_and_surrounding_text(self):
         self.assertEqual(self.read("the 2 lanes of a highway"), [])
         self.assertEqual(self.read("at a speed of 25 miles per hour, unless"), [("25 miles per hour", 11.176, 14)])
@@ -214,10 +222,13 @@ class SmallerChecks(unittest.TestCase):
 
     def test_record_anchoring_is_a_record_level_check(self):
         rec = copy.deepcopy(NODE)
-        rec["elements"][0]["atoms"] = ["st.curvature"]
+        rec["elements"][0]["atoms"] = ["st.sight_distance"]
         errs = validate_a.check_anchoring(Node(rec))
         self.assertTrue(errs and "record-level" in errs[0] and "formula at the gate" in errs[0])
-        rec["elements"][0]["atoms"] = ["st.curvature", "rel.occupies"]
+        rec["elements"][0]["atoms"] = ["st.sight_distance", "rel.occupies"]
+        self.assertEqual(validate_a.check_anchoring(Node(rec)), [])
+        # the grade and the curvature are read at a road user's position: no feature to tie
+        rec["elements"][0]["atoms"] = ["st.grade", "st.curvature"]
         self.assertEqual(validate_a.check_anchoring(Node(rec)), [])
 
     def test_formula_anchoring_follows_shared_variables(self):

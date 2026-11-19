@@ -35,7 +35,7 @@ class NewRun(unittest.TestCase):
     def test_the_first_launch_writes_g0_and_generates(self):
         w = split_world()
         with Fixture(w, staged=True, **SPLIT) as f:
-            self.assertEqual(f.drive(1, label_deferred=True, source_commit="c0ffee"), ["awaiting_labels"])
+            self.assertEqual(f.drive(1, label_deferred=True, source_commit="c0ffee"), ["awaiting_review"])   # a new run requires the review: generation hands to it
             rd = paths.RESULTS / "r"
             (g0,) = rows(rd)
             opts = json.loads((rd / "options.json").read_text())
@@ -45,7 +45,10 @@ class NewRun(unittest.TestCase):
                              ("open", "G0", "generation", ["generation"], None, "init-r", RUN_VERSION, "all", []))
             self.assertEqual(g0["code_baseline"], {"source_commit": "c0ffee", "code": handoff.code_digest()})
             self.assertEqual(g0["semantic"], opts["semantic"])
-            self.assertEqual(g0["acceptance_policy"], {"label_repair": True, "dependency": DEPENDENCY_POLICY, "review": "none"})
+            self.assertEqual(g0["acceptance_policy"], {"label_repair": True, "dependency": DEPENDENCY_POLICY, "review": "required",
+                                                       "review_config": {"reviewer": None, "implementation": None, "coverage": "strict",
+                                                                         "test_only": False, "repair_attempts": 2,
+                                                                         "property_attempts": 2, "infra_attempts": 3}})
             self.assertEqual(g0["effects"], {"gate": integrate.gate_digest(), "scoring": label_check.scoring_version(),
                                              "generated_prompts": opts["semantic"]["generated_prompts"]})
             self.assertEqual(stages.active_stage(rd), g0)
@@ -57,7 +60,7 @@ class NewRun(unittest.TestCase):
         with Fixture(w, staged=True, **SPLIT) as f:
             statuses = f.drive(4, label_deferred=True)
             self.assertIn("crash", statuses)
-            self.assertEqual(statuses[-1], "awaiting_labels")
+            self.assertEqual(statuses[-1], "awaiting_review")
             rd = paths.RESULTS / "r"
             self.assertEqual([r["stage_id"] for r in rows(rd)], ["G0"])
             self.assertEqual(json.loads((rd / "options.json").read_text())["stage_policy"], loop.STAGE_POLICY)
@@ -77,7 +80,7 @@ class NewRun(unittest.TestCase):
             new = clone(f, stack)
             self.assertEqual(handoff.verify("r"), ([], []))
             res = loop.run_loop(options_at(f, new, label_deferred=True, max_iterations=2))
-            self.assertEqual(res["status"], "awaiting_labels")
+            self.assertEqual(res["status"], "awaiting_review")
             self.assertTrue((paths.RESULTS / "r" / "handoff" / "imported.json").exists())
             self.assertEqual([r["stage_id"] for r in rows(paths.RESULTS / "r")], ["G0"])
 

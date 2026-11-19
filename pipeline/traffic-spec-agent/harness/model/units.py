@@ -40,8 +40,8 @@ def _spec() -> dict:
     units = re.findall(r"\| (\w+)", _between(_core("Vocab/Params.lean"), "inductive PUnit'", "deriving"))
     tags = dict(re.findall(r"\| \.(\w+) => \"(\w+)\"", _between(_core("Language/Export.lean"), "def PUnit'.toJson", "def Q.toJson")))
     dims = {}
-    for m in re.finditer(r"\| \.(\w+) => (?:⟨(-?\d+), (-?\d+), (-?\d+)⟩|one)", _between(_core("Evidence/Certificate.lean"), "def ofUnit", "def render")):
-        dims[m.group(1)] = (int(m.group(2)), int(m.group(3)), int(m.group(4))) if m.group(2) else (0, 0, 0)
+    for m in re.finditer(r"\| \.(\w+) => (?:⟨(-?\d+), (-?\d+), (-?\d+), (-?\d+)⟩|one)", _between(_core("Evidence/Certificate.lean"), "def ofUnit", "def render")):
+        dims[m.group(1)] = tuple(int(m.group(i)) for i in range(2, 6)) if m.group(2) else (0, 0, 0, 0)
     ctors = re.findall(r"^def (\w+) \(", _between(_core("Foundations/Units.lean"), "namespace Units", "end Units"), re.M)
     return {"factors": factors, "units": units, "tags": tags, "dims": dims, "ctors": ctors}
 
@@ -50,8 +50,8 @@ def _spec() -> dict:
 FACTORS: dict[str, tuple[str, Fraction]] = _spec()["factors"]
 #: Core's units (`PUnit'`), in their declared order.
 CORE_UNITS: list[str] = _spec()["units"]
-#: Each Core unit → its dimension, as exponents of (metre, second, degree).
-DIMS: dict[str, tuple[int, int, int]] = _spec()["dims"]
+#: Each Core unit → its dimension, as exponents of (metre, second, degree, kilogram).
+DIMS: dict[str, tuple[int, int, int, int]] = _spec()["dims"]
 
 
 def lean_unit(core: str) -> str:
@@ -94,7 +94,8 @@ UNIT_WORDS: dict[str, str] = {
     "feet": "ft", "foot": "ft", "ft.": "ft", "ft": "ft", "inches": "in", "inch": "in", "yards": "yd", "yard": "yd", "yd.": "yd", "yd": "yd",
     "miles per hour": "mph", "mile per hour": "mph", "mph": "mph", "m.p.h.": "mph", "miles": "mi", "mile": "mi", "mi.": "mi",
     "seconds": "s", "second": "s", "sec.": "s", "minutes": "min", "minute": "min", "min.": "min", "hours": "h", "hour": "h", "hr.": "h",
-    "degrees": "deg", "degree": "deg"}
+    "degrees": "deg", "degree": "deg", "pounds": "lb", "pound": "lb", "lbs.": "lb", "lb.": "lb", "lbs": "lb", "lb": "lb",
+    "kilograms": "kg", "kilogram": "kg", "kg": "kg"}
 _WORD = "|".join(sorted(list(ONES) + list(TENS) + list(SCALES) + list(FRACTION_WORDS) + ["and"], key=len, reverse=True))
 _DIGITS = r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?|\.\d+"
 _UNIT = "|".join(re.escape(u) for u in sorted(UNIT_WORDS, key=len, reverse=True))

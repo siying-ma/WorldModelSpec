@@ -48,12 +48,18 @@ LAUNCH_KINDS = {"generation": ("generation",), "review": ("review",), "labels": 
 #: `score_split`. It is never reviewed or label-checked, enters and leaves no stage by a transition,
 #: is never handed over, and is no training evidence: no run builds on it as its base run.
 TEST_REFUSAL = "a test run's results are no training evidence: no run takes a test run as its base run"
-#: The transitions allowed while no reviewer implementation is registered: only a stage's code may be
-#: replaced. A labels stage is entered from a review stage only, and a transition into `review` is
-#: refused, so a staged run cannot reach its label check until a reviewer is registered.
-ALLOWED_TRANSITIONS = frozenset({("generation", "generation"), ("labels", "labels")})
-REVIEW_REFUSAL = ("a review stage needs the review acceptance condition and an accepted reviewer implementation; "
-                  "the current baseline registers no reviewer")
+#: The transitions: generation → review → labels in that order, labels → review when a law needs a
+#: property set again, review or labels → generation (the operator's, after a gap decision), and any
+#: stage's code replaced within its kind. Generation → labels is refused: no law is label-checked
+#: before its review. Entering review needs the policy `review: required` and a reviewer: the run's first
+#: review entry names a registered implementation and fixes it, with its digest, in the new stage's policy;
+#: every later entry keeps that reviewer, registered as it was fixed.
+ALLOWED_TRANSITIONS = frozenset({("generation", "generation"), ("review", "review"), ("labels", "labels"),
+                                 ("generation", "review"), ("review", "labels"), ("labels", "review"),
+                                 ("review", "generation"), ("labels", "generation")})
+REVIEW_REFUSAL = ("a review stage needs the review acceptance condition (`review: required`, fixed at the run's start) and a "
+                  "reviewer: the first review entry names a registered implementation and fixes it; a later one keeps it, "
+                  "registered as it was fixed")
 LABELS_REFUSAL = "a labels stage is entered from a review stage only: no law is label-checked before its review"
 UNSPLIT_REFUSAL = ("a staged run generates, reviews and checks labels in separate stages: a launch that both generates and "
                    "checks labels (neither --label_deferred nor --label_stage) is refused; launch with --label_deferred "

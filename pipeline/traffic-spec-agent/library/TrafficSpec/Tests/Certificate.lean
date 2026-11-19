@@ -73,7 +73,7 @@ def errs (φ : Formula) (entities : List (String × Val) := [("lane", .region 7)
   ["`kin_speed` is a measure, not a primitive: write it {\"measure\": \"kin_speed\", \"args\": [...]}"]
 #guard errs (.cmp speed .gt (lit 12 .metrePerSecond)) = []
 -- a curvature is compared with a literal per metre
-#guard errs (.cmp (.measure "st_curvature" [.var "lane"]) .gt (.lit (Q.mk' 1 1000) .perMetre)) = []
+#guard errs (.cmp (.measure "st_curvature" [.var "v"]) .gt (.lit (Q.mk' 1 1000) .perMetre)) = []
 #guard match Lean.Json.parse "{\"lit\": {\"num\": 1, \"den\": 500}, \"unit\": \"per_metre\"}" with
   | .ok j => match Decode.term "t" j with | .ok (.lit q .perMetre) => q.num == 1 && q.den == 500 | _ => false
   | .error _ => false
@@ -90,7 +90,7 @@ def errs (φ : Formula) (entities : List (String × Val) := [("lane", .region 7)
 #guard has (errs (.atom "rel_occupies" [.var "v", .nat 7] [])) "number `7`"
 #guard has (errs (.cmp speed .gt (lit 12 .metre))) "compares m·s^-1 with m"
 #guard has (errs (.cmp (.add speed (lit 1 .second)) .gt (lit 12 .metrePerSecond))) "adds or subtracts"
-#guard errs (.cmp (.measure "st_curvature" [.var "lane"]) .lt (.div (lit 1 .ratio) (lit 50 .metre))) = []
+#guard errs (.cmp (.measure "st_curvature" [.var "v"]) .lt (.div (lit 1 .ratio) (lit 50 .metre))) = []
 #guard has (errs (.holdsFor .time (lit 5 .metre) "v" .tt)) "measured in time has a length in m"
 #guard has (errs (.derived "prim_closest_approach_within" [.var "v", .var "other"] [lit 3 .metre])) "a parameter in m where s is required"
 #guard errs (.derived "prim_closest_approach_within" [.var "v", .var "other"] [lit 3 .second]) = []

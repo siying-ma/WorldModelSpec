@@ -41,7 +41,7 @@ class Surfaces(unittest.TestCase):
         t = surface.formula_language()
         self.assertIn("| headingSince (subject : String) (maxStep : Term) (ψ : Formula)", t)
         self.assertIn("- `Term.headingSince`:", t)
-        self.assertIn("a heading change's step bound that is not a literal or a reading parameter", t)
+        self.assertIn("a heading change's or a sampled duration's step bound that is not a literal or a reading parameter", t)
 
     def test_a_concept_body_renames_the_subject_like_a_distance(self):
         a = render_formula.canonical({"cmp": "ge", "lhs": hs("x", at("ru_motor_vehicle", "x"), {"param": "s"}), "rhs": {"lit": 0}}, ["x"], ["s"])
@@ -53,7 +53,7 @@ class Surfaces(unittest.TestCase):
         class Rec:
             def params(self):
                 return [{"name": "s", "unit": "s"}]
-        self.assertEqual(review.body_dim(Rec(), hs("x", "tt", {"param": "s"})), (0, 0, 1))
+        self.assertEqual(review.body_dim(Rec(), hs("x", "tt", {"param": "s"})), (0, 0, 1, 0))
 
 
 LEAN_BUILT = shutil.which("lake") and (WORKING / ".lake" / "build" / "lib" / "lean" / "TrafficSpec" / "Core").is_dir()

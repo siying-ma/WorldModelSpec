@@ -18,6 +18,7 @@ import TrafficSpec.Tests.Rewrites
 import TrafficSpec.Tests.TraceLint
 import TrafficSpec.Tests.Certificate
 import TrafficSpec.Tests.Intentions
+import TrafficSpec.Tests.Facts
 import TrafficSpec.Tests.Refinement
 import TrafficSpec.Tests.TravelRegion
 import TrafficSpec.Tests.Entrance
@@ -29,3 +30,8 @@ import TrafficSpec.Tests.RegionOffsetAlong
 import TrafficSpec.Tests.ApproachChain
 import TrafficSpec.Tests.EvalFast
 import TrafficSpec.Tests.HeadingSince
+import TrafficSpec.Tests.Attributes
+import TrafficSpec.Tests.SignedPlaces
+import TrafficSpec.Tests.RuleSets
+import TrafficSpec.Tests.SampledDuration
+import TrafficSpec.Tests.RoadProfile

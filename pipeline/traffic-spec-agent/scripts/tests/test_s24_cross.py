@@ -256,7 +256,7 @@ class Stages(unittest.TestCase):
                         self.assertEqual((paths.REPO / p).read_bytes(), b, p)
                 opts = options_at(f, target, label_deferred=True, max_iterations=exported["iteration"] + 1)
                 res = loop.run_loop(opts)
-                self.assertIn(res["status"], ("incomplete", "awaiting_labels"))
+                self.assertIn(res["status"], ("incomplete", "awaiting_review"))
                 self.assertEqual(json.loads((rd / "state.json").read_text())["iteration"], exported["iteration"] + 1)
                 self.assertEqual(rows(rd)[-1]["stage_id"], sid)
                 self.assertTrue((rd / "handoff" / "imported.json").exists())

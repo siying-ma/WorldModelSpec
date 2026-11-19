@@ -13,7 +13,8 @@
   its index in the full argument list.
 
   The probes: two regions of every pair of kinds Core admits as labels (`labels`), one road user
-  (position, heading, extent) and one device whose control is observed. A probe trace is admitted
+  (position, heading, extent) and two devices whose control is observed; a device argument is tried
+  with each. A probe trace is admitted
   when `Admission.defects` and `TraceLint.checkTrace` are both empty after
   `TraceLint.completeOccupancy`.
   - `read`: the kinds a region at that argument has in an admitted probe on which the name reads
@@ -81,8 +82,6 @@ def structureFields (other : RegionId) : List (String × (Structure → Structur
   ("paved", fun st => { st with paved := some true }),
   ("opening", fun st => { st with opening := some true }),
   ("marked", fun st => { st with marked := some true }),
-  ("curvature", fun st => { st with curvature := some (Q.mk' 1 100) }),
-  ("grade", fun st => { st with grade := some (Q.mk' 1 20) }),
   ("sight_distance", fun st => { st with sightDistance := some (q 100) }),
   ("ways", fun st => { st with ways := some [other] }),
   ("entrance_of", fun st => { st with entranceOf := [other], entranceObserved := true }),
@@ -90,6 +89,8 @@ def structureFields (other : RegionId) : List (String × (Structure → Structur
   ("turn_side", fun st => { st with turnSide := some default }),
   ("parking_angle", fun st => { st with parkingAngle := some (q 45) }),
   ("designation", fun st => { st with designation := some default }),
+  ("angle_marking", fun st => { st with angleMarking := some true }),
+  ("axis", fun st => { st with parkingAxis := some (q 1, q 0) }),
   ("curb_kind", fun st => { st with curbKind := some default }),
   ("curb_colour", fun st => { st with curbColour := some default }),
   ("obstruction_kind", fun st => { st with obstructionKind := some default })]
@@ -97,11 +98,18 @@ def structureFields (other : RegionId) : List (String × (Structure → Structur
 def onStructure (r : RegionId) (f : Structure → Structure) (s : Scene) : Scene :=
   { s with structures := s.structures.map fun st => if st.id == r then f st else st }
 
+def onDevice (i : DeviceId) (f : Device → Device) (s : Scene) : Scene :=
+  { s with devices := s.devices.map fun d => if d.id == i then f d else d }
+
 /-- Each field the probe may set, by name, one scene change each. -/
 def fields : List (String × (Scene → Scene)) :=
   ([(1, 2), (2, 1)].flatMap fun (r, o) => (structureFields o).map fun (n, f) => (s!"region {r} {n}", onStructure r f))
   ++ ([1, 2].map fun (r : RegionId) => (s!"device governs region {r}", fun (s : Scene) =>
        { s with devices := s.devices.map fun d => { d with governs := d.governs ++ [r] } }))
+  ++ ([1, 2].map fun (r : RegionId) => (s!"device 1 governs_sidewalk region {r}", onDevice 1 fun d =>
+       { d with kind := .regulatorySign, code := some .bicyclesProhibited, governsSidewalk := some ((d.governsSidewalk.getD []) ++ [r]) }))
+  ++ ([1, 2].map fun (r : RegionId) => (s!"device 2 governs_parking_space region {r}", onDevice 2 fun d =>
+       { d with kind := .regulatorySign, code := some .angleParking, governsParkingSpace := some ((d.governsParkingSpace.getD []) ++ [r]) }))
   ++ ([1, 2].map fun (r : RegionId) => (s!"user sight_along_way region {r}", fun (s : Scene) =>
        { s with users := s.users.map fun u => { u with sightAlongWay := some ((u.sightAlongWay.getD []) ++ [(r, q 100)]) } }))
   ++ [("user occupancy_observed", fun (s : Scene) => { s with occupancyObserved := [1] })]
@@ -111,7 +119,8 @@ def base (ka kb : StructureKind) : Scene :=
     users := [{ track := 1, kin := { position := some (q 0, q 0), heading := some (q 1, q 0), extent := some (q 1, q 1, q 1) } }]
     structures := [{ id := 1, kind := ka, position := some (q 0, q 0), boundary := some square },
                    { id := 2, kind := kb, position := some (q 0, q 0), boundary := some square }]
-    devices := [{ id := 1, kind := default, position := some (q 0, q 0), governs := [], governsObserved := true }] }
+    devices := [{ id := 1, kind := default, position := some (q 0, q 0), governs := [], governsObserved := true },
+                { id := 2, kind := default, position := some (q 0, q 0), governs := [], governsObserved := true }] }
 
 def admit (s : Scene) : Option Scene :=
   let τ := TraceLint.completeOccupancy [s]
@@ -128,13 +137,14 @@ def reads (s : Scene) (n : String) (args : List Primitives.DArg) : Bool :=
     | .error _ => false
   atomB || atomQ || primB || primQ
 
-/-- The argument lists of a signature: entities bound to the probe's track 1, device 1 and, in
-    order, regions 1 and 2; literal positions over their spellings. -/
+/-- The argument lists of a signature: entities bound to the probe's track 1, each of its devices
+    and, in order, regions 1 and 2; literal positions over their spellings. -/
 def argLists (g : Sig) : List (List Primitives.DArg) :=
   let rec go : List Pos → Nat → List (List Primitives.DArg)
     | [], _ => [[]]
     | .region :: rest, k => (go rest (k + 1)).map (.v (k + 1) :: ·)
-    | .track :: rest, k | .device :: rest, k => (go rest k).map (.v 1 :: ·)
+    | .track :: rest, k => (go rest k).map (.v 1 :: ·)
+    | .device :: rest, k => [1, 2].flatMap fun d => (go rest k).map (.v d :: ·)
     | .literal ss :: rest, k => ss.flatMap fun l => (go rest k).map (.s l :: ·)
   go g.args 0
 

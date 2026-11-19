@@ -106,8 +106,7 @@ Step by step:
    - completeness: the share of rules supported, then of those, the share engaged.
 
    A miss is either a wrong verdict, which is a formalization defect, or an unknown, which is a gap
-   in perception, the generator, the adapter or the ontology. `pipeline/evaluation/evaluation_scenario/scenarios.jsonl`
-   is a reading aid, not labels; it never enters the pipeline or the scorer.
+   in perception, the generator, the adapter or the ontology.
 
 ## 2. Why the adapter writes JSON, not a Lean trace module
 
@@ -167,7 +166,7 @@ What to drop:
 | Time | `t` is strictly increasing across scenes, or the trace fails to decode. Use the simulation timestamp, not the frame number. |
 | Not observed | Omit the key or write `null`. Never write `false`, `0` or `[]` for something the source did not observe. |
 | Defaults | A few omitted keys are not unknown: `conditions.when_children_present` reads `false`; a time window's `start_minute` and `end_minute` read 0 and 1440; `occupancy_observed: false` reads as no track observed. |
-| Key spelling | Only the keys named here are read. A misspelled or unknown key is silently ignored, so its value reads as unknown; check key names against `Decode.lean`. An intent record is the exception: an extra key fails the trace (§4.1a). |
+| Key spelling | Only the keys named here are read. A misspelled or unknown key is silently ignored, so its value reads as unknown; check key names against `Decode.lean`. An intent record and a fact record are the exceptions: an extra key fails the trace (§4.1a, §4.1b). |
 | Observed false | Write `false`. A brake lamp seen off is `"brake_lamp": false`. |
 | Track ids | Natural numbers, stable for the whole capture: the CARLA actor id, or a fixed renumbering of it. The same physical actor keeps one id. |
 | Region and device ids | Natural numbers, fixed for the whole capture. For lanes, number each (road, section, lane) triple once. Regions and devices share no id space with tracks, but each id must be unique within its own kind (structures, devices). |
@@ -196,6 +195,7 @@ What to drop:
 | `env` | Env | weather, light, calendar |
 | `assumptions` | [["asm.<name>", bool]] | legal facts no sensor sees (a through highway, a business district), supplied from scenario metadata only; omit when unknown. Each id at most once per scene; the ids and their meanings are the reading's `declarations` (§4.1a) |
 | `intents` | [Intent] | declared intentions, per road user and target region (§4.1a); omit a pair whose plan the source does not know |
+| `facts` | [Fact] | declared facts, per id and subjects (§4.1b); omit a fact the source does not decide for those subjects |
 | `links` | [[old_track, new_track]] | a track re-identified after a break; CARLA ids never break, so leave it empty. Accepted links are one-to-one: no track continued twice, none continuing two |
 
 ### 4.1a Declared intentions (`intents`)
@@ -206,7 +206,7 @@ An Intent record has exactly these keys; a missing or an extra key fails the tra
 |---|---|---|
 | `vehicle` | track | the road user whose plan is declared; a track of this scene's `users` |
 | `target` | region | the region the plan concerns; a structure of this scene |
-| `source` | non-empty string | where the declaration comes from: `authored_scenario` (a condition of the test, set by the scenario's author), `controller_plan` (the recorded active plan of the driving system) or `inferred_from_path` (a proxy read from the motion). Core does not read it; the evaluation reports verdicts on `inferred_from_path` traces apart and never counts them as evidence of intention independent of the behaviour |
+| `source` | non-empty string | where the declaration comes from: `authored_scenario` (a condition of the test, set by the scenario's author), `controller_plan` or `controller:<method>` (the recorded active plan of the driving system; `<method>` names how the controller plans its path) or `inferred_from_path` (a proxy read from the motion). Core does not read it; the evaluation reports verdicts on `inferred_from_path` traces apart and never counts them as evidence of intention independent of the behaviour |
 | `values` | [["int.<name>", bool]] | each id at most once; an id is `int.` followed by `[a-z0-9_]+` |
 
 What a value means, the same for every id:
@@ -217,9 +217,59 @@ What a value means, the same for every id:
 
 The value follows the plan, never the motion: a manoeuvre blocked, delayed or under way stays true while the plan holds it. A record is read per scene, with no carry-forward: repeat the current record in **every** scene where the source has a declaration for the pair. A scene without the record reads unknown, and a changed record counts from the first scene that carries it. A rule reads a declaration only at the observation it judges or before it. State in the report whose intentions the trace supplies (the ego only, or every road user).
 
-**Which ids.** The ids a trace must supply, `asm.*` and `int.*` alike, and what each means, are the reading's `declarations` (`library/TrafficSpec/Readings/<run>.json`), entered as the plan proposes them and reviewed by the operator. An id the reading does not list is never written.
+**Which ids.** The ids a trace must supply, `asm.*`, `int.*` and `fact.*` alike, and what each means, are the reading's `declarations` (`library/TrafficSpec/Readings/<run>.json`), entered as the plan proposes them and reviewed by the operator. An id the reading does not list is never written.
 
 **Admission.** A trace is rejected before any rule reads it, with every defect named, when an intent record names a vehicle not among the scene's users or a target that is no structure of the scene, when a scene has two records for one (vehicle, target) pair, an id twice in one record or twice in `assumptions`, an ill-formed id, or when two accepted links continue or are continued by one track. The monitor then exits with code 2.
+
+### 4.1b Declared facts (`facts`)
+
+A declared fact is a fact no sensor sees and no road-user class decides, which a scene source can
+confirm: a road user's role or duty at the time (on official duty, at work on the way), a permit or
+privilege it holds, an assignment (the route a bus serves, a terminus of it at a place), its
+membership of a procession, a consent between two road users, an emergency its conduct answers to,
+or what the map records state of a region (the named street segment a sidewalk lies on). A Fact
+record has `id` and `value` and no key but `users` and `regions` besides; any other key fails the
+trace:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `id` | string, **required** | `fact.` followed by `[a-z0-9_]+`; an id of the reading's `declarations` |
+| `users` | [track] | the road users the fact is of, in the order its meaning names them; tracks of this scene's `users` |
+| `regions` | [region] | the region the fact is of, at most one; a structure of this scene |
+| `value` | bool, **required** | the source's declaration |
+
+A record names one or two subjects, distinct, at most one of them a region: one road user, two road
+users, a road user and a region, or a region alone. The subjects the record names are those the
+id's catalogue entry states (`subjects`: `user`, `user_pair`, `user_region` or `region`); the pair's
+order is the order its meaning names them, and the record of the reversed pair is another fact.
+
+The catalogue entry of each `fact.*` id in the reading's `declarations` gives its `meaning`, its
+`kind`, its `subjects` and two evidence statements, which govern every value written:
+- write **true** only where the source holds what `true_when` states: a record of the scenario, the
+  dispatch, the permit or the map, independent of what the road user displays;
+- write **false** only where the source holds a record that excludes the fact, as `false_when`
+  states (the scenario states the vehicle is on no duty, the map records place the region outside the
+  segment); the absence of a record that states the fact is never a reason to write false;
+- **omit** the record everywhere else; the rule is then unknown wherever the fact can change its
+  verdict, and decided wherever it cannot.
+
+A road user's own displays never decide a fact: a lit warning lamp, a siren, hazard lamps or a hand
+signal is written as that signal (§4.4) and is never a reason to write a duty or an emergency
+true. There are two families, kept apart by the entry's `kind`:
+- **Temporary facts about road users** (kinds `duty`, `permit`, `assignment`, `membership`,
+  `consent`, `emergency`): written per scene for as long as the source's record holds; repeat the
+  record in every scene it holds, as for intents (no carry-forward); a change counts from the first
+  scene that carries it.
+- **Map records about a region** (kind `map_record`, `regions` only): static, from the map's records
+  with their provenance, never derived from a sign. Write the same value in every scene where the
+  region appears (a change between scenes fails the trace); write **false** explicitly for every
+  region the records place outside (one per segment outside, not left out); a region a boundary of
+  the records crosses is split at the boundary in the map, or its fact is left out.
+
+**Admission.** A trace is rejected when a record names a road user not among the scene's users or a
+region that is no structure of the scene, names no subject or more than two, two regions, one road
+user twice, an ill-formed id, when a scene has two records for one id and the same subjects, or when
+a fact of a region alone is written both true and false.
 
 ### 4.2 RoadUser
 
@@ -228,12 +278,16 @@ The value follows the plan, never the motion: a manoeuvre blocked, delayed or un
 | `track` | natural, **required** | stable id |
 | `classes` | [class] | the classes this user has. **Closed world**: any class not listed is *false* for this user, unless it is in `unobserved_classes`. Omit `classes` entirely when the source cannot classify. |
 | `unobserved_classes` | [class] | classes the source cannot tell for this user (for example `taxicab`): unknown, not false |
-| `emergency_kind`, `official_kind` | enum | `police`/`fire`/`ambulance`/`other`; `tow`/`utility`/… |
-| `e_bike_class`, `occupants` | natural | |
-| `posture` | {`on_seat`, `hands_on_controls`, `standing_on_deck`, `holding_another_vehicle`, `stunt`} | rider posture; booleans except `hands_on_controls` (a count) |
+| `emergency_kind`, `official_kind` | enum | `police`/`fire`/`ambulance`/`other`; `tow`/`utility`/…/`postal`/`other` (`postal`: a vehicle in postal service, by its livery) |
+| `e_bike_class`, `occupants` | natural | `occupants`: the number of persons in or on the vehicle (`ru.occupant_count`). A source that observes a person arriving at or leaving a vehicle but not the total omits it and declares `ru.occupant_count` `absent` |
+| `unladen_mass` | number, kg | the vehicle's mass as built and equipped, without load, occupants or a drawn vehicle, from a registration or manufacturer's figure the source records (`ru.unladen_mass`); a combination tracked as one body writes the sum of its units. Never estimated from the bounding box. Absent: unknown, and the atom is declared `absent` where the source has no such figure |
+| `disabled` | bool | the vehicle cannot move under its own power (broken down, wrecked, without fuel or charge), as the source records it, for example a scenario that disables an actor (`ru.disabled`). Write `false` only where the source knows the vehicle can move; never derive either value from a halt, hazard lamps or the engine state. Absent: unknown. It is not a class: never write it in `classes` |
+| `posture` | {`on_seat`, `hands_on_controls`, `standing_on_deck`, `holding_another_vehicle`, `stunt`} | rider posture; booleans except `hands_on_controls` (a count). The fields are independent: write each one the source observes. A source that renders a rider as part of the machine, so that no field can vary, omits `posture` and declares `ru.rider_posture` `absent` |
 | `kin` | Kin | §4.3 |
 | `sig` | Signals | §4.4 |
-| `sight_along_way` | [[way id, m], …] | per `highway` region: the distance along that way, in each direction from its point nearest this user, within which a vehicle on it could be seen from this user's eye; the smaller of the two directions (`st.sight_along_way`). Write it only where the adapter casts rays along the ways meeting the junction ahead; otherwise omit it and mark the atom absent |
+| `sight_along_way` | [[way id, m], …] | per `highway` or `railway_track` region: the distance along that way, in each direction from its point nearest this user (on a railway track, from the level crossing of that track nearest this user), within which a vehicle on it could be seen from this user's eye; the smaller of the two directions (`st.sight_along_way`). Write it only where the adapter casts rays along the ways meeting the junction ahead, or along a railway track in both directions from the crossing ahead; otherwise omit it and mark the atom absent. A way it names that is neither a `highway` nor a `railway_track` fails the trace check |
+| `road_grade` | number, ratio | the longitudinal slope of the roadway at this user's position, along its heading: positive uphill in the direction the user faces, negative downhill (`st.grade`). It is read with `kin.heading`: where the heading is unknown, Core reads the grade unknown. Write it only where this user's position and the one road it lies on are determined; where either is not unique (two roads overlap at the position, as at a grade-separated crossing), omit it, never pick one. Never copy one value of a whole road or region onto the users on it: a source that has only such values writes none and declares the atom absent. Absent: unknown |
+| `road_curvature` | number, 1/m | the horizontal curvature of the roadway at this user's position (`st.curvature`); Core reads its magnitude, so either sign is accepted. Write it only where this user's position and the one road it lies on are determined, otherwise omit it, never pick one; never a whole road's or region's value copied onto the users on it. Absent: unknown |
 
 ### 4.3 Kin (kinematics)
 
@@ -293,7 +347,7 @@ lamps also need the modified generator.
 | `unobserved_kinds` | [kind] | kinds the source cannot tell for this region; refinement-aware (Kind refinement, below) |
 | `ways` | [highway region ids] | the public ways (`highway` regions) this region lies on (`st.on_way`): a lane, roadway, shoulder, crosswalk, stop line or median its road's; a junction every highway whose road connects there |
 | `entrance_of` | [carrier ids] | on a `stop_line` or a `crosswalk` only: the entrance carriers (Entrance carriers, below) whose entrance into an intersection this line or crossing marks (`st.entrance_of`), exactly that entrance: the line or crossing a vehicle approaching through the carrier halts at or before, not a line near the carrier or on its way. One line may list several carriers (several lanes, or lanes and a segment or a bicycle lane beside them), and a carrier may have a stop line and a crosswalk. Write the complete list when the source observes it (`[]` when it observes that the line marks none): a carrier the list omits is then read as not marked by it. Omit the key when the source cannot tell; it is then read as unknown, never as "this carrier has no stop line". Each id is a structure in the same scene of kind `lane` or a kind refining it (reserved, turn or centre turn lane), or `roadway`, `one_way_roadway`, `shoulder` or `bicycle_lane_or_path`. The intersection is not written here: it is the carrier's own `enters_intersection`, and a rule reads both on the same carrier, so listing a roadway that carries no `enters_intersection` gives it no entrance (which intersection stays unknown) |
-| others | `paved`, `opening`, `marked`, `curvature` (1/m; Core reads its magnitude, so either sign is accepted), `grade` (ratio), `sight_distance` (m), `reserved_class`, `turn_side`, `parking_angle`, `designation`, `curb_kind`, `curb_colour`, `obstruction_kind` | omit what CARLA lacks |
+| others | `paved`, `opening`, `marked`, `sight_distance` (m), `reserved_class`, `turn_side`, `parking_angle`, `designation`, `angle_marking` and `axis` (Parking spaces, below), `curb_kind`, `curb_colour`, `obstruction_kind`, `entrance_kind` and `private` (Entrances, below), `railway_kind` (Railway tracks, below), `protected` | omit what CARLA lacks. `obstruction_kind` includes `sidewalk_elevator_or_chute` (a freight lift or chute opening in the sidewalk). `protected` is written on a `hose` obstruction only: `true` where a cover or bridge is laid over the hose, `false` where it lies bare; absent, unknown |
 
 **Entrance carriers.** `enters_intersection` (`st.lane_enters`) names the intersection a directed
 approach carrier runs into at its entrance end. A carrier is a lane or a kind refining it (reserved,
@@ -325,7 +379,32 @@ reach one junction, with its entrance end at that junction.
 is no intersection (`st.intersection`): write it as `driveway_or_alley_entrance`, never as
 `intersection`. No carrier's `enters_intersection` names it, and no stop line or crosswalk lists a
 carrier in `entrance_of` for its entrance into that junction: both keys name an entrance into an
-intersection. The entrance's kind does not tell an alley's from a private road's or driveway's.
+intersection.
+
+**Entrances.** A `driveway_or_alley_entrance` carries two keys of its own:
+
+| Key | Type | Meaning | Absent |
+|---|---|---|---|
+| `entrance_kind` | `driveway` / `private_road` / `alley` / `property` | what meets the highway there: a driveway serving one property, a private road serving several, an alley, or an entrance into abutting property (a lot, a garage, a parking area) that is none of these (`st.driveway_or_alley_entrance` **kind**) | which of them it is is unknown |
+| `private` | bool | the way or property the entrance leads into is private (`true`) or public (`false`), as the source's map records it (`st.driveway_or_alley_entrance` **private**) | unknown; never derive it from `entrance_kind`: an alley or a private road may be either |
+
+**Parking spaces.** A `parking_space` carries two keys besides `parking_angle` and `designation`:
+
+| Key | Type | Meaning | Absent |
+|---|---|---|---|
+| `angle_marking` | bool | `true` where the source confirms that the space's markings are an official marking indicating the angle of parking, `false` where it confirms that they are not (`st.parking_space` **angle_marking**). Never derived from the space's outline, its `axis` or its `parking_angle` | unknown |
+| `axis` | [x, y] | the undirected direction of the space's long axis as its stall lines mark it (`st.parking_space` **axis**): observed from the stall lines the source records for that space (a map's or an annotation's line geometry: the direction of the space's side lines), never from a vehicle parked in it, from a design default or from a template; a source with no stall-line record omits it. Any non-zero length; a vector and its opposite are the same axis, so either may be written: Core reads the axis undirected, as the one of the two whose y component is positive, or, where y is zero, whose x component is positive, so both spellings give the same reading and the same verdicts. It is read as the angle of parking a marking indicates only where `angle_marking` is `true`; elsewhere it is the stall's geometry and nothing more. A zero vector reads unknown | unknown |
+
+**Impassable sections.** An `impassable_section` region is a stretch of sidewalk, or of the ground
+beside a roadway where a pedestrian would walk, that a pedestrian cannot traverse on foot (missing,
+broken, closed or too narrow), written with its boundary where the source records one. It is not an
+`obstruction`: no object need be there. A place with no sidewalk mapped is not written as one.
+
+**Railway tracks.** A `railway_track` region is the outline of a track's outermost rails along its
+length, on, beside or across the highway, so that the distance from a body to the nearest rail is
+`st.region_geometry` to that region; a level crossing stays its own `railway_crossing` region where
+the track meets the roadway. `railway_kind` is `railroad` or `streetcar` (`st.railway_track`
+**kind**); absent, which it is is unknown. A track is written whether or not a rail vehicle is on it.
 
 **Kind refinement.** Some kinds refine another (`StructureKind.parent?` in
 `library/TrafficSpec/Core/Vocab/Ontology/Structure.lean`):
@@ -394,9 +473,13 @@ CARLA mapping:
 | `position` | [x, y] | |
 | `unobserved_kinds` | [kind] | device kinds the source cannot tell for this device |
 | `governs` | [region ids] | the travel regions whose traffic the device controls: the lanes (`controlsTrafficOf` edges, or the landmark's affected waypoints), a bicycle lane or path, or a roadway, one-way roadway or shoulder written without lane regions; or the intersection, where the source reports the device as controlling the junction itself (read as that and nothing more). Never a highway, a controlled-access region or a region no vehicle travels in. Write `[]` when the source observes that the device governs nothing; omit the key when the source cannot tell (read as unknown) |
+| `governs_sidewalk` | [region ids] | on a `regulatory_sign` whose `code` is `bicycles_prohibited` or `bicycle_ebike_escooter_prohibited` only: the `sidewalk` regions the sign governs, as the source records them (`dev.governs_sidewalk`). Write the complete list where the source records them (`[]` where it records that the sign governs none); omit the key where it does not record them, which reads unknown. Never derive it from the sign's position, a distance, or the lanes in `governs`. Admission refuses the trace when the key names a region that is not a `sidewalk` of the scene, or when it names any region on another device or another code (an absent `code` included) |
+| `governs_parking_space` | [region ids] | on a `regulatory_sign` whose `code` is `angle_parking` only: the `parking_space` regions the sign governs, as the source records them (`dev.governs_parking_space`); written and refused as `governs_sidewalk` is, with `parking_space` for `sidewalk` |
+| `legend_angle` | number (degrees) or `"none"` | on an `angle_parking` sign: the angle of parking its legend states, or `"none"` where the source confirms that the legend states no angle (`dev.regulatory_sign` **legend_angle**). Omit the key where the source does not read the legend's angle: that is unknown, never `"none"` |
 | `indications` | [indication] | what a signal shows now. CARLA `TrafficLightState`: Red → `circular_red`, Yellow → `circular_yellow`, Green → `circular_green`, Off → `dark`, Unknown → `unknown`. |
 | `speed_value`, `speed_kind` | m/s, `maximum`/`minimum`/`structure_maximum`/`zone` | speed-limit landmarks: the value converted from the landmark unit to m/s |
-| `inoperative`, `flashing`, `active`, `uncovered`, `ped_state`, `countdown`, `lane_control`, `code`, `zone_kind`, `is_end`, `rail_lights`, `gate`, `bell`, `human_role`, `human_indication` | | see `Decode.lean`; omit what CARLA lacks |
+| `inoperative`, `flashing`, `active`, `uncovered`, `ped_state`, `countdown`, `lane_control`, `zone_kind`, `is_end`, `rail_lights`, `gate`, `bell`, `human_role`, `human_indication` | | see `Decode.lean`; omit what CARLA lacks. `human_role` includes `fire_official`, the fire department official in command at a fire; never write another role for that person |
+| `code` | SignCode | a `regulatory_sign`'s catalogue code (`dev.regulatory_sign`). Two codes need a reading of the legend: `lamps_on` for a sign directing vehicles' lamps to be lit, `parking_permitted` for a sign permitting parking (write its hours, duration or class in `conditions`); both need `governs` naming the regions the sign applies to. `bicycle_ebike_escooter_prohibited` is a sign prohibiting riding a bicycle, an electric bicycle or an electric scooter, exactly these three; `bicycles_prohibited` concerns bicycles alone, and neither is written for the other. Absent: the code is unknown, never read as a different code |
 | `conditions` | {windows, min_occupancy, …} | a sign's legend as read: `{}` for a sign known to state no restriction (the regulation holds at every time and for every road user); omitted only when the legend is not read, which leaves every condition on the sign unknown. Never omit it for a sign known to be unconditional. |
 | `on_track`, `red_flashing`, `amber_flashing`, `stop_arm` | | full split only (school-bus signal) |
 
@@ -434,17 +517,53 @@ The `ofString` tables in `library/splits/full/TrafficSpec/Core/Vocab/Ontology/*.
 authority. The ones CARLA needs:
 
 - **RoadUserClass**: `motor_vehicle`, `motorcycle`, `moped`, `bus`, `transit_bus`, `school_bus`,
-  `taxicab`, `tour_bus_or_limousine`, `truck`, `commercial_motor_vehicle`,
-  `trailer_or_combination`, `bicycle`, `electric_bicycle`, `electric_scooter`,
+  `taxicab`, `tour_or_shuttle_bus`, `limousine`, `truck`, `commercial_motor_vehicle`,
+  `trailer`, `vehicle_combination`, `bicycle`, `electric_bicycle`, `electric_scooter`,
   `pedestrian`, `pedestrian_with_white_cane_or_guide_animal`, `child`,
-  `emergency_vehicle`, `fire_apparatus`, `official_vehicle`,
-  `rail_vehicle`
+  `emergency_vehicle`, `fire_apparatus`, `official_vehicle`, `tow_car`,
+  `rail_vehicle`, `trimobile`. `tour_bus_or_limousine` and `trailer_or_combination` no longer exist: a tour or
+  shuttle bus is `tour_or_shuttle_bus`, a limousine `limousine`; a drawn unit tracked on its own is
+  `trailer`, a drawing vehicle and what it draws tracked as one body `vehicle_combination` (beside
+  the drawing vehicle's own classes). `tow_car` is a vehicle built or equipped for towing or roadside
+  assistance, read from its equipment; a tow vehicle in official or contracted service is also
+  `official_vehicle` with `official_kind` `tow`. `emergency_vehicle` is an authorized emergency
+  vehicle: write it only where the source confirms that the vehicle is equipped with the warning
+  lamps and the siren the jurisdiction requires of such a vehicle (the pipeline trusts that and
+  checks no evidence of the equipment). It never says that a lamp is in use, that the vehicle is
+  responding to an emergency or that it is performing an official duty: the trace shows those
+  through `sig` and the vehicle's conduct. Data exported before this contract (2026-11-18) does not
+  carry this meaning: its `emergency_vehicle` entries count only once its source confirms the
+  equipment, and until then the adapter lists the class in `unobserved_classes`. A class whose contract
+  states a legal classification is written only where the source confirms that the road user is of
+  that kind under the definition the contract cites (the pipeline trusts that and checks no evidence
+  of it): `bicycle` (NRS 484A.025), `moped` (NRS 484A.125 and NRS 486.038), `motorcycle`
+  (NRS 484A.135), `trimobile` (NRS 486.057), `bus` (NRS 484A.030), `school_bus` (NRS 484A.230),
+  `taxicab` (NRS 484A.270), `tour_or_shuttle_bus` (LVMC 11.02.150), `truck` (NRS 484A.305),
+  `electric_bicycle` (NRS 484B.017), `electric_scooter` (NRS 484B.018, NRS 484A.082 and
+  NRS 482.0295), `pedestrian` (NRS 484A.165) and `emergency_vehicle` (NRS 484A.020). For
+  `bicycle`, `moped`, `trimobile`, `truck`, `electric_bicycle`, `electric_scooter`, `pedestrian`
+  and `emergency_vehicle` the contract also states completeness: the class is written for every road
+  user the source so confirms, beside any other class it writes for that road user (a person in a
+  motorized wheelchair is `pedestrian` whatever else it is), and is listed in `unobserved_classes`
+  for a road user the source cannot decide; a complete class list without it then means not a
+  member. No class implies another: `school_bus`, `transit_bus` and `tour_or_shuttle_bus` list `bus`
+  as well only where the source confirms a bus under NRS 484A.030, and `trimobile` lists
+  `motorcycle` as well only where the source confirms a motorcycle under NRS 484A.135. A
+  `taxicab`'s markings describe the class and are no evidence of the passenger count or the charge
+  NRS 484A.270 states. `trimobile` is a motor vehicle with handlebars and a saddle seat designed to
+  travel with three wheels on the ground, at least one power driven; a motorcycle with a sidecar is
+  not one. Data exported before this class (2026-11-18), delivery 1108
+  among it, does not classify trimobiles: its manifest does not list `ru.trimobile`, so the atom is
+  absent and every road user's trimobile membership reads unknown, never false; a later export
+  that lists the atom writes `trimobile` where the source classifies a road user as one, and lists
+  it in `unobserved_classes` for a road user it cannot tell. A source that cannot tell one of these
+  classes lists it in `unobserved_classes` or declares it absent
 - **StructureKind**: `highway`, `roadway`, `lane`, `centre_line`, `road_edge`, `shoulder`,
   `sidewalk`, `median_or_divider`, `one_way_roadway`, `intersection`, `crosswalk`, `stop_line`,
-  `driveway_or_alley_entrance`, `alley`, `crest`, `railway_crossing`, `controlled_access`,
+  `driveway_or_alley_entrance`, `alley`, `crest`, `railway_crossing`, `railway_track`, `controlled_access`,
   `elevated_structure`, `bicycle_lane_or_path`, `reserved_lane`, `centre_turn_lane`, `turn_lane`,
   `parking_space`, `curb_zone`, `transit_stop`, `safety_zone`, `pedestrian_grade_separation`,
-  `fire_hydrant`, `fire_station_entrance`, `roundabout`, `obstruction`; the decoder also spells the
+  `fire_hydrant`, `fire_station_entrance`, `roundabout`, `obstruction`, `impassable_section`; the decoder also spells the
   abstract `travel_region`, which a trace never writes (§4.5, Kind refinement)
 - **DeviceKind**: `traffic_signal`, `pedestrian_signal`, `lane_control_signal`,
   `speed_limit_beacon`, `crossing_warning_signal`, `stop_sign`, `yield_sign`, `speed_limit_sign`,
@@ -550,10 +669,11 @@ signal that governs them controls that intersection.
 ```json
 { "source": "<name and version of the generator + adapter>",
   "reid_gap": <seconds, optional, default 0>,
-  "atoms": { "<atom id>": "exact" | "estimate:<error class>" | "absent" | "subject", ... } }
+  "atoms": { "<atom id>": "exact" | "estimate:<error class>" | "absent" | "subject", ... },
+  "facts": [ "<fact id>", ... ] }
 ```
 
-- **List every atom id.** There are 130 in the full ontology, read from
+- **List every atom id.** There are 140 in the full ontology, read from
   `library/splits/full/TrafficSpec/Core/Vocab/Ontology/Ids.lean`. An id the manifest omits counts
   as `absent`, and the monitor warns that the manifest is not complete.
 - `st.travel_region` is abstract: no source declares it, and its entry has no effect. Whether a
@@ -578,6 +698,10 @@ signal that governs them controls that intersection.
   `rel.ahead_behind_in_lane` needs `st.lane`. A read of `st.lane_enters` or `st.entrance_of` depends
   on no carrier kind: it reads the carrier's record, whatever the carrier's kind (`kindDependencies` in
   `library/TrafficSpec/Core/Runtime/Manifest.lean`). An absent dependency counts as an absent atom of the rule (`partial`, or `unsupported`).
+- `facts` lists the `fact.*` ids of the reading's `declarations` the source supplies, with the
+  evidence their `true_when` and `false_when` ask for. An id it does not list is not supplied: every
+  record of it in a trace is dropped before evaluation and reads unknown. Absent, the key supplies no
+  declared fact.
 - `reid_gap` is the longest tracker break, in seconds, that `links` may bridge. It is 0 for CARLA.
 
 Make one per generator version, never per capture:

@@ -3,19 +3,21 @@ read and restore a closed stage.
 
 `enter` closes the active stage and opens the next one on the code of this checkout. It refuses,
 before it writes anything, unless the transition is allowed (`stages.ALLOWED_TRANSITIONS`; a review
-stage is refused outright, and a labels stage is entered from a review stage only), this process
-owns the library, the run is at a checkpoint another machine may take over
-(`handoff.checkpoint_problems`), the active stage and the handoff manifest's stage are the stage
-named as `--from`, the files on disk are those of the last export (`handoff.verify` for a
-transition), no label repair is active and no concept review deferred, no other transition is in
-progress or has left the same stage, generation is complete for the laws the new stage covers when
+stage only under the run's policy `review: required` and with a reviewer: the run's first review entry
+names a registered implementation and fixes it, with its digest, in the new stage's policy, and every
+later one keeps it, registered as fixed; and a labels stage from a review stage only), this process owns the library, the run is at a
+checkpoint another machine may take over (`handoff.checkpoint_problems`), the active stage and the
+handoff manifest's stage are the stage named as `--from`, the files on disk are those of the last
+export (`handoff.verify` for a transition), no label repair is active, no concept review deferred and
+no review call of unknown outcome stands, no other transition is in progress or has left the same
+stage, generation is complete for the laws the new stage covers when
 a generation stage closes, and every code file that changed since the closing stage's baseline
 belongs to an allowed class:
 
 - forbidden: Core, the ontology, the definition precedence and its resolver, the Lean toolchain and
   build files, the region-kind exporter, the split tools, the ontology generator, and the concept
-  review and aggregate verifier with their prompts; with the run's comparison set fixed
-  (`comparison_set.json`), any file that changes the scoring digest (`label_check.scoring_version`);
+  review, the aggregate verifier and the behaviour reviewer with their prompts; with the run's
+  comparison set fixed (`comparison_set.json`), any file that changes the scoring digest (`label_check.scoring_version`);
 - generated text: `prompts/*.md`, or any harness module while the generated prompt text the code
   renders changed; allowed only with `--prompts-approved` equal to `prompts_digest` of the new
   semantic inputs;
@@ -46,6 +48,11 @@ checking the old checkout independently: its own code's `handoff verify`, every 
 manifest hashed again under it, and its git history from the run's source commit. The G0 manifest is
 the old one with the stage's id, the stage record's digest and the record among its artifacts.
 
+`handover` says whether the launcher may itself enter the next stage on the same code (generation
+to review, review to labels, labels to review) at the run's last checkpoint, or why the run waits
+there: the operator's choices (a scope, a limit, a stop, any other transition) are never made by it,
+and the reviewer a first review entry fixes is the one the launcher names.
+
 Every `open` row this module writes records the closing-stage effects the next transition compares
 (`effects`: the gate digest, the scoring digest, and the generated and written prompt digests)."""
 from __future__ import annotations
@@ -70,7 +77,8 @@ FORBIDDEN_FILES = frozenset({
     "library/lean-toolchain", "library/lakefile.lean", "library/lake-manifest.json", "scripts/RegionKinds.lean",
     "harness/tools/split.py", "scripts/gen_ontology.py", handoff.DOCTOR_TOOL,
     "harness/phases/review.py", "prompts/review_concept.md", "prompts/adjudicate_concept.md", "prompts/recheck_concept.md",
-    "harness/phases/aggregate.py", "harness/checks/aggregates.py", "prompts/verify_aggregate.md"})
+    "harness/phases/aggregate.py", "harness/checks/aggregates.py", "prompts/verify_aggregate.md",
+    "harness/phases/behaviour_review.py"})
 FORBIDDEN_DIRS = ("library/TrafficSpec/Core/", "ontology/")
 #: The files `label_check.scoring_version` digests, by name and content, in its order.
 SCORING_FILES = ("recorded/scoring.py", "recorded/labels.py", "harness/phases/label_check.py", "library/Explain.lean")
@@ -470,17 +478,32 @@ def _report(record: dict) -> dict:
     return record
 
 
+def _review_config(stage: dict | None) -> dict:
+    return ((stage or {}).get("acceptance_policy") or {}).get("review_config") or {}
+
+
 def enter(run_id: str, kind: str, from_id: str, transition: str, scope: str | None = None,
-          prompts_approved: str | None = None, source_commit: str | None = None) -> dict:
+          prompts_approved: str | None = None, source_commit: str | None = None, reviewer: str | None = None) -> dict:
     """Close the active stage `from_id` and open a stage of `kind` on this checkout's code (see the
-    module's description). Returns the transition record."""
-    if kind == "review":
-        raise _refuse("stage enter", stages.REVIEW_REFUSAL)
+    module's description). A review entry may name the reviewer (`reviewer`): the run's first must,
+    and fixes it in the new stage's policy; a later one names it or none. Returns the transition record."""
     if kind not in stages.KINDS:
         raise _refuse("stage enter", f"unknown stage kind {kind!r}")
     if not transition:
         raise _refuse("stage enter", "give --transition")
+    if reviewer and kind != "review":
+        raise _refuse("stage enter", "a reviewer is named only on entering a review stage, which fixes it or keeps it")
     rd = paths.run_dir(run_id)
+    from ..phases import behaviour_review
+    if kind == "review":
+        try:
+            was = stages.active_stage(rd) if (rd / "options.json").exists() else None
+        except jsonl.DataIntegrityError:
+            was = None
+        why = None if behaviour_review.stage_required(was) else "the run's policy is not `review: required`"
+        why = why or behaviour_review.entry_refusal(_review_config(was), reviewer)
+        if why:
+            raise _refuse("stage enter", f"{stages.REVIEW_REFUSAL} ({why})")
     if not (rd / "options.json").exists():
         raise _refuse("stage enter", f"no run `{run_id}` under {paths.RESULTS}")
     if kind == "labels":
@@ -488,11 +511,12 @@ def enter(run_id: str, kind: str, from_id: str, transition: str, scope: str | No
             was = stages.active_stage(rd)
         except jsonl.DataIntegrityError as e:
             raise _refuse("stage enter", f"the stage record cannot be read ({e})")
-        if was is not None and was.get("stage_kind") != "labels":
+        if was is not None and was.get("stage_kind") not in ("review", "labels"):
             raise _refuse("stage enter", stages.LABELS_REFUSAL)
     owner.acquire_for_transition(run_id, transition)
     _finish_journal(rd)
-    record = _begun(rd, transition, "enter", **{"from": from_id, "to_kind": kind})
+    named = {"reviewer": reviewer} if kind == "review" else {}
+    record = _begun(rd, transition, "enter", **{"from": from_id, "to_kind": kind, **named})
     if record is not None:
         return _report(_continue(run_id, rd, record))
     try:
@@ -528,6 +552,14 @@ def enter(run_id: str, kind: str, from_id: str, transition: str, scope: str | No
         bad.append(f"label repair(s) active: {', '.join(busy[:8])}")
     if snap.get("deferred_concepts"):
         bad.append(f"{len(snap['deferred_concepts'])} concept review(s) deferred")
+    bad += behaviour_review.transition_refusals(snap, rd)
+    policy = active.get("acceptance_policy")
+    if kind == "review":                                # checked again on the stage this transition closes
+        why = behaviour_review.entry_refusal(_review_config(active), reviewer)
+        if why:
+            bad.append(f"{stages.REVIEW_REFUSAL} ({why})")
+        elif _review_config(active).get("reviewer") is None:   # the run's first review entry fixes its reviewer here
+            policy = {**policy, "review_config": behaviour_review.fix_reviewer(_review_config(active), reviewer)}
     if bad:
         raise _refuse("stage enter", bad)
     scope_v, why = new_scope(run_id, active, kind, scope)
@@ -566,13 +598,157 @@ def enter(run_id: str, kind: str, from_id: str, transition: str, scope: str | No
     opened = {"event": "open", "run_id": run_id, "stage_id": to, "stage_kind": kind, "launch_kinds": list(stages.LAUNCH_KINDS[kind]),
               "previous_stage_id": from_id, "transition_id": transition, "input_checkpoint": ckpt,
               "code_baseline": {"source_commit": source_commit, "code": code}, "state_schema": RUN_VERSION,
-              "semantic": sem, "acceptance_policy": active.get("acceptance_policy"), "scope": scope_v, "changed_files": changed,
+              "semantic": sem, "acceptance_policy": policy, "scope": scope_v, "changed_files": changed,
               "effects": now_eff, "prompts_approved": prompts_approved, "opened_at": _now()}
     record = {"transition_id": transition, "action": "enter", "run_id": run_id, "from": from_id, "to": to, "to_kind": kind,
-              "rows": [close, opened]}
+              **named, "rows": [close, opened]}
     record = _set_status(rd, record, "prepared")
     _commit(rd, record)
     return _report(_export(run_id, rd, stages.transition_state(rd)))
+
+
+# -- the launcher's own handover ---------------------------------------------------------------------
+
+#: The transitions the launcher makes by itself, on the code of the stage it leaves, when the stage
+#: it leaves has no work of its own and the other has (`handover`). Every other transition, and any
+#: change of code, scope or limit, is the operator's.
+AUTO_TRANSITIONS = frozenset({("generation", "review"), ("review", "labels"), ("labels", "review")})
+
+
+def progress_key(snap: dict) -> str:
+    """What a stage must change between receiving the run and handing it back for its turn to count
+    as progress: the law ledger, the label states and the review states of the run's snapshot."""
+    return hashlib.sha256(json.dumps([snap.get(k) for k in ("ledger", "label_states", "review_states")],
+                                     sort_keys=True, default=str).encode()).hexdigest()
+
+
+def _ready(run_id: str, rd: Path, active: dict, to_kind: str, dataset: str | None, reviewer: str | None = None) -> list[str]:
+    """Why this machine cannot run a stage of `to_kind` of the run now: a review stage needs the run's
+    policy `review: required`, a reviewer (`behaviour_review.entry_refusal`: the one the run fixed,
+    registered as fixed, or, before the run's first review entry, `reviewer`, the one the launcher
+    names, registered), and the reviewer's and the total budgets set; a labels stage needs a dataset
+    folder that opens and, once the run fixed its comparison set, has that set's data version and index."""
+    from ..phases import behaviour_review
+    if to_kind == "review":
+        if not behaviour_review.stage_required(active):
+            return ["the run's policy is not `review: required`"]
+        out = []
+        why = behaviour_review.entry_refusal(_review_config(active), reviewer)
+        if why:
+            out.append(f"no reviewer here: {why}")
+        o = handoff._options(run_id)
+        out += [f"the run has no `{k}`: a review launch needs it (set it explicitly on a review resume)"
+                for k in ("behaviour_review_budget_usd", "total_budget_usd") if o.get(k) is None]
+        return out
+    if not dataset:
+        return ["no training dataset on this machine (LABEL_DATASET)"]
+    from recorded import dataset as dataset_mod
+    try:
+        ds = dataset_mod.Dataset(dataset)
+    except (OSError, ValueError) as e:
+        return [f"the dataset {dataset} does not open ({e})"]
+    fixed = jsonl.read_json(rd / "comparison_set.json", None)
+    if fixed is None:
+        return []
+    out = []
+    if fixed.get("data_version") != ds.data_version:
+        out.append(f"the dataset {dataset} is data version {ds.data_version}, the run fixed {fixed.get('data_version')}")
+    if fixed.get("index") != _sha(Path(dataset) / "INDEX.csv"):
+        out.append(f"the dataset {dataset} has another index than the run's comparison set")
+    return out
+
+
+def handover(run_id: str, to_kind: str, dataset: str | None = None, reviewer: str | None = None) -> tuple[str, list[str]]:
+    """Whether the launcher may itself move the run, at its last checkpoint, into a stage of
+    `to_kind` on the code of its active stage: `("enter", [])` when every condition holds;
+    `("wait", reasons)` when one does not (the run waits at its checkpoint for a machine that can, or
+    for the operator); `("operator", reasons)` when the stage of `to_kind` handed the run to the
+    active stage and nothing has changed since (`progress_key`), so going back would be a round trip
+    without progress, or when any stop of the run is active (`feedback.active_stops`: every kind, each
+    cleared only by the operator's own condition, so it is never entered past). The conditions: the transition is one of `AUTO_TRANSITIONS`; no transition is
+    unfinished; the last iteration is exported in the active stage; no label or review repair is
+    active and no concept review deferred; no review call has an unknown outcome and no stop of the
+    run's sends is unacknowledged; every request of the run's usage file is settled; the scope is
+    fixed (a review entered from generation over all laws needs generation complete: a part of them
+    is the operator's choice); the code here is the active stage's baseline; this machine can run the
+    new stage (`_ready`, with `reviewer`, the reviewer the launcher will name on a review entry). It
+    never chooses a scope, raises a limit, chooses a reviewer or acknowledges a stop."""
+    from ..phases import behaviour_review
+    from ..store import budget
+    rd = paths.run_dir(run_id)
+    try:
+        rows = stages.read_stages(rd)
+    except jsonl.DataIntegrityError as e:
+        return "wait", [f"the stage record cannot be read ({e})"]
+    active = next((r for r in reversed(rows) if r.get("event") == "open"), None)
+    if active is None:
+        return "wait", ["the run has no stage record: its stages are handed over by hand"]
+    if (active["stage_kind"], to_kind) not in AUTO_TRANSITIONS:
+        return "wait", [f"a `{active['stage_kind']}` stage is followed by a `{to_kind}` stage only by the operator's stage-enter"]
+    out = []
+    why = stages.transition_refusal(rd)
+    if why:
+        out.append(why)
+    m = jsonl.read_json(rd / "handoff" / "manifest.json", None) or {}
+    if m.get("stage_id") != active["stage_id"] or m.get("stages_sha256") != stages.stages_sha256(rd):
+        out.append(f"the run's last export is not of its active stage `{active['stage_id']}`")
+    snap = jsonl.read_json(rd / "state.json", {}) or {}
+    busy = sorted(law for law, st in (snap.get("label_states") or {}).items() if st.get("active"))
+    if busy:
+        out.append(f"label repair(s) active: {', '.join(busy[:8])}")
+    if snap.get("deferred_concepts"):
+        out.append(f"{len(snap['deferred_concepts'])} concept review(s) deferred")
+    out += behaviour_review.transition_refusals(snap, rd)
+    try:
+        unsettled = budget.fold(jsonl.read_strict(rd / "usage.jsonl"))[1]
+        if unsettled:
+            out.append(f"{len(unsettled)} request(s) of the run's usage file have no settlement (pending or unknown cost)")
+    except jsonl.DataIntegrityError as e:
+        out.append(f"the run's usage file cannot be read ({e})")
+    if active["stage_kind"] == "generation" and active.get("scope") in (None, "all"):
+        try:
+            report = _generation(run_id)
+        except (OSError, ValueError, SystemExit, jsonl.DataIntegrityError) as e:
+            report = {"complete": None, "reason_if_null": f"the run does not load ({e})"}
+        if report.get("complete") is not True:
+            out.append("generation is not complete (" + (_unfinished(report) if report.get("complete") is False
+                                                         else str(report.get("reason_if_null"))) + "): a review of part of the "
+                       "laws is the operator's choice (stage-enter with SCOPE)")
+    want = ((active.get("code_baseline") or {}).get("code") or {}).get("files") or {}
+    have = handoff.code_digest()["files"]
+    diff = sorted(k for k in set(want) | set(have) if want.get(k) != have.get(k))
+    if diff:
+        out.append(f"the code here differs from the active stage's baseline: {', '.join(diff[:8])}")
+    out += _ready(run_id, rd, active, to_kind, dataset, reviewer if to_kind == "review" else None)
+    prev = next((r for r in rows if r.get("event") == "open" and r.get("stage_id") == active.get("previous_stage_id")), None)
+    if prev is not None and prev.get("stage_kind") == to_kind:
+        raw = snapshot.stored(run_id, prev["stage_id"], "state.json")
+        if raw is not None and progress_key(json.loads(raw)) == progress_key(snap):
+            return "operator", [f"a round trip without progress: stage `{active['stage_id']}` changed no law, label or review "
+                                f"state since `{prev['stage_id']}` handed it the run"] + out
+    stops = _active_stops(run_id, rd, snap)
+    if stops:
+        return "operator", [f"stop `{x['id']}` ({x['kind']}) is active: {x['cause']} — cleared by: {x['clears']}" for x in stops] + out
+    return ("wait", out) if out else ("enter", [])
+
+
+def _active_stops(run_id: str, rd: Path, snap: dict) -> list[dict]:
+    """The run's active stops as `feedback.active_stops` lists them for the status the last launch wrote,
+    read from the run's saved options and snapshot. A record that cannot be read is an integrity stop."""
+    import dataclasses
+    from types import SimpleNamespace
+    from ..phases import feedback
+    from ..store.state import Options
+    try:
+        summary = jsonl.read_json(rd / "summary.json", None) or {}
+        saved = handoff._options(run_id)
+    except (OSError, ValueError, SystemExit, jsonl.DataIntegrityError) as e:
+        return [{"id": "integrity-run", "kind": "integrity", "cause": f"the run's summary or options cannot be read: {str(e)[:300]}",
+                 "clears": "restore the file from the run's checkpoint, then resume"}]
+    defaults = {f.name: None if f.default is dataclasses.MISSING else f.default for f in dataclasses.fields(Options)}
+    run = SimpleNamespace(dir=rd, review_states=snap.get("review_states") or {},
+                          opts=SimpleNamespace(**{**defaults, **saved, "run_id": run_id}))
+    return feedback.active_stops(run, summary.get("status") or "", summary.get("stop_reason") or "")
 
 
 # -- confirm -----------------------------------------------------------------------------------------
@@ -788,6 +964,7 @@ def main(argv: list[str]) -> int:
     e.add_argument("--transition", required=True); e.add_argument("--scope")
     e.add_argument("--prompts-approved", "--prompts_approved", dest="prompts_approved")
     e.add_argument("--source-commit", "--source_commit", dest="source_commit")
+    e.add_argument("--behaviour-reviewer", "--behaviour_reviewer", dest="reviewer")
     a = sub.add_parser("adopt"); a.add_argument("run")
     a.add_argument("--old-checkout", "--old_checkout", dest="old_checkout", required=True); a.add_argument("--transition", required=True)
     c = sub.add_parser("confirm"); c.add_argument("run")
@@ -796,9 +973,18 @@ def main(argv: list[str]) -> int:
     v = sub.add_parser("verify"); v.add_argument("run"); v.add_argument("stage_id", nargs="?")
     r = sub.add_parser("restore"); r.add_argument("run"); r.add_argument("stage_id"); r.add_argument("--into", required=True)
     s = sub.add_parser("show"); s.add_argument("run")
+    h = sub.add_parser("handover"); h.add_argument("run")
+    h.add_argument("--to", required=True, choices=("review", "labels")); h.add_argument("--dataset")
+    h.add_argument("--behaviour-reviewer", "--behaviour_reviewer", dest="reviewer")
     o = ap.parse_args(argv)
+    if o.action == "handover":                          # 0 enter, 1 wait at the checkpoint, 4 the operator's
+        verdict, reasons = handover(o.run, o.to, o.dataset, o.reviewer)
+        print(verdict)
+        for x in reasons:
+            print(f"- {x}")
+        return {"enter": 0, "wait": 1, "operator": 4}[verdict]
     if o.action == "enter":
-        enter(o.run, o.kind, o.from_id, o.transition, o.scope, o.prompts_approved, o.source_commit); return 0
+        enter(o.run, o.kind, o.from_id, o.transition, o.scope, o.prompts_approved, o.source_commit, o.reviewer); return 0
     if o.action == "adopt":
         adopt(o.run, o.old_checkout, o.transition); return 0
     if o.action == "confirm":

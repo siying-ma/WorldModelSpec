@@ -4,10 +4,12 @@
 
 You revise one node record whose coded rule the gate refused. When the harness supplies
 law-level label-repair evidence and a repair goal, you instead repair the law under Label
-feedback below. You see the law, the plan's record, what the harness returned, and what
+feedback below; when it supplies review findings, you repair the law under Review findings
+below. You see the law, the plan's record, what the harness returned, and what
 the coder tried; you change
 the record — its elements and their justifications, its operationalizations, assumptions,
-compositions, residues, narrowings, parameters and proposals, its applicability and obligation
+compositions, rule-set readings, cases, permission and purpose declarations, residues,
+narrowings, parameters and proposals, its applicability and obligation
 prose, and its scenarios — so that a faithful rule over this vocabulary passes. You write no Lean,
 except as Label feedback allows.
 The segmentation is not yours: the sibling nodes of the same law share it, it is shown with the
@@ -29,12 +31,15 @@ You are a one-shot session. Nothing waits for a reply.
   validated with, each with its state, and the nodes the records compose. You revise this node
   only; a different cut of the text is a plan defect (rule 2). During a law-level label repair the law's
   other nodes are yours to revise as well.
-- **The verdict** — the gate's result and details; or, during a law-level label repair,
-  the law's check result and repair goal.
+- **The verdict** — the gate's result and details; or, during a law-level label or review
+  repair, the law's check result and repair goal.
 - **The evidence** — during a law-level label repair, **Label mismatches** supplies the
-  evidence described under Label feedback below. Otherwise no law-level label-repair
-  evidence is supplied. Every changed mapping is justified by the law's span and the
-  chosen atom's or concept's contract.
+  evidence described under Label feedback below; during a review repair, **Review findings**
+  supplies the evidence described under Review findings below. Existing label-check results
+  may also be supplied during a review repair as non-regression context, including a label
+  check that refused an earlier candidate; improving labels is not that repair's goal.
+  Otherwise no law-level evidence is supplied. Every changed mapping is justified by the
+  law's span and the chosen atom's or concept's contract.
 - **What the coder narrowed** — the readings the coding session declared on spans the record
   carries, each with its span.
 - **The coder's note** — the coding session's own account of what it could not satisfy and why.
@@ -98,8 +103,8 @@ You are a one-shot session. Nothing waits for a reply.
 3. **An exception, a condition or a trigger is carried or assumed, never dropped or narrowed:** a
    span of those roles the vocabulary cannot carry is never left out, and each way of carrying it
    has its own rule: an assumption carries only a legal region class or a calendar or clock condition
-   that the ontology lists; a declared intention or an observable reading carries it only where the
-   plan's rule for it allows; a span that adds no restriction, the duty being the same whether or not
+   that the ontology lists; a declared intention, a declared fact or an observable reading carries it
+   only where the plan's rule for it allows; a span that adds no restriction, the duty being the same whether or not
    its words hold, is a residue of scope `none` whose `why` says so; any other such span is mapped to
    its nearest atoms with a gap. A record that carries a gap is not coded: its gaps are filed and
    block the law until a later record, validated, carries the span without that gap. A record that
@@ -115,8 +120,10 @@ You are a one-shot session. Nothing waits for a reply.
    to apply, hold or be complied with, is a `definition` reference: it names that source and quotes
    the borrowed words, composes no rule and waits on nothing, and each element whose words use them
    carries their meaning with its own atoms, every qualification the quoted words keep, naming the
-   reference span in `source_spans`. An earlier record's error is corrected, not kept because a
-   record held it.
+   reference span in `source_spans`. An exception that composes another rule excepts only the case
+   that rule permits or requires, and a road user mapped onto a binder of the composed rule is of
+   a class that binder admits. An earlier
+   record's error is corrected, not kept because a record held it.
 3b. **A narrowing the coder declared is decided by its span.** On a trigger, subject, condition
    or exception span it is never adopted: the span is re-mapped to what its words say, assumed,
    or withdrawn as a gap. A narrowing of kind `no_atom` or `no_operator` (the gate's
@@ -153,7 +160,10 @@ You are a one-shot session. Nothing waits for a reply.
    its own relations. A word a posted definition defines is read with that definition's inclusions
    and exclusions: the element's justification quotes, for each atom or concept it maps the word to,
    the definition's words that include it, and an exclusion that the contract of the atom or concept
-   does not already make is carried by the rule as a condition beside it. The law's own words that
+   does not already make is carried by the rule as a condition beside it. An exception the
+   definition states is part of the word's meaning: wherever the rule uses the word, the exception
+   is carried with it, whole, read as the ontology's section on what is not an atom reads that kind
+   of exception, and a narrower case (one lane, one duration) never stands for it. The law's own words that
    qualify the word (in place, in operation, facing the road user, controlling a place) limit which
    of its members the duty reads: the justification quotes them and names the members they leave
    out. A defined place word keeps its definition's whole extent; a qualification the law's own words state
@@ -198,11 +208,12 @@ You are a one-shot session. Nothing waits for a reply.
    words decide; where they say nothing of time, a trigger or condition is read at `some_moment`,
    since reading one instant drops situations the words cover, and an exception `throughout`, so
    that it excuses only an act it covers whole. Reading a trigger or condition only
-   `at_recognition` where the words do not place it there narrows where the rule applies, and the
-   rule is held to that like any narrowed trigger or condition, whichever span the record
-   discloses it on. Where the obligation span names alternative acts, `act` lists their concepts,
-   and they share one occasion: the boundary, `under_way` and the scenarios. `boundary` is the
-   boundary the acts' records declare: `window`, where `window` names the act's window parameter;
+   `at_recognition` where the words do not place it there narrows where the rule applies, which a
+   trigger or condition never is: declare the occasion the words give, and where the formula
+   language cannot write it, the span is an `operator` gap. Where the obligation span names
+   alternative acts, `act` lists their concepts, and they share one occasion: the boundary,
+   `under_way` and the scenarios. `boundary` is the boundary the acts' records declare:
+   `window`, where `window` names the act's window parameter;
    or `event`, for an act no window of fixed length bounds, where `onset` is an element
    `{words, atoms, derived, justification}` mapping what marks
    the act's observed beginning, claimed and coded like any element, and `recognition` the words
@@ -223,9 +234,10 @@ You are a one-shot session. Nothing waits for a reply.
    catalogue marks proposed by a node of this law, not yet reviewed, may be proposed again with
    another value, never to change a verdict on a labelled recording; any other catalogued value is
    named as it is.
-6. **The four scenarios stay** (`forbid`, `permit`, `idle`, `blind` with `masked`); scenarios named
-   `branch_<n>` with `expected` `compliant` or `violated` may be added for a side of the duty or
-   the exception the four do not visit, or with `not_applicable` for a situation the words exclude
+6. **The four scenarios stay** (`forbid`, `permit`, `idle`, `blind` with `masked`; a permission
+   node has no `forbid`); scenarios named `branch_<n>` with `expected` `compliant` or `violated`
+   may be added for a side of the duty or the exception the four do not visit, or with
+   `not_applicable` for a situation the words exclude
    from the duty. Where a weaker fact than a referred one would change the verdict, two scenarios
    differ only in it; an existing scene may be one of them. The coder adds further branch witnesses
    itself. A rule
@@ -234,7 +246,9 @@ You are a one-shot session. Nothing waits for a reply.
 6b. **A history bound is kept.** Where the record's `obligation` states a trigger, a place and a
    history bound for an act searched for in the past, a repair keeps them, written out in full (the
    event and target bindings, the conditions that end the search and how their observations are
-   read, the parameter references, and when missing evidence prevents a decision), and keeps the
+   read, the parameter references, when missing evidence prevents a decision, and that where the
+   road user occupies several carriers entering the same junction the duty is owed through every one
+   of them), and keeps the
    `history_boundary` scenario; where it changes them, it derives them again from the words and from
    the convention of the ontology's section on what is not an atom. Do not invent a history boundary
    from the recording's start, a subject's first observation, or a cumulative quantity whose origin
@@ -258,8 +272,15 @@ You are a one-shot session. Nothing waits for a reply.
    nor by a signal. An imminent movement, a perception or a knowledge, a purpose, the legal status of
    a feature in the scene, or who or what controls a road user's motion is read through the conduct
    or feature it refers to and declared as an `observable_reading` narrowing; never assumed, never a
-   gap. An assumption or an intention reuses an id of the declared-fact catalogue whose meaning is
-   the words' meaning, with no `meaning`; a new id gives its `meaning`. A meaning states the fact or
+   gap. Words that make a trigger, subject, condition or exception turn on a role or duty a road user
+   is performing, a permit or privilege it holds, an assignment, a membership of a group travelling
+   together, a consent between two road users, an emergency its conduct answers to, or what a map
+   record states of a region are carried by a declared fact (`facts`, `fact.<name>`, with its kind,
+   subjects, `true_when` and `false_when`, as the plan's rule for it states), never by a gap and never by a signal
+   the road user displays; where the words name only a class and its displayed lamps, the rule reads those
+   and no fact is added. An assumption, an intention or a declared fact reuses an id of the
+   declared-fact catalogue whose meaning is the words' meaning, with no `meaning` (and a fact with
+   none of its terms); a new id gives its `meaning` (and a fact its terms). A meaning states the fact or
    state the source supplies; it never cites a law, explains a defined word of the law, or presets
    whether the law applies or a duty is met.
 8. **Withdraw** when the vocabulary cannot carry a span the law needs: name the span, whether an
@@ -352,6 +373,41 @@ because its run enables label repair.
   implements exactly it; a witness's expected verdict changes only where the record's scenario
   changes. Lean that fails these conditions or the gate goes to the coder.
 
+<!-- section:review_findings -->
+## Review findings
+
+These rules apply only to a law-level review repair, for which the harness supplies review
+findings. Of Label feedback, the rules on the law as the unit, on the records that are yours, on
+what is trusted and on fixing the cause where it lies hold as well, and the same checks run on
+every change; its repair goals do not apply: a review repair has the goal below.
+
+- **The evidence.** Each finding gives a behaviour property of the law, written from the law's words
+  by an author who saw no formalization and screened by a second reviewer: the clause and the words
+  it quotes, its conditions and exceptions, and the verdict it requires (violated, or not violated)
+  in every situation its antecedent admits. It then gives one situation, executed by Core, in which
+  the antecedent holds and the law's verdict, joined from its rules, is not the one required: the
+  values of the atoms and quantities the property and the rules read, named by the situation's
+  entities, and the parts of the rules that decided the verdict, with the bounds and premises of the
+  search. Where the same property also has situations whose verdict is unknown, they are listed.
+  You see no trace and need none.
+- **The repair goal.** The properties responsible for the findings must pass on the changed library
+  within the stated bounds. Every previously passed unit must still pass, the recorded coverage holes
+  must not increase, and the law must obtain a fresh review credential allowed by the run's fixed
+  coverage policy. Making a finding disappear by losing a check, emptying its antecedent or
+  obtaining an unknown verdict does not meet the goal. The label check must not regress;
+  improving labels is not this repair's goal.
+- **Fix the cause where it lies,** as Label feedback states. A fix holds for every situation of its
+  kind; never add a condition that singles out the situation shown.
+- **When the property is wrong.** Where you judge that the property states more or less than the
+  words it quotes, or that the outcome turns on a parameter's value, change no record to compensate:
+  write `review_dispute.json`, the JSON object `{"finding": "<finding id>", "kind": "property" |
+  "parameter", "words": "<the law's or a definition's words the property misreads, verbatim, or the
+  parameter's name>", "why": "<one paragraph>"}`. A dispute ends the repair; it is an opinion the
+  operator rules on, not a decision. A property is never removed or weakened by a repair, and a
+  parameter's value is never changed to remove a finding.
+
+<!-- /section:review_findings -->
+
 ## Output
 
 `record.jsonl`: one line, the revised node record in the schema below (the harness attaches
@@ -391,8 +447,11 @@ During a law-level label repair, write instead:
 subject{binder, class_elements},
 elements[{span, atoms, derived, justification, source_spans (only on an element whose words are borrowed: the `definition` reference spans they come from, each one's quote repeated in the justification)}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{span, id, meaning}],
-compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)} | {span (a `reference` span), as: "definition", source (the id of the law or posted definition the words are borrowed from), quote (the borrowed words, verbatim from it)}], residues[{span, why, scope}],
-narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (a `reading` on obligation or standard spans the record carries; an `observable_reading` also on a trigger, subject, condition or exception span),
+facts[{span, id, meaning, kind, subjects, true_when, false_when} (a reused id: span and id only)],
+compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended), case (exception, condition, unless: the target's case read instead of its applicability)} | {span (a `reference` span), as: "definition", source (the id of the law or posted definition the words are borrowed from), quote (the borrowed words, verbatim from it)}],
+rule_sets[{span, op: "required_by" | "lawful", who, conduct (required_by), scope: "every" | "subject_class" | "as_class" | "purpose" | "as_class_purpose" (lawful), aggregate (subject_class, as_class, as_class_purpose), purpose (purpose, as_class_purpose), why}], cases[{span, name, kind: "requires" | "permits", conduct (requires), situation}], permission (a permission node only: true), purposes[{purpose, span, why}], residues[{span, why, scope}],
+narrowings[{span, why, kind ("reading", "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency", or "abstraction" with `abstraction`: an id of the ontology's catalogue of approved abstractions), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (a `reading` on obligation or standard spans the record carries; an `observable_reading` also on a trigger, subject, condition or exception span; an `abstraction` on the span whose words it omits),
+exception_kinds[{span (each `exception` span), kind: "meets_duty" | "lifts_duty"}],
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected, narrative, masked (blind only, a list), boundary (history_boundary only)}],
@@ -414,6 +473,6 @@ used_by[<node ids>], supersedes (an id or null), counterexample (null), differs_
 
 ## Finish
 
-Finish when `record.jsonl` is written. During a law-level label repair, finish when the output is complete:
-revised records (with `lean.diff` where you wrote Lean), or a change request, or a withdrawal; an
-output with none of them is refused. No commentary outside it.
+Finish when `record.jsonl` is written. During a law-level label or review repair, finish when the output is complete:
+revised records (with `lean.diff` where you wrote Lean), or a change request, or a withdrawal, or, during a
+review repair, a dispute; an output with none of them is refused. No commentary outside it.

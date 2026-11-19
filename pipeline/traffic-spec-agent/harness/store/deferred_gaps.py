@@ -224,3 +224,26 @@ def conflicts(live_rows: list[dict], declarations: list[dict]) -> list[str]:
     return [f"{r['id']} ({r['state']}) was filed for {identity(declared[key(r)])} on {r['occurrence']}, which "
             f"{DECLARATIONS.name} still declares pending: remove that row in the next baseline"
             for r in live_rows if isinstance(r.get("deferred_from"), dict) and r.get("state") in ("rejected", "retired") and key(r) in declared]
+
+
+def candidate_links(live_rows: list[dict], declarations: list[dict]) -> list[tuple[dict, dict]]:
+    """The live gaps that may stand for a declaration without having been filed for it: a live gap
+    with no source (`deferred_from`) and a declaration no live gap was filed for, of one kind, on
+    the same law and law digest, where the characters of one occurrence contain those of the other
+    and the two are not the same occurrence (that is the same gap, which `GapLedger.match` finds).
+    A report for the operator, who links them or not: nothing is merged and no state changes."""
+    filed = {key(r) for r in live_rows if isinstance(r.get("deferred_from"), dict)}
+    out = []
+    for d in declarations:
+        if key(d) in filed or not (m := _OCCURRENCE.match(str(d.get("occurrence", "")))):
+            continue
+        a, z = int(m["start"]), int(m["end"])
+        for r in live_rows:
+            n = _OCCURRENCE.match(str(r.get("occurrence", "")))
+            if isinstance(r.get("deferred_from"), dict) or n is None or r.get("kind") != d.get("kind") \
+                    or (n["law"], n["digest"]) != (m["law"], m["digest"]) or r["occurrence"] == d["occurrence"]:
+                continue
+            b, y = int(n["start"]), int(n["end"])
+            if (a <= b and y <= z) or (b <= a and z <= y):
+                out.append((r, d))
+    return out

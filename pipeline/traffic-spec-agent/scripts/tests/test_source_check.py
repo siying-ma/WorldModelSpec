@@ -60,18 +60,19 @@ class Declarations(unittest.TestCase):
         self.assertEqual(one(rep, "st.sidewalk")["case"], "ii")
 
     def test_refinements_follow_the_kind_hierarchy(self):
-        st = [{"id": 1, "kind": "one_way_roadway", "boundary": SQ(0, 0, 10, 4), "curvature": 0, "grade": 0, "sight_distance": 99},
+        st = [{"id": 1, "kind": "one_way_roadway", "boundary": SQ(0, 0, 10, 4), "sight_distance": 99},
               lane(2, "turn_lane", direction=None), lane(3, "centre_turn_lane", direction=None)]
         atoms = {"st.roadway": "exact", "st.lane": "exact", "st.turn_lane": "exact", "st.centre_turn_lane": "exact",
-                 "st.lane_direction": "exact", "st.curvature": "exact"}
+                 "st.lane_direction": "exact", "st.sight_distance": "exact"}
         rep = sc.check([scene(0, st)], {"atoms": atoms}, KINDS)
         # a one-way roadway is a roadway: st.roadway is not legally empty here
         self.assertFalse([f for f in findings(rep, "i", "st.roadway")])
         # the direction is required of a turn lane (a lane) but not of a centre turn lane
         f = one(rep, "st.lane_direction")
         self.assertEqual((f["case"], f["entities"], f["checked_entities"], f["examples"][0]["structure"]), ("iii", 1, 1, 2))
-        # curvature is read on the one-way roadway, a roadway by refinement
-        self.assertFalse(findings(rep, "iii", "st.curvature"))
+        # the sight distance is read on the one-way roadway, a roadway by refinement
+        self.assertFalse(findings(rep, "iii", "st.sight_distance"))
+        self.assertFalse(findings(rep, "i", "st.sight_distance"))
         self.assertEqual(one(rep, "st.one_way_roadway")["check"], "labelled_but_declared_absent")
         # a roadway labelled while st.roadway is absent contradicts it; a refinement absent with only its parent present does not
         rep2 = sc.check([scene(0, [{"id": 1, "kind": "one_way_roadway", "boundary": SQ(0, 0, 1, 1)}])],
@@ -108,6 +109,35 @@ class Declarations(unittest.TestCase):
         sigs = one(rep, "dev.traffic_signal", "indications_missing")
         self.assertEqual((sigs["entities"], sigs["observations"], sigs["checked"]), (1, 3, 6))
         self.assertEqual(one(rep, "st.lane_direction")["case"], "iii")
+
+    def test_grade_and_curvature_are_read_on_road_users_on_a_travel_region(self):
+        st = [{"id": 1, "kind": "roadway", "boundary": SQ(0, 0, 10, 8), "grade": 0.1, "curvature": 0},
+              lane(2), {"id": 3, "kind": "sidewalk", "boundary": SQ(0, 8, 10, 10)}]
+        on = lambda tr, **kin: {"track": tr, "classes": [], "kin": {"position": [1, 1], "heading": [1, 0], **kin}}
+        users = [dict(on(1), road_grade=-0.03, road_curvature=0.01),        # the subject, both carried
+                 on(2),                                                    # in a lane, neither carried
+                 on(3),                                                    # on the sidewalk only: not asked
+                 {"track": 4, "classes": [], "kin": {"position": [2, 2]}},  # heading unknown: no grade asked
+                 {"track": 5, "classes": [], "kin": {}}]                    # position unknown: not asked
+        occ = [[1, 1], [2, 2], [3, 3], [4, 1], [5, 1]]
+        atoms = {"st.roadway": "exact", "st.lane": "exact", "st.sidewalk": "exact", "st.grade": "exact", "st.curvature": "exact"}
+        rep = sc.check([scene(0, st, users=users, occupies=occ)], {"atoms": atoms}, KINDS)
+        cur, gr = one(rep, "st.curvature"), one(rep, "st.grade")
+        self.assertEqual((cur["case"], cur["check"], cur["entity"], cur["entities"], cur["checked_entities"]),
+                         ("iii", "field_missing", "other road user", 2, 2))
+        self.assertEqual([x["track"] for x in cur["examples"]], [2, 4])
+        self.assertEqual((gr["case"], gr["entity"], gr["entities"], gr["checked_entities"]), ("iii", "other road user", 1, 1))
+        # a grade or curvature written on a structure is no observation of either atom
+        self.assertFalse([f for f in rep["findings"] if f["entity"] == "structure" and f["atom"] in ("st.grade", "st.curvature")])
+        # a subject capability asks the subject alone, who carries both
+        rep = sc.check([scene(0, st, users=users, occupies=occ)],
+                       {"atoms": dict(atoms, **{"st.grade": "subject", "st.curvature": "subject"})}, KINDS)
+        self.assertFalse(findings(rep, None, "st.grade") + findings(rep, None, "st.curvature"))
+        # declared absent: not observed; observed with nobody on a travel region: nothing it applies to
+        rep = sc.check([scene(0, st, users=users, occupies=occ)], {"atoms": dict(atoms, **{"st.grade": "absent"})}, KINDS)
+        self.assertEqual((one(rep, "st.grade")["case"], one(rep, "st.grade")["check"]), ("ii", "declared_absent"))
+        rep = sc.check([scene(0, st, users=users, occupies=[[3, 3]])], {"atoms": atoms}, KINDS)
+        self.assertEqual((one(rep, "st.curvature")["case"], one(rep, "st.curvature")["check"]), ("i", "declared_observed_none_present"))
 
     def test_a_field_present_while_declared_absent_is_no_finding(self):
         rep = sc.check([scene(0, [lane(1)])], {"atoms": {"st.lane": "exact"}}, KINDS)

@@ -1,6 +1,6 @@
 # Active policy note
 
-The active split is demo-overlap-v3; see SPLIT.md. The analysis below is retained
+The active split is demo-overlap-v5; see SPLIT.md. The analysis below is retained
 historical audit material. Its old roster, vocabulary exclusions and claim that
 non-vocabulary Core views are identical do not describe the new filtered view.
 The current training codec and generic semantics were built in an isolated

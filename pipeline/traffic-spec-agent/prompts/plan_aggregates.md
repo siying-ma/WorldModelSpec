@@ -70,6 +70,47 @@ support is admitted as unresolved, never changed by it.
    on the definition's words and the contracts. Where the words admit members of the class that no
    included class carries, the class is `included` if they admit all of its members, and otherwise
    `unresolved`.
+2b. **Identity and the legal kind it carries** (an approved reading with a trust boundary). A source
+   declares the classes of a road user on evidence of its own, lists every class it so decides, and
+   marks unobserved a class it cannot decide; the classes are its declaration, which is neither
+   inferred from appearance nor checked here, and no fact of ownership, seating, payment or a trip
+   is asked for. Inclusion: where a class's contract states a legal classification (that the source lists the
+   class only where it confirms the road user is of a kind under a definition the contract cites)
+   and the definition you classify is one it cites, quote the classification and the citation,
+   verbatim, in the class's `basis` (each naming the class itself), and the class carries that
+   definition in full: every condition of it that makes a road user of the kind (its design and
+   capacity, its use, its service, its status) holds of a member of the class, and such a condition
+   does not make it `unresolved`. A class carries automatically only the definitions its contract
+   cites; a definition it does not cite is never carried over because its term is the same or alike:
+   decide it from that definition's own words and the meaning of the class's contract, a judgment
+   about the class and the definition, never a check of a road user's appearance or of the source's
+   evidence. A condition of equipment holds of a member only where the class's contract explicitly
+   includes that equipment; an equipment requirement listed apart and not carried by the contract is
+   never met by the class. A condition of what the road user is doing in the scene is not identity:
+   operation and conduct (being operated in a manner the law provides, a lamp in use, an emergency
+   answered or an official duty performed now) are dynamic, are never presumed from a class, and the
+   rule carries them. A class's name, or a resemblance of its name or of what its contract describes
+   to the defined term, never qualifies. A class whose legal classification is of a narrower kind
+   (the kind qualified by a service, a use or a designation) carries the narrower kind only, never
+   the broader one; no class implies another.
+   Coverage: a legal classification proves inclusion only. Mark a general class `covered` by a class
+   that carries the definition only where that class's contract also states that the source lists it
+   for every road user it confirms is of the kind under the cited definition and marks it unobserved
+   where it cannot decide; quote that statement too in `basis`. Without it the absence of the class
+   proves nothing, and the general class is decided by the words and its own contract. For every
+   other class and every definition no legal classification cites, nothing is supplied: a physical
+   property the words state (a capacity, a weight, a wheel count, a speed, a propulsion), a condition
+   that the road user be equipped or operated in a certain manner, and a condition of conduct decide
+   the class as the words and its contract decide them, and the class is `unresolved` where its
+   contract does not explicitly carry them; the reading never separates the kinds one class's
+   contract joins.
+   The pipeline does not independently assess whether equipment meets statutory specifications. A
+   source-declared class carries identity-defining equipment conditions only where its contract says
+   so; an unobserved class remains unknown. An observable act, such as using a lamp, is evaluated
+   from the trace. Where an equipment specification also qualifies that act, omitting the
+   specification requires an approved scope abstraction and an explicit partial-coverage report.
+   Without that approval, the qualification remains unresolved; it is never silently treated as
+   satisfied.
 3. **No nesting.** An aggregate classifies classes, never another aggregate: where a definition
    includes another defined term, classify the classes that term's definition covers directly.
 4. **Context is not membership.** A condition of a scene the definition states (where a road user
@@ -93,7 +134,8 @@ JSON, this schema and nothing more:
                                       "covered_by": ["<class id>"], "basis": [{"class": "<class id>", "words": "<verbatim words of its contract>"}]}]}]}
 ```
 
-`covered_by` and `basis` appear only on a covered class.
+`covered_by` appears only on a covered class; `basis` on a covered class, and on an included class
+whose inclusion rests on rule 2b.
 
 ## Finish
 

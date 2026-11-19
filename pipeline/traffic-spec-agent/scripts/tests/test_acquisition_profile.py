@@ -85,7 +85,8 @@ class Profiles(unittest.TestCase):
                              [f"the reading gives `{STEP}` the value {v!r}: a step bound is a positive time"], v)
 
     def test_sessions_are_shown_the_standard(self):
-        self.assertIn(f'Every `headingSince` step bound in a rule is exactly `.param "{STEP}"`', acquisition.standard_note(PROFILE))
+        self.assertIn(f'Every `headingSince` and `durationWithin` step bound in a rule is exactly `.param "{STEP}"`',
+                      acquisition.standard_note(PROFILE))
         self.assertIn("no rule of this run may read `headingSince`", acquisition.standard_note(None))
         code_md = (paths.REPO / "prompts" / "code.md").read_text(encoding="utf-8")
         self.assertIn("a rule\n   uses exactly the reviewed step parameter named by the run's acquisition profile", code_md)
@@ -134,7 +135,7 @@ class StepRule(unittest.TestCase):
     def test_a_missing_mapping_is_a_clear_refusal(self):
         self.assertEqual(gate.rule_step_defects("N", rule_json({"param": STEP}), None, reading_of(REVIEWED)),
                          ["N: the rule reads `heading_since`, and the run names no acquisition profile (`--acquisition_profile`), so no "
-                          "reviewed parameter bounds the step of `heading_since`; until the operator names a profile with a reviewed "
+                          "reviewed parameter bounds the step of `heading_since` or `duration_within`; until the operator names a profile with a reviewed "
                           "parameter, no rule of this run may read `heading_since`"])
         out = gate.rule_step_defects("N", rule_json({"param": STEP}), "lidar_10hz", reading_of(REVIEWED))
         self.assertRegex(out[0], "acquisition profile `lidar_10hz` is not in")

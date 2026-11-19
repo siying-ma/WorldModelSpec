@@ -53,12 +53,6 @@ advisory. You do not edit the concept and you do not propose another.
 4. **Off its domain.** What does the contract say where the thing it is about is absent — no region
    of the kind it reads, no other road user? If the body decides there where the contract does
    not, or decides the other way, that is a situation under question 1 or 2.
-
-A concept of kind `quantity` returns a value, not a verdict. For it, a divergence is a situation in
-which the contract's words put the value in an interval and the body's value falls outside it
-(`value_wrongly`), or the body has no value where the contract gives one (`undecided`). It states
-that interval as `contract_value`, `lo` and `hi`, each a value with its unit (equal for an exact
-value), at the observation `at`, in place of `contract_verdict`.
 5. Each trace is minimal and complete: the fewest road users, regions and observations that
    realize the situation, with every atom the body reads written in every scene. Name in `at` the
    timestamp of the scene at which the contract decides: the body is read at that observation, and
@@ -90,6 +84,12 @@ value), at the observation `at`, in place of `contract_verdict`.
     its value, under its name or the one formal it became; the instant, the contract's words and the
     claimed verdict or interval are the recorded ones. A divergence that does not continue it is
     refused, and a challenge left without one keeps the review open.
+
+A concept of kind `quantity` returns a value, not a verdict. For it, a divergence is a situation in
+which the contract's words put the value in an interval and the body's value falls outside it
+(`value_wrongly`), or the body has no value where the contract gives one (`undecided`). It states
+that interval as `contract_value`, `lo` and `hi`, each a value with its unit (equal for an exact
+value), at the observation `at`, in place of `contract_verdict`.
 
 ## Output
 

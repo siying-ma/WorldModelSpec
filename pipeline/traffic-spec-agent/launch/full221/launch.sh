@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the 221-law run: the generation stage only, over every law of the training split, from a fresh clone of
+# Start the full training run: the generation stage only, over every law of the training split (224 laws), from a fresh clone of
 # remote/full-train-generation at its tip. It first runs launch/full221/preflight.sh (nothing is spent unless every
 # check passes), then starts the launcher in the background and returns. The run's settings are written below and
 # kept by every resume; none is taken from the shell except REVIEWER_MODEL and VERIFIER_MODEL, which an environment
@@ -11,9 +11,11 @@ set -euo pipefail
 export RUN_ID=${RUN_ID:-full221-$(date +%m%d-%H%M)}
 
 # ---------------------------------------------------------------- the run's settings
-export LAWS=laws/example/train/laws.jsonl            # all 221 training laws
+export LAWS=laws/example/train/laws.jsonl            # all 224 training laws
 export ONTOLOGY=ontology/ATOMS_train.md READING=library/TrafficSpec/Readings/lasvegas.json
 export ACQUISITION_PROFILE=carla_scene_graph STAGE=generation
+export REVIEW_COVERAGE=strict                        # fixed by the new run (G0 records review: required); no reviewer is named here
+unset BEHAVIOUR_REVIEWER LABEL_DATASET               # the review and label stages are entered elsewhere, never by this launch
 export WORKERS=16 PLAN_BATCH=8 GATE_BUDGET=6       # 16 Claude sessions at once
 export MODEL='claude-opus-5-5[1m]' PLAN_EFFORT=high CODE_EFFORT=high JUDGE_EFFORT=medium         # planning, coding, judging
 export REVIEWER_MODEL="${REVIEWER_MODEL:-gpt-6.1-sol}"                                            # concept reviewer

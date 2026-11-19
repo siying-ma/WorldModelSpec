@@ -31,6 +31,12 @@ EXCLUDED = {
  'NRS-484D-515-1': "tire chains where posted: equipment fitted, not conduct",
  'NRS-484D-185-1': "flashing amber warning light: equipment legality, and its only condition is a judgement ('unusual traffic hazard')",
  'NRS-484B-783-1': "bicycle lamps and reflectors at night: equipment fitted",
+ 'LVMC-11-38-120-A': "the headlamp and tail lamp a motorcycle or motor scooter carries, with their colour and visibility: equipment fitted, not conduct; the duty to have them burning is LVMC-11-38-120-B, which cites this text as a provision",
+ 'NRS-484D-165-1': "the front and rear lamps every vehicle is equipped with, their colour, visibility and location: equipment fitted, not conduct; the duty to display them lighted on a vehicle parked or stopped at night is NRS-484D-165-3, which cites this text as a provision",
+ # where a parked cycle or scooter stands: no road user's movement is judged (decided 2026-11-17)
+ 'LVMC-11-40-170': "where a bicycle, electric bicycle or electric scooter may be parked (against the curb, in a sidewalk rack, against a building): not a driving situation judged for a vehicle driver",
+ # a choice of route: no single drive shows whether another route was possible (decided 2026-11-17)
+ 'NRS-484B-627-1c': "the whole duty is a choice of route on a controlled-access highway ('use alternate routes whenever possible'), which one recording of a drive cannot show",
  # a permission, not an obligation
  'NRS-484B-700-1': "privileges of a responding emergency vehicle: a permission that switches other rules off; an applicability record, not a rule to monitor",
  # how a rider sits on their own machine: the whole duty is the rider's body configuration, which is
@@ -74,12 +80,15 @@ EXCLUDED = {
  'NRS-486-351-4': "ego scope: binds a moped rider",
 }
 
-# Words removed from a corpus line because they name an item outside the operational design domain
-# that the rest of the line does not need; the line stays. Each edit is (the words removed, the reason),
+# Words removed from a corpus line because they name an item outside the operational design domain,
+# or, by a separate operator decision for one line, a penalty sentence, that the rest of the line does not need; the line stays. Each edit is (the words removed, the reason),
 # applied by make_laws.py and recorded on the line as `scope_edit` in laws_meta.jsonl; the corpus
 # README lists them. The unedited text stays in sources/ and in git (commit 300f115) (decided 2026-10-13).
 SCOPE_EDITS = {
  'LVMC-11-22-100': ("horse or ", "a ridden horse is outside the ODD; the duty to drive no vehicle over newly laid pavement stays"),
+ 'NRS-484B-117-1': ("Except as otherwise provided in subsection 2, ", "the exception of subsection 2 (three-wheeled electric vehicles operated as an emergency vehicle, by a law-enforcement officer or by a security guard) is a rare actor outside the ODD; subsection 2 is no longer appended and the duty of subsection 1 not to drive on a sidewalk stays"),
+ 'LVMC-11-22-120-B': (", horse-drawn vehicles", "a horse-drawn vehicle is outside the ODD; the duty to obey the posted restriction on motor-driven cycles, bicycles and other nonmotorized traffic stays"),
+ 'NRS-484B-290': (" A person who violates this section is guilty of a civil infraction punishable pursuant to NRS 484A.703 to 484A.705, inclusive.", "a separate operator decision for this line, not a general rule of removing penalty sentences: NRS 484B.283(1) and 484B.287(1) cite NRS 484B.290, so its driving duty must stay in the corpus, and the sentence's citation of the penalties of NRS 484A.703 to 484A.705 (no corpus line) would be an unresolved penalty reference that sends the line to unresolvable.jsonl; the section is one undivided paragraph, so this sentence alone is removed and the duty stays whole. Lines with such a penalty reference otherwise stay unresolvable (NRS-484B-327-2, NRS-484B-550-1) (decided 2026-11-18)"),
 }
 
 # Lines whose EVERY duty rests on a signal no planned source observes, so no verdict about them can

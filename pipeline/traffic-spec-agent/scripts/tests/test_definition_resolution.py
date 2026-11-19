@@ -406,5 +406,101 @@ class PostedInputOnly(unittest.TestCase):
         self.assertNotIn("_meta", src)
 
 
+WITHHOLD_DEFS = [
+    d("DEF-STA-900A-010", "“Wagon” means every device upon which a person may be carried, except: (1) Devices moved by hand; "
+                          "and (2) A power scooter."),
+    d("DEF-STA-900A-020", "“Power scooter” means a wagon with handlebars and a motor."),
+    d("DEF-STA-900A-030", "“Cart” means a wagon drawn by another, other than a power scooter."),
+]
+EDGE = {"from": "DEF-STA-900A-020", "to": "DEF-STA-900A-010"}
+
+
+def withhold_table(edges, text="A power scooter shall halt.", defs=WITHHOLD_DEFS):
+    return D.resolve_table([law("STA-900B-100", text)], defs, {**CONFIG, "withhold_nested_edges": edges})
+
+
+class WithheldNestedEdges(unittest.TestCase):
+    """The operator's option `withhold_nested_edges`: exactly the declared (from, to) edges are
+    withheld; every other edge, however it reads, is expanded."""
+
+    def edge(self, table, source, term):
+        return next(r for r in table["dependencies"][source] if r["from"] == source and r["term"] == term)
+
+    def test_empty_expands_every_edge_as_without_the_option(self):
+        table = withhold_table([])
+        self.assertEqual(self.edge(table, "DEF-STA-900A-020", "wagon")["status"], "resolved")
+        self.assertIn("DEF-STA-900A-010", D.source_ids(table, "DEF-STA-900A-020"))
+        self.assertEqual(table, D.resolve_table([law("STA-900B-100", "A power scooter shall halt.")], WITHHOLD_DEFS, CONFIG))
+
+    def test_a_declared_edge_is_withheld_and_leaves_the_sources(self):
+        table = withhold_table([EDGE])
+        e = self.edge(table, "DEF-STA-900A-020", "wagon")
+        self.assertEqual((e["status"], e["definition"]), ("withheld", "DEF-STA-900A-010"))
+        self.assertEqual(D.source_ids(table, "DEF-STA-900A-020"), ["DEF-STA-900A-020"])
+        self.assertEqual(table["laws"], withhold_table([])["laws"])
+
+    def test_an_undeclared_edge_to_the_same_definition_is_expanded(self):
+        # the cart's definition also reaches the wagon's, and also names a power scooter in an exception
+        table = withhold_table([EDGE], "A cart shall halt.")
+        self.assertEqual(self.edge(table, "DEF-STA-900A-030", "wagon")["status"], "resolved")
+        self.assertIn("DEF-STA-900A-010", D.source_ids(table, "DEF-STA-900A-030"))
+
+    def test_an_edge_never_acts_beyond_its_from_definition(self):
+        table = withhold_table([{"from": "DEF-STA-900A-030", "to": "DEF-STA-900A-010"}])
+        self.assertEqual(self.edge(table, "DEF-STA-900A-020", "wagon")["status"], "resolved")
+
+    def test_the_option_is_checked_where_it_is_loaded(self):
+        import json, tempfile
+        for value in ("x", [EDGE, EDGE], [{"from": "DEF-STA-900A-020"}], [{"from": "a", "to": ""}],
+                      [{"from": "a", "to": "b", "why": "c"}], [["a", "b"]], {"from": "a", "to": "b"}):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as tmp:
+                path = Path(tmp) / "precedence.json"
+                path.write_text(json.dumps({**CONFIG, "withhold_nested_edges": value}), encoding="utf-8")
+                with self.assertRaisesRegex(D.PrecedenceError, "withhold_nested_edges"):
+                    D.load_precedence(path)
+
+    def test_the_declared_edges_change_only_their_own_rows_on_the_training_corpus(self):
+        """Regression of the operator's declared edges against the same precedence without them:
+        the law rows are identical; in every root graph the only rows that differ are a declared
+        edge, recorded `withheld`, and, in a root reached through it, the rows only that edge led
+        to; the sources change only for a root whose graph leads to a declared edge's `to` through
+        that edge alone."""
+        laws_file = Path(D.__file__).resolve().parents[2] / "laws" / "example" / "train" / "laws.jsonl"
+        laws, defs, config = corpus.load_laws(laws_file), corpus.load_definitions(laws_file), D.load_precedence()
+        declared = D.withheld_edges(config)
+        self.assertTrue(declared)
+        on, off = D.resolve_table(laws, defs, config), D.resolve_table(laws, defs, {**config, "withhold_nested_edges": []})
+        self.assertEqual(on["laws"], off["laws"])
+        self.assertEqual(sorted(on["dependencies"]), sorted(off["dependencies"]))
+        strip = lambda r: {k: v for k, v in r.items() if k not in ("cycle", "status")}
+        froms = {f for f, _t in declared}
+        for root in off["dependencies"]:
+            a, b = off["dependencies"][root], on["dependencies"][root]
+            for r in b:
+                if r["status"] == "withheld":
+                    self.assertIn((r["from"], r["definition"]), declared)
+                self.assertIn(strip(r), [strip(x) for x in a], root)
+            if D.source_ids(on, root) != D.source_ids(off, root):
+                self.assertIn(root, froms, root)      # only a root that is itself a declared `from` loses sources
+
+    def test_on_the_training_corpus_one_declared_edge_changes_only_that_edge(self):
+        laws_file = Path(D.__file__).resolve().parents[2] / "laws" / "example" / "train" / "laws.jsonl"
+        laws, defs, config = corpus.load_laws(laws_file), corpus.load_definitions(laws_file), D.load_precedence()
+        config = {**config, "withhold_nested_edges": []}
+        off = D.resolve_table(laws, defs, config)
+        frm, to = next((r["from"], r["definition"]) for rows in off["dependencies"].values() for r in rows
+                       if r["status"] == "resolved" and r["from"] != r["definition"])
+        on = D.resolve_table(laws, defs, {**config, "withhold_nested_edges": [{"from": frm, "to": to}]})
+        self.assertEqual(off["laws"], on["laws"])
+        strip = lambda r: {k: v for k, v in r.items() if k not in ("cycle", "status")}
+        for root, rows in on["dependencies"].items():
+            before = [strip(r) for r in off["dependencies"][root]]
+            for r in rows:
+                if r["status"] == "withheld":
+                    self.assertEqual((r["from"], r["definition"]), (frm, to))
+                self.assertIn(strip(r), before, root)   # a withheld edge only stops expansion below it
+        self.assertTrue(any(r["status"] == "withheld" for rows in on["dependencies"].values() for r in rows))
+
+
 if __name__ == "__main__":
     unittest.main()

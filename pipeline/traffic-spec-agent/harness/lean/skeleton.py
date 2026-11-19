@@ -1,7 +1,7 @@
 """Rule and witness skeletons, generated from a blueprint node.
 
 The skeleton carries everything the gate's DECLARATION_MISMATCH step compares (id, laws, binders,
-assumptions, intentions, operationalizations, residues, surrogate), the node's parameters as `Term` values,
+assumptions, intentions, facts, operationalizations, residues, surrogate, abstractions), the node's parameters as `Term` values,
 and the four scenarios with their expected verdicts and masked atoms; the formulas and the scenes
 are left to the coding session, marked `TODO`. Both files build as written, so the session's first
 gate run measures its own work rather than a spelling.
@@ -9,7 +9,7 @@ gate run measures its own work rather than a spelling.
 from __future__ import annotations
 import re
 from ..model import nodeid
-from ..model.blueprint import Node, ConceptRecord, SCENARIOS, CONCEPT_SCENARIOS, concepts_of, normalize_verdict
+from ..model.blueprint import Node, ConceptRecord, SCENARIOS, standard_scenarios, CONCEPT_SCENARIOS, concepts_of, normalize_verdict
 from ..model.units import FACTORS, lean_unit
 
 VERDICT_LEAN = {"violated": ".violated", "compliant": ".compliant", "not_applicable": ".notApplicable", "unknown": "(.unknown [])"}
@@ -47,9 +47,19 @@ def _lean_list(items: list[str]) -> str:
     return "[" + ", ".join(items) + "]"
 
 
-def _span_lines(node: Node, roles: set[str]) -> list[str]:
-    return [f"{s['id']} ({s.get('role')}): {' '.join(str(s.get('text', '')).split())}"
-            for s in node.get("segmentation", []) if s.get("role") in roles]
+def _span_lines(node: Node, roles: set[str], exception_kind: str | None = None) -> list[str]:
+    """One line per span of `roles` and per exception span of the recorded `exception_kind`: a
+    `meets_duty` exception is written in the obligation beside the duty, a `lifts_duty` one in the
+    applicability, negated."""
+    def kept(s: dict) -> bool:
+        return s.get("role") in roles or (exception_kind is not None and s.get("role") == "exception"
+                                          and node.exception_kind(s.get("id")) == exception_kind)
+    def role(s: dict) -> str:
+        if s.get("role") != "exception":
+            return str(s.get("role"))
+        return "exception, meets_duty: beside the duty" if exception_kind == "meets_duty" else "exception, lifts_duty: negated"
+    return [f"{s['id']} ({role(s)}): {' '.join(str(s.get('text', '')).split())}"
+            for s in node.get("segmentation", []) if kept(s)]
 
 
 def rule_skeleton(node: Node) -> str:
@@ -59,6 +69,7 @@ def rule_skeleton(node: Node) -> str:
     ops = node.get("operationalizations", [])
     asms = node.get("assumptions", [])
     intents = list(dict.fromkeys(a.get("id") for a in node.get("intentions", [])))
+    facts = list(dict.fromkeys(a.get("id") for a in node.get("facts", [])))
     residues = node.get("residues", [])
     surrogate = any(o.get("surrogate") for o in ops)
     elements = node.get("elements", [])
@@ -109,8 +120,8 @@ def rule_skeleton(node: Node) -> str:
         out.append(f"/-- Class of `{b['name']}`: {', '.join(b.get('class_elements', []))} -/")
         out.append(f"def {_ident('cls_' + b['name'])} : Formula := .tt  -- TODO")
     out.append("")
-    app_spans = _span_lines(node, {"trigger", "condition", "exception"})
-    obl_spans = _span_lines(node, {"obligation", "standard"})
+    app_spans = _span_lines(node, {"trigger", "condition"}, "lifts_duty")
+    obl_spans = _span_lines(node, {"obligation", "standard"}, "meets_duty")
     out.append("/-- Applicability: " + ("; ".join(app_spans) if app_spans else "(no trigger/condition span)") + " -/")
     out.append("def applicability : Formula := .tt  -- TODO")
     out.append("")
@@ -130,6 +141,7 @@ def rule_skeleton(node: Node) -> str:
     out.append("    obligation := obligation")
     out.append(f"    assumptions := {_lean_list([_s(a.get('id')) for a in asms])}")
     out.append(f"    intentions := {_lean_list([_s(i) for i in intents])}")
+    out.append(f"    facts := {_lean_list([_s(i) for i in facts])}")
     if ops:
         olines = []
         for o in ops:
@@ -145,7 +157,9 @@ def rule_skeleton(node: Node) -> str:
     out.append(f"    residues := {_lean_list([_prose(r.get('why', '')) for r in residues])}"
                "  -- the node's, verbatim; not yours to change")
     out.append("    narrowings := []  -- one { span := \"<span id>\", why := \"<why>\", kind := \"reading\" } per reading you chose on a carried span (kind no_atom / no_operator where the words cannot be stated), explained in the header; the record's own narrowings are not restated")
-    out.append(f"    surrogate := {'true' if surrogate else 'false'} }}")
+    out.append(f"    surrogate := {'true' if surrogate else 'false'}")
+    out.append(f"    abstractions := {_lean_list([_s(a) for a in node.abstractions()])} }}"
+               "  -- the record's approved abstractions: the rule is partial coverage where any is listed")
     out.append("")
     out.append(f"end {ns}")
     return "\n".join(out) + "\n"
@@ -163,7 +177,8 @@ def witness_skeleton(node: Node) -> str:
            f"namespace {ns}", "", "open TrafficSpec", "",
            "def m (n : Int) : Q := Units.metres n", "def cm (n : Int) : Q := Units.centimetres n", "",
            f"-- Binders ↦ tracks: {', '.join(f'{b} ↦ {i + 1}' for i, b in enumerate(binders)) or '(no binders)'}", ""]
-    names = list(SCENARIOS) + [x for x in scen if x and x not in SCENARIOS]   # every planned scenario, the four first
+    std = standard_scenarios(node)
+    names = list(std) + [x for x in scen if x and x not in std]   # every planned scenario, the standard ones first
     for name in names:
         s = scen.get(name, {})
         narrative = " ".join(str(s.get("narrative", "")).split())
@@ -189,7 +204,7 @@ def witness_skeleton(node: Node) -> str:
     lines = []
     for name in names:
         s = scen.get(name, {})
-        expected = VERDICT_LEAN[normalize_verdict(s.get("expected", SCENARIOS.get(name, "")))]
+        expected = VERDICT_LEAN[normalize_verdict(s.get("expected", std.get(name, "")))]
         masked = s.get("masked", []) if name == "blind" else []
         if isinstance(masked, str):
             masked = [masked]

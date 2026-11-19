@@ -6,6 +6,11 @@ says, per atom id, whether the source observes it (`exact`, `estimate:<class>`, 
 joins its groundings' episode verdicts; a law's verdict joins its rules' verdicts. In both joins the
 order is: violated, undecided (the deadline passed or the monitor failed), unknown, compliant,
 not applicable — the first present wins. A rule the manifest leaves unsupported is unknown.
+
+A rule whose verdicts rest on an approved abstraction (the monitor names it on the rule's line) is
+partial coverage: its verdict checks the conduct the rule states, not full compliance with the law.
+Each rule and each law carries `abstractions` and `partial_coverage`; a law is partial coverage when
+any of its rules is, and its verdict is never full statutory compliance.
 """
 from __future__ import annotations
 
@@ -61,8 +66,9 @@ def _rule_report(rule: str, lines: list[dict]) -> dict:
         verdict = "not_applicable"
     else:
         verdict = _join(g["verdict"] for g in groundings)
+    abstractions = list(head.get("abstractions", []))
     return {"rule": rule, "verdict": verdict, "support": head["support"], "absent_atoms": head["absent"],
-            "groundings": groundings}
+            "abstractions": abstractions, "partial_coverage": bool(abstractions), "groundings": groundings}
 
 
 def _run_rule(rule: str, trace: Path, manifest: Path, timeout: float) -> tuple[dict, dict | None]:
@@ -171,9 +177,12 @@ def verify(trace, manifest=None, *, rules=None, law_ids=None, timeout: float = 6
             law["rules"].append(rep)
         for law in by_law.values():
             law["verdict"] = _join(r["verdict"] for r in law["rules"])
+            law["abstractions"] = sorted({a for r in law["rules"] for a in r.get("abstractions", [])})
+            law["partial_coverage"] = bool(law["abstractions"])
         return {"trace": str(trace), "source": source, "notes": notes,
                 "violated_laws": sorted(l for l, v in by_law.items() if v["verdict"] == "violated"),
                 "undecided_laws": sorted(l for l, v in by_law.items() if v["verdict"] == "undecided"),
+                "partial_coverage_laws": sorted(l for l, v in by_law.items() if v["partial_coverage"]),
                 "laws": dict(sorted(by_law.items()))}
     finally:
         if not workdir:
