@@ -1,0 +1,209 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:traffic-spec:bp_record",
+ "title": "the adoption record of one candidate (written by the harness)",
+ "description": "One candidate of role A with the static checks, role B''s ratings and the adoption decision the harness made. The harness writes every field; a model writes none. `identity` is the digest of the property's normalized identity (binders with their classes and subject flags, antecedent, category, expected; never the display id); `antecedent_sha` serves reports only.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema",
+  "law",
+  "generation_id",
+  "set_id",
+  "property",
+  "clause_key",
+  "round",
+  "candidate",
+  "candidate_sha",
+  "antecedent_sha",
+  "identity",
+  "static",
+  "screen",
+  "adoption",
+  "executable",
+  "not_executable"
+ ],
+ "properties": {
+  "schema": {
+   "const": "bp_record/1"
+  },
+  "law": {
+   "type": "string",
+   "minLength": 1
+  },
+  "generation_id": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{64}$"
+  },
+  "set_id": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{32,64}$"
+  },
+  "property": {
+   "type": "string",
+   "pattern": "^P[0-9]{1,3}$"
+  },
+  "clause_key": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9a-f]{64}$"
+  },
+  "round": {
+   "enum": [
+    1,
+    2
+   ]
+  },
+  "candidate": {
+   "type": "object",
+   "description": "the candidate exactly as role A wrote it (one item of bp_candidate's candidates; it may be invalid where the record shows why)"
+  },
+  "candidate_sha": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{64}$"
+  },
+  "antecedent_sha": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{64}$"
+  },
+  "identity": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{64}$"
+  },
+  "static": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "ok",
+    "reasons"
+   ],
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "reasons": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "screen": {
+   "oneOf": [
+    {
+     "type": "null"
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "item_sha",
+      "ratings",
+      "conclusion_ok"
+     ],
+     "properties": {
+      "item_sha": {
+       "type": "string",
+       "pattern": "^[0-9a-f]{64}$"
+      },
+      "ratings": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/rating"
+       }
+      },
+      "conclusion_ok": {
+       "enum": [
+        "yes",
+        "no",
+        "cannot_tell"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "adoption": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "adopted",
+    "reasons",
+    "state"
+   ],
+   "properties": {
+    "adopted": {
+     "type": "boolean"
+    },
+    "reasons": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "state": {
+     "enum": [
+      "adopted",
+      "rejected",
+      "dropped_in_round_two"
+     ]
+    }
+   }
+  },
+  "executable": {
+   "type": "boolean"
+  },
+  "not_executable": {
+   "enum": [
+    "gap",
+    "outside_language",
+    "count_or_size",
+    null
+   ]
+  }
+ },
+ "$defs": {
+  "rating": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "condition_quote",
+    "kind",
+    "rating",
+    "exception_use"
+   ],
+   "properties": {
+    "condition_quote": {
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "premise",
+      "exception",
+      "conclusion",
+      "combination"
+     ]
+    },
+    "rating": {
+     "enum": [
+      "full_match",
+      "minor_deviation",
+      "major_deviation",
+      "cannot_rate"
+     ]
+    },
+    "exception_use": {
+     "enum": [
+      "excluded",
+      "premise",
+      "left_out",
+      null
+     ]
+    }
+   }
+  }
+ }
+}

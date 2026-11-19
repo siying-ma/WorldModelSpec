@@ -33,7 +33,7 @@ hierarchy, `StructureKind.parent?`, never by name):
   `lane.direction`; every lane kind carries `lane.ordinal` and `lane.count` (`st.lane_adjacency`),
   `lane.marking_left` and `lane.marking_right`, `lane.width`, and the key `lane.leads_to`
   (`st.lane_connectivity`, an empty list allowed);
-- a roadway and every kind refining it carry `curvature`, `grade` and `sight_distance`;
+- a roadway and every kind refining it carry `sight_distance`;
 - every structure carries `boundary` or `position` (`st.region_geometry`);
 - a stop line and a crosswalk carry the key `entrance_of`; every structure but a highway carries the
   key `ways` (`st.on_way`); every intersection is entered by some carrier (`st.lane_enters`);
@@ -42,7 +42,12 @@ hierarchy, `StructureKind.parent?`, never by name):
   a regulatory sign its code and conditions, and so on);
 - the subject in every scene, and every other road user classified `motor_vehicle`, carry each
   `sig.*` field the manifest observes (a `subject` capability: the subject alone); every road user
-  carries each `kin.*` field the manifest observes, under the same rule for `subject`; every scene
+  carries each `kin.*` field the manifest observes, under the same rule for `subject`; every road
+  user whose position is known and which occupies a travel region (a kind refining `travel_region`)
+  carries `road_curvature` where `st.curvature` is observed, and `road_grade` where `st.grade` is
+  observed and its heading is known too, under the same rule for `subject` (a source omits both
+  where the road a user lies on is not unique, so a finding here marks where to look, not a proven
+  contradiction); every scene
   carries each `env.*` field observed, a subject that is among its road users (`ru.subject`), and
   occupancy observed for every road user (`rel.occupies`).
 A field present while its atom is declared absent is no finding: the source holds data it does not
@@ -151,8 +156,6 @@ STRUCTURE_FIELDS = (
     ("st.lane_marking", "lane", (), ("lane", "marking_right")),
     ("st.lane_width", "lane", (), ("lane", "width")),
     ("st.lane_connectivity", "lane", (), ("lane", "leads_to", "key")),
-    ("st.curvature", "roadway", (), ("curvature",)),
-    ("st.grade", "roadway", (), ("grade",)),
     ("st.sight_distance", "roadway", (), ("sight_distance",)),
 )
 #: device kind → the attributes its kind atom states
@@ -171,6 +174,9 @@ SIG = {"sig.turn_indicator": "turn_indicator", "sig.brake_lamp": "brake_lamp", "
        "sig.headlamp": "headlamp", "sig.position_lamp": "position_lamp", "sig.warning_lamp": "warning_lamps",
        "sig.siren": "siren", "sig.horn": "horn", "sig.hand_signal": "hand_signal", "sig.door_open": "doors_open",
        "sig.compression_brake": "compression_brake"}
+#: atom → the road-user key carrying its value at the user's position, and the `kin` field the value
+#: also needs (the grade is signed along the user's heading)
+ROAD_AT_USER = {"st.curvature": ("road_curvature", None), "st.grade": ("road_grade", "heading")}
 ENV = {"env.darkness": "darkness", "env.precipitation": "precipitation", "env.wet_road": "wet_road",
        "env.ice_or_snow": "ice_or_snow", "env.visibility": "visibility", "env.civil_time": "civil_time"}
 #: The road-user class whose members carry the lamp and indicator fields besides the subject.
@@ -310,6 +316,11 @@ def check(scenes, manifest: dict, kinds: Kinds) -> dict:
                 T.add(("declaration", a, "field_missing", "scene"), i, env.get(k) is None, {"scene": i, "t": t})
         oo = s.get("occupancy_observed")
         covered = set(tracks) if oo is True else set(oo) if isinstance(oo, list) else set()
+        on_road = set()
+        if any(observed(cap(a)) for a in ROAD_AT_USER):
+            kind_of = {st.get("id"): st.get("kind") for st in s.get("structures") or []}
+            on_road = {x[0] for x in s.get("occupies") or [] if isinstance(x, (list, tuple)) and len(x) == 2
+                       and kind_of.get(x[1]) in kinds.structures and kinds.refines(kind_of[x[1]], "travel_region")}
         for u in users:
             tr = u.get("track")
             is_subj = tr == subj
@@ -326,6 +337,11 @@ def check(scenes, manifest: dict, kinds: Kinds) -> dict:
                 st_ = cap(a)
                 if observed(st_) and (is_subj or st_ != "subject"):
                     T.add(("declaration", a, "field_missing", who), tr, kin.get(k) is None, ex)
+            for a, (k, needs) in ROAD_AT_USER.items():
+                st_ = cap(a)
+                if observed(st_) and (is_subj or st_ != "subject") and tr in on_road and kin.get("position") is not None \
+                        and (needs is None or kin.get(needs) is not None):
+                    T.add(("declaration", a, "field_missing", who), tr, u.get(k) is None, ex)
             carrier = is_subj or SIGNALLING_CLASS in (u.get("classes") or [])
             for a, k in SIG.items():
                 st_ = cap(a)
@@ -427,7 +443,7 @@ def check(scenes, manifest: dict, kinds: Kinds) -> dict:
         checked_atoms.add(atom)
         if e["observations"]:
             finding("iii", family, atom, chk, entity, e)
-    field_atoms = ({a for a, *_ in STRUCTURE_FIELDS} | set(KIN) | set(SIG) | set(ENV)
+    field_atoms = ({a for a, *_ in STRUCTURE_FIELDS} | set(KIN) | set(SIG) | set(ENV) | set(ROAD_AT_USER)
                    | {"st.region_geometry", "st.entrance_of", "st.on_way", "st.lane_enters", "dev.governs", "dev.position",
                       "rel.occupies", "ru.subject"})
     for atom in sorted(field_atoms):

@@ -10,7 +10,9 @@ law's words and names its laws, and the ontology is law-free. `counter.txt` hold
 only grows: a row archived with an earlier run never gives its id to a new one.
 
 Fields: `id`, `kind` (`atom`: no atom or enumeration value denotes the span; `operator`: the
-formula language cannot express it), `span` (the verbatim words), `law_refs`, `node_id`,
+formula language cannot express it; `scope`, filed by the harness and never by a session: the
+obligation's duty is given only by laws outside the corpus, a scope decision for the operator, who
+retires it by bringing the law into the corpus or rejects it by taking the duty out of scope), `span` (the verbatim words), `law_refs`, `node_id`,
 `proposal` (the ontology row or the formula operator that would carry the span), `nearest` (the
 closest existing atoms and the contract clause that excludes the span), `proposed_in` (run and
 iteration), and for a proposal that follows a decided gap, `linked_to` and `excluding_clause`.

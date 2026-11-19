@@ -378,6 +378,15 @@ class TracePlace(unittest.TestCase):
         self.assertEqual(review.trace_place("dev_governs"), "`devices[].governs`")
         self.assertEqual(review.trace_place("st_sight_along_way"), "`users[].sight_along_way`")
         self.assertEqual(review.trace_place("kin_speed"), "`users[].kin.speed`")
+        self.assertIn("`structures[].boundary`", review.trace_place("rel_contact_structure"))
+        self.assertIn("`users[].kin`", review.trace_place("rel_contact_structure"))
+        self.assertEqual(review.trace_place("dev_governs_sidewalk"), "`devices[].governs_sidewalk`")
+        self.assertEqual(review.trace_place("dev_governs_parking_space"), "`devices[].governs_parking_space`")
+        self.assertEqual(review.trace_place("dev_regulatory_sign_legend_angle"), "`devices[].legend_angle`")
+        self.assertEqual(review.trace_place("dev_regulatory_sign_legend_angle_stated"), "`devices[].legend_angle`")
+        self.assertEqual(review.trace_place("st_parking_space_angle_marking"), "`structures[].angle_marking`")
+        self.assertEqual(review.trace_place("st_parking_space_axis"), "`structures[].axis`")
+        self.assertEqual(review.trace_place("ru_trimobile"), "`users[].classes`")
 
     def test_every_accessor_names_a_place(self):
         from harness.store import paths

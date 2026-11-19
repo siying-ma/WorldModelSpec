@@ -168,7 +168,7 @@ def _strip(x):
 
 #: The parts of a node record besides its spans' mapping whose change is a change of the rule's
 #: structure: the coder writes it again.
-STRUCTURE = ("subject", "binders", "compositions", "operationalizations", "occasion", "assumptions", "intentions")
+STRUCTURE = ("subject", "binders", "compositions", "rule_sets", "cases", "permission", "purposes", "operationalizations", "occasion", "assumptions", "intentions", "facts")
 
 
 def not_local(kind: str, old: dict, new: dict) -> list[str]:
@@ -311,8 +311,19 @@ def previous_block(st: dict) -> str:
 
 
 def prompt_parts(run, txn, law: corpus.Law, defs: list[dict], onto, repairs: int) -> dict[str, str]:
+    st = run.label_states[law.id]
+    return {**law_parts(run, txn, law, defs, onto),
+            "verdict": (f"## The law's state\n\nLabel check: {st['outcome']} ({st['coverage']['matched']} of {st['coverage']['eligible']} "
+                        f"plain label(s) match). Repair goal: {label_check.goal_for(st['outcome'])}. Label repair {repairs + 1} of {run.opts.label_repair_attempts} "
+                        "for this law.\n" + previous_block(st)),
+            "evidence": (run.dir / st["evidence"]).read_text(encoding="utf-8") + reports_block(st.get("reports", [])) + source_block(run, st)}
+
+
+def law_parts(run, txn, law: corpus.Law, defs: list[dict], onto) -> dict[str, str]:
+    """The parts of a law-level repair's `node_repair.md` prompt that are the law's and the
+    vocabulary's own, the same for a label and a review repair: every part but `verdict` and `evidence`."""
     from .plan import parameter_catalogue, declaration_catalogue, definitions_for, FIXED_NODE_KEYS
-    view, st = txn.view, run.label_states[law.id]
+    view = txn.view
     nodes = law_nodes(view, law.id)
     seg = "\n".join(f"- `{s['id']}` ({s['role']}): {s['text']}" for s in (next(iter(nodes.values()), {}).get("segmentation") or []))
     files = []
@@ -328,10 +339,6 @@ def prompt_parts(run, txn, law: corpus.Law, defs: list[dict], onto, repairs: int
         "node": "## The nodes of the law (every one yours to revise)\n\n" + "\n".join(
             f"`{i}`:\n```json\n{json.dumps({k: v for k, v in r.items() if k not in FIXED_NODE_KEYS or k == 'node_id'}, ensure_ascii=False, indent=1)}\n```"
             for i, r in sorted(nodes.items())) + "\n",
-        "verdict": (f"## The law's state\n\nLabel check: {st['outcome']} ({st['coverage']['matched']} of {st['coverage']['eligible']} "
-                    f"plain label(s) match). Repair goal: {label_check.goal_for(st['outcome'])}. Label repair {repairs + 1} of {run.opts.label_repair_attempts} "
-                    "for this law.\n" + previous_block(st)),
-        "evidence": (run.dir / st["evidence"]).read_text(encoding="utf-8") + reports_block(st.get("reports", [])) + source_block(run, st),
         "coder_narrowings": "## What the coder narrowed\n\n(each record carries its narrowings)\n",
         "task_result": "(no coding session ran for this repair)",
         "final_files": "\n".join(files) or "(no file)", "ontology": onto.text, "formula_language": surface.formula_language(),
@@ -727,12 +734,16 @@ def replan(run, txn, law: corpus.Law, defs: list[dict], to_user: list[str]) -> t
 def awaiting(run, ledger) -> list[str]:
     """The planned laws awaiting their label repair, in ledger order; a law whose active repair waits
     on a law not yet accepted (`waits_on`) is not one until that law is, and a law outside the active
-    stage's scope is not one in that stage."""
+    stage's scope is not one in that stage. Under `review: required` a label repair starts only once
+    the review allows the law (`behaviour_review.ready`): a finding is repaired first, by its own
+    repair; a label repair already begun is taken up again."""
     from ..loop import in_scope, label_scope
+    from . import behaviour_review
     scope = label_scope(run)
     return [e.law for e in ledger.entries.values()
             if e.state == "planned" and run.label_states.get(e.law, {}).get("state") == "awaiting_label_repair"
-            and in_scope(scope, e.law) and not waits_on(run, ledger, e.law)]
+            and in_scope(scope, e.law) and not waits_on(run, ledger, e.law)
+            and (run.label_states[e.law].get("active") or behaviour_review.ready(run, ledger, e.law))]
 
 
 def used(run) -> int:
@@ -899,8 +910,11 @@ class Pending(RuntimeError):
     candidate is not published, nothing is charged, and the repair is taken up again from its coding."""
 
 
-def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, gap_ledger, gaps_filed: list, to_user: list[str]) -> str:
-    """One label repair of `law` (see the module's description). Returns what became of it:
+def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, gap_ledger, gaps_filed: list, to_user: list[str],
+               prog: dict | None = None) -> str:
+    """One label repair of `law` (see the module's description). `prog` is the loop's progress of the
+    iteration (`to_user` and `gaps_filed` its own lists): a kept repair commits it, with the lines it
+    says, in the same snapshot as its state. Returns what became of it:
     `committed` (the law routed again, and every other law the repair checked again), `rolled_back`,
     `requested`, `gap`, `dependency_report` (a report on a concept, judged; when its ruling, or that
     of a coder's report, is not finished, the repair stays active and is taken up again without a new
@@ -915,16 +929,20 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
     prior = label_check.committed_checks(run.dir, run.label_states)
     plans = {e.law: list(e.nodes) for e in ledger.entries.values()}      # every law's authoritative final plan
     hook = label_check.label_hook(training, prior, plans, target=law.id, goal=label_check.goal_for(st["outcome"]))
+    hooks = (concept_review, hook)
+    from . import behaviour_review                     # under `review: required` every law it reaches keeps its review
+    if behaviour_review.required(run):
+        hooks += (behaviour_review.review_hook(run, ledger, behaviour_review.prior(run, ledger), plans),)
     out, gaps, notes, result = Output(), [], [], ""
     with SCHEDULING.pause(timeout=600):
-        txn = Candidate.open(run, hooks=(concept_review, hook))
+        txn = Candidate.open(run, hooks=hooks)
         try:
             try:
                 training.bind(txn)
             except ValueError as e:                       # the harness's own versions, not the repair: nothing to charge
                 raise Unavailable(f"its candidate could not be bound to the run's label versions: {e}") from e
             with production_watch(txn, law.id):
-                result = _repair(run, ledger, txn, law, defs, onto, repairs, plans, out, gaps, notes, to_user)
+                result = _repair(run, ledger, txn, law, defs, onto, repairs, plans, out, gaps, notes, to_user, prog)
         except Waiting as e:
             result = "waiting"
             run.label_states[law.id]["active"]["waits"] = e.nodes
@@ -983,7 +1001,8 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
     return "dependency_report" if result == "pending" else result
 
 
-def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps: list, notes: list, to_user: list[str]) -> str:
+def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps: list, notes: list, to_user: list[str],
+            prog: dict | None = None) -> str:
     from ..loop import label_state, route_entry
     st = run.label_states[law.id]
     d, read = run_session(run, txn, law, defs, onto, repairs, to_user)
@@ -1079,17 +1098,19 @@ def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps
             old = run.label_states[other]
             updates[other] = {k: v for k, v in label_state(run, other, c, old["nodes"], txn.area / "label", txn.id,
                                                             key=keyed(other, old["nodes"])).items() if k != "repairs"}
-    txn.commit(routed=routed, label_updates=updates)
+    # what the commit says, from what it publishes: a law's outcome is its update's, its state the route's
+    said = list(routed.said) + [f"`{other}`: checked again by the repair of `{law.id}`: {updates[other]['outcome']}; "
+                                f"its law is {(routed.entries.get(other) or ledger.entries[other]).state}" for other in updates if other != law.id]
+    said.append(f"`{law.id}`: label repair kept (goal met); the law is {chk.outcome}" + "".join(f"; {n}" for n in notes))
+    # the iteration's progress, with these lines, in the commit's snapshot: a stop past its commit point resumes with them said
+    from ..store.state import prog_paths
+    txn.commit(routed=routed, label_updates=updates,
+               extra_state=None if prog is None else {"prog": prog_paths({**prog, "to_user": to_user + said}, paths.stored)})
     for l, e in routed.entries.items():               # the ledger in memory as committed
         if l in ledger.entries:
             ledger.entries[l].__dict__.update({k: getattr(txn.published["ledger"][l], k) for k in candidate_phase.LEDGER_SEMANTIC}
                                               if l in txn.published["ledger"] else {})
-    to_user.extend(routed.said)
-    for other in updates:
-        if other != law.id:
-            to_user.append(f"`{other}`: checked again by the repair of `{law.id}`: {run.label_states[other]['outcome']}; "
-                           f"its law is {ledger.entries[other].state}")
-    to_user.append(f"`{law.id}`: label repair kept (goal met); the law is {chk.outcome}" + "".join(f"; {n}" for n in notes))
+    to_user.extend(said)
     return "committed"
 
 
@@ -1123,7 +1144,9 @@ def _code(txn, records: list[tuple[str, str]], law: str) -> None:
 def file_requests(run, law: str, requests: list[dict], to_user: list[str]) -> None:
     """Each change request into the outer loop's request file or the operator's queue, by its object,
     once: a request of the same law, object, target and words is one entry, a repeat adding its
-    evidence and iteration to it."""
+    evidence and iteration to it. Every request a repair files is announced, a repeat included, once
+    among the lines said so far: a repair taken up again after a stop files it again and says so,
+    since what it said before the stop was not saved."""
     for r in requests:
         name = OUTER_FILE if r["object"] in OUTER else OPERATOR_FILE
         rows = jsonl.read_strict(run.dir / name)
@@ -1132,22 +1155,45 @@ def file_requests(run, law: str, requests: list[dict], to_user: list[str]) -> No
         seen = {"evidence": r["evidence"], "iteration": run.iteration}
         if same is None:
             rows.append({**r, "law": law, "run": run.opts.run_id, "iteration": run.iteration, "seen": [seen]})
-            to_user.append(f"`{law}`: change request on {r['object']} `{r['target']}` filed in {name}")
         elif seen not in same.setdefault("seen", []):
             same["seen"].append(seen)
         jsonl.write_rows(run.dir / name, rows)
+        line = f"`{law}`: change request on {r['object']} `{r['target']}` filed in {name}"
+        if line not in to_user:                       # a repair taken up again with the same answer says it once
+            to_user.append(line)
 
 
-def run_repairs(run, ledger, training, by_id: dict, defs: list[dict], onto, gap_ledger, gaps_filed: list, to_user: list[str]) -> dict[str, list[str]]:
+def run_repairs(run, ledger, training, by_id: dict, defs: list[dict], onto, gap_ledger, gaps_filed: list, to_user: list[str],
+                prog: dict | None = None, persist=None) -> dict[str, list[str]]:
     """Every law awaiting its label repair, repaired while it awaits one and its budget and the run's
     allow: a law that spent its sessions is held for the operator; the run's budget spent, the laws
-    left wait; a production tree a session left changed (`code.scope_unrestored`) starts none. Returns
-    law → the result of each repair."""
-    from . import code as code_phase
+    left wait; a production tree a session left changed (`code.scope_unrestored`) starts none. Under
+    `review: required`, with `persist` (the loop's commit of its state), a law whose review stands on a
+    finding with repairs left first has its review repair (`behaviour_review.repair_finding`: its own
+    goal and count, the label hook keeping every law's matches), and its label repair starts in the
+    same pass only once the review allows the law; a caller that passes no `persist` runs no review
+    repair. `prog`, the loop's progress, is committed with each kept repair of either kind. Returns
+    law → the result of each repair, a review repair's prefixed `review:`."""
+    from . import behaviour_review, code as code_phase
     out: dict[str, list[str]] = {}
     if code_phase.scope_unrestored(run):
         return out
-    for law in awaiting(run, ledger):
+    findings = set(behaviour_review.work(run, ledger)["repair"]) if persist is not None else set()
+    first = awaiting(run, ledger)
+    labels = set(first)
+    for law in ([law for law in ledger.entries if law in findings | labels] if findings else first):   # in ledger order
+        if law in findings and law in behaviour_review.work(run, ledger)["repair"]:    # an earlier commit may have settled it
+            r = behaviour_review.repair_finding(run, ledger, law, training, persist, to_user, prog)
+            out.setdefault(law, []).append(f"review:{r}")
+            if r == "committed":                            # its candidate is closed: the records it changed are the run's now
+                from .aggregate import write_current_view
+                write_current_view(run, closure=True)
+            if code_phase.scope_unrestored(run):
+                return out
+            if law not in labels and law in awaiting(run, ledger):    # the review allows it now: its label repair may start
+                labels.add(law)
+        if law not in labels:
+            continue
         while run.label_states.get(law, {}).get("state") == "awaiting_label_repair" and ledger.entries[law].state == "planned":
             if int(run.label_states[law].get("repairs", 0)) >= run.opts.label_repair_attempts:
                 ledger.block(law, [f"decision:{law}"], [f"its own label repair attempts are spent (--label_repair_attempts, {run.opts.label_repair_attempts}); "
@@ -1157,7 +1203,7 @@ def run_repairs(run, ledger, training, by_id: dict, defs: list[dict], onto, gap_
             if used(run) >= run.opts.label_repair_budget:
                 to_user.append(f"`{law}`: the run's label repair budget ({run.opts.label_repair_budget}) is spent; the law waits")
                 return out
-            r = repair_law(run, ledger, training, by_id[law], defs, onto, gap_ledger, gaps_filed, to_user)
+            r = repair_law(run, ledger, training, by_id[law], defs, onto, gap_ledger, gaps_filed, to_user, prog)
             out.setdefault(law, []).append(r)
             if r == "committed":                            # its candidate is closed: the records it changed are the run's now
                 from .aggregate import write_current_view

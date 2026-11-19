@@ -15,7 +15,7 @@ from ..agents import render, session
 from ..checks import validate_a
 from ..model.blueprint import Node, ConceptRecord
 from ..model.mapping import MappingIndex
-from ..model.reading import Reading
+from ..model.reading import Reading, declared_items
 from ..store.state import Run
 from ..store import jsonl
 from ..store.gaps import GapLedger
@@ -28,6 +28,7 @@ class NodeVerdict:
     node: Node
     kind: str                     # accept | return | fail
     reasons: list[str] = field(default_factory=list)
+    filed: list[dict] = field(default_factory=list)   # gaps the harness files for the record (a `scope` gap): filed like its own
 
 
 # ---------------------------------------------------------------------------------------------
@@ -97,7 +98,8 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
                else {**{str(d.get("id")): str(d.get("text", "")) for d in defs}, **{i: l.text for i, l in laws.items()}})
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, accepted_concepts, valid_concepts,
                                    known_nodes=known_nodes, rejected_gaps=rejected, prior_nodes=prior_nodes, sources=sources,
-                                   ledger_gaps=gap_ledger.rows)
+                                   ledger_gaps=gap_ledger.rows,
+                                   resolved_terms=definitions_mod.load_table(run).get("laws", {}) if run is not None else None)
     return nodes, concepts, outcomes, concept_outcomes
 
 
@@ -112,8 +114,8 @@ def run_validate(run: Run, plan_dir: Path, laws: dict[str, corpus.Law], reading:
     _nodes, _concepts, outcomes, concept_outcomes = validate_a_for_run(run, plan_dir, laws, reading, defs or [],
                                                                        extra_concepts=extra_concepts, extra_nodes=extra_nodes,
                                                                        extra_validate_nodes=extra_validate_nodes)
-    verdicts = [NodeVerdict(o.node, o.kind, o.reasons) for o in outcomes]
-    (out_dir / "verdicts.jsonl").write_text("".join(json.dumps({"node_id": o.node.id, "kind": o.kind, "reasons": o.reasons, "gaps": o.gaps, "proposals": o.proposals}, ensure_ascii=False) + "\n" for o in outcomes), encoding="utf-8")
+    verdicts = [NodeVerdict(o.node, o.kind, o.reasons, o.filed) for o in outcomes]
+    (out_dir / "verdicts.jsonl").write_text("".join(json.dumps({"node_id": o.node.id, "kind": o.kind, "reasons": o.reasons, "gaps": o.gaps, "proposals": o.proposals, "filed": o.filed, "notes": o.notes}, ensure_ascii=False) + "\n" for o in outcomes), encoding="utf-8")
     (out_dir / "concept_verdicts.jsonl").write_text("".join(json.dumps({"concept_id": o.concept.id, "kind": o.kind, "reasons": o.reasons}, ensure_ascii=False) + "\n" for o in concept_outcomes), encoding="utf-8")
     return verdicts, concept_outcomes
 
@@ -242,7 +244,7 @@ def glosses_for(node: Node, onto: ontology.Ontology, run: Run) -> dict[str, str]
         if cid in node.claimed_atoms():
             ids.add(cid)
             ids |= set(rec.get("reads", []))
-    ids |= {d.get("id") for d in node.get("assumptions", []) + node.get("intentions", []) if d.get("id")}
+    ids |= {d.get("id") for d in declared_items(node) if d.get("id")}
     out = glosses_of(sorted(ids), onto, run)
     for c in node.dependencies():
         out[c.get("rule", "")] = "another rule of the library; its verdict, or whether it applies, is read here"

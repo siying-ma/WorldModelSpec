@@ -19,7 +19,9 @@ from recorded import dataset, scoring
 # to its own failure, so that one rule fails and the others finish). A grounding may
 # give its reasons and its segments, [[from, to, verdict, reasons], ...], from which its episode is
 # joined; with `--segments` each grounding's segments line follows the report (a grounding without
-# segments is one segment over the whole trace, observed at TIMES).
+# segments is one segment over the whole trace, observed at TIMES). `"abstractions": {rule: [ids]}` names the
+# approved abstractions the monitor reports on a rule's line; `"sampled": [rules]` the rules it marks
+# `sampled_duration`.
 FAKE_MONITOR = """#!{py}
 import json, sys, time
 args = sys.argv[1:]
@@ -38,7 +40,8 @@ seg_lines = []
 for r in rules:
     if r not in spec:
         continue
-    print(json.dumps({{'kind': 'rule', 'rule': r, 'support': 'supported', 'absent': []}}))
+    print(json.dumps({{'kind': 'rule', 'rule': r, 'support': 'supported', 'absent': [],
+                      'abstractions': spec.get('abstractions', {{}}).get(r, []), 'sampled_duration': r in spec.get('sampled', [])}}))
     for v, b, *more in spec[r]:
         why = more[0] if more else []
         segs = more[1] if len(more) > 1 else None

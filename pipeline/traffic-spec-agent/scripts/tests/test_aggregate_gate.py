@@ -468,5 +468,40 @@ class BareAggregateClaim(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+class OnlyClassesAreClassified(unittest.TestCase):
+    """An aggregate is offered exactly the road-user classes: the constructors of Core's generated
+    `RoadUserClass`, never an attribute of a road user (a count, a mass, a state, a posture)."""
+    def test_the_offered_classes_are_cores_classes(self):
+        from harness.lean import surface
+        core = {f"ru.{c}" for c in surface.enumeration_spellings()["RoadUserClass"]}
+        self.assertEqual(set(CLASSES), core)
+
+    def test_no_attribute_is_offered(self):
+        for f in ("ATOMS.md", "ATOMS_train.md"):
+            classes = set(checks.road_user_classes(ontology.load(paths.REPO / "ontology" / f)))
+            self.assertFalse(classes & ontology.NOT_KINDS["ru"], f)
+            self.assertFalse({"ru.unladen_mass", "ru.disabled", "ru.occupant_count", "ru.rider_posture"} & classes, f)
+            self.assertIn("ru.trimobile", classes, f)
+
+    def test_the_generator_reads_the_same_list(self):
+        from scripts import gen_ontology
+        self.assertIs(gen_ontology.KIND_ENUMS["ru"][1], ontology.NOT_KINDS["ru"])
+
+    def test_a_measured_atom_is_no_kind(self):
+        """An atom of a kind family whose own value is a quantity (a unit row naming the atom itself, not
+        a field of it) is an attribute: it is listed in `NOT_KINDS`. A boolean attribute has no unit row
+        and is not caught here."""
+        from scripts import gen_ontology
+        for f in ("ATOMS.md", "ATOMS_train.md"):
+            measured, units = set(), False
+            for line in (paths.REPO / "ontology" / f).read_text(encoding="utf-8").splitlines():
+                if line.startswith("## "):
+                    units = line.startswith("## 11.")
+                m = gen_ontology.MEASURE_ROW.match(line) if units else None
+                if m and m.group(1).split(".")[0] in ontology.NOT_KINDS and m.group(2) == m.group(1).replace(".", "_"):
+                    measured.add(m.group(1))
+            self.assertIn("ru.unladen_mass", measured, f)
+            self.assertEqual({a for a in measured if a not in ontology.NOT_KINDS[a.split(".")[0]]}, set(), f)
+
 if __name__ == "__main__":
     unittest.main()

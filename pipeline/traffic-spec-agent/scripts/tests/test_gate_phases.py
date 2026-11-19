@@ -57,11 +57,11 @@ def _library(t: str) -> tuple[Path, Path, dict]:
 
 
 def _tags(out: str) -> list[str]:
-    """The tag of every row and end line a harness printed, runs of `OCC`, `LITERAL`, `MANIFEST`
-    and `WITNESS` collapsed to one."""
+    """The tag of every row and end line a harness printed, runs of `OCC`, `LITERAL`, `MANIFEST`,
+    `WITNESS` and `REGIONKINDS` collapsed to one."""
     tags = [l.split("\t", 1)[0] + (("\t" + l.split("\t")[1]) if l.startswith("TIME\t") else "")
             for l in out.splitlines() if "\t" in l or l.startswith("DONE")]
-    return [t for i, t in enumerate(tags) if i == 0 or t != tags[i - 1] or t not in ("OCC", "LITERAL", "MANIFEST", "WITNESS")]
+    return [t for i, t in enumerate(tags) if i == 0 or t != tags[i - 1] or t not in ("OCC", "LITERAL", "MANIFEST", "WITNESS", "REGIONKINDS")]
 
 
 def stop_after(row: str, change: tuple[str, str] | None = None):
@@ -342,7 +342,7 @@ class NodeHarness(unittest.TestCase):
         v, out, phases = node_gate()
         self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
         scen = [t for n in ("forbid", "permit", "idle", "blind", "branch_1") for t in ("SCEN", f"TIME\tscenario:{n}")]
-        self.assertEqual(_tags(out), ["DECL", "RULEJSON", "RULEXJSON", "ATOMS", "COMPOSES", "AGGREGATES", "MANIFEST", "OCC",
+        self.assertEqual(_tags(out), ["DECL", "RULEJSON", "RULEXJSON", "REGIONKINDS", "ATOMS", "COMPOSES", "AGGREGATES", "MANIFEST", "OCC",
                                       "TIME\toccurrences", "TIME\tchecks", "TIME\tlint"] + scen + ["TIME\twitnesses", "DONE_WITNESSES",
                                       "ADEQ_SIZE", "TIME\tadequacy_start", "TIME\tadequacy", "DONE"])
         self.assertIn(f"ADEQ_SIZE\t{P.NODE_ID}\t6\t4\n", out)       # six leaves; four witnesses expect a decided verdict
@@ -457,7 +457,7 @@ class ConceptHarness(unittest.TestCase):
         v, out, phases = concept_gate()
         self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
         scen = [t for n in ("holds", "fails", "blind") for t in ("SCEN", f"TIME\tscenario:{CID}@w/{n}")]
-        self.assertEqual(_tags(out), ["DECL", "ATOMS", "READS", "AGGREGATES", "HARDAGG", "BODY", "WITNESS", "OCC", "INST", "TIME\tchecks", "TIME\tlint"] + scen
+        self.assertEqual(_tags(out), ["DECL", "ATOMS", "READS", "AGGREGATES", "HARDAGG", "BODY", "REGIONKINDS", "WITNESS", "OCC", "INST", "TIME\tchecks", "TIME\tlint"] + scen
                          + ["TIME\twitnesses", "DONE_WITNESSES", "ADEQ_SIZE", "TIME\tadequacy_start", "TIME\tadequacy", "DONE"])
         self.assertIn(f"ADEQ_SIZE\t{CID}@w\t1\t2\n", out)
 

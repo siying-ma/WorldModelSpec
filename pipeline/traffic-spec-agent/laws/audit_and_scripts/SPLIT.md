@@ -1,6 +1,6 @@
-# Corpus split — demo-overlap-v3
+# Corpus split — demo-overlap-v5
 
-`../example/law-split.json` is the roster: 221 training lines and 28 held-out lines, every corpus
+`../example/law-split.json` is the roster: 224 training lines and 28 held-out lines, every corpus
 line named once. `python -m nrs_tools.split` (from `pipeline/ontology_provenance/`) writes
 `../example/{train,test}/laws.jsonl` from it and `../full_list/laws.jsonl` (records unchanged,
 corpus order), writes beside each the posted definitions the pipeline's definition resolver reaches
@@ -8,6 +8,15 @@ from its lines (directly cited, resolved or ambiguous, and nested), and regenera
 vocabulary (`split_atoms.json`, `../../ontology/ATOMS_train.md`, the training Core). It refuses a
 roster under which a training line cites a held-out line, by bracketed id or by a reference recorded
 in `laws_meta.jsonl`, and a roster that moves or changes a demo line. Law records are never edited.
+
+Version 4 (2026-11-17) is version 3 without LVMC 11.40.170 and NRS 484B.627(1)(c), two training lines
+the operator moved out of the corpus; no line changed side and the held-out files are unchanged.
+
+Version 5 (2026-11-18) is version 4 with five lines that return to the corpus as training lines: NRS
+484B.287(1)(a), 484B.287(1)(b), 484B.290, 484B.350(1)(a) and 484B.350(1)(b). The operator recorded
+their overlaps with LVMC 11.30.060(A), (B), 11.30.140(B) and 11.46.030 as partial, so both texts
+stay. They go to training because the training lines NRS 484B.283(1) and 484B.287(1)(c)–(e) cite
+them, and training cites no held-out line; no line changed side and the held-out files are unchanged.
 
 ## Why this roster
 

@@ -52,6 +52,9 @@ def main(argv=None) -> int:
         print()
         for law, v in rep["laws"].items():
             print(f"{law:<20} {v['verdict'].upper() if v['verdict'] == 'violated' else v['verdict']:<15} {v['title']}")
+            if v.get("partial_coverage"):
+                print(f"    partial coverage: under the approved abstraction(s) {', '.join(v['abstractions'])}, "
+                      "not full statutory compliance")
             for r in v["rules"]:
                 line = f"    {r['rule']:<22} {r['verdict']:<15} {r.get('seconds', '?')} s"
                 if r.get("error"):

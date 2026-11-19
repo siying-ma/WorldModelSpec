@@ -213,6 +213,19 @@ def verify(run_id: str, stage_id: str | None = None) -> list[str]:
     return out
 
 
+def stored(run_id: str, stage_id: str, rel: str) -> bytes | None:
+    """The content of the run's file `rel` (relative to the run's directory) as the closed stage
+    `stage_id` handed it over (its snapshot), or None when the snapshot or the file is not there or
+    its blob does not hash to its name."""
+    try:
+        s = jsonl.read_json(_manifest_file(run_id, stage_id), None)
+    except jsonl.DataIntegrityError:
+        return None
+    h = ((s or {}).get("files") or {}).get((_run_rel(run_id) / rel).as_posix())
+    p = _blobs(run_id) / str(h)
+    return p.read_bytes() if h and p.is_file() and _sha(p) == h else None
+
+
 def _git(into: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", str(into), *args], capture_output=True)
 

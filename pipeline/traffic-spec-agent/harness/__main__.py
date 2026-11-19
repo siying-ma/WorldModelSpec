@@ -14,6 +14,7 @@
   status        the run's ledger counts
   reopen        put a run's failed or decision-blocked laws back to open
   gap           list the gaps, or record the operator's decision on one
+  review_decide the operator's decisions on a run's behaviour review (acknowledge a stop of its sends, reconcile a call)
   split         activate the train or full variant of Core
   doctor        the artifact cross-checks
   score-split   score a test run against the split's test-only atoms
@@ -163,7 +164,11 @@ class Cli:
         is scored by `label_check` after the run) with `label_dataset` (those recordings, by default the training
         package); `definition_precedence`; `acquisition_profile` (the operator's profile of the
         recordings in `config/acquisition_profiles.json`: its reviewed parameter is every `heading_since` step bound; without
-        one no rule may read `heading_since`); `restart` (discard an interrupted iteration);
+        one no rule may read `heading_since`); `review_stage` (a review launch: properties drawn and checked, no
+        plan, code or label check), with the review configuration a new run fixes: `review_coverage` (`strict` or
+        `bounded`), `review_repair_attempts`, `review_property_attempts`, `review_infra_attempts`,
+        `behaviour_review_budget_usd`; `behaviour_reviewer` (a review or labels launch only, never kept for the next
+        launch: the reviewer the run's first review entry fixed, which `stage enter --kind review` names); `restart` (discard an interrupted iteration);
         `dry_run`; `force_takeover`. Returns 0 only when the run ends `complete`."""
         from dataclasses import fields
         from .loop import run_loop
@@ -184,15 +189,17 @@ class Cli:
                 saved[k] = str(paths.local(saved[k]))
         if saved.get("base_reading"):
             saved["reading"] = saved["base_reading"]
-        # the stage options name what this launch does: each launch states its own, never the last one's
+        # the stage options name what this launch does, and a reviewer named is checked against the one the run's
+        # review entry fixed: each launch states its own, never the last one's
         kw = {k: v for k, v in saved.items() if k in names and k not in ("run_id", "restart", "force_takeover", "dry_run",
-                                                                          "label_deferred", "label_stage", "label_dataset")}
+                                                                          "label_deferred", "label_stage", "label_dataset",
+                                                                          "review_stage", "behaviour_reviewer")}
         kw.update(given)
         kw.setdefault("laws", DEFAULT_LAWS); kw.setdefault("ontology", DEFAULT_ONTOLOGY); kw.setdefault("reading", DEFAULT_READING)
         if kw.get("label_deferred"):                           # no dataset on a machine that defers its label checks
             if kw.get("label_dataset"):
                 raise SystemExit("--label_deferred reads no training recording: do not give --label_dataset")
-        elif kw.get("label_repair") and not kw.get("label_dataset"):
+        elif kw.get("label_repair") and not kw.get("label_dataset") and not kw.get("review_stage"):
             kw["label_dataset"] = saved.get("label_dataset") or DEFAULT_DATASET
         for k in ("laws", "ontology", "reading", "definition_precedence", "model_prices", "label_dataset"):
             if kw.get(k):
@@ -287,6 +294,7 @@ class Cli:
             print(f"{o.kind:7s} {o.node.id}")
             for r in o.reasons: print("        ", r)
             for g in o.gaps: print("   gap  ", g.get("kind"), g.get("span"), str(g.get("proposal"))[:80])
+            for m in o.notes: print("   note ", m)
             bad += o.kind != validate_a.ACCEPT
         return 1 if bad else 0
 
@@ -392,17 +400,25 @@ class Cli:
             unavailable = {r: ("fenced" if r in run.fenced else f"not accepted; the law is {entry.get('state')}")
                            for r in rules if r not in accepted}
             chk = lc.check_law(law, rules, {r: law for r in rules}, ds, bin_ / "monitor", bin_ / "explain",
-                               run.reading_file, lim, out_dir / "explain", unavailable)
+                               run.reading_file, lim, out_dir / "explain", unavailable,
+                               lc.incomplete_sets(ledger, run.all_nodes()),
+                               {i for i, rec in run.all_nodes().items() if rec.get("permission")})
             chk.source_check = source_check.summary({r["recording_id"]: sources.get(r["recording_id"]) for r in rows if r["law_id"] == law})
             (out_dir / "laws").mkdir(parents=True, exist_ok=True)
             (out_dir / "evidence").mkdir(parents=True, exist_ok=True)
             (out_dir / "laws" / f"{law}.json").write_text(json.dumps(chk.to_dict(), indent=1) + "\n", encoding="utf-8")
             (out_dir / "evidence" / f"{law}.md").write_text(lc.render_evidence(chk), encoding="utf-8")
             judgment += lc.judgment_table(chk)
-            results[law] = {"outcome": chk.outcome, "rules": rules, "not_run": unavailable, **chk.coverage,
+            results[law] = {"outcome": chk.outcome, "scope": chk.scope, "abstractions": chk.abstractions,
+                            "sampled_duration": {k: chk.summary["sampled_duration"][k] for k in ("recordings", "labelled", "matched")},
+                            "rules": rules, "not_run": unavailable, **chk.coverage,
                             "counts": chk.summary["counts"], "notes": chk.notes,
                             "source_check": {k: v for k, v in chk.source_check.items() if k != "per_recording"}}
-            print(f"{law:22s} {chk.outcome:10s} rules {len(rules)}  plain {chk.coverage['matched']}/{chk.coverage['eligible']} match")
+            print(f"{law:22s} {chk.outcome:10s} rules {len(rules)}  plain {chk.coverage['matched']}/{chk.coverage['eligible']} match"
+                  + (f"  partial coverage ({', '.join(chk.abstractions)})" if chk.abstractions else "")
+                  + (f"  sampled duration on {chk.summary['sampled_duration']['recordings']} recording(s), "
+                     f"{chk.summary['sampled_duration']['matched']}/{chk.summary['sampled_duration']['labelled']} plain match "
+                     "(read from the samples, not a proof between frames; also in the figures above)" if chk.sampled_duration else ""))
         summary = {"run": run_id, "data_version": ds.data_version, "dataset": str(_p(dataset)), "frozen_manifest_sha256": frozen_sha,
                    "semantic_inputs": semantic_inputs(run.opts),
                    "monitor_sha256": sha(bin_ / "monitor"), "explain_sha256": sha(bin_ / "explain"),
@@ -574,6 +590,81 @@ class Cli:
             moved = ledger.start_round(paths.RESULTS, names)
             print("\n".join(f"{g} → results/{r}/gaps.jsonl" for g, r in moved) or "the gap ledger is empty"); return 0
         raise SystemExit("gap list | gap decide <id> --state ... --decision ... | gap archive [--manifest <file.json>]")
+
+    def review_decide(self, run_id: str, law: str = "-", decision: str = "", stop: str = "", record: str = "") -> int:
+        """Operator decisions of a run's behaviour review. `review_decide <run> - acknowledge --stop <id>
+        --record <file>` confirms one stop of the run's sends (`behaviour_review.acknowledge`): the
+        record (a JSON object with `run_id`, `stop`, `decision: acknowledge` and `reason`) is bound by its
+        digest, the same record again changes nothing, and it is refused with nothing written while a
+        review call's outcome is unknown or kept evidence is lost or changed. It confirms that stop and
+        nothing else; the checks a launch makes are run again and printed, every stop of the run still
+        active among them (a defect pause, a limit, an unknown call, another stop), and the exit status
+        is non-zero while any fails or another stop stays active.
+
+        `review_decide <run> <law> reconcile --record <file>` settles the law's one call whose outcome is
+        unknown (`behaviour_review.reconcile`): the record (`run_id`, `law`, `decision: reconcile`,
+        `call`: the pending call's directory, `executed`: true or false, `reason`, and with `executed`
+        optionally `answer`: a JSON file holding the call's raw answer) must name this run, law and
+        call. `executed: false` is refused while the call left an answer or a credential; `executed:
+        true` adopts the answer through the adoption gate, or without one ends the logical call failed.
+        It settles that call only: no stop is cleared. It takes the library, so never beside a live run.
+        `finding`, `redraft` and `limits` are not implemented in this harness and are refused."""
+        from .store.budget import AcknowledgeRefused
+        from .store.state import Run
+        from .phases import behaviour_review
+        if decision == "reconcile":
+            return self._review_reconcile(run_id, law, record)
+        if decision != "acknowledge":
+            print(f"review_decide: unknown or unimplemented decision {decision!r} (acknowledge, reconcile)"); return 1
+        if law not in ("-", "", None) or not stop or not record:
+            print("review_decide acknowledge names a run-wide stop: review_decide <run> - acknowledge --stop <id> --record <file>"); return 1
+        _refuse_stored_run(run_id, "acknowledged")
+        run = Run.load(run_id)
+        try:
+            out = behaviour_review.acknowledge(run, str(stop), _p(record))
+        except (AcknowledgeRefused, ValueError, OSError) as e:
+            print(f"review_decide acknowledge refused, nothing written: {e}"); return 1
+        print(f"stop `{stop}` " + ("was already acknowledged with this record" if out["again"] else "acknowledged")
+              + f" (record {out['row']['record_sha'][:16]})")
+        for c in out["checks"]:
+            print(f"- {c}")
+        return 1 if out["checks"] else 0
+
+    def _review_reconcile(self, run_id: str, law: str, record: str) -> int:
+        from .store import owner
+        from .store.ledger import Ledger, ConceptLedger, NodeLedger
+        from .store.state import Run, commit_state
+        from .phases import behaviour_review
+        if law in ("-", "", None) or not record:
+            print("review_decide reconcile names a law and a record: review_decide <run> <law> reconcile --record <file>"); return 1
+        try:
+            rec = json.loads(_p(record).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as e:
+            print(f"review_decide reconcile refused, nothing written: the record cannot be read ({e})"); return 1
+        _refuse_stored_run(run_id, "reconciled")
+        owner.acquire_for_command("review_decide reconcile")
+        run = Run.load(run_id)
+        pending = (run.review_states.get(law) or {}).get("pending_call") or {}
+        wrong = [f"`{k}` is {rec.get(k)!r}, not {v!r}" for k, v in (("run_id", run_id), ("law", law), ("decision", "reconcile"),
+                                                                     ("call", pending.get("workdir"))) if rec.get(k) != v]
+        if not isinstance(rec.get("executed"), bool):
+            wrong.append("`executed` is not true or false")
+        if not str(rec.get("reason") or "").strip():
+            wrong.append("`reason` is empty")
+        if rec.get("answer") is not None and rec.get("executed") is not True:
+            wrong.append("an `answer` is given for a call not recorded as executed")
+        if wrong:
+            print("review_decide reconcile refused, nothing written: " + "; ".join(wrong)); return 1
+        try:
+            answer = json.loads(_p(rec["answer"]).read_text(encoding="utf-8")) if rec.get("answer") is not None else None
+            out = behaviour_review.reconcile(run, law, rec["executed"], answer)
+        except (OSError, ValueError) as e:
+            print(f"review_decide reconcile refused, nothing written: {e}"); return 1
+        ledger = Ledger(run.ledger_file, [], run.opts.plan_attempts)
+        commit_state(run, ledger, ConceptLedger(run.concept_ledger_file, run.opts.concept_attempts),
+                     NodeLedger(run.node_ledger_file, run.opts.node_attempts))
+        print(f"`{law}`: its call `{rec['call']}` reconciled: {out}")
+        return 0
 
     def status(self, run_id: str) -> int:
         f = paths.run_dir(run_id) / "summary.json"

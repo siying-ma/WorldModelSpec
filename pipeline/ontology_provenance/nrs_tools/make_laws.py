@@ -188,7 +188,7 @@ SPEC = [
  N('484B','307','11',theme='devices_and_signals'), N('484B','307','12.a',theme='devices_and_signals'), N('484B','307','12.b',theme='devices_and_signals'),
  N('484B','310','1',theme='devices_and_signals'), N('484B','310','2',theme='devices_and_signals'),
  N('484B','323','1',('3',),theme='lanes'), N('484B','327','2',theme='devices_and_signals'), N('484B','330','1',theme='officers_and_flaggers'),
- N('484B','350','1.a',theme='school'), N('484B','350','1.b',theme='school'), N('484B','353','1',('2',),theme='school'),
+ N('484B','350','1.a',('4',),theme='school'), N('484B','350','1.b',('4',),theme='school'), N('484B','353','1',('2',),theme='school'),
  N('484B','360','1',subj='school_bus_driver',theme='school'), N('484B','360','2',subj='school_bus_driver',theme='school'),
  N('484B','363','1',('9',),theme='school'), N('484B','363','2',('9',),theme='school'), N('484B','363','3',('9',),theme='school'), N('484B','363','4',('9',),theme='school'),
  N('484B','400','1',theme='turns_and_signals'), N('484B','400','2.a',theme='turns_and_signals'), N('484B','400','2.b',theme='turns_and_signals'), N('484B','400','2.c',theme='turns_and_signals'),
@@ -229,7 +229,7 @@ SPEC = [
  N('484B','790','3',subj='delivery_device_operator',theme='cycles_and_devices'),
  N('484B','913','',theme='misc'),
  # ================= NRS 484D =================
- N('484D','100','1',theme='lamps_and_warnings'), N('484D','165','3',theme='lamps_and_warnings'), N('484D','165','4',theme='lamps_and_warnings'),
+ N('484D','100','1',theme='lamps_and_warnings'), N('484D','165','1',theme='lamps_and_warnings'), N('484D','165','3',theme='lamps_and_warnings'), N('484D','165','4',theme='lamps_and_warnings'),
  N('484D','185','1',theme='lamps_and_warnings'), N('484D','205','4',theme='lamps_and_warnings'),
  N('484D','215','1',theme='lamps_and_warnings'), N('484D','215','2',theme='lamps_and_warnings'), N('484D','220','1',theme='lamps_and_warnings'),
  N('484D','285','1',theme='lamps_and_warnings'), N('484D','400','2',theme='lamps_and_warnings'), N('484D','400','5',subj='emergency_vehicle_driver',theme='lamps_and_warnings'),
@@ -304,7 +304,8 @@ SPEC = [
  L('11.38.030',subj=M,theme='motorcycles'),
  L('11.38.040',subj=M,theme='motorcycles'),
  L('11.38.050',subj=M,theme='motorcycles',overlaps=('NRS-486-351-1',)),
- L('11.38.120','B',pre=('A',),subj=M,theme='motorcycles',overlaps=('NRS-486-251-1',)),
+ L('11.38.120','A',subj=M,theme='motorcycles'),
+ L('11.38.120','B',subj=M,theme='motorcycles',overlaps=('NRS-486-251-1',)),
  L('11.38.130',subj=M,theme='motorcycles'),
  L('11.40.070',subj=R,theme='cycles_and_devices',overlaps=('NRS-484B-300-1',)),
  L('11.40.080',subj=R,theme='cycles_and_devices'),
@@ -441,25 +442,25 @@ if __name__ == '__main__':
                 res.append(x)
         return res
     def_ids = {d[0] for d in DEFS}
-    for o in out:
+    def annotate(o):
+        """The line's references resolved in place (REFS) and its unresolvable ones marked (UNRESOLVED)."""
         rs = REFS.get(o['id'])
-        if not rs: continue
-        allrefs = []
-        for sub, ids in rs:
-            ids = expand(ids)
-            for x in ids:
-                assert x in kept_ids or x in def_ids or ' ' in x, ('ref to unknown id', o['id'], x)
-            assert sub in o['text'], ('ref substring not found', o['id'], sub)
-            o['text'] = o['text'].replace(sub, sub + ' [' + ', '.join(ids) + ']', 1)
-            allrefs += [x for x in ids if ' ' not in x]
-        seen = set(); o['refs'] = [x for x in allrefs if not (x in seen or seen.add(x))]
-    for o in out:
+        if rs:
+            allrefs = []
+            for sub, ids in rs:
+                ids = expand(ids)
+                for x in ids:
+                    assert x in kept_ids or x in def_ids or ' ' in x, ('ref to unknown id', o['id'], x)
+                assert sub in o['text'], ('ref substring not found', o['id'], sub)
+                o['text'] = o['text'].replace(sub, sub + ' [' + ', '.join(ids) + ']', 1)
+                allrefs += [x for x in ids if ' ' not in x]
+            seen = set(); o['refs'] = [x for x in allrefs if not (x in seen or seen.add(x))]
         u = UNRESOLVED.get(o['id'])
         if u:
             for e in u: assert e['phrase'] in o['text'], ('unresolved phrase not found', o['id'], e['phrase'][:50])
             o['unresolved'] = u
-    for k in list(REFS) + list(UNRESOLVED) + list(APP_MORE) + list(XAPP):
-        assert k in kept_ids, ('reference table names a line not in the corpus', k)
+    for o in out:
+        annotate(o)
     # ---- definitions.jsonl: every term definition of the definition chapters, then the cited provisions ----
     corpus_text = ' '.join(o['text'] for o in out).lower()
     def term_definitions():
@@ -493,35 +494,13 @@ if __name__ == '__main__':
         return recs
     term_recs = term_definitions()
     definition_ids = {r[0] for r in term_recs} | {d[0] for d in DEFS}
-    for o in out:                                      # a law's cited term definitions, marked like its cited provisions
+    def mark(o):                                       # a law's cited term definitions, marked like its cited provisions
         marked = mark_incorporations(o['text'], definition_ids)
         if marked != o['text']:
             o['text'] = marked
             o['refs'] = list(o.get('refs', [])) + [x for x in re.findall(r'\[(DEF-NRS-[\w-]+)\]', marked) if x not in o.get('refs', [])]
-    with open(CORPUS_DIR / 'definitions.jsonl', 'w', encoding='utf-8') as f:
-        for did, applies, terms, label, text in term_recs:
-            text = mark_incorporations(text, definition_ids)
-            hit = [t for t in terms if re.search(r'\b' + re.escape(t.lower()) + r'(?:s|es)?\b', corpus_text)]
-            f.write(json.dumps({'id': did, 'kind': 'term', 'applies_to': applies, 'terms': terms,
-                                'title': ' / '.join(terms) + ' defined', 'text': text, 'source': label,
-                                'term_in_corpus': bool(hit)}, ensure_ascii=False) + '\n')
-        for did, dsrc, dch, dsec, dpaths, note in DEFS:
-            title, tree, get = section(dsrc, dch, dsec)
-            parts = []
-            for p in dpaths:
-                node = get(tree, p)
-                lead = [tree['text']] if (p and tree['text'].rstrip().endswith(':')) else []
-                parts.append(trim(' '.join(lead + [flatten(node)])))
-            label = f"NRS {dch}.{dsec}" if dsrc == 'NRS' else f"LVMC {dsec}"
-            used = sorted(o['id'] for o in out if did in o.get('refs', []))
-            f.write(json.dumps({'id': did, 'kind': 'provision', 'applies_to': dsrc, 'title': title, 'text': clean(' '.join(parts)),
-                                'source': label + ', '.join(path_label(p) for p in dpaths) if any(dpaths) else label,
-                                'note': note, 'used_by': used}, ensure_ascii=False) + '\n')
-    # ---- every term a corpus text takes from a cited section is itself a definition of the corpus ----
-    defs_written = [json.loads(l) for l in open(CORPUS_DIR / 'definitions.jsonl', encoding='utf-8')]
-    missing = missing_incorporations(defs_written + out, {d['id'] for d in defs_written})
-    assert not missing, ('a text takes a term from a section that is no definition of the corpus: '
-                         'add it to INCORPORATED in references.py', missing)
+    for o in out:
+        mark(o)
     # ---- OVERLAPS.md: the record of every decision ----
     by_kept = {}
     for d, (kept, why) in DROP.items():
@@ -581,11 +560,40 @@ if __name__ == '__main__':
             for d in o['supersedes']:
                 if d in dropped_rows and d not in UNRESOLVED and d not in EXCLUDED and d not in by_id:
                     r = dropped_rows[d]
+                    annotate(r); mark(r)
                     r['tier'] = tier(r); r['bucket'] = 'judgement' if r['tier'] in ('S', 'Q') else 'concrete'
                     r['reinstated_for'] = o['id']
                     out.append(r); by_id[d] = r; reinstated.append((d, o['id']))
     if reinstated:
         print('reinstated (survivor unresolvable):', reinstated)
+    for k in list(REFS) + list(UNRESOLVED) + list(APP_MORE) + list(XAPP):
+        assert k in by_id, ('reference table names a line not in the corpus', k)
+    # ---- definitions.jsonl, written once the set of lines is final: a provision's `used_by` names
+    # every line that cites it, reinstated lines included ----
+    with open(CORPUS_DIR / 'definitions.jsonl', 'w', encoding='utf-8') as f:
+        for did, applies, terms, label, text in term_recs:
+            text = mark_incorporations(text, definition_ids)
+            hit = [t for t in terms if re.search(r'\b' + re.escape(t.lower()) + r'(?:s|es)?\b', corpus_text)]
+            f.write(json.dumps({'id': did, 'kind': 'term', 'applies_to': applies, 'terms': terms,
+                                'title': ' / '.join(terms) + ' defined', 'text': text, 'source': label,
+                                'term_in_corpus': bool(hit)}, ensure_ascii=False) + '\n')
+        for did, dsrc, dch, dsec, dpaths, note in DEFS:
+            title, tree, get = section(dsrc, dch, dsec)
+            parts = []
+            for p in dpaths:
+                node = get(tree, p)
+                lead = [tree['text']] if (p and tree['text'].rstrip().endswith(':')) else []
+                parts.append(trim(' '.join(lead + [flatten(node)])))
+            label = f"NRS {dch}.{dsec}" if dsrc == 'NRS' else f"LVMC {dsec}"
+            used = sorted(o['id'] for o in out if did in o.get('refs', []))
+            f.write(json.dumps({'id': did, 'kind': 'provision', 'applies_to': dsrc, 'title': title, 'text': clean(' '.join(parts)),
+                                'source': label + ', '.join(path_label(p) for p in dpaths) if any(dpaths) else label,
+                                'note': note, 'used_by': used}, ensure_ascii=False) + '\n')
+    # ---- every term a corpus text takes from a cited section is itself a definition of the corpus ----
+    defs_written = [json.loads(l) for l in open(CORPUS_DIR / 'definitions.jsonl', encoding='utf-8')]
+    missing = missing_incorporations(defs_written + out, {d['id'] for d in defs_written})
+    assert not missing, ('a text takes a term from a section that is no definition of the corpus: '
+                         'add it to INCORPORATED in references.py', missing)
     # scope edits (tiers.SCOPE_EDITS), applied to the final set of lines, reinstated ones included
     for k in SCOPE_EDITS:
         assert k in by_id, ('tiers.py SCOPE_EDITS names a line not in the corpus', k)

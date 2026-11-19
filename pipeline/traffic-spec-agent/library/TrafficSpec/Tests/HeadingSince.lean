@@ -348,7 +348,7 @@ def big : Term := .headingSince "x" (.lit (Q.ofInt 2) .second) (.and rich (.deri
 #guard Formula.termParams (hs (.param "p.step") rich) = ["p.step", "p.v"]
 #guard Formula.termLiterals big = [(Q.ofInt 2, .second)]
 #guard Formula.termCompositions big = [("t/other", [("a", "x")])]
-#guard Formula.termDeclared big = [.inl "asm.onset"]
+#guard Formula.termDeclared big = [.asm "asm.onset"]
 #guard sameF (Concept.expand cs (.cmp big .ge deg0)) (.cmp (.headingSince "x" (.lit (Q.ofInt 2) .second) (.and rich (moving X))) .ge deg0)
 #guard ((Concept.expandT cs 3 (.headingSince "x" (.quantity "drv_t_since_on" [X] [.param "p.step"]) .tt)).run' 0).toJson ==
   (Term.headingSince "x" (.headingSince "x" (.param "p.step") (moving X)) .tt).toJson

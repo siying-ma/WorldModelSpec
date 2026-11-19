@@ -1,9 +1,14 @@
-# Active split: demo-overlap-v3
+# Active split: demo-overlap-v5
 
-The corpus is 249 laws: 221 training and 28 held-out, named in `example/law-split.json` and
+The corpus is 252 laws: 224 training and 28 held-out, named in `example/law-split.json` and
 written by `python -m nrs_tools.split`; training cites no held-out law, and each split's
 `definitions.jsonl` holds the definitions its laws resolve to. See `audit_and_scripts/SPLIT.md`.
 Corpus partition (training/held-out) is distinct from scenario role (training/testing).
+demo-overlap-v4 (2026-11-17) is the v3 roster without the two training lines that left the corpus
+(LVMC 11.40.170, NRS 484B.627(1)(c)); the held-out lines and their files are unchanged.
+demo-overlap-v5 (2026-11-18) is the v4 roster with the five statutory lines that return to the
+corpus (NRS 484B.287(1)(a), (b), 484B.290, 484B.350(1)(a), (b); *Overlapping obligations* below) as
+training lines, since training lines cite them; the held-out lines and their files are unchanged.
 Historical scope notes follow.
 
 # The law corpus — the traffic law in force in Las Vegas
@@ -12,10 +17,10 @@ Historical scope notes follow.
 
 | path | what it holds |
 |---|---|
-| `full_list/` | the whole corpus as **posted law**: `laws.jsonl` (249 obligations) and `definitions.jsonl` (123), each record `id`, `title`, `text`, `source` and nothing else — what a government website shows and what a person adds a new law with |
-| `example/train/`, `example/test/` | the training / test split of `full_list/laws.jsonl` (221 / 28), each with the `definitions.jsonl` that goes with it (`audit_and_scripts/SPLIT.md`) |
+| `full_list/` | the whole corpus as **posted law**: `laws.jsonl` (252 obligations) and `definitions.jsonl` (135), each record `id`, `title`, `text`, `source` and nothing else — what a government website shows and what a person adds a new law with |
+| `example/train/`, `example/test/` | the training / test split of `full_list/laws.jsonl` (224 / 28), each with the `definitions.jsonl` that goes with it (`audit_and_scripts/SPLIT.md`) |
 | `example/demo/`, `example/carla_smoke/` | reference-closed subsets of the training set for a first run (22 demo laws) and for a CARLA smoke test (2 lines whose duties carry standards of judgement, one of them a surrogate); each has a README saying what its lines exercise (`python -m nrs_tools.subset <name> <law id> … [--split train\|test\|full]` from `pipeline/ontology_provenance/`: the named laws, every law their texts name, all in the named split, and the posted definitions whose terms occur in a line that the definition's own applicability clause reaches) |
-| `audit_and_scripts/` | the **analysis**, never the law: the sidecars `laws_meta.jsonl` (subject, theme, tier, overlap decisions, reference resolution per line) and `definitions_meta.jsonl`; the lines kept out (`excluded.jsonl` 43, `unobservable.jsonl` 4, `unresolvable.jsonl` 31) and `laws_full.jsonl` (corpus + excluded, 292); the record of how the corpus was decided: `OVERLAPS.md`, `CORPUS_AUDIT_2026-09-19.md`, `CONCRETE_DEPENDENCIES.md`, `SPLIT.md`, `SPLIT_AUDIT.md`, `split_atoms.json` |
+| `audit_and_scripts/` | the **analysis**, never the law: the sidecars `laws_meta.jsonl` (subject, theme, tier, overlap decisions, reference resolution per line) and `definitions_meta.jsonl`; the lines kept out (`excluded.jsonl` 47, `unobservable.jsonl` 4, `unresolvable.jsonl` 31) and `laws_full.jsonl` (corpus + excluded, 299); the record of how the corpus was decided: `OVERLAPS.md`, `CORPUS_AUDIT_2026-09-19.md`, `CONCRETE_DEPENDENCIES.md`, `SPLIT.md`, `SPLIT_AUDIT.md`, `split_atoms.json` |
 
 The parsers, the selection list and the generators that produce all of it live outside the agent's
 reach in `pipeline/ontology_provenance/nrs_tools/`.
@@ -35,12 +40,26 @@ corpus law cites stays. The evidence and the rule are in
 NRS 484B.127(1) rather than LVMC 11.12.080(A), whose only addition is the procession exception
 (`nrs_tools/overlaps.py`).
 
+Operator decisions of 2026-11-17 under the same rule: the horse-drawn vehicles of LVMC 11.22.120(B)
+and the three-wheeled electric vehicles excepted by NRS 484B.117(2) are rare actors, removed from
+their lines by scope edits (*Laws changed for the scope* below); LVMC 11.40.170 (where a bicycle or
+scooter is parked) and NRS 484B.627(1)(c) (use alternate routes on a controlled-access highway) do
+not judge a driving situation a recording can show, and are in `excluded.jsonl` with their
+`excluded_reason`. The equipment paragraph LVMC 11.38.120(A) (headlamp and tail lamp, their colour and
+visibility) is an excluded line; LVMC 11.38.120(B), the duty to have those lights burning, stays and
+cites (A) as a provision instead of carrying it. In the same way, the equipment paragraph NRS
+484D.165(1) (the front and rear lamps every vehicle is equipped with, their colour, visibility and
+location) is an excluded line (operator decision K4, 2026-11-18); NRS 484D.165(3), the duty to
+display those lamps lighted on a vehicle parked or stopped at night, stays and cites (1) as a
+provision instead of carrying it appended.
+
 ### Laws changed for the scope
 
 These corpus lines are not the posted text as published, or not the line the corpus kept before
-the scope. Every change is made by the generator from `nrs_tools/tiers.py` (`SCOPE_EDITS`) or
-`nrs_tools/overlaps.py`, never by hand, and is recorded on the line in
-`audit_and_scripts/laws_meta.jsonl` (`scope_edit`, `supersedes`). The unedited text stays in
+the scope. Every change is made by the generator from `nrs_tools/tiers.py` (`SCOPE_EDITS`,
+`EXCLUDED`), `nrs_tools/overlaps.py` or the cutting tables (`make_laws.py` `SPEC`,
+`references.py`), never by hand, and is recorded on the line in
+`audit_and_scripts/laws_meta.jsonl` (`scope_edit`, `supersedes`, `refs`). The unedited text stays in
 `pipeline/ontology_provenance/nrs_tools/sources/` and in git: the corpus, split, sidecars, evaluation records
 and ontology before the scope of 2026-10-13 are those of commit `300f115`, and retired subsets are in
 the history of `laws/example/`.
@@ -48,25 +67,38 @@ the history of `laws/example/`.
 | line | change | posted words | corpus words | why |
 |---|---|---|---|---|
 | `LVMC-11-22-100` | **text edited** (`scope_edit`) | "No person shall ride or drive any **horse or** vehicle over or across any pavement newly laid …" | "No person shall ride or drive any vehicle over or across any pavement newly laid …" | a ridden horse is outside the scope; the duty to drive no vehicle over newly laid pavement stays, and `ru.ridden_or_herded_animal` leaves the ontology with it |
+| `NRS-484B-117-1` | **text edited** (`scope_edit`; subsection 2 no longer appended) | "Except as otherwise provided in subsection 2 [(2) appended below], the driver of a vehicle shall not drive upon or within any sidewalk area … The provisions of subsection 1 do not apply to a vehicle that is powered solely by electricity and designed to travel on three wheels when such a vehicle is operated: (a) As an authorized emergency vehicle; (b) By an officer … of a law enforcement agency …; or (c) By a security guard …" | "the driver of a vehicle shall not drive upon or within any sidewalk area except at a permanent or temporary driveway or alley entrance. A person who violates this subsection is guilty of a misdemeanor." | the three-wheeled electric vehicles of the exception are a rare actor outside the scope; the sidewalk prohibition stays. The words "Except as otherwise provided in subsection 2," are removed by the scope edit, and subsection 2 is no longer appended (`references.py`), so no reference is left without its target |
+| `LVMC-11-22-120-B` | **text edited** (`scope_edit`) | "… the use of the roadway by motor-driven cycles, bicycles**, horse-drawn vehicles** or other nonmotorized traffic …" | "… the use of the roadway by motor-driven cycles, bicycles or other nonmotorized traffic …" | a horse-drawn vehicle is outside the scope; the duty to obey the signs restricting the roadway for the other classes stays |
+| `LVMC-11-38-120-B` | **line recut** ((A) no longer prepended; `LVMC-11-38-120-A` excluded and cited as the provision `DEF-LVMC-11-38-120-A`) | "All vehicles covered under this Section … shall carry at least one lighted headlamp … and one tail lamp … to the rear. The lights required by this Section shall be burning whenever …" | "The lights required by this Section [DEF-LVMC-11-38-120-A] shall be burning whenever such vehicles are in motion during the period from one-half hour after sunset … at least five hundred feet ahead." | the equipment duty of (A) is no conduct; the duty of (B) and its times and visibility condition are kept verbatim |
+| `NRS-484D-165-3` | **line recut** ((1) no longer appended; `NRS-484D-165-1` excluded and cited as the provision `DEF-NRS-484D-165-1`) | "… such vehicle shall display lighted lamps meeting the requirements of subsection 1 [(1) appended below]. Every vehicle shall be equipped with one or more lamps which, when lighted, shall display a white or amber light … The location of such lamps shall be such that …" | "… such vehicle shall display lighted lamps meeting the requirements of subsection 1 [DEF-NRS-484D-165-1]." | the equipment duty of (1) is no conduct; the duty of (3), its occasion and its light condition are kept verbatim, and the lamps it requires are named by the provision |
+| `NRS-484B-290` | **text edited** (`scope_edit`) | "… take precautions before proceeding to avoid a crash or injury to the person. **A person who violates this section is guilty of a civil infraction punishable pursuant to NRS 484A.703 to 484A.705, inclusive.**" | "… take precautions before proceeding to avoid a crash or injury to the person." | removed, exactly: "A person who violates this section is guilty of a civil infraction punishable pursuant to NRS 484A.703 to 484A.705, inclusive." A separate operator decision for this line, not a general rule of removing penalty sentences: NRS 484B.283(1) and 484B.287(1) cite NRS 484B.290, so its duty must stay in the corpus, and the sentence's citation of the penalties of NRS 484A.703 to 484A.705, which are no corpus line, would send the line to `unresolvable.jsonl`; the section is one undivided paragraph, so this sentence alone is removed and the operative text stays whole (operator, 2026-11-18; note below) |
 | `NRS-484B-127-1` (in place of `LVMC-11-12-080-A`) | **line replaced** (overlap decision reversed) | LVMC 11.12.080(A): "… The provisions of this Section shall not apply to funeral processions." | NRS 484B.127(1): the same following rule without that sentence | funeral processions are outside the scope; the words of the two rules are otherwise the same, and the statute is kept for identical words (`OVERLAPS.md`) |
 
-No other line's text differs from the posted law. `LVMC-11-22-120-B` names horse-drawn vehicles and
-other nonmotorized traffic only in the sentence authorizing the City Traffic Engineer; its text is
-unchanged, and only its evaluation record marks those classes as outside the scope.
+Removing the penalty sentence of NRS 484B.290 is a separate operator decision for that one line
+(2026-11-18), not a general rule of removing penalty sentences. NRS 484B.283(1) and 484B.287(1) cite
+NRS 484B.290, so its driving duty needs to stay in the corpus; kept whole, the line's citation of the
+penalties of NRS 484A.703 to 484A.705 (no corpus line) would be an unresolved penalty reference and
+would send it to `unresolvable.jsonl`. Lines that carry such a penalty reference otherwise stay where
+that rule puts them: NRS 484B.327(2) and NRS 484B.550(1) remain out of the corpus, in
+`unresolvable.jsonl`. No other
+line's penalty sentence is removed (NRS-484B-117-1 keeps "A person who violates this subsection is
+guilty of a misdemeanor.").
+
+No other line's text differs from the posted law.
 
 ## The corpus
 
-`full_list/laws.jsonl` is the **pipeline corpus: 249 obligations** taken verbatim from the three bodies of
-law that govern driving on Las Vegas streets. 387 lines were cut; 65 were dropped because another
-line states the same obligation more narrowly (*Overlapping obligations* below); 78 more are kept
+`full_list/laws.jsonl` is the **pipeline corpus: 252 obligations** taken verbatim from the three bodies of
+law that govern driving on Las Vegas streets. 389 lines were cut; 60 were dropped because another
+line states the same obligation more narrowly (*Overlapping obligations* below); 82 more are kept
 out of the pipeline corpus because they do not judge a driving situation or lie outside the scope below
-(`audit_and_scripts/excluded.jsonl`, 43), carry a reference no source can resolve (`audit_and_scripts/unresolvable.jsonl`, 31), or impose no duty
+(`audit_and_scripts/excluded.jsonl`, 47), carry a reference no source can resolve (`audit_and_scripts/unresolvable.jsonl`, 31), or impose no duty
 any planned source can observe (`audit_and_scripts/unobservable.jsonl`, 4); 5 lines that had been dropped
 for a narrower text return because that text is unresolvable (`reinstated_for`).
 `audit_and_scripts/laws_full.jsonl`
-(292) is the corpus plus the excluded lines. Every line has a `tier` in `audit_and_scripts/laws_meta.jsonl`
-(C: no judgement element, 163; Q: a concrete rule with a judgement element, 87; S: the obligation
-is only a standard of care, 35) so that the planner and the evaluation can treat them differently
+(299) is the corpus plus the excluded lines. Every line has a `tier` in `audit_and_scripts/laws_meta.jsonl`
+(over the 299 lines of `laws_full.jsonl` — C: no judgement element, 177; Q: a concrete rule with a
+judgement element, 90; S: the obligation is only a standard of care, 32) so that the planner and the evaluation can treat them differently
 (ontology `ATOMS.md` §8).
 
 | source | lines | what was taken |
@@ -114,8 +146,8 @@ A corpus line is posted law and nothing else:
 The pipeline renders exactly `id`, `title` and `text` (`format_laws`) and reads ids
 (`plan_validate.load_law_ids`). Nothing else about a line exists on the agent's side.
 
-**What is analysis, and where it lives.** Whose conduct a line judges (`subject`: `driver` on 204
-lines, `rider`, `pedestrian`, `motorcyclist`, `delivery_device_operator`, …), its coarse grouping
+**What is analysis, and where it lives.** Whose conduct a line judges (`subject`: `driver` on 193
+of the 252 corpus lines, `rider`, `pedestrian`, `motorcyclist`, `delivery_device_operator`, …), its coarse grouping
 (`theme`, 26 of them), whether it carries a judgement standard (`tier` C / Q / S, see the ontology
 §8), which broader lines it displaced (`supersedes`), which ids its references resolve to (`refs`),
 which references no source can resolve (`unresolved`, as `{phrase, kind, note}`), and a return
@@ -126,24 +158,25 @@ line it has never seen; a tier it cannot see is a tier it cannot lean on.
 
 ## Definitions
 
-`full_list/definitions.jsonl` (123 records) is built **from the definition chapters of the sources, not
-from the corpus**: every "X defined" section of NRS 484A.015–.320 (chapter-wide definitions, 62),
+`full_list/definitions.jsonl` (135 records: 125 term definitions and 10 provisions) is built **from the definition chapters of the sources, not
+from the corpus**: every "X defined" section of NRS 484A.015–.320 (chapter-wide definitions, 63),
 NRS 484B.003–.077 (rules-of-the-road definitions, 25) plus the low-speed-vehicle definition inside
-484B.637, NRS 486.011–.057 (motorcycles, 9) and LVMC 11.02 (19). Each record is posted law
+484B.637, NRS 486.011–.057 (motorcycles, 7) and LVMC 11.02 (19), and the 10 term definitions of NRS
+482, 482A and 489 that a corpus text or definition takes a meaning from by citation. Each record is posted law
 (`id`, `title`, `text`, `source`); its analysis — `kind: term`, the defined `terms`, `applies_to`
 (NRS or LVMC), `term_in_corpus` — is in `audit_and_scripts/definitions_meta.jsonl`. Where
 both sources define a term (commercial vehicle, trailer, taxicab, electric bicycle, electric
 scooter, muffler) the municipal definition governs municipal lines and the statutory one
 statutory lines, as LVMC 11.02.020 itself provides. `term_in_corpus` is an informational flag
-(81 of 122 defined terms occur in some line); no term was selected or dropped by it. NRS 484B.800–.827
+(82 of the 125 term records name a term that occurs in some line); no term was selected or dropped by it. NRS 484B.800–.827
 define terms for the traffic-stop data chapter and no rule of the road, and are excluded.
 
-Eight further records are `kind: provision` in the sidecar: operative text that a line cites for its trigger
+Ten further records are `kind: provision` in the sidecar: operative text that a line cites for its trigger
 and that lives in a chapter not in the corpus — the emergency-lamp requirements of NRS
 484A.480(3), the HOV sign conditions of 484A.460, high and low beam (484D.210), hand-signal
 meanings (484B.420), the ice-cream-truck safety equipment (LVMC 6.47.100(C)), bus-stop and
 taxistand designation by signs (11.60.010), the local e-scooter ordinance (11.40.185(A)) and the
-handicapped-space sign (11.52.135(A)). Lines refer to them in the text by `[DEF-...]`; each carries
+handicapped-space sign (11.52.135(A)) and the headlamp and tail lamp a motorcycle carries (LVMC 11.38.120(A), itself an excluded equipment line: the provision only says which lights LVMC 11.38.120(B) means) and the front and rear lamps every vehicle is equipped with (NRS 484D.165(1), itself an excluded equipment line: the provision only says which lamps NRS 484D.165(3) means). Lines refer to them in the text by `[DEF-...]`; each carries
 `used_by`.
 
 The definitions that apply to the laws of a plan, resolved by the operator's declared
@@ -155,12 +188,12 @@ incident' means …") are appended to the line that needs them instead.
 
 Every line has a `tier` (C / Q / S) in `audit_and_scripts/laws_meta.jsonl`; `pipeline/ontology_provenance/nrs_tools/tiers.py`
 and `references.py` hold the classification and its reasons. The corpus itself is `full_list/laws.jsonl`; the other four views live in `audit_and_scripts/`
-and partition as follows (`laws_full.jsonl` = `laws.jsonl` + `excluded.jsonl`, 292).
+and partition as follows (`laws_full.jsonl` = `laws.jsonl` + `excluded.jsonl`, 299).
 
 | file | lines | what it holds |
 |---|---|---|
-| `laws.jsonl` | 249 | **the pipeline corpus**: tiers C (142), Q (81) and S (26) together. The planner decides, per line, how a judgement element is operationalized (`ATOMS.md` §8); a tier-S rule is a surrogate and is evaluated separately |
-| `excluded.jsonl` | 43 | 23 lines outside the scope (below) and 20 lines that do not judge a driving situation: rider apparel (3), equipment legality while driving (7), NRS 484B.700(1), a permission rather than an obligation, and **a rider's own body configuration on their own machine (9)** — the seat, hand and stunt duties of NRS 484B.770(1)–(2), 484B.780, 486.181(1), 486.191(1), 486.211 and LVMC 11.38.040, 11.40.150, 11.40.185(B), whose whole obligation is how the rider sits or holds the machine and is therefore neither conduct a driving plan performs nor a fact one turns on. Each carries `excluded_reason` |
+| `laws.jsonl` | 252 | **the pipeline corpus**: tiers C (147), Q (79) and S (26) together. The planner decides, per line, how a judgement element is operationalized (`ATOMS.md` §8); a tier-S rule is a surrogate and is evaluated separately |
+| `excluded.jsonl` | 47 | 23 lines outside the scope (below) and 24 lines that do not judge a driving situation: rider apparel (3), equipment legality while driving (9, among them the motorcycle headlamp and tail lamp of LVMC 11.38.120(A) and the vehicle lamps of NRS 484D.165(1)), where a parked bicycle or scooter stands (LVMC 11.40.170), a choice of route that one recording cannot show (NRS 484B.627(1)(c)), NRS 484B.700(1), a permission rather than an obligation, and **a rider's own body configuration on their own machine (9)** — the seat, hand and stunt duties of NRS 484B.770(1)–(2), 484B.780, 486.181(1), 486.191(1), 486.211 and LVMC 11.38.040, 11.40.150, 11.40.185(B), whose whole obligation is how the rider sits or holds the machine and is therefore neither conduct a driving plan performs nor a fact one turns on. Each carries `excluded_reason` |
 | `unobservable.jsonl` | 4 | lines whose **every** duty rests on a signal no planned source observes, so no verdict about them can be founded: three horn duties (NRS 484B.270(5)(b), 484B.280(1)(b), 484D.400(2)) and the compression brake (484D.285(1)). Neither planned source carries sound. Each carries `unobservable_reason`. Kept apart from `excluded.jsonl` because the reason is the source, not the law, and it reverses the moment a source supplies the signal; see `OBSERVABILITY_2026-09-29.md`. A line that merely *contains* such a duty beside an observable one stays in the corpus and carries a residue |
 | `unresolvable.jsonl` | 31 | **every line that carries an `unresolved` reference** (decided 2026-09-20), with `blocking` stating why. For 8 the unresolved element is the trigger or obligation itself (the two "by their nature can have no application" clauses, a trip's purpose, a park-by-park administrative determination, the golf-cart street schedule, the Pedestrian Mall map, the handicapped permit behind a blue curb). For the other 23 the mark is a peripheral reference — a City Clerk schedule (13 lines), an equipment standard or permit class in a chapter not in the corpus (7), a federal vehicle-class definition (2), a penalty clause (2), an HOV condition "established by regulation" (1) — and the line was removed on the rule that no corpus line may carry an unresolved reference. Lines that are both excluded and marked (NRS 484A.480(5)–(7), 484D.185(1)) stay in `excluded.jsonl`. Where the unresolvable line was the narrower survivor of an overlapping pair, the resolvable text it superseded is reinstated (`reinstated_for`): NRS 484B.503, 484B.507(1), 484B.477(1)(a), LVMC 11.22.100, LVMC 11.38.120(B) |
 
@@ -185,12 +218,24 @@ state statute expressly preempts municipal regulation (NRS 486.180(2), motorcycl
 statute was kept; where the words are identical the statute was kept; where neither text
 contains the other, both were kept. Every decision and its reason is in
 [audit_and_scripts/OVERLAPS.md](audit_and_scripts/OVERLAPS.md), generated from `overlaps.py` beside the corpus generator. Result:
-47 municipal and 18 statutory lines dropped, 5 pairs kept as partial overlaps. Examples of the
+48 municipal and 12 statutory lines dropped, 9 overlaps kept as partial (both texts stay). Examples of the
 statute losing: LVMC 11.52.130(A)(4) states both hydrant distances unconditionally where NRS
 484B.450(1)(d) defers the twenty-foot case to a local ordinance; LVMC 11.30.030 forbids passing a
 vehicle stopped for a pedestrian outright where NRS conditions it on what the driver 'has
 determined'. Examples of the Code losing: NRS 484B.283(1)(a) yields to a pedestrian within a
 crosswalk on the driver's half, LVMC 11.30.020 to any pedestrian crossing the roadway.
+
+Operator decision of 2026-11-18: four pairs once decided for the municipal text are partial
+overlaps, because neither text contains the other, and the five statutory lines return to the
+corpus beside the municipal lines: NRS 484B.287(1)(a) and (b) (a pedestrian crossing the highway,
+shoulder included) beside LVMC 11.30.060(A) and (B) (the roadway); NRS 484B.290 (a blind pedestrian
+with a service animal or white cane; yield and a full stop if necessary) beside LVMC 11.30.140(B)
+(a white cane or a person assisting; an immediate full stop); NRS 484B.350(1)(a) and (b) (obey a
+school crossing guard wherever the guard directs, until the highway is clear) beside LVMC 11.46.030
+(stop fifty feet from a school pedestrian lane until released). The citations of those sections in
+NRS 484B.283(1) ("Except as otherwise provided in NRS 484B.287, 484B.290 and 484B.350") and NRS
+484B.287(1) ("Except as provided in NRS 484B.290") now resolve to the statutory lines they name, not
+to the municipal lines; no corpus line's citation of one code resolves to a line of the other.
 
 ## How lines were cut
 
@@ -209,7 +254,10 @@ its own:
    and traffic-officer exceptions to the school-bus stop; the speed-limit-beacon definition on the
    school-zone rules; the traffic-incident definition on the move-over rules; the funeral
    procession exception on the municipal following rules; the authority paragraph that defines
-   the sign a municipal prohibition refers to (11.22.120, 11.38.120).
+   the sign a municipal prohibition refers to (11.22.120). Where the paragraph a line refers to is
+   itself an excluded line, it is not joined: it is cited as a provision and the referring words carry its
+   id ("The lights required by this Section [DEF-LVMC-11-38-120-A]", "lighted lamps meeting the
+   requirements of subsection 1 [DEF-NRS-484D-165-1]").
 3. **Nested lists stay inside the line** where the items are alternative *conditions* of one
    obligation rather than separate obligations (the exceptions to driving on the right half; the
    triggers of the railroad stop; the vehicles allowed in a commercial loading zone).
@@ -290,7 +338,7 @@ expected to come back `unsupported`, or formalized with a stated residue:
 
 ## Sizing
 
-249 lines; 191 bind a `driver`. At `--max-nodes-per-iter 4` a full pass is on the order of 71
+252 lines; 193 bind a `driver`. At `--max-nodes-per-iter 4` a full pass is on the order of 71
 iterations. To measure on a shorter budget, filter by `subject`, `theme` or id prefix into
 `laws/<name>/laws.jsonl` and point `--laws` at it.
 

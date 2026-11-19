@@ -8,11 +8,18 @@ Format (JSON; `Decode.reading` in Core decodes the same fields):
     convention, not that figure>"; the doctor lists every such param until it does)
  "aggregates": [{"id": "<definition id>::<term>", "included": ["ru.*", ...], "unresolved": ["ru.*", ...],
                  "covered": [{"class": "ru.*", "covered_by": ["ru.*", ...], "quotes": [...], "basis": [...]}]?, ...}],
- "declarations": [{"id": "asm.<name>" | "int.<name>", "meaning": "<what the id states>", "proposed": "<origin>"?}]}
-A declaration is a fact a trace supplies and no camera observes, an assumption (`asm.*`) or a declared
-intention (`int.*`): one catalogue for both, so an id has one meaning and an adapter can read every id
-it must supply. A plan proposes an id with its meaning; the harness enters it `proposed` when the node
-is coded, and the operator reviews it by removing the marker.
+ "declarations": [{"id": "asm.<name>" | "int.<name>" | "fact.<name>", "meaning": "<what the id states>",
+                   "kind": "<FACT_KINDS>", "subjects": "<FACT_SUBJECTS>", "true_when": "<...>", "false_when": "<...>"
+                     (the last four for a `fact.*` id only), "proposed": "<origin>"?}]}
+A declaration is a fact a trace supplies and no camera observes, an assumption (`asm.*`), a declared
+intention (`int.*`) or a declared fact (`fact.*`): one catalogue for all, so an id has one meaning and
+an adapter can read every id it must supply. A declared fact is of one of two families: a temporary
+fact about one road user, an ordered pair of road users, or a road user and a region, over the time
+the source declares it; or a map record's fact about one region, the same at every scene. It states
+what a source must hold to declare it true (`true_when`) and to declare it false (`false_when`: only
+where the source can exclude it; a source that cannot leaves it out). A
+plan proposes an id with its meaning; the harness enters it `proposed` when the node is coded, and
+the operator reviews it by removing the marker.
 An aggregate is admitted per run by the aggregate gate (`harness/phases/aggregate.py`) into
 results/<run>/reading.json, keyed by its legal source. Core reads only `included` and `unresolved`. A
 `covered` class (present only when the mapping has one) is one the definition admits only as members
@@ -30,6 +37,27 @@ def _spellings() -> list[str]:
     return spellings()
 
 
+#: The kinds a declared fact (`fact.*`) may be, a closed list: no atom observes it, no road-user class
+#: decides it, and a scene source can confirm it. All but `map_record` are temporary facts about road
+#: users (with a region where the fact relates a road user to a place), over the time the source
+#: declares them; `map_record` is what a map record states of one region, the same at every scene. A
+#: physical state, a road user's class or legal identity, a legal region class or a time, and an
+#: intention are none of them: they have their atoms, classes, assumptions and intentions.
+FACT_KINDS = {
+    "duty": "a role or a duty the road user is performing at the time (on official duty, engaged in work on the way, a service trip under way)",
+    "permit": "a permit, licence or privilege the road user holds for the conduct the words name",
+    "assignment": "an assignment of the road user the source holds (a route it serves, a terminus of that route where it is)",
+    "membership": "the road user's membership of an organized group of road users travelling together",
+    "consent": "a consent one road user has given another",
+    "emergency": "an emergency the road user's conduct answers to at the time",
+    "map_record": "what a map record of the source states of one region (the named segment of a way it lies on), never derived from a sign",
+}
+#: The subjects of a declared fact, and the kinds each admits: one road user, an ordered pair of
+#: road users, a road user and a region, or a region alone (a map record's fact only).
+FACT_SUBJECTS = {"user": set(FACT_KINDS) - {"consent", "map_record"}, "user_pair": set(FACT_KINDS) - {"map_record"},
+                 "user_region": set(FACT_KINDS) - {"consent", "map_record"}, "region": {"map_record"}}
+
+
 TEMPLATE = {
     "run": "<run id>",
     "params": [],
@@ -40,7 +68,9 @@ TEMPLATE = {
                   "figure_review (optional: why a value that equals a figure some law states is a convention, not that figure)",
         "aggregates": "admitted by the run's aggregate gate, never written by hand: id (<definition id>::<term>), included and unresolved ru.* classes, "
                       "and the covered classes with their covering classes (for audit; not read by Core)",
-        "declarations": "id (asm.<name> or int.<name>), meaning (what the id states); proposed (the run, iteration and node that proposed it, until reviewed)",
+        "declarations": "id (asm.<name>, int.<name> or fact.<name>), meaning (what the id states); for a fact.* id also kind (one of "
+                        + "|".join(sorted(FACT_KINDS)) + "), subjects (" + "|".join(sorted(FACT_SUBJECTS)) + "), true_when and false_when (what a source must hold "
+                        "to declare it true, and false); proposed (the run, iteration and node that proposed it, until reviewed)",
     },
 }
 
@@ -89,17 +119,57 @@ def reading_defects(data) -> list[str]:
     seen_ids = set()
     for i, d in enumerate(decls):
         if not isinstance(d, dict) or not isinstance(d.get("id"), str) or not DECLARED_ID.match(d["id"]):
-            errs.append(f"declarations[{i}]: the id is not `asm.<name>` or `int.<name>`"); continue
+            errs.append(f"declarations[{i}]: the id is not `asm.<name>`, `int.<name>` or `fact.<name>`"); continue
         if not isinstance(d.get("meaning"), str) or not d["meaning"].strip():
             errs.append(f"declarations[{i}] `{d['id']}`: no meaning")
+        if d["id"].startswith("fact."):
+            errs += [f"declarations[{i}] `{d['id']}`: {e}" for e in fact_terms_defects(d)]
         if d["id"] in seen_ids:
             errs.append(f"declarations[{i}] `{d['id']}`: the id is given twice")
         seen_ids.add(d["id"])
     return errs
 
 
-#: A declared-fact id: an assumption or a declared intention, `asm.` or `int.` and a snake-case name.
-DECLARED_ID = re.compile(r"^(asm|int)\.[a-z0-9_]+$")
+#: A declared-fact id: an assumption, a declared intention or a declared fact, `asm.`, `int.` or
+#: `fact.` and a snake-case name.
+DECLARED_ID = re.compile(r"^(asm|int|fact)\.[a-z0-9_]+$")
+
+#: The terms a `fact.*` declaration carries besides its id and meaning.
+FACT_TERMS = ("kind", "subjects", "true_when", "false_when")
+
+
+#: The keys of a record that declare a fact the trace supplies, each item `{span, id, meaning?, ...}`.
+DECLARING_KEYS = ("assumptions", "intentions", "facts")
+
+
+def declared_items(record: dict) -> list[dict]:
+    """The items of a node record that declare a fact the trace supplies (`DECLARING_KEYS`), in order."""
+    return [d for key in DECLARING_KEYS for d in (record.get(key) or []) if isinstance(d, dict)]
+
+
+def declaration_entry(d: dict) -> dict:
+    """What the catalogue holds of a declared item: its id and meaning, and a fact's terms."""
+    out = {"id": d.get("id"), "meaning": d.get("meaning")}
+    if str(d.get("id") or "").startswith("fact."):
+        out.update({k: d.get(k) for k in FACT_TERMS})
+    return out
+
+
+def fact_terms_defects(d: dict) -> list[str]:
+    """What a `fact.*` declaration lacks: a kind of the closed list, subjects of `FACT_SUBJECTS` that
+    admit that kind, and non-empty `true_when` and `false_when`."""
+    errs = []
+    if d.get("kind") not in FACT_KINDS:
+        errs.append(f"kind {d.get('kind')!r} is not one of {sorted(FACT_KINDS)}")
+    if d.get("subjects") not in FACT_SUBJECTS:
+        errs.append(f"subjects {d.get('subjects')!r} is not one of {sorted(FACT_SUBJECTS)}")
+    elif d.get("kind") in FACT_KINDS and d.get("kind") not in FACT_SUBJECTS[d["subjects"]]:
+        errs.append(f"a fact of kind `{d.get('kind')}` is not of subjects `{d['subjects']}`: a map record's fact is of a region "
+                    "alone, a consent of a pair of road users, every other kind of a road user, a pair or a road user and a region")
+    for k in ("true_when", "false_when"):
+        if not isinstance(d.get(k), str) or not d[k].strip():
+            errs.append(f"no `{k}`")
+    return errs
 
 #: A citation in a declared fact's meaning: a section sign; a code's abbreviation and a section
 #: number with dotted parts or bracketed subsections; an id of a corpus record (an abbreviation and
@@ -178,7 +248,7 @@ class Reading:
         return added
 
     def declarations(self) -> dict[str, dict]:
-        """The catalogue of declared-fact ids, `asm.*` and `int.*`, by id."""
+        """The catalogue of declared-fact ids, `asm.*`, `int.*` and `fact.*`, by id."""
         return {d["id"]: d for d in self.data.get("declarations", []) if isinstance(d, dict) and d.get("id")}
 
     @staticmethod
@@ -186,7 +256,8 @@ class Reading:
         """Enter declared-fact ids into the reading at `path`: an id it lacks becomes a `declarations`
         entry with its meaning, marked `proposed: <origin>` until the operator reviews it. An id it
         has with the same meaning is left as it is; one with another meaning is a broken invariant
-        (validation gives every record its catalogue's meaning) and raises. Returns the entries added."""
+        (validation gives every record its catalogue's meaning) and raises. A `fact.*` entry also
+        carries its kind, subjects, `true_when` and `false_when`. Returns the entries added."""
         data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"params": [], "aggregates": []}
         have = {d.get("id"): d for d in data.get("declarations", []) if isinstance(d, dict)}
         added = []
@@ -196,7 +267,10 @@ class Reading:
                 if same_meaning(old.get("meaning"), d.get("meaning")):
                     continue
                 raise ValueError(f"declaration `{d['id']}`: the reading means {old.get('meaning')!r}, a record {d.get('meaning')!r}")
-            entry = {"id": d["id"], "meaning": " ".join(str(d.get("meaning", "")).split()), "proposed": origin}
+            entry = {"id": d["id"], "meaning": " ".join(str(d.get("meaning", "")).split())}
+            if d["id"].startswith("fact."):
+                entry.update({k: " ".join(str(d.get(k, "")).split()) for k in FACT_TERMS})
+            entry["proposed"] = origin
             data.setdefault("declarations", []).append(entry); have[d["id"]] = entry; added.append(entry)
         if added:
             from ..store import jsonl

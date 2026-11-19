@@ -6,9 +6,57 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-ROLES = {"trigger", "subject", "obligation", "exception", "standard", "condition", "reference", "sibling", "definitional", "boilerplate"}
-SUBSTANTIVE = {"trigger", "subject", "obligation", "exception", "standard", "condition", "reference"}
+ROLES = {"trigger", "subject", "obligation", "permission", "exception", "standard", "condition", "reference", "sibling", "definitional", "boilerplate"}
+SUBSTANTIVE = {"trigger", "subject", "obligation", "permission", "exception", "standard", "condition", "reference"}
+#: The kinds of a case a record declares (`cases`): one in which its duty `requires` a conduct of the
+#: subject, read by another node's `required_by`, or one in which it `permits` an act, read by another
+#: node's composition naming the case. A `requires` case sits on an obligation span; a `permits` case
+#: on a permission, exception or condition span.
+CASE_KINDS = {"requires", "permits"}
+CASE_SPAN_ROLES = {"requires": {"obligation"}, "permits": {"permission", "exception", "condition"}}
+#: What a rule says where one of its own exceptions occurs, which each `exception` span of a record
+#: states once (`exception_kinds`): `meets_duty`, acting that way meets the requirement (the
+#: exception is written in the obligation, beside the duty, and the verdict there is compliant);
+#: `lifts_duty`, the duty does not apply then (written in the applicability, negated: not applicable).
+EXCEPTION_KINDS = {"meets_duty", "lifts_duty"}
+
+
+def stop_witness_names(case: dict) -> list[str]:
+    """The paired witnesses a case requiring a halt is held to (Core's `Scenario.stopNames`): the
+    subject at rest, driving and creeping in one external situation."""
+    return [f"stop_{case.get('name')}_{v}" for v in ("halt", "drive", "creep")]
+
+
+def unless_case_checks(raw) -> list[dict]:
+    """The suspension checks a record owes: for each case it declares on a span an `unless`
+    composition scopes, one per such composition, with its witness (`unless_<case>`, or
+    `unless_<case>_<n>` for the n-th of several compositions scoping that span, in record order), the
+    case, the composed rule, the record's map and the case of the rule the composition names."""
+    rec = raw.raw if hasattr(raw, "raw") else raw
+    comps = [c for c in rec.get("compositions", []) or [] if isinstance(c, dict) and c.get("as") == "unless"]
+    out = []
+    for case in rec.get("cases", []) or []:
+        on = [c for c in comps if isinstance(case, dict) and c.get("scopes") == case.get("span")]
+        for n, c in enumerate(on, 1):
+            out.append({"witness": f"unless_{case.get('name')}" + (f"_{n}" if len(on) > 1 else ""), "case": str(case.get("name")),
+                        "rule": str(c.get("rule")), "map": {str(k): str(v) for k, v in (c.get("map") or {}).items()},
+                        "rule_case": c.get("case")})
+    return out
+
+
+def purpose_witness_names(purpose: str) -> list[str]:
+    """The paired witnesses a declared purpose is held to (Core's `Scenario.purposeNames`)."""
+    return {"standing_or_parking": ["purpose_standing_or_parking_halt", "purpose_standing_or_parking_move"],
+            "device_instruction": ["purpose_device_instruction_on", "purpose_device_instruction_off"]}.get(purpose, [])
 SCENARIOS = {"forbid": "violated", "permit": "compliant", "idle": "not_applicable", "blind": "unknown"}
+#: A permission node (`permission: true`) is never violated, so it has no `forbid` witness.
+PERMISSION_SCENARIOS = {k: v for k, v in SCENARIOS.items() if k != "forbid"}
+
+
+def standard_scenarios(raw) -> dict[str, str]:
+    """The standard witnesses a node record must plan, by name, with the verdict each expects."""
+    rec = raw.raw if hasattr(raw, "raw") else raw
+    return PERMISSION_SCENARIOS if isinstance(rec, dict) and rec.get("permission") else SCENARIOS
 #: Spellings of a verdict tag a plan may use; the validator normalizes them to the tag.
 VERDICT_SPELLINGS = {"violated": "violated", "violation": "violated", "violates": "violated",
                      "compliant": "compliant", "compliance": "compliant", "complied": "compliant",
@@ -26,14 +74,27 @@ EXECUTION_KINDS = {"exception", "condition", "compliance", "unless"}
 #: with their own atoms; nothing of the source is executed, so it is no dependency.
 DEFINITION = "definition"
 AS_KINDS = EXECUTION_KINDS | {DEFINITION}
+#: Words that name no rule but the rules of the library as a whole are a rule-set operator on their
+#: span (`rule_sets`), never a composition and never a dependency: `required_by` (Core's
+#: `Formula.requiredBy`: some rule requires the conduct of the road user here) or `lawful`
+#: (`Formula.lawful`: the road user complies with every rule of a scope engaged for it), whose
+#: scope is every rule, the rules whose subject is of an aggregate, or those rules read as binding
+#: a road user of another class.
+RULE_SET_OPS = {"required_by", "lawful"}
+RULE_SCOPES = {"every", "subject_class", "as_class", "purpose", "as_class_purpose"}
 #: The kinds of a narrowing, one schema at the blueprint and the gate: a plan declares `reading` (the
-#: default) or `observable_reading`; a coder adds `reading`, or `no_atom` / `no_operator` (the words
-#: cannot be stated), and accounts for a planned `observable_reading`. A concept knows no
-#: `observable_reading`: its words are a contract, not a law's.
-NARROWING_KINDS = {"reading", "observable_reading", "no_atom", "no_operator"}
-PLANNED_NARROWING_KINDS = {"reading", "observable_reading"}
+#: default), `observable_reading`, or `abstraction` (words omitted under an approved abstraction of the
+#: ontology's catalogue, named by id); a coder adds `reading`, or `no_atom` / `no_operator` (the words
+#: cannot be stated), accounts for a planned `observable_reading`, and declares no `abstraction`. A
+#: concept knows no `observable_reading` and no `abstraction`: its words are a contract, not a law's.
+ABSTRACTION = "abstraction"
+NARROWING_KINDS = {"reading", "observable_reading", "no_atom", "no_operator", ABSTRACTION}
+PLANNED_NARROWING_KINDS = {"reading", "observable_reading", ABSTRACTION}
 CONCEPT_NARROWING_KINDS = {"reading", "no_atom", "no_operator"}
 GAP_KINDS = {"atom", "operator"}   # the two ways the frozen vocabulary can fail a span: no atom (or enumeration value) carries it; no operator expresses it
+#: The kind of the gap the harness itself files, never a plan: a duty given only by laws outside the
+#: corpus, a question of the corpus's scope for the operator.
+SCOPE_GAP = "scope"
 #: A concept's witnesses: the body can hold, can fail, and stays unknown when a read atom is masked.
 CONCEPT_SCENARIOS = {"holds": "compliant", "fails": "violated", "blind": "unknown"}
 CONCEPT_KINDS = {"formula", "quantity"}
@@ -84,6 +145,10 @@ class Node:
 
     def spans(self) -> dict[str, dict]:
         return {s["id"]: s for s in self.raw.get("segmentation", [])}
+
+    def exception_kind(self, span) -> str | None:
+        """The kind the record states for its exception span `span` (`EXCEPTION_KINDS`), or None."""
+        return next((e.get("kind") for e in self.raw.get("exception_kinds", []) or [] if isinstance(e, dict) and e.get("span") == span), None)
 
     def claimed_atoms(self) -> set[str]:
         """The ids the record claims: its elements', its operationalizations', what marks its
@@ -152,6 +217,11 @@ class Node:
         for o in self.raw.get("operationalizations", []):
             ps += o.get("params", [])
         return sorted(set(ps))
+
+    def abstractions(self) -> list[str]:
+        """The approved abstractions the record declares (its `abstraction` narrowings), each once, in order."""
+        ids = [n.get("abstraction") for n in self.get("narrowings", []) or [] if isinstance(n, dict) and n.get("kind") == ABSTRACTION]
+        return list(dict.fromkeys(i for i in ids if isinstance(i, str)))
 
     def gaps(self) -> list[dict]:
         return self.raw.get("gaps", [])

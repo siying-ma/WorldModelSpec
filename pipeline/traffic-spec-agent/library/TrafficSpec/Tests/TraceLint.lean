@@ -129,6 +129,7 @@ def regionTableOk (t : List ((String × Nat) × Option (List StructureKind))) : 
   let ks := t.map (·.1)
   ks.eraseDups.length == ks.length && ks.all regionArgKeys.contains && regionArgKeys.all ks.contains
 #guard regionTableOk regionArgKinds
+#guard regionArgKinds.lookup ("rel_contact_structure", 1) = some (some [.obstruction, .fireHydrant])
 #guard !regionTableOk (regionArgKinds.drop 1)
 #guard !regionTableOk (regionArgKinds ++ regionArgKinds.take 1)
 #guard !regionTableOk (regionArgKinds.map fun ((n, i), v) => if (n, i) == ("st_lane_adjacency", 2) then ((n, 1), v) else ((n, i), v))

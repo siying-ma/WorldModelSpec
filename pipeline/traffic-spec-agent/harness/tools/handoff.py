@@ -44,7 +44,7 @@ from ..store.state import (READABLE_RUN_VERSIONS, acceptance_policy, acceptance_
                            saved_version_refusal, snapshot_defects, stage_policy_refusal)
 
 #: The files whose content decides a run's results, relative to the agent directory.
-CODE_PATTERNS = ("harness/**/*.py", "recorded/**/*.py", "prompts/*", "ontology/*", "config/*",
+CODE_PATTERNS = ("harness/**/*.py", "harness/phases/review_schemas/*.json", "recorded/**/*.py", "prompts/*", "ontology/*", "config/*",
                  "library/TrafficSpec/Core.lean", "library/TrafficSpec/Core/**/*.lean", "library/Explain.lean",
                  "library/Main.lean", "library/lean-toolchain", "library/lakefile.lean", "library/lake-manifest.json",
                  "scripts/RegionKinds.lean", "scripts/__init__.py", "scripts/diagnostics/*.py", "scripts/gen_ontology.py",

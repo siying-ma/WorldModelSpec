@@ -16,21 +16,16 @@ the same words, the statute is kept because it applies on every Las Vegas street
 outside city limits; (3) where neither text contains the other, both are kept and the pair is
 recorded below as partial.
 
-## Decisions (65 lines dropped, 70 lines kept as the narrower text)
+## Decisions (60 lines dropped, 66 lines kept as the narrower text)
 
 | kept | dropped | why the kept text is the narrower definition |
 |---|---|---|
 | `LVMC-11-18-030-B` | `NRS-484B-223-1a` | LVMC states the exceptions to lane-keeping (lawfully passing, preparing a lawful turn); NRS states the duty as 'as nearly as practicable', a judgement. |
 | `LVMC-11-30-030` | `NRS-484B-283-1c` | LVMC triggers on a vehicle stopped at a crosswalk to permit a pedestrian to cross and prohibits passing outright; NRS makes the prohibition depend on what the overtaking driver 'has determined', a knowledge standard. |
-| `LVMC-11-30-060-A` | `NRS-484B-287-1a` | LVMC binds a pedestrian crossing the roadway (the travelled part); NRS binds one crossing the highway (the whole right-of-way including shoulder). |
-| `LVMC-11-30-060-B` | `NRS-484B-287-1b` | Roadway versus highway, as for the preceding pair. |
 | `LVMC-11-30-090` | `NRS-484B-297-1` | LVMC forbids walking along the roadway where a sidewalk exists; NRS says 'highway', which by definition includes the sidewalk itself. |
-| `LVMC-11-30-140-B` | `NRS-484B-290` | LVMC requires an immediate full stop on encountering a pedestrian with a white cane or an assistant; NRS requires yielding and a full stop only 'if necessary', a judgement. |
 | `LVMC-11-40-150` | `NRS-484B-773` | LVMC binds riders of bicycles, electric bicycles and electric scooters; NRS also binds coasters, skates, sleds and toy vehicles. Narrower class kept. |
 | `LVMC-11-44-020` | `NRS-484B-503` | LVMC adds the time limits a passenger loading zone may post (three minutes; immediate loading only). |
 | `LVMC-11-44-060` | `NRS-484B-507-1` | LVMC limits a commercial loading zone stop to thirty minutes and to vehicles whose commercial nature is evident or marked; NRS has neither. |
-| `LVMC-11-46-030` | `NRS-484B-350-1a` | LVMC fixes the stop at not less than fifty feet from the school pedestrian lane and names the release conditions (signal stopped or removed, flagman's go signal); NRS says 'in obedience to the direction' of the guard. |
-| `LVMC-11-46-030` | `NRS-484B-350-1b` | LVMC's release conditions are observable; NRS's 'until the highway is clear of all persons' depends on the whole highway. Dropped with the preceding line so the school-guard stop is stated once. |
 | `LVMC-11-52-130-A12` | `NRS-484B-450-1f` | LVMC confines the twenty-foot setback to a marked crosswalk; NRS applies it to any crosswalk, including unmarked ones. |
 | `LVMC-11-52-130-A4` | `NRS-484B-450-1d` | NRS's twenty-foot case applies only 'if angle parking is permitted and a local ordinance requires the greater distance'; LVMC 11.52.130(A)(4) is that ordinance and states both distances unconditionally. |
 | `LVMC-11-52-130-A7` | `NRS-484B-450-1b` | LVMC combines 'in front of' and 'within five feet of' a driveway and states the owner/invitee and postal exceptions; NRS splits them and has only the postal exception. |
@@ -86,7 +81,7 @@ recorded below as partial.
 | `NRS-486-251-1` | `LVMC-11-38-120-B` | Preempted by NRS 486.180(2); NRS states the lighting times (half hour after sunset, 1,000 feet). |
 | `NRS-486-351-1` | `LVMC-11-38-050` | Preempted by NRS 486.180(2); NRS also covers stationary vehicles and defines the manoeuvre as driving between vehicles occupying adjacent lanes. |
 
-## Partial overlaps — both texts kept (5)
+## Partial overlaps — both texts kept (9)
 
 | line | flagged against | why both stay |
 |---|---|---|
@@ -95,9 +90,13 @@ recorded below as partial.
 | `LVMC-11-20-060` | `NRS-484B-260` | LVMC adds a stop before the sidewalk and a yield to pedestrians, in business and residence districts; NRS 484B.260 is the yield to vehicles from any private way anywhere. |
 | `LVMC-11-40-070` | `NRS-484B-300-1` | Same duty, different subject: LVMC binds riders directly, NRS binds drivers and reaches riders only through the applicability rule (NRS 484B.763). |
 | `LVMC-11-52-070` | `NRS-484B-460` | Different obligations at an angle-parking location: LVMC requires the front of the vehicle toward the direction of traffic; NRS requires the angle the devices indicate. |
+| `LVMC-11-30-060-A` | `NRS-484B-287-1a` | Different place: NRS binds a pedestrian crossing a highway, the whole right-of-way including the shoulder, to yield to all vehicles upon the highway; LVMC binds one crossing the roadway, the travelled part, to yield to all vehicles upon the roadway. Neither text contains the other (operator, 2026-11-18). |
+| `LVMC-11-30-060-B` | `NRS-484B-287-1b` | Highway, shoulder included, versus roadway, as for the preceding pair, for a pedestrian crossing where a pedestrian tunnel or overhead crossing has been provided (operator, 2026-11-18). |
+| `LVMC-11-30-140-B` | `NRS-484B-290` | Different protected person and duty: NRS protects a blind pedestrian using a service animal or carrying a white cane, and the driver yields and comes to a full stop if necessary; LVMC protects one carrying a white cane or assisted by a person, and the driver comes immediately to a full stop (operator, 2026-11-18). |
+| `LVMC-11-46-030` | `NRS-484B-350-1a`, `NRS-484B-350-1b` | Different place and release: NRS requires a stop in obedience to a school crossing guard's direction or signal, wherever given, and no proceeding until the highway is clear of all persons; LVMC requires a stop not less than fifty feet from a school pedestrian lane where a signal device, flagman or other person is stationed, until the signal is stopped, raised or removed or the flagman or person signals to go or leaves (operator, 2026-11-18). |
 
 ## Tally
 
 - dropped municipal lines: 48
-- dropped statutory lines: 17
-- lines in the corpus after resolution: 322
+- dropped statutory lines: 12
+- lines in the corpus after resolution: 329

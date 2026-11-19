@@ -1,0 +1,446 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:traffic-spec:bp_screen",
+ "title": "behaviour properties of one law: role B''s answer",
+ "description": "The second vendor's screen of role A's clauses and candidates: one item per candidate shown, one assessment per clause and category, the obligations the clauses miss, the situations no property covers, and whether the law's words decide checkable conduct. Written by the model; the harness writes none of it. A count or length beyond a bound makes the whole answer invalid: it is recorded, never truncated.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "items",
+  "clause_assessments",
+  "missed_obligations",
+  "uncovered_situations",
+  "law_behaviour"
+ ],
+ "properties": {
+  "items": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/item"
+   },
+   "minItems": 0,
+   "maxItems": 48
+  },
+  "clause_assessments": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/clause_assessment"
+   },
+   "minItems": 0,
+   "maxItems": 48
+  },
+  "missed_obligations": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/missed_obligation"
+   },
+   "minItems": 0,
+   "maxItems": 12
+  },
+  "uncovered_situations": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/uncovered_situation"
+   },
+   "minItems": 0,
+   "maxItems": 24
+  },
+  "law_behaviour": {
+   "$ref": "#/$defs/law_behaviour"
+  }
+ },
+ "$defs": {
+  "item": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "conditions",
+    "conclusion_ok",
+    "item_cause"
+   ],
+   "properties": {
+    "id": {
+     "type": "string",
+     "pattern": "^P[0-9]{1,3}$"
+    },
+    "conditions": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/condition"
+     },
+     "minItems": 1
+    },
+    "conclusion_ok": {
+     "enum": [
+      "yes",
+      "no",
+      "cannot_tell"
+     ]
+    },
+    "conclusion_reason": {
+     "type": "string",
+     "minLength": 0,
+     "maxLength": 1600
+    },
+    "item_cause": {
+     "enum": [
+      "adoptable",
+      "misreads_words",
+      "not_expressible",
+      "cannot_tell"
+     ]
+    }
+   }
+  },
+  "condition": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "condition_quote",
+    "kind",
+    "terms",
+    "antecedent_path",
+    "rating",
+    "reason"
+   ],
+   "properties": {
+    "condition_quote": {
+     "type": "string",
+     "minLength": 1
+    },
+    "kind": {
+     "enum": [
+      "premise",
+      "exception",
+      "conclusion",
+      "combination"
+     ]
+    },
+    "exception_use": {
+     "enum": [
+      "excluded",
+      "premise",
+      "left_out"
+     ]
+    },
+    "terms": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "term",
+       "atom",
+       "grounding",
+       "status"
+      ],
+      "properties": {
+       "term": {
+        "type": "string"
+       },
+       "atom": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "grounding": {
+        "type": "string"
+       },
+       "status": {
+        "enum": [
+         "grounded",
+         "ungrounded",
+         "gap"
+        ]
+       }
+      }
+     }
+    },
+    "antecedent_path": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "rating": {
+     "enum": [
+      "full_match",
+      "minor_deviation",
+      "major_deviation",
+      "cannot_rate"
+     ]
+    },
+    "distinction_changed": {
+     "enum": [
+      "action",
+      "place",
+      "time_or_order",
+      "road_users",
+      "feasibility"
+     ]
+    },
+    "approved_abstraction": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "section",
+      "quote"
+     ],
+     "properties": {
+      "section": {
+       "type": "string"
+      },
+      "quote": {
+       "type": "string",
+       "minLength": 1
+      }
+     }
+    },
+    "reason": {
+     "type": "string",
+     "minLength": 0,
+     "maxLength": 1600
+    },
+    "cannot_rate_reason": {
+     "type": "string",
+     "minLength": 0,
+     "maxLength": 1600
+    }
+   },
+   "allOf": [
+    {
+     "if": {
+      "properties": {
+       "kind": {
+        "const": "exception"
+       }
+      },
+      "required": [
+       "kind"
+      ]
+     },
+     "then": {
+      "required": [
+       "exception_use"
+      ]
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "rating": {
+        "const": "major_deviation"
+       }
+      },
+      "required": [
+       "rating"
+      ]
+     },
+     "then": {
+      "required": [
+       "distinction_changed"
+      ]
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "rating": {
+        "const": "minor_deviation"
+       }
+      },
+      "required": [
+       "rating"
+      ]
+     },
+     "then": {
+      "required": [
+       "approved_abstraction"
+      ]
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "rating": {
+        "const": "cannot_rate"
+       }
+      },
+      "required": [
+       "rating"
+      ]
+     },
+     "then": {
+      "required": [
+       "cannot_rate_reason"
+      ]
+     }
+    }
+   ]
+  },
+  "clause_assessment": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "clause",
+    "category",
+    "assessment",
+    "quote",
+    "reason"
+   ],
+   "properties": {
+    "clause": {
+     "type": "string",
+     "pattern": "^C[0-9]{1,2}$"
+    },
+    "category": {
+     "enum": [
+      "must_detect",
+      "must_not_flag"
+     ]
+    },
+    "assessment": {
+     "enum": [
+      "properties_given",
+      "reason_confirmed",
+      "reason_rejected"
+     ]
+    },
+    "quote": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 600
+    },
+    "reason": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 1600
+    }
+   }
+  },
+  "missed_obligation": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "quote",
+    "reason"
+   ],
+   "properties": {
+    "quote": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 600
+    },
+    "reason": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 800
+    },
+    "occurrence": {
+     "type": "integer",
+     "minimum": 1
+    }
+   }
+  },
+  "uncovered_situation": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "clause",
+    "category",
+    "situation",
+    "quote"
+   ],
+   "properties": {
+    "clause": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^C[0-9]{1,2}$"
+    },
+    "category": {
+     "enum": [
+      "must_detect",
+      "must_not_flag",
+      null
+     ]
+    },
+    "situation": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 400
+    },
+    "quote": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 600
+    }
+   }
+  },
+  "law_behaviour": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "assessment",
+    "reason"
+   ],
+   "properties": {
+    "assessment": {
+     "enum": [
+      "checkable",
+      "no_checkable_behaviour",
+      "cannot_tell"
+     ]
+    },
+    "kind": {
+     "enum": [
+      "purpose_or_policy",
+      "permission_or_authorization",
+      "definition_or_scope",
+      "other"
+     ]
+    },
+    "quote": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 600
+    },
+    "reason": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 1600
+    }
+   },
+   "allOf": [
+    {
+     "if": {
+      "properties": {
+       "assessment": {
+        "const": "no_checkable_behaviour"
+       }
+      },
+      "required": [
+       "assessment"
+      ]
+     },
+     "then": {
+      "required": [
+       "kind",
+       "quote"
+      ]
+     },
+     "else": {
+      "not": {
+       "required": [
+        "kind"
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+}

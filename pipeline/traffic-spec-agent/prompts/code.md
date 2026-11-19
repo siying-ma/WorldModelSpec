@@ -16,7 +16,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
   borrow words from, with the definitions that apply to it.
 - **Files** — the rule file and the witness file you own; nothing else may change. Both exist
   already: the harness wrote them from the node, they build, and every declaration the gate
-  compares (id, laws, binders, assumptions, operationalizations, residues, surrogate), every
+  compares (id, laws, binders, assumptions, intentions, facts, operationalizations, residues, surrogate, abstractions), every
   parameter as a `Term`, and the four scenarios with their verdicts and masked atoms are filled
   in. Your work is the formulas and the scenes.
 - **Core surface** — generated from the library and cited to its files: the formula language,
@@ -73,6 +73,15 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
   devices or users of the kind named. A region that must exist for a leaf to speak is built.
 - `holdsFor`/`since`/`once`-shaped lookbacks are truncated at the trace start and report unknown
   there: pad the trace (`Build.pad`) or set `window` to the instants the witness speaks about.
+- `durationWithin w step φ .gt bound` counts, in the window of length `w` behind the observation,
+  the interval since each previous observation: as held where φ is true at its end and the interval
+  is at most `step`, as not held where φ is false there and the interval is at most `step`, as
+  either where φ is unknown there or the interval is longer, and the part of the window before the
+  trace starts as either. It is true where even the least count is more than `bound`, false where
+  even the greatest is not (equal is not more), unknown otherwise (`samplingGap`,
+  `windowTruncated`, φ's reasons). Its `step` is the run's reviewed step parameter, taken as for
+  `headingSince` (hard rule 4). Core marks every verdict that reads it `sampled_duration`; the rule
+  declares nothing for it.
 - The episode verdict aggregates the instants: violated if any instant is violated, else unknown
   if any is unknown, else compliant if any is compliant, else not applicable. A `permit` witness
   with one violated instant fails, and one with an unknown instant reports unknown.
@@ -87,7 +96,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    every definition with `def`, never `private def`: each file has its own namespace, and every
    part of a rule or a witness stays reachable to the tools that inspect it.
 2. **The rule declares what the node declares.** `laws`, `binders` (names, order), `assumptions`,
-   `intentions`, `operationalizations`, `residues`, `surrogate` are the skeleton's; leave them. A residue is the
+   `intentions`, `facts`, `operationalizations`, `residues`, `surrogate`, `abstractions` are the skeleton's; leave them
+   (`abstractions` lists the ids of the record's `abstraction` narrowings: the rule is partial coverage). A residue is the
    plan's: words nothing carries. Where the record leaves the writing of a span the node carries
    open, you choose only among meanings its words already allow, and you declare each such choice
    — the formulas state the span more narrowly than its words — as a **narrowing**
@@ -148,13 +158,24 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    composition. You never inline another rule's content. A `definition` composition is no call:
    it records words borrowed from a source text, shown whole below the node, and the elements
    naming its span in `source_spans` write their meaning with their own atoms; never write
-   `.rule` or `.ruleApplies` for it.
+   `.rule` or `.ruleApplies` for it. A node's own `exception` span is written as `exception_kinds`
+   records it: `meets_duty` in the obligation, beside the duty (`.or <duty> <exception>`), so acting
+   that way complies; `lifts_duty` in the applicability, negated, so the rule does not apply there.
 6a. **Observable readings.** A span the node reads through conduct (`kind: "observable_reading"`
    in its narrowings) is written from its element's atoms as any span is. It is the plan's
    narrowing, already on record: you do not restate it, and you never declare one the node does not.
    A declared intention the node carries (`intentions`) is the formula `intent` of the road user and
    the region the element of its place's span binds, read at the judged observation or in a window
-   behind it, never in a window ahead.
+   behind it, never in a window ahead. A declared fact the node carries (`facts`) is the formula
+   `.fact "<id>" [.var "<road user>"]`, `.fact "<id>" [.var "<a>", .var "<b>"]` for a pair of
+   road users in the order the fact's meaning names them, `.fact "<id>" [.var "<road user>", .var
+   "<region>"]` for a road user at a region, or `.fact "<id>" [.var "<region>"]` for a region's map
+   record, each a bound road user or region as its subjects state; it is true or false as the trace
+   declares it and unknown where the trace does not, so write it where the words put it and join it
+   as they join it, never in place of a signal the words name and never where the words name none.
+   A witness that needs it declares it in its scenes (`facts := [Build.fact "<id>" [track] true]`,
+   `Build.fact "<id>" [] true [region]` for a region's, or `Build.withFacts`); a scene that declares
+   nothing leaves it unknown, and a region's fact has one value at every scene that declares it.
 6b. **The occasion of an act.** Where the node declares `occasion`, write a span read
    `at_recognition` at the declared recognition point. For `boundary: "window"`, write one read
    `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`, and one read `throughout` as
@@ -188,6 +209,33 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    before the recording, the act is unrecorded, and no recorded act or visible end of the search
    decides the verdict; its `boundary` names the history the trace lacks, and it expects unknown. No
    other witness is unknown for a window truncated at the start of its trace.
+6d. **Rule-set operators, cases and permissions follow the node's `rule_sets`, `cases` and
+   `permission`.** `required_by`: `.requiredBy .<conduct> "<who>"`; `lawful`: `.lawful .every "<who>"`,
+   `.lawful (.subjectClass "<aggregate>") "<who>"`, `.lawful (.asClass "<aggregate>") "<who>"`,
+   `.lawful (.purpose .<purpose>) "<who>"` or `.lawful (.asClassPurpose "<aggregate>" .<purpose>) "<who>"`,
+   where the node places the span; `who` is a binder, or a road user you quantify over around it.
+   A composition that names a `case` is `.ruleCase "<id>" "<case>" map` in place of `ruleApplies`.
+   A case is `cases := [{ name := "<name>", kind := .requires .<conduct> | .permits,
+   shown := …, when := … }]`: `shown`, over the binders, is the subject showing the conduct (or the
+   permitted act) as the obligation reads it; `when` narrows the node's applicability to the
+   situation the record gives, and follows every exception of the duty. A case on a span that an
+   `unless` composition scopes conjoins that suspension into its `when` (`.not (.ruleApplies "<id>"
+   map)`, or `.not (.ruleCase "<id>" "<case>" map)` where the composition names a case), so the case
+   does not hold where the composed rule applies; its witness `unless_<case>` (as the record names
+   it) is a trace on which that rule applies to the road users the map binds and the case's situation
+   otherwise holds. A permission node sets
+   `permission := true` and `obligation := .tt`. The node's `purposes` are `purposes := [.<purpose>]`. A witness of a rule that reads a rule-set operator
+   names in `setMembers` the small rules it ranges over there (binders, applicability, obligation
+   and cases), so the witness does not depend on the library. A rule that declares a case has
+   witnesses exercising its controls: for a `requires` case, one expecting `violated` where the
+   case holds and the conduct is not shown, one expecting `compliant` where it is shown, one where
+   the classes hold and the applicability does not and, where the node has a `meets_duty` exception
+   span, one where the exception removes the duty; for a `permits` case (on an exception span, a
+   `meets_duty` one, its `when` the exception's situation), one expecting `compliant` where the
+   case holds and the act is shown, and one outside the applicability. A case requiring a halt has
+   the three paired witnesses the record names (`stop_<case>_halt`, `_drive`, `_creep`): one external
+   situation, only the subject's motion differing. A declared purpose has its two paired witnesses
+   (`purpose_<purpose>_…`): only the subject's motion, or only the devices, differing.
 7. **Witnesses are built, not described.** Each scenario is a `Scenario` built with the `Build.*`
    constructors from the node's narrative: `forbid` expects violated, `permit` compliant, `idle`
    not applicable, `blind` unknown with the masked atoms absent in its manifest. A scenario

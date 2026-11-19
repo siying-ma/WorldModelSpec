@@ -1,7 +1,7 @@
 """Generate library/TrafficSpec/Core/Vocab/Ontology/*.lean from ontology/ATOMS.md.
 
 Every attribute enumeration written in an atom's contract as `**attr** ∈ {a, b(dir), …}` (or, for
-the sign catalogue, `**code**: a, b, …`) becomes one Lean inductive; the atom ids of the seven
+the sign catalogue, `**code**: a, b, …`, ended by `;` or the **Not a stand-in for** clause) becomes one Lean inductive; the atom ids of the seven
 atom families and the primitive ids become string lists; the units of the measured atoms (the
 units table) and of the primitives (the last two columns of a primitive's row) become the
 dimension tables of `Dimensions.lean`; a structure kind's `**Refines:** st.<kind>` clause becomes
@@ -21,6 +21,8 @@ from __future__ import annotations
 import re, sys
 from pathlib import Path
 
+from harness.model.ontology import NOT_KINDS
+
 REPO = Path(__file__).resolve().parents[1]
 ATOMS = REPO / "ontology" / "ATOMS.md"
 OUT = REPO / "library" / "TrafficSpec" / "Core" / "Vocab" / "Ontology"
@@ -37,6 +39,8 @@ TYPE_NAMES = {
     ("st.curb_zone", "kind"): "CurbZoneKind",
     ("st.curb_zone", "colour"): "CurbColour",
     ("st.obstruction", "kind"): "ObstructionKind",
+    ("st.driveway_or_alley_entrance", "kind"): "EntranceKind",
+    ("st.railway_track", "kind"): "RailwayKind",
     ("dev.traffic_signal", "state"): "SignalIndication",
     ("dev.traffic_signal", "dir"): "ArrowDir",
     ("dev.pedestrian_signal", "state"): "PedSignalState",
@@ -58,14 +62,9 @@ TYPE_NAMES = {
 }
 FILE_OF_FAMILY = {"ru": "RoadUser", "st": "Structure", "dev": "Device", "sig": "Signal"}
 # Atom ids that are classes/kinds of an entity become constructors of one enumeration per family;
-# the ids below are attributes or relations of that family and are not kinds.
-KIND_ENUMS = {
-    "ru": ("RoadUserClass", {"ru.occupant_count", "ru.rider_posture", "ru.subject", "ru.aggregate"}),
-    "st": ("StructureKind", {"st.lane_direction", "st.lane_adjacency", "st.lane_connectivity", "st.lane_enters", "st.lane_marking",
-                             "st.lane_width", "st.curvature", "st.grade", "st.sight_distance", "st.region_geometry",
-                             "st.on_way", "st.entrance_of", "st.sight_along_way"}),
-    "dev": ("DeviceKind", {"dev.governs", "dev.position", "dev.inoperative"}),
-}
+# the ids of `NOT_KINDS` are attributes or relations of that family and are not kinds.
+KIND_ENUMS = {"ru": ("RoadUserClass", NOT_KINDS["ru"]), "st": ("StructureKind", NOT_KINDS["st"]),
+              "dev": ("DeviceKind", NOT_KINDS["dev"])}
 FAMILIES = ("ru", "kin", "st", "dev", "sig", "env", "rel")
 
 ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_]+)` \| (.*)$")
@@ -74,14 +73,14 @@ DIRSET = re.compile(r"with dir ∈ \{([^}]*)\}")
 REFINES = re.compile(r"\*\*Refines:\*\*\s*(\S+)")
 REFINES_ID = re.compile(r"^`(st\.[a-z_]+)`$")
 ABSTRACT = re.compile(r"^\*\*Abstract\.\*\*")
-CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
+CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|;]+?)(?:;| \*\*Not)|\*\*code\*\*: ([^*|;]+?)(?:;| \*\*Not)")
 
 #: How ATOMS.md writes two units Core's decoder spells otherwise; `boolean` is no quantity.
 ONTOLOGY_SPELLING = {"m/s²": "m/s^2", "1": "ratio"}
 MEASURE_ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel)\.[a-z_]+)` \| `([a-z_]+)` \| ([^|]+?) \|$")
 
-def dim(unit: str, where: str) -> tuple[int, int, int]:
-    """The exponents of metre, second and degree of a unit as ATOMS.md writes it, from Core's units."""
+def dim(unit: str, where: str) -> tuple[int, int, int, int]:
+    """The exponents of metre, second, degree and kilogram of a unit as ATOMS.md writes it, from Core's units."""
     from harness.model import units
     spelled = ONTOLOGY_SPELLING.get(unit, unit)
     if spelled not in units.FACTORS:
@@ -233,12 +232,12 @@ def render_inductive(aid, attr, vals):
     return name, "\n".join(lines)
 
 def render_dimensions(header: str, measures, prim_units) -> str:
-    d = lambda t: f"⟨{t[0]}, {t[1]}, {t[2]}⟩"
+    d = lambda t: f"⟨{t[0]}, {t[1]}, {t[2]}, {t[3]}⟩"
     return (header.replace("{name}", "Dimensions").replace(
                 "Constructors are the attribute values the ontology lists,\n  with no meaning attached; what a value obliges is a rule's business.",
                 "The units the ontology states for its measured atoms and primitives, as\n  dimensions a case is typed with.")
-            + "/-- A physical dimension: the exponents of metre, second and degree. -/\n"
-            + "structure Dim where\n  m : Int\n  s : Int\n  deg : Int\n  deriving DecidableEq, Repr, Inhabited\n\n"
+            + "/-- A physical dimension: the exponents of metre, second, degree and kilogram. -/\n"
+            + "structure Dim where\n  m : Int\n  s : Int\n  deg : Int\n  kg : Int\n  deriving DecidableEq, Repr, Inhabited\n\n"
             + "namespace Dimensions\n"
             + "/-- The unit of each measured atom, by the name a formula reads it with. -/\n"
             + "def ofMeasure : List (String × Dim) := [\n"

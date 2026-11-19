@@ -44,6 +44,21 @@ def scope_line(scope: dict) -> str:
             f"nothing it reports is complete for the run's other laws — out of scope: {out}")
 
 
+def candidate_link_lines(run: Run) -> list[str]:
+    """The operator's lines for the live gaps that may stand for a pending gap carried over from an
+    earlier run without having been filed for it (`deferred_gaps.candidate_links`): a report, which
+    links nothing. A view that cannot be read says so and stops nothing."""
+    from ..store import deferred_gaps
+    try:
+        gl = GapLedger.for_run(paths.GAPS_DIR, run)
+        pairs = deferred_gaps.candidate_links(gl.live_rows() + gl.archived_rows(), deferred_gaps.fixed(run.opts))
+    except Exception as e:                           # a report never stops the run
+        return [f"candidate links to carried-over gaps cannot be computed: {type(e).__name__}: {str(e)[:300]}"]
+    return [f"gap {r['id']} ({r['kind']}, `{r['occurrence']}`) and the carried-over pending gap {deferred_gaps.identity(d)} "
+            f"(`{d['occurrence']}`) are of one kind on the same law text, one span within the other: a candidate link for you to "
+            "confirm or refuse; nothing is merged" for r, d in pairs]
+
+
 def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str], gaps_filed: list[dict],
                    concept_ledger=None, deferred: list[dict] | None = None,
                    coder_narrowings: dict[str, list[dict]] | None = None, held_why: dict[str, str] | None = None) -> None:
@@ -103,6 +118,7 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
         to_user = list(to_user) + [f"gates that counted no attempt so far: {costs['cost_failures']} ended on the evaluation's cost, "
                                    f"{costs['core_panics']} panicked (a Core defect); held for you: "
                                    + (", ".join(f"`{i}`" for i in costs["held_for_operator"]) or "none")]
+    to_user = list(to_user) + candidate_link_lines(run)
     scope = scope_report(run, ledger)
     if scope != "all":
         to_user = list(to_user) + [scope_line(scope)]
@@ -114,6 +130,9 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
                "concepts": concept_ledger.counts() if concept_ledger is not None else {}, "gate_costs": costs,
                "gaps_total": len(gap_rows := GapLedger(paths.GAPS_DIR).rows),
                "gaps_created_by_this_run": sum(1 for g in gap_rows if str(g.get("proposed_in", "")).startswith(run.opts.run_id + "/"))}
+    from . import behaviour_review                   # the review's standing, counted apart from the label acceptances
+    if hasattr(run, "dir") and behaviour_review.required(run):
+        summary["review"] = behaviour_review.counts(run, ledger)
     if scope != "all":
         summary["scope"] = scope
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -123,6 +142,8 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str =
     """The run's terminal status in `summary.json`: `complete` when every law is terminal,
     `infrastructure_failure` when a session could not be launched, `paused_budget` when a limit on the
     run's spend admits no further request (resumed under the same run id once raised),
+    `paused_defect` when one gate failure was repeated across laws in an iteration (resumed under the same
+    run id once the operator has looked),
     `stale_aggregate` when an aggregate's inputs changed under nodes that claim it (a new run is
     needed), `protocol_failure` when the aggregate selection stayed defective twice, `data_integrity_failure` when an audit file cannot be read as written (named, and left as
     it is), `incomplete` when the iteration bound or a stop without progress left a law open.
@@ -138,7 +159,16 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str =
     iteration reached; `pending` lists the laws by what each waits on; `generation` says, computed
     again now, whether every law's generation is complete (`generation_report`). A run whose active
     stage is limited to a scope (`scope_report`) has `scope` with `n/N` and the laws out of it, and
-    its reason begins `scope n/N`; its `complete` is the scope's (`complete_for: "scope"`), never the run's."""
+    its reason begins `scope n/N`; its `complete` is the scope's (`complete_for: "scope"`), never the run's.
+    A run under `review: required` adds `review`, its laws by review standing (`behaviour_review.counts`):
+    strictly reviewed, under a review condition, permission laws generated and not reviewed, awaiting
+    review, a finding to repair, held, and a test stand-in's acceptances apart. `awaiting_review` is a
+    status of a stage with no work of its own while the review stage has work. `spend` is the run's
+    spend with money and the Claude API equivalent apart (`spend_report`).
+    This is the one point where a launch's status is said: `status` names what ended the launch (the
+    launcher's exit status follows it), and `stops` lists every stop still active, that one included,
+    each from its own record with its own clearing condition (`active_stops`); the operator's file
+    `TO_USER.md` opens with the same list. Returns the summary."""
     f = run.dir / "summary.json"
     f.parent.mkdir(parents=True, exist_ok=True)
     summary = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"run": run.opts.run_id}
@@ -147,6 +177,7 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str =
                     "stop": stop, "stage": ((run.load_state() or {}).get("prog") or {}).get("stage") if hasattr(run, "load_state") else None,
                     "pending": pending_lists(run, ledger),
                     "generation": generation_report(run, ledger, status, stop)})
+    summary["spend"] = spend_report(run.dir / "usage.jsonl")
     try:
         scope = scope_report(run, ledger)
     except Exception as e:                           # a stage record that cannot be read: no reading of the scope, never "all"
@@ -159,8 +190,133 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str =
             if not reason.startswith(f"scope {scope['laws']}/{scope['of']}"):
                 summary["stop_reason"] = f"scope {scope['laws']}/{scope['of']}: " + reason + (
                     " — complete for the scope, not for the run" if status == "complete" else "")
+    summary["stops"] = active_stops(run, status, reason)
     f.write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
+    write_stops_section(run, summary["stops"])
     return summary
+
+
+def active_stops(run: Run, status: str = "", reason: str = "") -> list[dict]:
+    """Every stop of the run active now, each `{id, kind, cause, clears}`, read from its own record:
+    - `paused_defect`: a pause for one gate failure repeated across laws that no later launch answered
+      (`shared_failures.unanswered`); a resume answers it, nothing else does;
+    - `budget`: the limit this launch paused on (`status` `paused_budget`, its `reason`), else every
+      limit the run's spend has reached; only raising the named limit lifts it;
+    - `wrong_model`, `wrong_channel`, `bound_violated`, `response_missing`: a stop row of the run's
+      usage file without its acknowledgement; every real send of the run is refused until the operator
+      acknowledges that stop, and that acknowledgement clears it alone;
+    - `unknown_execution`: a review call whose execution is not known; `reconcile` of its law settles
+      the property call, a settlement row settles a request; never an acknowledgement;
+    - `integrity`: this launch's damaged audit file (`status` `data_integrity_failure`), or the review's
+      kept evidence lost or changed; only restoring it clears it.
+    A record that cannot be read is itself listed as an `integrity` stop, never read as no stop."""
+    from types import SimpleNamespace
+    from ..store import budget, jsonl
+    from ..store.shared_failures import PAUSES, unanswered
+    from . import behaviour_review
+    rid = run.opts.run_id
+    out: list[dict] = []
+
+    def unreadable(what: str, e: Exception) -> None:
+        out.append({"id": f"integrity-{what}", "kind": "integrity", "cause": f"{what} cannot be read: {str(e)[:300]}",
+                    "clears": f"restore {what} from the run's checkpoint (it is left as it is), then resume"})
+    try:
+        for n, row in unanswered(run.dir):
+            out.append({"id": f"defect-{n}", "kind": "paused_defect",
+                        "cause": (f"iteration {row.get('iteration')}: one gate failure repeated across laws: "
+                                  + "; ".join(f"`{x}`" for x in row.get("signatures") or []))[:600] + f" (raw lines, nodes and spend in {PAUSES})",
+                        "clears": "find its cause, then resume the run with the same command (these signatures never pause it again); "
+                                  "no acknowledgement of another stop answers it"})
+    except (OSError, jsonl.DataIntegrityError) as e:
+        unreadable(PAUSES, e)
+    try:
+        rows = jsonl.read_strict(run.dir / "usage.jsonl")
+        limits = [] if status == "paused_budget" else budget.spent_limits(run.dir / "usage.jsonl", run.opts)
+    except (OSError, jsonl.DataIntegrityError) as e:
+        rows, limits = [], []
+        unreadable("usage.jsonl", e)
+    if status == "paused_budget" or limits:
+        out.append({"id": "budget", "kind": "budget", "cause": reason if status == "paused_budget" else "; ".join(limits),
+                    "clears": "raise the limit its cause names, explicitly, then resume; no acknowledgement or resume alone raises one"})
+    for x in budget.open_stops(rows):
+        out.append({"id": x["stop"], "kind": x.get("reason"), "cause": (f"`{x['law']}`: " if x.get("law") else "") + str(x.get("why", ""))[:600],
+                    "clears": f"python -m harness review_decide {rid} - acknowledge --stop {x['stop']} --record <record.json> "
+                              "(confirms this stop only)"})
+    states = getattr(run, "review_states", None) or {}
+    if not states:
+        try:
+            states = (jsonl.read_json(run.dir / "state.json", None) or {}).get("review_states") or {}
+        except (OSError, jsonl.DataIntegrityError, ValueError) as e:
+            unreadable("state.json", e)
+    for c in behaviour_review.unknown_calls(states, rows):
+        out.append({"id": f"unknown-{c['law']}" if "law" in c else f"unknown-{c['request']}", "kind": "unknown_execution", "cause": c["text"],
+                    "clears": f"python -m harness review_decide {rid} {c['law']} reconcile --record <record.json>" if "law" in c
+                    else f"a settlement of request {c['request']} in usage.jsonl; it is never sent again"})
+    if status == "data_integrity_failure":
+        out.append({"id": "integrity", "kind": "integrity", "cause": reason,
+                    "clears": "restore the named file from the run's checkpoint (it is left as it is), then resume"})
+    if states:
+        try:
+            lost = behaviour_review.integrity_defects(SimpleNamespace(dir=run.dir, review_states=states))
+        except (OSError, jsonl.DataIntegrityError) as e:
+            lost = [f"the review's kept evidence cannot be read: {str(e)[:300]}"]
+        if lost:
+            out.append({"id": "integrity-evidence", "kind": "integrity", "cause": "; ".join(lost)[:900],
+                        "clears": "restore the kept evidence (a real recovery); no acknowledgement passes it"})
+    return out
+
+
+#: The heading of the section that opens the operator's file with the run's active stops.
+STOPS_HEAD = "## Active stops"
+
+
+def one_line(text) -> str:
+    return " ".join(str(text).split())
+
+
+def write_stops_section(run: Run, stops: list[dict]) -> None:
+    """Open the operator's file with the active stops (`active_stops`), replacing the list written
+    before; with none, the section is removed. Every other section is kept as written."""
+    path = run.dir / "TO_USER.md"
+    old = path.read_text(encoding="utf-8") if path.exists() else ""
+    rest = "".join(x for x in re.split(r"(?m)^(?=## )", old) if not x.startswith(STOPS_HEAD + "\n"))
+    if not stops and rest == old:
+        return
+    head = (STOPS_HEAD + "\n\nEach stop is cleared only by its own condition; clearing one leaves the others standing.\n\n"
+            + "".join(f"- `{x['id']}` ({x['kind']}): {one_line(x['cause'])} — cleared by: {one_line(x['clears'])}\n" for x in stops)
+            + "\n") if stops else ""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(head + rest, encoding="utf-8")
+
+
+def spend_report(usage_file: Path) -> dict:
+    """The run's spend from its one usage file, money apart from the API equivalent, in USD: `cash`
+    (the OpenAI calls at the operator's price table, and the Claude sessions billed to an API key),
+    `claude_api_equivalent` (the cost the Claude CLI reports for sessions of an account login: no
+    money spent per call), `claude_billing_not_recorded` (Claude rows that do not say how they were
+    paid) and `unsettled_requests` (requests whose cost is not known, each counted above at its
+    reservation, never as zero). Each request is counted once, as `budget.fold` counts it."""
+    from ..store import budget, jsonl
+    try:
+        rows = jsonl.read_strict(usage_file)
+    except jsonl.DataIntegrityError as e:
+        return {"unreadable": str(e)[:300]}
+    billing = {r["request"]: r["billing"] for r in rows if r.get("request") and r.get("billing")}
+    groups: dict[str, list[dict]] = {}
+    for r in rows:
+        if r.get("state") in budget.GATE_STATES:
+            continue
+        if (r.get("vendor") or "openai") == "openai":
+            key = "openai"
+        else:
+            key = {"api_key": "claude_api_key", "account": "claude_account"}.get(billing.get(r.get("request")) or r.get("billing"),
+                                                                                 "claude_not_recorded")
+        groups.setdefault(key, []).append(r)
+    spent = {k: sum(budget.fold(v)[0].values()) for k, v in groups.items()}
+    return {"cash": {"openai": round(spent.get("openai", 0.0), 4), "claude_api_key": round(spent.get("claude_api_key", 0.0), 4)},
+            "claude_api_equivalent": round(spent.get("claude_account", 0.0), 4),
+            "claude_billing_not_recorded": round(spent.get("claude_not_recorded", 0.0), 4),
+            "unsettled_requests": len(budget.fold(rows)[1])}
 
 
 def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = "") -> dict:
@@ -170,7 +326,8 @@ def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = ""
     `loop.label_ready`'s conditions), false otherwise, and null, with `reason_if_null`, when it cannot
     be computed (a record or file that cannot be read). The laws are listed by what holds each one:
     a provider it waits on ([node, provider, code]), the planner, the operator (with its tokens),
-    a failure, a revoked acceptance; with the composition cycles a validator found, the providers
+    a failure, a revoked acceptance; a blocked law some of whose nodes are accepted is also listed as
+    `partial`, with those nodes (partially generated, not complete); with the composition cycles a validator found, the providers
     whose laws wait for the operator, the gaps, and the launch's stop; and `scope`, "all" or `{laws: n,
     of: N}` for a stage limited to n of the run's N laws (`complete` stays the whole run's)."""
     if status in ("data_integrity_failure", "stale_aggregate"):   # the state it would be read from is not trusted: never an earlier `true`
@@ -179,7 +336,7 @@ def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = ""
         from ..loop import own_generated, reached_laws, unready
         from ..store.state import Availability
         av = Availability(run, entries=ledger.entries)
-        laws = {"generated": [], "generating": [], "waiting_provider": {}, "to_plan": {}, "blocked": {}, "failed": [], "revoked": {}}
+        laws = {"generated": [], "generating": [], "waiting_provider": {}, "to_plan": {}, "blocked": {}, "partial": {}, "failed": [], "revoked": {}}
         provider_failures, gaps = {}, {}
         for e in ledger.entries.values():
             st = (getattr(run, "label_states", None) or {}).get(e.law, {})
@@ -195,6 +352,9 @@ def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = ""
                 laws["to_plan"][e.law] = "; ".join(e.reasons[:2]) or e.state
             elif e.state == "blocked":
                 laws["blocked"][e.law] = list(e.gaps)
+                kept = [n for n in e.nodes if n in run.all_nodes()]
+                if kept:
+                    laws["partial"][e.law] = kept
                 if e.waits_on:
                     provider_failures[e.law] = list(e.waits_on)
             elif e.state == "failed":
@@ -220,14 +380,28 @@ def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = ""
 def pending_lists(run: Run, ledger: Ledger) -> dict[str, list[str]]:
     """The laws not accepted, by what each waits on: a label check (`awaiting_labels`: generated,
     not checked), a label repair, generation (planned with nodes still to code or held), planning
-    (open or returned), the operator (blocked) or nothing (failed)."""
+    (open or returned), the operator (blocked) or nothing (failed). Under `review: required` a
+    generated law waits first on its review (`awaiting_review`, or `review_repair` for a finding) and
+    only then on its labels; the lists add the review's standing (`behaviour_review.counts`)."""
+    from . import behaviour_review
+    review = behaviour_review.required(run) if hasattr(run, "dir") else False
+    rwork = behaviour_review.work(run, ledger) if review else {}
+    waiting_review = set(rwork.get("review", [])) | set(rwork.get("exempt", []))
     out: dict[str, list[str]] = {k: [] for k in ("awaiting_labels", "awaiting_label_repair", "generating", "to_plan", "blocked", "failed")}
+    if review:
+        out.update(awaiting_review=[], review_repair=[])
     done = set(run.all_nodes()) if hasattr(run, "all_nodes") else set()
     for e in ledger.entries.values():
         st = (getattr(run, "label_states", None) or {}).get(e.law, {}).get("state")
         if e.state == "planned":
-            if st == "awaiting_label_repair":
+            if review and e.law in rwork.get("repair", []):          # a finding is repaired before its labels
+                out["review_repair"].append(e.law)
+            elif st == "awaiting_label_repair":
                 out["awaiting_label_repair"].append(e.law)
+            elif review and e.law in waiting_review:
+                out["awaiting_review"].append(e.law)
+            elif review and e.nodes and all(i in done for i in e.nodes) and not behaviour_review.ready(run, ledger, e.law):
+                out["awaiting_review"].append(e.law)
             elif e.nodes and all(i in done for i in e.nodes):
                 out["awaiting_labels"].append(e.law)
             else:

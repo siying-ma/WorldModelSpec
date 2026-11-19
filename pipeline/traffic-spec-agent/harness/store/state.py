@@ -134,6 +134,13 @@ class Options:
     label_deferred: bool = False                   # with `label_repair`: no training recording is read on this machine; a law whose plan is gated is kept, not accepted, and recorded `awaiting_labels` for a later launch with the recordings
     label_stage: bool = False                      # with `label_repair`: this launch only checks laws on the training recordings and repairs them; it plans and codes nothing new
     label_repair_budget: int = 10                  # label repairs over the whole run, all laws together (a count, not an amount: the run's spending limits still bound every session)
+    review_stage: bool = False                     # a review launch: properties drawn and checked, permission laws exempted; it plans, codes and label-checks nothing
+    behaviour_reviewer: Optional[str] = None       # a review or labels launch may name the reviewer its run's first review entry fixed (none: that one); never a launch that generates
+    review_coverage: str = "strict"                # a review with holes: `strict` (waits for the operator) or `bounded` (review_unverified, carried, never counted reviewed); fixed at the run's start
+    review_repair_attempts: int = 2                # review repairs rolled back per law, kept across restarts and stages
+    review_property_attempts: int = 2              # property sets asked per law (a failed one counted)
+    review_infra_attempts: int = 3                 # per law: a call refused before it was sent, or a check that did not run
+    behaviour_review_budget_usd: Optional[float] = None   # the run-wide limit on the reviewer's model calls (required with a review launch that calls a model)
     dependency: str = "build_usable_v1"            # the cross-law dependency policy (`DEPENDENCY_POLICY`), declared by the code: fixed for the run's life
     source_commit: Optional[str] = None            # the commit of the checkout a new run starts on, recorded in its first stage's code baseline
 
@@ -190,9 +197,11 @@ def acceptance_policy_refusal(fixed, opts) -> str | None:
             + "); start a new run id")
 
 
-#: The fields of a stage's acceptance policy (its `open` row): the run's policy fields and `review`,
-#: whose only legal value is "none" while the harness registers no reviewer implementation.
-STAGE_POLICY_FIELDS = {**POLICY_FIELDS, "review": lambda v: v == "none"}
+#: The fields of a stage's acceptance policy (its `open` row): the run's policy fields and `review`:
+#: "none" (a run made before the review, accepted on its label route alone) or "required" (a law is
+#: accepted only with its review certificate too; the policy then also holds `review_config`: the
+#: coverage and limits the run fixed at its start, and the reviewer its first review entry fixed).
+STAGE_POLICY_FIELDS = {**POLICY_FIELDS, "review": lambda v: v in ("none", "required")}
 
 
 def stage_policy_refusal(stage: dict, opts) -> str | None:
@@ -204,9 +213,15 @@ def stage_policy_refusal(stage: dict, opts) -> str | None:
     bad = (["it is not an object"] if not isinstance(fixed, dict) else
            [f"`{k}` is missing" if k not in fixed else f"`{k}` is {fixed[k]!r}, not a legal value"
             for k, legal in STAGE_POLICY_FIELDS.items() if k not in fixed or not legal(fixed[k])])
+    if not bad and fixed.get("review") == "required":
+        from ..phases import behaviour_review
+        bad = behaviour_review.config_defects(fixed.get("review_config"))
     if bad:
         return f"the active stage `{sid}` records no whole acceptance policy (" + "; ".join(bad) + "); restore its checkpoint"
     why = acceptance_policy_refusal({k: fixed[k] for k in POLICY_FIELDS}, opts)
+    if why is None and fixed.get("review") == "required":
+        from ..phases import behaviour_review
+        why = behaviour_review.config_refusal(fixed["review_config"], opts)
     return f"in the active stage `{sid}`, {why}" if why else None
 
 
@@ -228,6 +243,7 @@ class Run:
     rechecked: dict[str, str] = field(default_factory=dict)   # an inherited record's id → the context it was last found sound on
     pending_notices: list[str] = field(default_factory=list)  # operator notices from a loop start, delivered by the next iteration
     label_states: dict[str, dict] = field(default_factory=dict)   # with `label_repair`: each checked law's routed outcome and the check it rests on
+    review_states: dict[str, dict] = field(default_factory=dict)  # with `review: required`: each law's property sets, active set, certificate and review counts
     law_entries: Optional[dict] = None   # the live law ledger's entries (law ↦ entry), bound by the loop; else read from the ledger file
 
     @classmethod
@@ -281,6 +297,11 @@ class Run:
         return self.dir / "reading.json"
 
     @property
+    def review_evidence_file(self) -> Path:
+        """The run's behaviour-review rows: append-only, read only through the snapshot's pointers."""
+        return self.dir / "review_evidence.jsonl"
+
+    @property
     def rulings_file(self) -> Path:
         """The run's rulings: append-only, every review's, judge's and replay's."""
         return self.dir / "rulings.jsonl"
@@ -319,6 +340,7 @@ class Run:
         self.rechecked = dict(snap.get("rechecked", {}))
         self.pending_notices = list(snap.get("pending_notices", []))
         self.label_states = dict(snap.get("label_states", {}))
+        self.review_states = dict(snap.get("review_states", {}))
         self.iteration = int(snap.get("iteration", 0))
         if snap.get("prog"):
             snap["prog"] = prog_paths(snap["prog"], paths.local)
@@ -389,12 +411,12 @@ class Run:
         reading's, stops the run, naming the id, both meanings and the nodes; no meaning is guessed.
         With `enter` (the loop's start only), an id the reading lacks is entered `proposed` as
         inherited."""
-        from ..model.reading import Reading, same_meaning
+        from ..model.reading import Reading, declaration_entry, declared_items, same_meaning
         targets = [self.reading_file] + ([Path(self.opts.reading)] if getattr(self.opts, "reading", None) else [])
         have = Reading(self.reading_file).declarations()
         conflicts, enter_ids = [], {}
         for nid, d in sorted(self.base_nodes.items()):
-            for x in (d.get("assumptions") or []) + (d.get("intentions") or []):
+            for x in declared_items(d):
                 if not isinstance(x, dict) or not x.get("id"):
                     continue
                 cid, meaning = x["id"], x.get("meaning")
@@ -402,7 +424,7 @@ class Run:
                 if not isinstance(meaning, str) or not meaning.strip():
                     conflicts.append(f"`{cid}` of `{nid}` carries no meaning")
                 elif known is None:
-                    enter_ids[cid] = {"id": cid, "meaning": meaning, "node": nid}
+                    enter_ids[cid] = {**declaration_entry(x), "node": nid}
                 elif not same_meaning(known.get("meaning"), meaning):
                     conflicts.append(f"`{cid}`: `{nid}` means {meaning!r}, the reading or `{known.get('node', 'the reading')}` {known.get('meaning')!r}")
         if conflicts:
@@ -857,7 +879,7 @@ _COMMIT_LOCK = __import__("threading").Lock()
 SNAPSHOT_FIELDS = {"schema": int, "run_id": str, "iteration": int, "ledger": list, "concept_ledger": list, "node_ledger": list,
                    "accepted_nodes": dict, "accepted_concepts": dict, "deferred_nodes": list, "deferred_concepts": list,
                    "aggregate_failures": dict, "fenced": dict, "fence_history": list, "rechecked": dict, "pending_notices": list}
-SNAPSHOT_OPTIONAL = {"label_states": dict, "prog": dict}
+SNAPSHOT_OPTIONAL = {"label_states": dict, "review_states": dict, "prog": dict}
 
 
 def snapshot_defects(snap, run_id: str) -> list[str]:
@@ -897,6 +919,8 @@ def commit_state(run: Run, ledger, concept_ledger, node_ledger, prog: dict | Non
         snap.pop("defective_concepts", None)
         if run.label_states:
             snap["label_states"] = run.label_states
+        if run.review_states:
+            snap["review_states"] = run.review_states
         if prog is not None:
             snap["prog"] = prog_paths(prog, paths.stored)
         jsonl.write_atomic(run.state_file, json.dumps(snap, ensure_ascii=False))

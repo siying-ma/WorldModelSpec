@@ -145,6 +145,7 @@ mutual
     | .cmp l op r => s!"{termStr β l} {opStr op} {termStr β r}"
     | .asm id => s!"assumption {id}"
     | .intent id a b => s!"intention {id} of {argStr β a} at {argStr β b}"
+    | .fact id xs => s!"declared fact {id} of {", ".intercalate (xs.map (argStr β))}"
     | .same a b => s!"{argStr β a} is {argStr β b}"
     | .not _ => "not" | .and _ _ => "and" | .or _ _ => "or" | .implies _ _ => "implies"
     | .always _ => "always (from here on)" | .eventually _ => "eventually (here or later)"
@@ -152,10 +153,13 @@ mutual
     | .holdsFor _ _ s _ => s!"throughout the window behind ({s})" | .within _ _ s _ => s!"within the window ahead ({s})"
     | .untilWithin _ _ s _ _ => s!"until, within the window ahead ({s})" | .atLast _ _ s _ _ => s!"at the last time, in the window behind ({s})"
     | .count _ _ op k => s!"count of rising edges {opStr op} {k}"
+    | .durationWithin w _ _ op b => s!"time held by the samples in the window behind ({termStr β w}) {opStr op} {termStr β b}"
     | .rises _ => "becomes true here (was not at the previous observation)"
     | .definedWhen _ _ => "defined when"
     | .derived c args _ => s!"{c}({", ".intercalate (args.map (argStr β))})"
     | .rule id _ => s!"rule {id} complied with" | .ruleApplies id _ => s!"rule {id} applies"
+    | .ruleCase id n _ => s!"case {n} of rule {id} holds"
+    | .requiredBy k w => s!"some rule of the library requires {k} of {w}" | .lawful sc w => s!"{w} complies with every rule of {repr sc} engaged for it"
     | .existsUser v _ => s!"some road user {v}" | .forallUser v _ => s!"every road user {v}"
     | .existsRegion k v _ => s!"some region {v} of kind {argStr β k}" | .forallRegion k v _ => s!"every region {v} of kind {argStr β k}"
     | .existsDevice k v _ => s!"some device {v} of kind {argStr β k}" | .forallDevice k v _ => s!"every device {v} of kind {argStr β k}"
@@ -217,6 +221,7 @@ def fkids : Formula → List Formula
   | .and a b | .or a b | .implies a b | .until a b | .since a b | .definedWhen a b => [a, b]
   | .holdsFor _ _ _ a | .within _ _ _ a => [a]
   | .untilWithin _ _ _ a b | .atLast _ _ _ a b | .count a b _ _ => [a, b]
+  | .durationWithin _ _ a _ _ => [a]
   | .existsUser _ a | .forallUser _ a | .existsRegion _ _ a | .forallRegion _ _ a
   | .existsDevice _ _ a | .forallDevice _ _ a => [a]
   | _ => []
@@ -1005,6 +1010,9 @@ partial def expandSrc (cs : List Concept) (fuel : Nat) (owner path : String) (ca
   | .untilWithin m d s a b => do let d' ← et d; two (.untilWithin m d' s) a b
   | .atLast m d s g a => do let d' ← et d; two (.atLast m d' s) g a
   | .count e s op k => two (fun e' s' => .count e' s' op k) e s
+  | .durationWithin w g a op b => do
+    let w' ← et w; let g' ← et g; let b' ← et b
+    one (fun a' => .durationWithin w' g' a' op b') a
   | .rises a => one .rises a
   | .definedWhen p a => two .definedWhen p a
   | .existsUser v a => one (.existsUser v) a
@@ -1115,7 +1123,7 @@ def firstTrunc (A : Array R) (a b : Nat) : Option Nat := firstIn a b fun k => (A
 def ownOp : Formula → String
   | .holdsFor .. => "holdsFor" | .within .. => "within" | .untilWithin .. => "untilWithin" | .atLast .. => "atLast"
   | .since .. => "since" | .until .. => "until" | .always .. => "always" | .eventually .. => "eventually"
-  | .rises .. => "rises" | .count .. => "count" | _ => ""
+  | .rises .. => "rises" | .count .. => "count" | .durationWithin .. => "duration_within" | _ => ""
 
 /-- From `φ` at observation `j`, every operator whose own window truncation the value there carries:
     the walk follows, operator by operator, the operands and observations whose reasons the Core
@@ -1292,6 +1300,7 @@ partial def walk (c : SemCtx) (j : Nat) (xp : String) (pt : PT) (φ : Formula) (
     let (inner, f) ← seq ((0, a, j) :: (if j == 0 then [] else [(0, a, j - 1)])) fuel
     pure (if j == 0 then Walked.merge [own "rises", inner] else inner, f)
   | .count .. => pure (stop "a count of rising edges: the walk does not follow it", fuel)
+  | .durationWithin .. => pure (stop "a sampled duration: the walk does not follow it", fuel)
   | .derived n _ _ =>
     pure (if (truncOps r).all (·.startsWith "prim_") then { hits := [{ xp, pt, φ, c, j, op := s!"primitive {n}" }] }
           else stop s!"a call of {n} the walk does not open", fuel)
@@ -1305,6 +1314,7 @@ partial def walk (c : SemCtx) (j : Nat) (xp : String) (pt : PT) (φ : Formula) (
           then { hits := (ops.filter (· != "heading_since")).map (fun o => { xp, pt, φ, c, j, op := s!"quantity {o}" }) ++ hsHits }
           else stop "a window inside a quantity (a selection or an aggregate): its source is not traced", fuel)
   | .rule id _ | .ruleApplies id _ => pure (stop s!"a window of the composed rule {id}: its source is not traced", fuel)
+  | .requiredBy .. | .lawful .. => pure (stop "a window of a rule of the library a rule-set operator reads: its source is not traced", fuel)
   | _ => pure (stop "an operator the walk does not follow", fuel)
 
 def unitTag (u : PUnit') : String :=

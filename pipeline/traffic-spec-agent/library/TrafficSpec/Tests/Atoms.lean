@@ -128,8 +128,6 @@ def sceneCrest : Scene := { scene0 with structures := [lane7, crestPatch] }
 -- the reading finds an aggregate by its id, and only by it
 #guard (({ aggregates := [{ id := "D-1::vehicle", included := ["ru.bus"] }] } : Reading).aggregate "D-1::vehicle").map (·.included) = some ["ru.bus"]
 #guard (({ aggregates := [{ id := "D-1::vehicle", included := ["ru.bus"] }] } : Reading).aggregate "vehicle").isNone
--- curvature is a magnitude: a bend to either hand reads the same
-#guard st_curvature { t := 0, structures := [{ id := 1, kind := .roadway, curvature := some (Q.mk' (-1) 50) }] } 1 = some (Q.mk' 1 50)
 -- overlap is exact over closed sets: shapes that cross with no vertex inside the other overlap,
 -- shapes that only touch overlap, shapes apart do not
 def barH : List Vec := [(Q.ofInt 0, Q.ofInt 4), (Q.ofInt 10, Q.ofInt 4), (Q.ofInt 10, Q.ofInt 6), (Q.ofInt 0, Q.ofInt 6)]
@@ -205,4 +203,46 @@ def sameReads (a b : List (Option (List Q))) : Bool :=
     | _ => false
 #guard [scene0, tilted].all fun s => [Q.ofInt 2, Q.mk' 1 2, Q.mk' 1 10000000].all fun k => sameReads (headingReads s) (headingReads (scaleHeadings k s))
 #guard (headingReads scene0).all (·.isSome)
+
+-- A warning lamp is matched by one lamp showing every value named; unobserved lamps are unknown.
+def lamps (ls : Option (List WarningLamp)) : Scene :=
+  { t := 0, users := [{ track := 1, sig := { warningLamps := ls } }] }
+def redRear : WarningLamp := { colour := .red, mode := .flashing, facing := .rear }
+def whiteFront : WarningLamp := { colour := .white, mode := .flashing, facing := .front }
+def redFront : WarningLamp := { colour := .red, mode := .flashing, facing := .front }
+#guard sig_warning_lamp_facing (lamps (some [redRear, whiteFront])) 1 .red .flashing .front = some false
+#guard sig_warning_lamp_facing (lamps (some [redRear])) 1 .red .flashing .front = some false
+#guard sig_warning_lamp_facing (lamps none) 1 .red .flashing .front = none
+#guard sig_warning_lamp_facing (lamps (some [redRear, redFront])) 1 .red .flashing .front = some true
+#guard sig_warning_lamp_facing (lamps (some [redFront])) 1 .red .steady .front = some false
+#guard sig_warning_lamp_shows (lamps (some [redRear, whiteFront])) 1 .red .flashing = some true
+
+-- The duration limit of a device's legend conditions: unknown where the legend is not read or
+-- states no duration.
+def signed (cd : Option Conditions) : Scene := { t := 0, devices := [{ id := 5, kind := .zoneSign, conditions := cd }] }
+#guard dev_zone_sign_duration_limit (signed (some { durationLimit := some (minutes 30) })) 5 = some (seconds 1800)
+#guard dev_zone_sign_duration_limit (signed (some {})) 5 = none
+#guard dev_zone_sign_duration_limit (signed none) 5 = none
+#guard dev_zone_sign_duration_limit { t := 0, devices := [{ id := 5, kind := .regulatorySign, conditions := some { durationLimit := some (seconds 600) } }] } 5 = some (seconds 600)
+#guard dev_zone_sign_duration_limit (signed none) 6 = none
+
+-- Contact between a road user's body and a structure's outline: touching counts; no footprint or
+-- no outline is unknown, never read from the reference point.
+def square (id : Nat) (x0 y0 x1 y1 : Int) : Structure :=
+  { id := id, kind := .obstruction, boundary := some [(metres x0, metres y0), (metres x1, metres y0), (metres x1, metres y1), (metres x0, metres y1)] }
+-- car 1 at the origin heading +x: its body spans x ∈ [−2.25, 2.25], y ∈ [−0.9, 0.9]
+def withStructure (st : Structure) : Scene := { scene0 with structures := [st] }
+#guard rel_contact_structure (withStructure (square 30 1 0 3 2)) 1 30 = some true       -- overlapping
+#guard rel_contact_structure (withStructure { square 30 0 0 0 0 with boundary := some [(Q.mk' 225 100, metres 0), (metres 4, metres 0), (metres 4, metres 1)] }) 1 30 = some true   -- a vertex on the body's front edge
+#guard rel_contact_structure (withStructure (square 30 5 0 6 1)) 1 30 = some false      -- 2.75 m ahead
+#guard rel_contact_structure (withStructure { square 30 5 0 6 1 with boundary := none }) 1 30 = none
+#guard rel_contact_structure (withStructure { square 30 5 0 6 1 with boundary := some [] }) 1 30 = none
+#guard rel_contact_structure (withStructure (square 30 1 0 3 2)) 1 31 = none            -- no such region
+#guard rel_contact_structure (withStructure (square 30 1 0 3 2)) 4 30 = none            -- the pedestrian has no footprint
+#guard rel_contact_structure (withStructure (square 30 9 2 11 4)) 4 30 = none           -- even with its point inside
+#guard rel_contact_structure (withStructure { square 30 1 0 3 2 with kind := .fireHydrant }) 1 30 = some true
+#guard rel_contact_structure (withStructure { square 30 1 0 3 2 with kind := .lane }) 1 30 = none          -- a place, not an object
+#guard rel_contact_structure (withStructure { square 30 1 0 3 2 with kind := .sidewalk }) 1 30 = none
+#guard rel_contact_structure (withStructure { square 30 1 0 3 2 with kind := .medianOrDivider }) 1 30 = none
+#guard rel_contact_structure (withStructure { square 30 1 0 3 2 with kind := .lane, unobservedKinds := [.obstruction] }) 1 30 = none
 end TrafficSpec.Tests

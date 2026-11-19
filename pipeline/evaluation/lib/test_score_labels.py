@@ -27,7 +27,7 @@ class ScoreTests(unittest.TestCase):
             p = Path(tmp) / "r.jsonl"
             p.write_text(report([("A", "supported"), ("B", "partial"), ("C", "unsupported")],
                                 [("A", "compliant"), ("A", "violated"), ("B", "compliant")]))
-            self.assertEqual(rule_verdicts(p), {"A": ("violated", False), "B": ("compliant", False), "C": ("unknown", False)})
+            self.assertEqual(rule_verdicts(p), {"A": ("violated", False, False), "B": ("compliant", False, False), "C": ("unknown", False, False)})
 
     def test_law_joins_its_rules_and_labels_map(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -50,6 +50,25 @@ class ScoreTests(unittest.TestCase):
             self.assertIn("c3: no rule for L2", text)
             self.assertIn("c4: no report", text)
             self.assertIn("all\t2 / 2", text)
+
+    def test_partial_coverage_is_tallied_apart(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "reports").mkdir()
+            (tmp / "cases.csv").write_text("case_id,law_id,expected_label\nc1,L1,compliant\nc2,L2,compliant\n")
+            (tmp / "registered.json").write_text(json.dumps({"rules": {"L1_o1": {"law": "L1"}, "L2_o1": {"law": "L2"}}}))
+            lines = [{"kind": "rule", "rule": "L1_o1", "support": "supported", "surrogate": False, "abstractions": ["x_abstraction"]},
+                     {"kind": "grounding", "rule": "L1_o1", "episode": {"verdict": "compliant", "reasons": []}}]
+            (tmp / "reports/c1.jsonl").write_text("\n".join(json.dumps(l) for l in lines) + "\n")
+            (tmp / "reports/c2.jsonl").write_text(report([("L2_o1", "supported")], [("L2_o1", "compliant")]))
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                main(tmp / "cases.csv", tmp / "reports", tmp / "registered.json")
+            text = out.getvalue()
+            self.assertIn("c1\tL1\tcompliant\tcompliant\tyes\tno\tyes", text)
+            self.assertIn("L1\t1 / 1\tpartial coverage", text)
+            self.assertIn("all\t1 / 1", text)                            # the full tally holds L2 only
+            self.assertIn("partial coverage (not full compliance)\t1 / 1", text)
 
 
 if __name__ == "__main__":

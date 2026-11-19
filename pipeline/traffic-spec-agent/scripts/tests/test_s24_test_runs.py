@@ -37,7 +37,7 @@ class TestRun(unittest.TestCase):
 
     def training(self, f):
         self.assertEqual(f.drive(1, run_id="A", laws=laws(f, "A", ["L-1"]), label_repair=True, label_deferred=True),
-                         ["awaiting_labels"])
+                         ["awaiting_review"])   # a new run requires the review: generation hands to it
 
     def test_a_test_run_starts_in_t0_resumes_there_and_is_scored(self):
         with Fixture(world(), staged=True) as f:

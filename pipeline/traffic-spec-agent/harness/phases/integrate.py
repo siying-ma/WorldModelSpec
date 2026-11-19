@@ -262,8 +262,10 @@ def context_parts(run: Run, kind: str, ident: str, reading: Reading, base: dict,
     `base` (Core, the ontology, the review configuration). `record`
     and `catalogue` (`{"nodes", "concepts"}`) give a candidate not yet accepted and the records it
     may use; a candidate's own files are left out (its session writes them; the gate's candidate
-    digest holds them). With `semantic`, the obligations recorded on it are part of it too. A cycle
-    is rejected before expansion."""
+    digest holds them). A node that reads a rule-set operator (`rule_sets`) reads every other node of
+    the library the operator may range over, so the records and files of those nodes are part of its
+    context too (`set_members`): a member added, changed or fenced changes it. With `semantic`, the
+    obligations recorded on it are part of it too. A cycle is rejected before expansion."""
     from ..model.blueprint import ConceptRecord
     if ident in seen:
         raise ValueError(f"a dependency cycle through `{ident}`")
@@ -296,6 +298,8 @@ def context_parts(run: Run, kind: str, ident: str, reading: Reading, base: dict,
            "reading": {p: [(reading.params.get(p) or {}).get("value"), (reading.params.get(p) or {}).get("unit"),
                            "proposed" if (reading.params.get(p) or {}).get("proposed") else "reviewed"] for p in sorted(set(params))},
            "aggregates": {a: _digest(reading.aggregate(a)) for a in aggs}, **base}
+    if kind == "node" and rec.get("rule_sets"):
+        out["set_members"] = set_members(nodes, fenced, {ident})
     if kind == "node" and Node(rec).definition_sources():
         from ..model import definitions as definitions_mod
         out["sources"] = {s: (definitions_mod.source_digest(r) if (r := definitions_mod.source_record(run, s)) else None)
@@ -317,6 +321,19 @@ def borrowed_words_defects(run: Run, n: Node) -> list[str]:
         elif " ".join(str(c.get("quote", "")).split()) not in " ".join(rec["text"].split()):
             out.append(f"the definition source `{c.get('source')}` of span {c.get('span')} no longer holds the quoted words")
     return out
+
+
+def set_members(nodes: dict[str, dict], fenced: dict, exclude: set[str]) -> dict:
+    """What a rule-set operator may read of the library: every node but `exclude`, by the digest of its
+    record, of its files, and its fence."""
+    return {m: [_digest(semantic_record(r)), _files_digest((nodeid.rule_path(m), nodeid.witness_path(m))), (fenced.get(m) or {}).get("reason")]
+            for m, r in sorted(nodes.items()) if m not in exclude}
+
+
+def library_digest(run: Run, exclude: set[str]) -> str:
+    """The digest of `set_members` of the run's library now: what a law reading a rule-set operator was
+    label-checked against."""
+    return _digest(set_members(run.all_nodes(), getattr(run, "fenced", {}) or {}, exclude))[:24]
 
 
 def context_version(run: Run, kind: str, ident: str, reading: Reading, base: dict, seen: frozenset = frozenset(),

@@ -9,7 +9,7 @@ from ..agents import render, session
 from ..store import jsonl, paths
 from ..store.gaps import GapLedger
 from ..model.mapping import MappingIndex
-from ..model.reading import Reading
+from ..model.reading import Reading, declared_items
 from ..lean import surface
 from . import review as review_phase
 from ..model import blueprint
@@ -45,21 +45,26 @@ def parameter_catalogue(reading: Reading) -> str:
     return "\n".join(out) + "\n"
 
 def declaration_catalogue(reading: Reading, pending: list[dict] | None = None) -> str:
-    """The one catalogue of declared-fact ids, assumptions (`asm.*`) and declared intentions
-    (`int.*`), with their meanings: the reading's, then those the nodes of earlier batches of this
-    iteration declared. A node reuses an id whose meaning is its words' meaning, and proposes a new
-    id with its meaning only where none is."""
-    rows = {i: (" ".join(str(d.get("meaning", "")).split()), "reviewed" if not d.get("proposed") else "proposed")
+    """The one catalogue of declared-fact ids, assumptions (`asm.*`), declared intentions (`int.*`)
+    and declared facts (`fact.*`), with their meanings and a fact's kind, subjects and what a source
+    must hold to declare it true and false: the reading's, then those the nodes of earlier batches of
+    this iteration declared. A node reuses an id whose meaning is its words' meaning, and proposes a
+    new id with its meaning only where none is."""
+    ws = lambda x: " ".join(str(x or "").split())
+    def row(d: dict, status: str) -> tuple:
+        terms = (f" · kind {d.get('kind')}, subjects {d.get('subjects')}; true when: {ws(d.get('true_when'))}; "
+                 f"false when: {ws(d.get('false_when'))}") if str(d.get("id")).startswith("fact.") else ""
+        return (ws(d.get("meaning")) + terms, status)
+    rows = {i: row(d, "reviewed" if not d.get("proposed") else "proposed")
             for i, d in (reading.declarations() if hasattr(reading, "declarations") else {}).items()}
     for n in pending or []:
-        for d in n.get("assumptions", []) + n.get("intentions", []):
-            if isinstance(d, dict) and d.get("id") and str(d.get("meaning") or "").strip():
-                rows.setdefault(d["id"], (" ".join(str(d["meaning"]).split()), f"declared this iteration by {n.get('node_id')}"))
+        for d in declared_items(n):
+            if d.get("id") and ws(d.get("meaning")):
+                rows.setdefault(d["id"], row(d, f"declared this iteration by {n.get('node_id')}"))
+    head = "### Declared-fact ids (assumptions `asm.*`, declared intentions `int.*`, declared facts `fact.*`)"
     if not rows:
-        return ("\n### Declared-fact ids (assumptions `asm.*`, declared intentions `int.*`)\n(the catalogue is empty: an id a node "
-                "needs is declared on its span with its `meaning`)\n")
-    out = ["", "### Declared-fact ids (assumptions `asm.*`, declared intentions `int.*`): reuse an id whose meaning is the words' meaning",
-           "| id | meaning | status |", "|---|---|---|"]
+        return f"\n{head}\n(the catalogue is empty: an id a node needs is declared on its span with its `meaning`)\n"
+    out = ["", f"{head}: reuse an id whose meaning is the words' meaning", "| id | meaning | status |", "|---|---|---|"]
     out += [f"| `{i}` | {m} | {st} |" for i, (m, st) in sorted(rows.items())]
     return "\n".join(out) + "\n"
 

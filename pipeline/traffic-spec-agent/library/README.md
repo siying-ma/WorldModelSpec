@@ -28,10 +28,13 @@ layer or of the layers above it, and every file imports only files above it in t
 |  | `Foundations/Unknown.lean` | `UnknownReason` (why a value is `u`), `R` = value + reasons, `QR` = quantity or reason, `RangeAgg`. |
 |  | `Foundations/Temporal.lean` | Whole-trace operators (always, eventually, until, since, holdsFor, within, untilWithin, edge counts, distance-while), one pass each. |
 |  | `Foundations/Accumulate.lean` | A rate integrated since a condition last became true (`sinceRiseIntegralAll`, the heading change of `Term.headingSince`), one forward pass, with its specification over `Rat` and the theorems that characterise its start, values and unknowns. |
+|  | `Foundations/SampledDuration.lean` | The time a condition held in the window behind each observation, by the trace's samples, as a lower and an upper bound (`Formula.durationWithin`), one forward pass, with its specification over `Rat` and the theorems: the bounds are the specification's, every completion of the samples lies within them, the worst window ends at an observation, and they agree with `Accumulate.integral` where every interval is decided. |
 | `Vocab/` | `Vocab/Ontology/Ids.lean` | `atomIds`, `primitiveIds`. **Generated.** |
 |  | `Vocab/Ontology/{RoadUser,Structure,Device,Signal}.lean` | Enumerations the ontology lists (`RoadUserClass`, `StructureKind`, `DeviceKind`, `SignalIndication`, …) with their string codecs. **Generated.** |
 |  | `Vocab/World.lean` | The scene as data: `Scene`, `RoadUser`, `Kin`, `Structure`, `LaneInfo`, `Device`, `Env`, `MeasuredRelation`, `Trace`. Every observable field is `Option`; `none` means *not observed*. |
 |  | `Vocab/Assumptions.lean` | `asm.*` ids: legal region and calendar classes a scene supplies true, false or not at all. |
+|  | `Vocab/Intentions.lean` | `int.*` ids: what a source declares a road user intends at a target region. |
+|  | `Vocab/Facts.lean` | `fact.*` ids: what a source declares of one or two road users, of a road user at a region, or (a map record) of a region, true, false or not at all. |
 |  | `Vocab/Atoms.lean` | One accessor per atom id (§2). |
 |  | `Vocab/RegionTable.lean` | What a region quantifier reads of a trace, built once per trace and kind and shared by the context: each scene's structures by id, each kind's candidate regions and kind rows; proved equal to the direct reading. |
 |  | `Vocab/Params.lean` | `Reading`: parameter values, operationalizations, legal aggregates (§2). |

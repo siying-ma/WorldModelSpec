@@ -22,6 +22,12 @@ the defined terms its text uses. This finite dependency graph supplies the poste
 to interpret nested words; it does not make an unrelated definition elsewhere in the same code
 applicable.
 
+The operator may declare nested edges that are not expanded (`withhold_nested_edges`, empty by
+default): each is a pair of posted definition ids, the definition whose words use a term (`from`)
+and the definition that term resolves to (`to`). Exactly the declared edges are withheld: such an
+edge is recorded `withheld` and not traversed, so the `to` definition joins neither the sources nor
+the digest of what reaches it only through that edge. Every other edge is expanded as above.
+
 For a term a law uses, the first step that finds a candidate decides:
 - `inline_or_section`: a definition the law cites inline; else a section-only definition of the
   law's own section;
@@ -101,7 +107,8 @@ class PrecedenceError(ValueError):
 def load_precedence(path: Path | None = None) -> dict:
     """The declared precedence (from `path`, by default the operator's file); `PrecedenceError` names
     the first code that declares `fallback_chapters` without a `fallback`, or whose `fallback_chapters`
-    is not a non-empty list of distinct non-empty strings."""
+    is not a non-empty list of distinct non-empty strings, and refuses a malformed
+    `withhold_nested_edges` (`withheld_edges`)."""
     path = Path(path or DEFAULT_PRECEDENCE)
     config = json.loads(path.read_text(encoding="utf-8"))
     for name, code in config.get("codes", {}).items():
@@ -120,7 +127,22 @@ def load_precedence(path: Path | None = None) -> dict:
                                   "non-empty chapter name")
         if len(set(chapters)) != len(chapters):
             raise PrecedenceError(f"{path}: code `{name}` declares `fallback_chapters` {chapters!r}, which names a chapter twice")
+    withheld_edges(config, path)
     return config
+
+
+def withheld_edges(config: dict, path: Path | str = "precedence") -> set[tuple[str, str]]:
+    """The declared `withhold_nested_edges` as (from, to) pairs; `PrecedenceError` unless the value
+    is a list of distinct objects with exactly the keys `from` and `to`, each a non-empty string."""
+    edges = config.get("withhold_nested_edges", [])
+    ok = isinstance(edges, list) and all(
+        isinstance(e, dict) and set(e) == {"from", "to"} and all(isinstance(e[k], str) and e[k].strip() for k in ("from", "to"))
+        for e in edges)
+    pairs = [(e["from"], e["to"]) for e in edges] if ok else []
+    if not ok or len(set(pairs)) != len(pairs):
+        raise PrecedenceError(f"{path}: `withhold_nested_edges` {edges!r} is not a list of distinct "
+                              "{\"from\": <definition id>, \"to\": <definition id>} edges (leave it empty to expand every edge)")
+    return set(pairs)
 
 
 def precedence_digest(path: Path | None = None) -> str:
@@ -312,9 +334,12 @@ def _dependencies(first_chain: list[str], defs_by_id: dict[str, dict], cands: li
     The graph is flattened in deterministic discovery order. A back edge is recorded as `cycle`
     and never traversed again; shared dependencies likewise expand only once. The term a record
     itself defines is excluded from its body scan, so its quoted definiendum is not a self-use.
+    An edge the precedence declares in `withhold_nested_edges` is recorded `withheld` and never
+    traversed.
     """
     by_term, by_id = _indexes(cands)
     all_terms = sorted(by_term)
+    withhold = withheld_edges(config)
     expanded: set[str] = set()
     out: list[dict] = []
 
@@ -331,6 +356,9 @@ def _dependencies(first_chain: list[str], defs_by_id: dict[str, dict], cands: li
                 continue
             row = {"from": source, **_resolve_term(term, where, inline, by_term, by_id, config, posted), **_found(how, said)}
             reached = list(row.get("chain") or [])
+            if row["status"] == "resolved" and (source, row["definition"]) in withhold:
+                out.append({**row, "status": "withheld"})
+                continue
             back = next((d for d in reached if d in ancestors + (source,)), None)
             if back:
                 row["cycle"] = list(ancestors + (source, back))

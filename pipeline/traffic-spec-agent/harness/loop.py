@@ -23,8 +23,10 @@ from .model import definitions as definitions_mod
 from .store.ledger import TERMINAL, JUDGE_STAGES
 from .store import deferred_gaps, jsonl, stages
 from .store.paths import run_is_new
-from .store.budget import BudgetPaused
-from .model.reading import Reading
+from .store.budget import BudgetPaused, RunPaused, RunStopped
+from .store import shared_failures
+from .store.shared_failures import DefectPaused, SharedFailures
+from .model.reading import Reading, declaration_entry, declared_items
 from .store.state import (Availability, FENCED, MISSING, OPERATOR, PLANNER_CODES, SUPERSEDED, UNPUBLISHED, USABLE, base_code)
 from .store.state import (Options, Run, RUN_VERSION, acceptance_policy, acceptance_policy_refusal, chain_version_refusal, commit_state,
                           policy_defects, saved_version_refusal, snapshot_defects, stage_policy_refusal)
@@ -161,9 +163,10 @@ def context_base(opts: Options, semantic: dict) -> dict:
 #: The whole-number options of a launch, each with its least legal value: a value below it is refused,
 #: never raised to it.
 COUNT_OPTIONS = {"plan_batch": 1, "workers": 1, "plan_turns": 4, "concept_attempts": 1, "node_attempts": 1,
-                 "reviewer_max_output_tokens": 1, "review_checks": 0, "review_submissions": 1}
+                 "reviewer_max_output_tokens": 1, "review_checks": 0, "review_submissions": 1,
+                 "review_repair_attempts": 0, "review_property_attempts": 1, "review_infra_attempts": 1}
 #: The options a launch keeps as floats once they are found legal (`normalise_options`).
-FLOAT_OPTIONS = ("openai_budget_usd", "aggregate_verifier_budget_usd", "session_timeout")
+FLOAT_OPTIONS = ("openai_budget_usd", "aggregate_verifier_budget_usd", "behaviour_review_budget_usd", "session_timeout")
 
 
 def check_options(opts: Options) -> str | None:
@@ -182,19 +185,26 @@ def check_options(opts: Options) -> str | None:
     if isinstance(t, bool) or not isinstance(t, (int, float)) or not math.isfinite(float(t)) or float(t) < 0:
         return f"--session_timeout must be a finite, non-negative number of seconds (given {t!r})"
     for k in ("session_budget_usd", "repair_budget_usd", "judge_budget_usd", "openai_budget_usd", "claude_budget_usd",
-              "total_budget_usd", "aggregate_verifier_budget_usd"):
+              "total_budget_usd", "aggregate_verifier_budget_usd", "behaviour_review_budget_usd"):
         x = getattr(opts, k, None)
         if x is not None and (isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(float(x)) or float(x) < 0):
             return f"--{k} must be a finite, non-negative amount in USD (given {x!r})"
-    if opts.label_deferred and opts.label_stage:
-        return "--label_deferred and --label_stage are the two stages of a split run: give one"
+    if sum(bool(getattr(opts, k, False)) for k in ("label_deferred", "review_stage", "label_stage")) > 1:
+        return "--label_deferred, --review_stage and --label_stage are the three stages of a split run: give one"
+    if getattr(opts, "review_stage", False) and not opts.label_repair:
+        return "--review_stage is a stage of a run with --label_repair"
+    if getattr(opts, "review_stage", False) and opts.label_dataset:
+        return "--review_stage reads no training recording: do not give --label_dataset"
+    from .phases import behaviour_review
+    if getattr(opts, "review_coverage", "strict") not in behaviour_review.COVERAGE_POLICIES:
+        return f"--review_coverage must be one of {', '.join(behaviour_review.COVERAGE_POLICIES)} (given {opts.review_coverage!r})"
     if (opts.label_deferred or opts.label_stage) and not opts.label_repair:
         return "--label_deferred and --label_stage are stages of a run with --label_repair"
     if opts.label_deferred and opts.label_dataset:
         return "--label_deferred reads no training recording: do not give --label_dataset"
-    if opts.label_repair and not opts.label_deferred and not opts.label_dataset:
+    if opts.label_repair and not opts.label_deferred and not getattr(opts, "review_stage", False) and not opts.label_dataset:
         return "--label_repair needs the training recordings (--label_dataset)"
-    if (opts.label_deferred or opts.label_stage) and (opts.base_run or opts.budget_peers):
+    if (opts.label_deferred or opts.label_stage or getattr(opts, "review_stage", False)) and (opts.base_run or opts.budget_peers):
         return ("a split run (--label_deferred / --label_stage) hands its state between machines, and its handoff does not "
                 "carry a base_run chain or the runs of budget_peers: run it without them")
     if opts.aggregate_verifier_model:
@@ -213,7 +223,8 @@ def launch_refusal(opts: Options) -> str | None:
     reading copy or the library's owner is written. The acceptance policy given must be whole
     (`policy_defects`, the test a resume applies to the saved one), never coerced; the concept reviewer
     and the aggregate verifier must be named, the reviewer a second vendor's model with its key set;
-    a run-wide Claude or total limit needs every role's cap; and `check_options`."""
+    a run-wide Claude or total limit needs every role's cap; a reviewer is named only by a review or
+    labels launch, and registered; and `check_options`."""
     bad = policy_defects(acceptance_policy(opts))
     if bad:
         return ("the acceptance policy given is not legal (" + "; ".join(bad) + "): pass --label_repair as a flag, "
@@ -222,6 +233,15 @@ def launch_refusal(opts: Options) -> str | None:
         return "--reviewer_model is required: the concept review is run by a second vendor's model"
     if not opts.aggregate_verifier_model and not opts.dry_run:
         return "--aggregate_verifier_model is required: the aggregate verifier is configured on its own"
+    from .phases import behaviour_review
+    if opts.behaviour_reviewer and launch_kind(opts) not in ("review", "labels"):
+        return ("a launch that generates names no --behaviour_reviewer: the run's reviewer is fixed when the run enters its review "
+                "stage (stage enter --kind review --behaviour_reviewer <name>)")
+    if opts.behaviour_reviewer and opts.behaviour_reviewer not in behaviour_review.IMPLEMENTATIONS:
+        return f"--behaviour_reviewer {opts.behaviour_reviewer!r} is not registered in this harness"
+    if opts.review_stage and not opts.dry_run and (opts.behaviour_review_budget_usd is None or opts.total_budget_usd is None):
+        return ("a review launch calls the reviewer's models: give --behaviour_review_budget_usd and --total_budget_usd "
+                "(no global default is an unlimited one)")
     uncapped = [k for k in ("session_budget_usd", "repair_budget_usd", "judge_budget_usd") if getattr(opts, k) is None]
     if (opts.claude_budget_usd is not None or opts.total_budget_usd is not None) and uncapped:
         return (f"--claude_budget_usd and --total_budget_usd need {', '.join('--' + k for k in uncapped)}: "
@@ -289,7 +309,7 @@ def admission_preflight(run: Run, opts: Options, reading, base: dict, context_ba
     fenced, or calls or composes a fenced record, with the subset continuation that re-plans those
     nodes' laws; when a check could not be made (a gate or program that did not run, a law in no
     corpus); a fenced concept alone stops nothing, since its successor comes through the planner of
-    the laws that need it. A split run (`label_deferred`, `label_stage`, or a handoff manifest) has no
+    the laws that need it. A split run (`label_deferred`, `review_stage`, `label_stage`, or a handoff manifest) has no
     supported way to replace a kept node under its id, and is not stopped for one: with `ledger`,
     each law whose kept node a gate or context check rejected is held on `decision:<law>`, each law
     whose kept node is fenced through it on that root's token (`split_fence_routes`), uncharged, an
@@ -316,7 +336,7 @@ def admission_preflight(run: Run, opts: Options, reading, base: dict, context_ba
     kept = sorted(i for i in run.fenced if i in run.all_nodes())
     if not kept:
         return notes, ""
-    split = opts.label_deferred or opts.label_stage or (run.dir / "handoff" / "manifest.json").exists()
+    split = opts.label_deferred or opts.label_stage or opts.review_stage or (run.dir / "handoff" / "manifest.json").exists()
     if split and ledger is not None:
         return notes + split_fence_routes(run, ledger, kept), ""
     lines = [f"`{i}`: {run.fenced[i].get('evidence', '')[:240]}" for i in kept]
@@ -1206,13 +1226,13 @@ def _item_task(code, report, review=None):
         if v.verdict == "SCOPE_VIOLATION":
             return v, review_phase.DependencyReport("none"), None, None
         dep = report()
-    except BudgetPaused as e:
+    except RunPaused as e:
         return None, None, None, e
     if review is None or v.verdict != "OK" or dep.status in review_phase.NOT_JUDGED + ("upheld",):
         return v, dep, None, None
     try:
         return v, dep, review(v), None
-    except (session.SessionUnavailable, BudgetPaused) as e:
+    except (session.SessionUnavailable, RunPaused) as e:
         return v, dep, None, e
 
 
@@ -1279,8 +1299,7 @@ def enter_proposed(run: Run, opts: Options, n: Node) -> None:
     import tempfile
     vetted = [pr for pr in n.get("param_proposals", []) if isinstance(pr, dict)]
     origin = f"{opts.run_id}/iter-{run.iteration:03d} {n.id}"
-    decls = [d for d in n.get("assumptions", []) + n.get("intentions", []) if isinstance(d, dict) and d.get("id")]
-    decls = list({d["id"]: {"id": d["id"], "meaning": d.get("meaning")} for d in decls}.values())
+    decls = list({d["id"]: declaration_entry(d) for d in declared_items(n) if d.get("id")}.values())
     targets = (Path(run.reading_file), Path(opts.reading))
     with tempfile.TemporaryDirectory() as t:
         for k, target in enumerate(targets):
@@ -1361,6 +1380,25 @@ def generated_prompts_digest(core: str) -> str:
     return _GENERATED_DIGESTS[core]
 
 
+#: The fixed name of the Core directory in a semantic digest, whichever library is in force.
+CORE_LOGICAL = "library/TrafficSpec/Core"
+
+
+def core_digest(core: Path | None = None) -> str:
+    """The semantic input `core`: over every `.lean` file under the Core directory in force (`core`,
+    else `paths.CORE`), in path order, each one's logical name (`library/TrafficSpec/Core/<its path
+    under the Core directory>`) and bytes; 24 hex digits. The name never depends on where the library
+    lies (a candidate's copy, an exported checkout), so the same Core gives the same digest everywhere;
+    a changed, added, removed or renamed file changes it."""
+    import hashlib
+    core = Path(core or paths.CORE)
+    h = hashlib.sha256()
+    for p in sorted(core.rglob("*.lean")):
+        if p.is_file():
+            h.update(f"{CORE_LOGICAL}/{p.relative_to(core).as_posix()}".encode()); h.update(p.read_bytes())
+    return h.hexdigest()[:24]
+
+
 def semantic_inputs(opts: Options) -> dict:
     """The run version (`RUN_VERSION`) and the digests of what a run's plans and reviews were built
     against: the corpus (its laws and posted definitions), the definition precedence, the definition
@@ -1388,7 +1426,7 @@ def semantic_inputs(opts: Options) -> dict:
            "definition_precedence": digest([precedence]),
            "resolver": digest([paths.REPO / "harness" / "model" / "definitions.py"]),
            "ontology": digest([Path(opts.ontology)]),
-           "core": digest(list(paths.CORE.rglob("*.lean"))),
+           "core": core_digest(),
            "prompts": digest(list((paths.REPO / "prompts").glob("*.md"))),
            "base_reading": reviewed_reading(Path(opts.reading)), "deferred_gaps": deferred_gaps.digest(), "run_version": RUN_VERSION}
     out["generated_prompts"] = generated_prompts_digest(out["core"])
@@ -1406,34 +1444,41 @@ def semantic_inputs(opts: Options) -> dict:
 
 
 def run_loop(opts: Options) -> dict:
-    """The loop, with its two run-level stops: a damaged audit file (`data_integrity_failure`: the
-    file is named and left as it is) and an exhausted budget (`paused_budget`: resumed under the same
+    """The loop, with its run-level stops: a damaged audit file (`data_integrity_failure`: the
+    file is named and left as it is), an exhausted budget (`paused_budget`: resumed under the same
     run id once the operator raises the limit, the paused iteration taking up what it left undecided,
-    its gated candidates reviewed without being coded again). Either is raised after the iteration
-    committed what it had decided. A fault of the validator itself
+    its gated candidates reviewed without being coded again), a stop of the run's sends that awaits the
+    operator's acknowledgement (`awaiting_operator`: resumed the same way once each open stop is
+    acknowledged; raising a limit never lifts it) and one gate failure repeated across laws
+    (`paused_defect`: resumed the same way once the operator has looked). Each is raised after the
+    iteration committed what it had decided. A fault of the validator itself
     (an exception inside a check) stops the run as `infrastructure_failure`, uncharged, its traceback
-    kept in `validator_fault.txt`."""
+    kept in `validator_fault.txt`. The status names what ended this launch; `write_status` lists with it
+    every stop still active, each from its own record (`feedback.active_stops`), in the result too."""
     from .phases import label_check
     import contextlib
     try:
-        with (label_check.deferred("--label_deferred") if opts.label_deferred else contextlib.nullcontext()):
+        with (label_check.deferred("--label_deferred" if opts.label_deferred else "--review_stage")
+              if opts.label_deferred or opts.review_stage else contextlib.nullcontext()):
             result = _run_loop(opts)
         label_check.freeze(paths.run_dir(opts.run_id))       # the library the run leaves, scored by `label_check`
         return result
-    except (jsonl.DataIntegrityError, BudgetPaused, validate_a.ValidatorFault) as e:
+    except (jsonl.DataIntegrityError, RunPaused, DefectPaused, validate_a.ValidatorFault) as e:
         status = ("data_integrity_failure" if isinstance(e, jsonl.DataIntegrityError) else "paused_budget" if isinstance(e, BudgetPaused)
-                  else "infrastructure_failure")
+                  else "awaiting_operator" if isinstance(e, RunStopped)
+                  else "paused_defect" if isinstance(e, DefectPaused) else "infrastructure_failure")
         run = Run(opts)
         if isinstance(e, validate_a.ValidatorFault):
             (run.dir / "validator_fault.txt").write_text(e.trace, encoding="utf-8")
         ledger = Ledger(run.ledger_file, [], opts.plan_attempts)
         snap = run.load_state() if not isinstance(e, jsonl.DataIntegrityError) else None
         run.iteration = int(snap["iteration"]) if snap else max([int(p.name.split("-")[1]) for p in run.dir.glob("iter-*") if p.is_dir()] or [0])
-        feedback_phase.write_status(run, ledger, status, str(e))
-        if isinstance(e, BudgetPaused):
+        summary = feedback_phase.write_status(run, ledger, status, str(e))
+        if isinstance(e, (RunPaused, DefectPaused)):
             label_check.freeze(run.dir)
         print(f"[loop] status: {status} — {e}")
-        return {"status": status, "stop_reason": str(e), "iterations": run.iteration, "laws": ledger.counts()}
+        return {"status": status, "stop_reason": str(e), "stops": summary.get("stops", []), "iterations": run.iteration,
+                "laws": ledger.counts()}
 
 
 def write_options(run: Run, opts: Options, semantic: dict, saved_roots: list[str], stage_policy: str | None = None) -> None:
@@ -1452,6 +1497,30 @@ def write_options(run: Run, opts: Options, semantic: dict, saved_roots: list[str
                                                             indent=1))
 
 
+#: The run limits an operator changes by giving the option explicitly on a resume: the role, vendor
+#: and total budgets and the label and review repair counts. None of them is a semantic input.
+RUN_LIMIT_OPTIONS = ("session_budget_usd", "repair_budget_usd", "judge_budget_usd", "aggregate_verifier_budget_usd",
+                     "behaviour_review_budget_usd", "claude_budget_usd", "openai_budget_usd", "total_budget_usd",
+                     "label_repair_attempts", "label_repair_budget", "review_repair_attempts", "review_property_attempts",
+                     "review_infra_attempts")
+LIMIT_CHANGES_FILE = "limit_changes.jsonl"
+
+
+def record_limit_changes(run: Run, saved: dict, opts: Options) -> list[dict]:
+    """Each run limit (`RUN_LIMIT_OPTIONS`) this launch gives another value than the run's saved
+    options, appended to the run's `limit_changes.jsonl` (option, old and new value, the iteration
+    the run had reached), before the new options are saved: `options.json` keeps only the latest. The
+    review limits a run's first stage fixed take their raised values from this record
+    (`behaviour_review.config`)."""
+    snap = jsonl.read_json(run.state_file, None) or {}
+    rows = [{"at": time.strftime("%Y-%m-%dT%H:%M:%S"), "iteration": snap.get("iteration", 0), "option": k,
+             "from": saved.get(k), "to": getattr(opts, k)}
+            for k in RUN_LIMIT_OPTIONS if k in saved and saved.get(k) != getattr(opts, k)]
+    for r in rows:
+        jsonl.append_atomic(run.dir / LIMIT_CHANGES_FILE, r)
+    return rows
+
+
 #: The marker of a run created with a stage record, in its `options.json`: such a run is resumed only
 #: on its stage record, and one whose record is missing is refused, never taken for a run made before
 #: stages existed. The marker guards against a record lost or never written; it is not a defence
@@ -1463,17 +1532,21 @@ def first_stage(run: Run, opts: Options, semantic: dict) -> dict:
     """The `open` row of a new run's first stage: `G0`, a generation stage, or for a test run
     (`--mode test`) `T0`, a test stage that also names its base run and the digest of that run's
     records it is built over; on this checkout's code (with the commit `--source_commit` names, or
-    none), the run's semantic inputs and acceptance policy (no review), all of its laws, and the
-    digests of the gate, the scoring and the generated prompt text it is run under."""
+    none), the run's semantic inputs and acceptance policy, all of its laws, and the digests of the
+    gate, the scoring and the generated prompt text it is run under. A training run requires the
+    behaviour review (`review: required`, with the coverage policy and limits its options name and no
+    reviewer: its first review entry fixes the reviewer); a test run is never reviewed (`review: none`)."""
     from .tools import handoff
     from .phases import label_check
+    from .phases import behaviour_review
     kind = "test" if opts.mode == "test" else "generation"
+    review = ({"review": "none"} if kind == "test" else {"review": "required", "review_config": behaviour_review.config_of(opts)})
     extra = {"base_run": {"run_id": opts.base_run, "digest": semantic.get("base_run")}} if kind == "test" else {}
     return {"event": "open", "run_id": opts.run_id, "stage_id": "T0" if kind == "test" else "G0", "stage_kind": kind, **extra,
             "launch_kinds": list(stages.LAUNCH_KINDS[kind]), "previous_stage_id": None,
             "transition_id": f"init-{opts.run_id}", "input_checkpoint": None,
             "code_baseline": {"source_commit": opts.source_commit, "code": handoff.code_digest()}, "state_schema": RUN_VERSION,
-            "semantic": semantic, "acceptance_policy": {**acceptance_policy(opts), "review": "none"}, "scope": "all",
+            "semantic": semantic, "acceptance_policy": {**acceptance_policy(opts), **review}, "scope": "all",
             "changed_files": [], "effects": {"gate": integrate_phase.gate_digest(), "scoring": label_check.scoring_version(),
                                              "generated_prompts": semantic.get("generated_prompts")},
             "opened_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
@@ -1538,12 +1611,12 @@ def test_base_refusal(base_run: str | None) -> str | None:
 
 def launch_kind(opts: Options) -> str | None:
     """What a launch does, as a stage's `launch_kinds` names it: `generation` for `--label_deferred`,
-    `labels` for `--label_stage`, `test` for a test run (`--mode test`, which checks no labels); None
+    `review` for `--review_stage`, `labels` for `--label_stage`, `test` for a test run (`--mode test`, which checks no labels); None
     for a launch that gives neither (it may both generate and check labels), which only a run without
     a stage record runs."""
-    if opts.mode == "test" and not (opts.label_deferred or opts.label_stage or opts.label_repair):
+    if opts.mode == "test" and not (opts.label_deferred or opts.label_stage or opts.label_repair or opts.review_stage):
         return "test"
-    return "generation" if opts.label_deferred else "labels" if opts.label_stage else None
+    return ("generation" if opts.label_deferred else "review" if opts.review_stage else "labels" if opts.label_stage else None)
 
 
 def stage_launch_refusal(stage: dict, opts: Options) -> str | None:
@@ -1695,6 +1768,8 @@ def _run_loop(opts: Options) -> dict:
     bad = reading_defects(json.loads(run.reading_file.read_text(encoding="utf-8")))   # the run's own copy, read whole
     if bad:
         raise SystemExit(f"[loop] the reading {run.reading_file} cannot be read whole: " + "; ".join(bad[:6]))
+    if saved_first is not None:
+        record_limit_changes(run, saved_first, opts)
     # a run with a stage record keeps the semantic inputs it first recorded: its stages record their own
     write_options(run, opts, semantic if new or stage is None else saved_first.get("semantic"), saved_roots, marker)
     doctor_ok()
@@ -1766,6 +1841,7 @@ def _run_loop(opts: Options) -> dict:
     # a gap decided while an iteration was stopped after its filing and before its law's block leaves that iteration's routes
     if resume_n is not None and not snap["prog"].get("gap_routes_applied"):
         release_decided_gaps(snap["prog"].get("gap_routes", {}), gap_ledger.decided())
+    shared_failures.answer(run.dir)                       # this launch is the operator's answer to a pause it resumes
     released, _ = concept_ledger.release([law for law, _ in reopened], ledger.paused())   # as an operator's reopen
     for cid in released:
         print(f"[loop] concept `{cid}` released from its gate-cost hold with the laws reopened by a gap decision")
@@ -1774,7 +1850,7 @@ def _run_loop(opts: Options) -> dict:
     def settle(reason_if_open: str) -> tuple[str, str]:
         if all(e.state in TERMINAL for e in ledger.entries.values()):
             # a split stage never reports `complete` while a law's generation is not: it says what it waits on
-            if (opts.label_deferred or opts.label_stage) and (dependency_holds(ledger) or not feedback_phase.generation_report(run, ledger).get("complete")):
+            if (opts.label_deferred or opts.label_stage or opts.review_stage) and (dependency_holds(ledger) or not feedback_phase.generation_report(run, ledger).get("complete")):
                 return pause_reason(run, opts, ledger, concept_ledger, node_ledger, by_id)
             return "complete", "every law is accepted, blocked or failed"
         return "incomplete", reason_if_open
@@ -1784,7 +1860,7 @@ def _run_loop(opts: Options) -> dict:
             prog = snap["prog"]; resume_n = None
         else:
             work = runnable_work(run, opts, ledger, concept_ledger, node_ledger, by_id)
-            split_stage = opts.label_deferred or opts.label_stage
+            split_stage = opts.label_deferred or opts.label_stage or opts.review_stage
             # the bound counts iterations, not launches; a split stage with no work left says what it waits on instead
             if run.iteration >= opts.max_iterations and (any(work.values()) or not split_stage):
                 if any(work.values()):
@@ -1807,11 +1883,11 @@ def _run_loop(opts: Options) -> dict:
         try:
             status, stop_reason = _iteration(run, opts, prog, persist, ledger, concept_ledger, node_ledger, gap_ledger,
                                              by_id, laws, defs, onto, reopened, training)
-        except (jsonl.DataIntegrityError, BudgetPaused, validate_a.ValidatorFault):
+        except (jsonl.DataIntegrityError, RunPaused, validate_a.ValidatorFault):
             persist()
             raise
         reopened = []
-        if status == "complete" and (opts.label_deferred or opts.label_stage) and (dependency_holds(ledger) or not feedback_phase.generation_report(run, ledger).get("complete")):
+        if status == "complete" and (opts.label_deferred or opts.label_stage or opts.review_stage) and (dependency_holds(ledger) or not feedback_phase.generation_report(run, ledger).get("complete")):
             status, stop_reason = pause_reason(run, opts, ledger, concept_ledger, node_ledger, by_id)   # never `complete`
         if status:
             break
@@ -1819,9 +1895,10 @@ def _run_loop(opts: Options) -> dict:
         status, stop_reason = settle(f"the iteration bound ({opts.max_iterations}) was reached")
         stop = stop if status != "complete" else ""
     persist()
-    feedback_phase.write_status(run, ledger, status, stop_reason, stop=stop)
+    summary = feedback_phase.write_status(run, ledger, status, stop_reason, stop=stop)
     print(f"[loop] status: {status} — {stop_reason}")
-    return {"status": status, "stop_reason": stop_reason, "stop": stop, "iterations": run.iteration, "laws": ledger.counts(),
+    return {"status": status, "stop_reason": stop_reason, "stop": stop, "stops": summary.get("stops", []), "iterations": run.iteration,
+            "laws": ledger.counts(),
             "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts), "concepts": concept_ledger.counts()}
 
 
@@ -1854,6 +1931,8 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
     carried = [Node(d) for d in prog["carried"] if d["node_id"] not in run.all_nodes()]
     if opts.label_stage:                               # a label stage plans and codes nothing new: it checks and repairs
         return label_iteration(run, opts, prog, persist, ledger, concept_ledger, gap_ledger, by_id, defs, onto, training)
+    if opts.review_stage:                              # a review stage draws and checks properties: no plan, code or label
+        return review_iteration(run, opts, prog, persist, ledger, concept_ledger)
 
     # --- aggregates: reconcile admissions before any repair, plan, validation or coding work.
     # Planned nodes are claimants too: resuming after planning must not silently replace the
@@ -2255,7 +2334,8 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                 cycle_held.add(law)
                 notes.append(f"`{law}`: {why}")
                 run.pending_notices.append(f"`{law}`: {why} (python -m harness reopen {opts.run_id} --laws {law})")
-        rest = sorted(law for law, vs in by_law_verdicts.items() if law in ledger.entries and law not in cycle_held
+        case_gapped = route_missing_cases(run, ledger, gap_ledger, by_law_verdicts, law_of_id, opts.run_id, notes, to_user, gaps_filed)
+        rest = sorted(law for law, vs in by_law_verdicts.items() if law in ledger.entries and law not in cycle_held and law not in case_gapped
                       and not any(v.kind == validate_a.FAIL for v in vs) and any(v.kind == "return" for v in vs))
         while rest:
             held_now = [law for law in rest if (w := waits_of(law))[0] and not w[1]]
@@ -2283,16 +2363,17 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         # from the block on the ledger carries them
         prog["gap_routes"] = {}
         for law, vs in sorted(by_law_verdicts.items()):
-            carrying = [v.node for v in vs if v.kind == "accept" and v.node.gaps()]
+            carrying = [v for v in vs if v.kind == "accept" and (v.node.gaps() or v.filed)]
             if not carrying or law not in ledger.entries or ledger.entries[law].state != "planned":
                 continue
             ids, routed, waits = [], [], {}
-            for n in carrying:
-                got, back = file_planned_gaps(gap_ledger, n, by_id[law].text, opts.run_id, run.iteration, gaps_filed)
+            for v in carrying:
+                n = v.node
+                got, back = file_planned_gaps(gap_ledger, n, by_id[law].text, opts.run_id, run.iteration, gaps_filed, v.filed)
                 ids += [g for g in got if g not in ids]
                 routed += back
                 waits[n.id] = got
-            prog["gap_routes"][law] = {"nodes": [n.id for n in carrying], "gaps": ids, "routed": routed, "waits": waits}
+            prog["gap_routes"][law] = {"nodes": [v.node.id for v in carrying], "gaps": ids, "routed": routed, "waits": waits}
         # the pins: each validated record names the version of every other law's node it was planned on
         plan_now = active_plan_records(run, node_ledger, [v.node for v in verdicts])   # every record the validator knew
         # a held record keeps the pin it was planned with, or has none: only the plan's records and the repairs' new ones are pinned
@@ -2331,7 +2412,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             concept_baselines[c] = json.loads(bfile.read_text())
     deferred_concepts_now: list[dict] = [c.raw for c in to_code_concepts if prog["concepts"].get(c.id) in ("PAUSED", "DEFERRED", "WAITING")]
     sessions_down = False
-    budget_paused = ""
+    budget_paused: RunPaused | None = None       # the pause that stops the stage, kept whole: its kind decides the run's status
     # files a coding session changed outside its own and nobody has restored yet: while any is left, no
     # coding session starts (`scope_unrestored`); filled at the stage's start and by each scope violation
     scope_dirty: dict[str, list[str]] = code_phase.scope_unrestored(run)
@@ -2374,7 +2455,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         nonlocal sessions_down, budget_paused
         v, dep, out, e = result
         if v is None:                                   # paused before its review: undecided, taken up again on resume
-            budget_paused = str(e); return
+            budget_paused = e; return
         cdir = code_phase.concept_dir(run, c.id)
         concept_baselines[c.id] = json.loads((cdir / "baseline.json").read_text())
         notes.append(f"concept `{c.id}`: gate {v.verdict}" + (f" — {'; '.join(v.details[:4])}" if v.details else ""))
@@ -2448,10 +2529,10 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         if v.verdict != "OK":
             concept_ledger.returned(c.id, [f"gate {v.verdict}"] + v.details[:6], last_task=str(cdir))
             prog["concepts"][c.id] = v.verdict; persist(); return
-        if isinstance(e, BudgetPaused):
+        if isinstance(e, RunPaused):
             # a pause keeps the work: the gated candidate stays, undecided, and the resumed
             # iteration reviews it again without coding it
-            budget_paused = str(e); return
+            budget_paused = e; return
         if e is not None:
             code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
             deferred_concepts_now.append(c.raw); prog["concepts"][c.id] = "PAUSED"
@@ -2514,7 +2595,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
     _rolling(remaining, opts.workers, concept_ready, start_concept, apply_concept, lambda: sessions_down or bool(budget_paused) or bool(scope_dirty),
              lambda c: (code_phase.concept_dir(run, c.id), _files_of("concept", c.id)), scheduled=opts.label_repair)
     if budget_paused:                                     # the iteration stays resumable: what is undecided is taken up again
-        persist(); raise BudgetPaused(budget_paused)
+        persist(); raise budget_paused
     for c in remaining:                                   # left by an outage: held, coded next iteration
         if c.raw not in deferred_concepts_now:
             deferred_concepts_now.append(c.raw); prog["concepts"].setdefault(c.id, "PAUSED")
@@ -2552,6 +2633,8 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         elif v is not None:
             failed_ids.add(n.id)
     remaining_nodes = [n for n in topological(to_code) if n.id not in prog["nodes"]]
+    shared = SharedFailures(run.dir, prog.setdefault("shared_failures", {}))
+    defect_hits: list[str] = shared.due()                 # signatures that reached the bound in this iteration
 
     def node_ready(running: set[str]) -> list[Node]:
         """The nodes left to code that can be coded now, after deciding those that cannot be coded
@@ -2564,7 +2647,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             remaining_nodes[:] = [n for n in remaining_nodes if n.id not in {c.id for c in closed}]
             if not remaining_nodes:
                 persist(); return []
-            if budget_paused:
+            if budget_paused or defect_hits:
                 return []
             if sessions_down or scope_dirty:
                 why = ("not coded: sessions were unavailable this iteration" if sessions_down
@@ -2680,7 +2763,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         nonlocal sessions_down, budget_paused
         v, dep, _out, e = result
         if v is None:                                   # paused before its outcome: undecided, taken up again on resume
-            budget_paused = str(e); return
+            budget_paused = e; return
         ndir = code_phase.node_dir(run, n.id)
         baselines[n.id] = json.loads((ndir / "baseline.json").read_text())
         notes.append(f"`{n.id}`: gate {v.verdict}" + (f" — {'; '.join(v.details[:4])}" if v.details else ""))
@@ -2751,6 +2834,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             persist(); return
         if v.verdict != "OK":
             failed_ids.add(n.id); prog["nodes"][n.id] = v.verdict
+            shared.record(n.law, n.id, v.verdict, v.details); defect_hits[:] = shared.due()
             reasons_g = [f"gate {v.verdict}"] + v.details[:6]
             unexpressed = v.extras.get("unexpressed", []) if v.verdict == "UNEXPRESSED" else []
             # the two-confirmation rule for an unstatable span, keyed by the occurrence of its words in the law
@@ -2797,10 +2881,14 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         if added:
             coder_narrowings[n.id] = added
         accepted_now.append(n); prog["nodes"][n.id] = "OK"; persist()
-    _rolling(remaining_nodes, opts.workers, node_ready, start_node, apply_node, lambda: sessions_down or bool(budget_paused) or bool(scope_dirty),
+    _rolling(remaining_nodes, opts.workers, node_ready, start_node, apply_node,
+             lambda: sessions_down or bool(budget_paused) or bool(scope_dirty) or bool(defect_hits),
              lambda n: (code_phase.node_dir(run, n.id), _files_of("node", n.id)), shared=_loop_written(), scheduled=opts.label_repair)
     if budget_paused:                                     # the iteration stays resumable: what is undecided is taken up again
-        persist(); raise BudgetPaused(budget_paused)
+        persist(); raise budget_paused
+    if defect_hits:                                       # resumable as a budget pause is; the signatures never pause it again
+        persist()
+        raise DefectPaused(shared.pause(defect_hits, run.iteration, lambda nid: code_phase.node_dir(run, nid)))
     run.deferred_nodes = deferred_now
     if not stage_at_least("nodes"):
         prog["stage"] = "nodes"
@@ -2962,7 +3050,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
     if opts.label_repair and not opts.label_deferred and not scope_dirty:   # each law awaiting its label repair, in a candidate transaction of its own
         from .phases import label_repair as label_repair_phase
         persist()
-        label_repair_phase.run_repairs(run, ledger, training, by_id, defs, onto, gap_ledger, gaps_filed, to_user)
+        label_repair_phase.run_repairs(run, ledger, training, by_id, defs, onto, gap_ledger, gaps_filed, to_user, prog, persist=persist)
         revalidate_acceptance(run, ledger, to_user)       # a repair that closed or held a law: what composes it is not accepted on it
         scope_dirty = code_phase.scope_unrestored(run)     # a candidate's session may have changed the production tree
         aggregate_phase.write_current_view(run, closure=True)   # what a revalidation revoked after the repairs leaves the closure
@@ -2999,9 +3087,13 @@ def label_iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger
     accept_ready(run, opts, ledger, training, to_user)
     persist()
     if opts.label_repair and not opts.label_deferred:
-        from .phases import label_repair as label_repair_phase
-        label_repair_phase.run_repairs(run, ledger, training, by_id, defs, onto, gap_ledger, gaps_filed, to_user)
+        from .phases import behaviour_review, label_repair as label_repair_phase
+        # per law, a finding's review repair first (its own goal and count, the label hook), then its label repair
+        label_repair_phase.run_repairs(run, ledger, training, by_id, defs, onto, gap_ledger, gaps_filed, to_user, prog, persist=persist)
         revalidate_acceptance(run, ledger, to_user)
+        behaviour_review.revoke_unreviewed(run, ledger, to_user)
+        behaviour_review.route_holds(run, ledger, to_user)    # a review only the operator can move (its repairs spent): held here too
+        behaviour_review.propagate(run, ledger)
     aggregate_phase.write_current_view(run, closure=True)   # what the label checks and repairs changed, no candidate open
     feedback_phase.write_feedback(run, ledger, notes, to_user, gaps_filed, concept_ledger, run.deferred_nodes, prog["coder_narrowings"],
                                   held_why=prog.get("held_why"))
@@ -3013,6 +3105,24 @@ def label_iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger
     return "", ""
 
 
+def review_iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, concept_ledger: ConceptLedger) -> tuple[str, str]:
+    """An iteration of a review launch (`review_stage`): each law to review has its properties drawn
+    and checked, each permission-only law its exemption, and the laws only the operator can move are
+    held (`behaviour_review.review_iteration`); no plan, code, label check or repair. Taken up again on
+    resume: a law whose row is committed is not checked again, and a committed property set is never
+    asked for again."""
+    from .phases import behaviour_review
+    notes, to_user, gaps_filed = prog["notes"], prog["to_user"], prog["gaps_filed"]
+    persist()
+    behaviour_review.review_iteration(run, ledger, persist, to_user)
+    revalidate_acceptance(run, ledger, to_user)
+    feedback_phase.write_feedback(run, ledger, notes, to_user, gaps_filed, concept_ledger, run.deferred_nodes, prog["coder_narrowings"],
+                                  held_why=prog.get("held_why"))
+    prog["stage"] = "done"; persist()
+    print(f"[loop] iteration {run.iteration}: reviews only; laws {ledger.counts()}")
+    return "", ""
+
+
 def accept_ready(run: Run, opts: Options, ledger: Ledger, training, to_user: list[str]) -> None:
     """A law is accepted when it is label-ready (`label_ready`: every node of its plan, and of every
     law its nodes reach, usable for building), whichever iteration coded it; with `label_repair`, once
@@ -3021,8 +3131,12 @@ def accept_ready(run: Run, opts: Options, ledger: Ledger, training, to_user: lis
     is not evidence for its current inputs (`revoke_stale_labels`, a run with a stage record);
     with `label_deferred`, it is not accepted here: its generated nodes are kept and it is recorded
     `awaiting_labels` (`defer_labels`)."""
+    from .phases import behaviour_review
     revoke_stale_labels(run, ledger, to_user)
+    invalidate_set_readers(run, ledger, to_user)
     revalidate_acceptance(run, ledger, to_user)
+    behaviour_review.revoke_unreviewed(run, ledger, to_user)
+    accept_permissions(run, ledger, to_user)
     if opts.label_repair:
         if opts.label_deferred:
             defer_labels(run, ledger, to_user)
@@ -3031,7 +3145,68 @@ def accept_ready(run: Run, opts: Options, ledger: Ledger, training, to_user: lis
             revalidate_acceptance(run, ledger, to_user)
         return
     for law, nodes in label_ready(run, ledger).items():
+        record_set_digest(run, ledger, law)
         ledger.accept(law, nodes)
+    behaviour_review.propagate(run, ledger)
+
+
+def record_set_digest(run: Run, ledger: Ledger, law: str) -> None:
+    """For a law that reads a rule-set operator, the library it is checked against now
+    (`integrate.library_digest`), kept with its label state: a later change of any member makes that
+    check stale (`invalidate_set_readers`)."""
+    from .phases.integrate import library_digest
+    if law in ledger.entries and reads_rule_sets(run, law, ledger):
+        st = run.label_states.setdefault(law, {})
+        st["set_digest"] = library_digest(run, set(ledger.entries[law].nodes))
+        st.pop("check_invalid", None)
+
+
+def invalidate_set_readers(run: Run, ledger: Ledger, to_user: list[str]) -> list[str]:
+    """Every law reading a rule-set operator whose library changed since its label check (a member
+    added, changed or fenced): its check is marked invalid at once, and an accepted law loses its
+    acceptance (`revoke_law`) until the check runs again; the law is label-ready again once the
+    library has settled (`library_settled`), and the laws that compose it are revalidated with it.
+    Returns the laws whose check was invalidated."""
+    from .phases.integrate import library_digest
+    out = []
+    for law, e in ledger.entries.items():
+        st = run.label_states.get(law) or {}
+        if "set_digest" not in st or not reads_rule_sets(run, law, ledger):
+            continue
+        now = library_digest(run, set(e.nodes))
+        if now == st["set_digest"]:
+            continue
+        why = f"a rule its rule-set operator reads changed since its label check (library {st['set_digest']} → {now})"
+        st = dict(st)
+        st["check_invalid"] = why
+        st.pop("set_digest")
+        run.label_states[law] = st
+        if e.state == "accepted":
+            revoke_law(run, ledger, law, why, [[law, "library", "set member changed"]])
+            to_user.append(f"`{law}`: acceptance withdrawn — {why}; it is checked again once the library settles")
+        out.append(law)
+    return out
+
+
+def accept_permissions(run: Run, ledger: Ledger, to_user: list[str]) -> list[str]:
+    """A planned law whose every node is a permission and whose generation is complete is accepted
+    with the label state `generated_not_label_aligned`: a permission is never violated, so no label
+    check judges it, and its acceptance is never an ordinary label acceptance. Its nodes are citable by
+    other rules like any accepted node. Under `review: required` this is the review stage's
+    (`behaviour_review.exempt_law`), and nothing is accepted here. Returns the laws accepted."""
+    from .phases import behaviour_review
+    if behaviour_review.required(run):
+        return []
+    av = Availability(run, entries=ledger.entries)
+    out = []
+    for e in list(ledger.entries.values()):
+        if e.state == "planned" and permission_only(run, e.law, ledger) and own_generated(run, ledger, e.law, av):
+            ledger.accept(e.law, list(e.nodes))
+            run.label_states[e.law] = {"state": "generated_not_label_aligned", "nodes": list(e.nodes),
+                                       "reason": "every node is a permission: never violated, outside the label check"}
+            to_user.append(f"`{e.law}`: generated, not label-aligned (a permission)")
+            out.append(e.law)
+    return out
 
 
 #: Where a law's label check routes it (`label_route`), by outcome.
@@ -3069,7 +3244,8 @@ def reached_laws(run: Run, ledger: Ledger, law: str) -> set[str]:
 
 def unready(run: Run, ledger: Ledger, law: str, av: Availability) -> list[list[str]]:
     """Why a law is not label-ready, as [node, dependency, code]: each node of its plan not usable
-    (with the first dependency its code names), and each node of a law it reaches that is not."""
+    (with the first dependency its code names), each node of a law it reaches that is not, and, for a
+    law that reads a rule-set operator, the library not yet settled."""
     out = []
     for l in [law] + sorted(reached_laws(run, ledger, law)):
         e = ledger.entries[l]
@@ -3081,7 +3257,35 @@ def unready(run: Run, ledger: Ledger, law: str, av: Availability) -> list[list[s
             if c != USABLE:
                 ids, last = code_chain(i, c)
                 out.append([i, ids[-1], last])
+    if law in ledger.entries and permission_only(run, law, ledger):
+        out.append([law, "permission", "a permission: accepted as generated, not label-aligned, never label-checked"])
+    if law in ledger.entries and reads_rule_sets(run, law, ledger) and not library_settled(run, ledger, law, av):
+        out.append([law, "library", "reads a rule-set operator: waits until every other law has settled"])
     return out
+
+
+def reads_rule_sets(run: Run, law: str, ledger: Ledger) -> bool:
+    """Whether a node of the law's plan reads a rule-set operator (`rule_sets`): its verdicts read the
+    whole library."""
+    nodes = run.all_nodes()
+    return any((nodes.get(i) or {}).get("rule_sets") for i in ledger.entries[law].nodes)
+
+
+def permission_only(run: Run, law: str, ledger: Ledger) -> bool:
+    """Whether every node of the law's plan is a permission: such a law is never violated, so it is
+    never label-ready; `accept_permissions` accepts it as generated, not label-aligned."""
+    nodes = run.all_nodes()
+    plan = ledger.entries[law].nodes
+    return bool(plan) and all((nodes.get(i) or {}).get("permission") for i in plan)
+
+
+def library_settled(run: Run, ledger: Ledger, law: str, av: Availability) -> bool:
+    """Whether every other law of the ledger has stopped changing the library: closed (accepted,
+    blocked or failed) or planned with its generation complete. A law that reads a rule-set operator
+    is label-checked only then, after the rules its operators range over; a later change to any of
+    them reaches it again (`candidate.affected`)."""
+    return all(e.state in ("accepted", "blocked", "failed") or (e.state == "planned" and own_generated(run, ledger, e.law, av))
+               for e in ledger.entries.values() if e.law != law)
 
 
 def label_ready(run: Run, ledger: Ledger) -> dict[str, list[str]]:
@@ -3090,7 +3294,10 @@ def label_ready(run: Run, ledger: Ledger) -> dict[str, list[str]]:
     alone, never by asking whether that law is ready in turn. A law already awaiting a label repair on
     the same nodes is not checked again (its repair checks it), unless its check is not evidence for its
     current inputs (`stale_labels`, a run with a stage record). A law out of the active stage's scope
-    (`label_scope`) is never ready: the stage does not check it."""
+    (`label_scope`) is never ready: the stage does not check it. A law that reads a rule-set operator
+    waits, besides, until the library has settled (`library_settled`). Under `review: required` a law
+    is ready only once its review allows it (`behaviour_review.ready`): no label check before review."""
+    from .phases import behaviour_review
     out = {}
     av = Availability(run, entries=ledger.entries)
     scope = label_scope(run)
@@ -3099,7 +3306,11 @@ def label_ready(run: Run, ledger: Ledger) -> dict[str, list[str]]:
         st = run.label_states.get(e.law, {})
         if e.state == "planned" and in_scope(scope, e.law) and own_generated(run, ledger, e.law, av) \
                 and all(own_generated(run, ledger, l, av) for l in reached_laws(run, ledger, e.law)) \
-                and not (st.get("state") == "awaiting_label_repair" and st.get("nodes") == list(e.nodes) and e.law not in stale):
+                and (not reads_rule_sets(run, e.law, ledger) or library_settled(run, ledger, e.law, av)) \
+                and not permission_only(run, e.law, ledger) \
+                and behaviour_review.ready(run, ledger, e.law) \
+                and not (st.get("state") == "awaiting_label_repair" and st.get("nodes") == list(e.nodes) and e.law not in stale
+                         and not st.get("check_invalid")):
             out[e.law] = list(e.nodes)
     return out
 
@@ -3235,12 +3446,23 @@ def pause_reason(run: Run, opts: Options, ledger: Ledger, concept_ledger: Concep
     never the run's."""
     from .phases import label_repair as label_repair_phase
     from .phases.feedback import pending_lists
+    from .phases import behaviour_review
+    review = behaviour_review.work(run, ledger)
     if opts.label_stage:
         other = runnable_work(run, replace(opts, label_stage=False, label_deferred=True), ledger, concept_ledger, node_ledger, by_id)
         other.pop("labels", None)
         if any(other.values()):
             return "awaiting_generation", ("the label stage has no label work left; generation has work: "
                                            + "; ".join(f"{k} {v}" for k, v in other.items() if v))
+        if review["review"] or review["exempt"]:
+            return "awaiting_review", f"the label stage has no work left; {len(review['review']) + len(review['exempt'])} law(s) need the review stage: {review['review'] + review['exempt']}"
+    elif opts.review_stage:
+        labels = label_work(run, replace(opts, review_stage=False), ledger) + review["repair"]
+        if labels:
+            return "awaiting_labels", f"the review stage has no work left; {len(labels)} law(s) await the labels stage: {sorted(set(labels))}"
+    elif review["review"] or review["exempt"]:
+        return "awaiting_review", (f"generation paused: nothing runnable is left; {len(review['review']) + len(review['exempt'])} law(s) "
+                                   f"await their review: {review['review'] + review['exempt']}")
     else:
         labels = label_work(run, replace(opts, label_deferred=False), ledger)
         if labels:
@@ -3333,8 +3555,13 @@ def runnable_work(run: Run, opts: Options, ledger: Ledger, concept_ledger: Conce
     A held node whose dependency waits for a publication, a re-plan of its law, an admission check not
     yet made (`unjudged`) or the operator is no work: it costs nothing, and only that wait's end
     releases it."""
+    from .phases import behaviour_review
+    if opts.review_stage:                                # a review stage: the review's own work only
+        w = behaviour_review.work(run, ledger)
+        return {"review": w["review"], "exempt": w["exempt"]}
     work = {"labels": label_work(run, opts, ledger)}
     if opts.label_stage:
+        work["review_repairs"] = behaviour_review.work(run, ledger)["repair"]
         return work
     held = [Node(d) for d in run.deferred_nodes]
     work["concept_repairs"] = sorted(e.concept for e in concept_ledger.repairable() if any(e.concept in concept_deps(n) for n in held))
@@ -3383,6 +3610,10 @@ def label_state(run: Run, law: str, chk, nodes: list[str], where: Path, candidat
           "check_sha": label_check_sha(where / "laws" / f"{law}.json"),
           "evidence": str((where / "evidence" / f"{law}.md").relative_to(run.dir)),
           "repairs": run.label_states.get(law, {}).get("repairs", 0)}
+    if getattr(chk, "abstractions", None):              # verdicts under an approved abstraction: never full statutory alignment
+        st.update(scope="partial_coverage", abstractions=list(chk.abstractions))
+    if getattr(chk, "sampled_duration", False):         # verdicts on a duration read from the samples: kept visible
+        st.update(sampled_duration=True)
     if staged(run):                                      # in a run with a stage record, the inputs it is evidence for
         st["key"] = key if key is not None else label_key(run, law, list(nodes))
     return st
@@ -3508,11 +3739,24 @@ def route_law(run: Run, ledger: Ledger, law: str, chk, nodes: list[str], where: 
 
 def route_entry(run: Run, ledger: Ledger, law: str, chk, nodes: list[str], st: dict, to_user: list[str]) -> str:
     """The ledger's part of routing a law by its routed label state `st`: a caller that commits the
-    ledger with the state routes its own copy of the ledger before the commit."""
+    ledger with the state routes its own copy of the ledger before the commit. Under `review: required`
+    an accepted route takes effect only with the review's leave (`behaviour_review.ready`), else the law
+    stays planned, its state `awaiting_review`."""
+    from .phases import behaviour_review
     cov = f"{chk.coverage['matched']}/{chk.coverage['eligible']} plain label(s) match"
+    if st["state"] == "accepted" and not behaviour_review.ready(run, ledger, law):
+        st["state"] = "awaiting_review"                   # both conditions: the label route alone accepts nothing
+        ledger.hold(law, run.iteration)
+        to_user.append(f"`{law}`: label check {chk.outcome} ({cov}); not accepted — its review does not allow it")
+        return st["state"]
     if st["state"] == "accepted":
         ledger.accept(law, list(nodes))
-        to_user.append(f"`{law}`: label check {chk.outcome} ({cov}); accepted" + ("" if chk.outcome == "aligned" else ", not reported aligned"))
+        scope = getattr(chk, "abstractions", [])
+        to_user.append(f"`{law}`: label check {chk.outcome} ({cov}); accepted"
+                       + (", not reported aligned" if chk.outcome != "aligned"
+                          else f", partial coverage under {', '.join(scope)}: not full statutory alignment" if scope else "")
+                       + ("; its verdicts read a duration from the trace's samples, not a proof of the continuous state between "
+                          "frames (not partial coverage)" if getattr(chk, "sampled_duration", False) else ""))
     elif st["state"] == "waiting":
         ledger.hold(law, run.iteration)
         to_user.append(f"`{law}`: label check incomplete ({'; '.join(chk.notes[:2])}); the law waits, no attempt counted")
@@ -3542,6 +3786,8 @@ def label_route(run: Run, ledger: Ledger, training, to_user: list[str]) -> dict[
     ready = label_ready(run, ledger)
     if not ready:
         return {}
+    from .phases.integrate import library_digest
+    checked_on = {law: library_digest(run, set(nodes)) for law, nodes in ready.items() if reads_rule_sets(run, law, ledger)}
     checks, cid = {}, ""
     try:
         with candidate_phase.SCHEDULING.pause(timeout=600):
@@ -3557,7 +3803,56 @@ def label_route(run: Run, ledger: Ledger, training, to_user: list[str]) -> dict[
     routed = {}
     for law, chk in checks.items():
         routed[law] = route_law(run, ledger, law, chk, ready[law], run.iter / "label", cid, to_user)
+        if law in checked_on:                       # the library this check is evidence for (`invalidate_set_readers`)
+            run.label_states[law]["set_digest"] = checked_on[law]
+            run.label_states[law].pop("check_invalid", None)
     return routed
+
+
+def route_missing_cases(run: Run, ledger: Ledger, gap_ledger, by_law_verdicts: dict, law_of_id, run_id: str,
+                        notes: list[str], to_user: list[str], gaps_filed: list) -> set[str]:
+    """Each returned record that composes a case its target does not declare (`validate_a.MISSING_CASE`):
+    the target goes back to its planner with the request, at most `case_requests.LIMIT` times per
+    (caller, target, case) and target version, each such return counting one of the target's plan
+    attempts (an accepted target loses its acceptance first); past the limit a gap naming the caller,
+    the target, the case, the version and the returns is filed on the caller, which is blocked on it.
+    Returns the laws so blocked."""
+    from .phases import case_requests
+    path = run.dir / "case_requests.json"
+    state = case_requests.load(path)
+    nodes = run.all_nodes()
+    blocked: set[str] = set()
+    for law, vs in sorted(by_law_verdicts.items()):
+        for v in vs:
+            if v.kind != "return":
+                continue
+            for r in v.reasons:
+                m = validate_a.MISSING_CASE.match(r)
+                if not m:
+                    continue
+                caller, target, case = m["node"], m["rule"], m["case"]
+                tlaw = law_of_id(target)
+                version = case_requests.target_version(nodes, target)
+                action, n = case_requests.decide(state, caller, target, case, version)
+                if action == "return" and tlaw in ledger.entries and tlaw != law:
+                    why = (f"`{caller}` reads case `{case}` of `{target}`, which declares no such case: declare it where the words of "
+                           f"`{target}` provide for it (request {n} of {case_requests.LIMIT} for this version)")
+                    if ledger.entries[tlaw].state == "accepted":
+                        revoke_law(run, ledger, tlaw, why, [[target, caller, "case requested"]])
+                    ledger.return_law(tlaw, [why], run.iteration)
+                    notes.append(f"`{tlaw}`: returned to its planner — {why}")
+                elif action == "gap":
+                    gid, _decided = _file_gap(gap_ledger, {
+                        "span": case, "kind": "case", "law_refs": [law], "node_id": caller,
+                        "span_text": f"case {case} of {target}",
+                        "proposal": (f"`{caller}` reads case `{case}` of `{target}` (version {version}), which declares no such case after "
+                                     f"{n} returns of that version to its planner"), "nearest": []}, run_id, run.iteration, gaps_filed)
+                    ledger.block(law, [gid], [f"gap {gid}: `{caller}` reads case `{case}` of `{target}`, which its planner did not declare "
+                                              f"after {n} returns"])
+                    blocked.add(law)
+                    to_user.append(f"gap {gid}: `{caller}` reads case `{case}` of `{target}`, undeclared after {n} returns; `{law}` waits on it")
+    case_requests.save(path, state)
+    return blocked
 
 
 def _file_gap(gap_ledger: GapLedger, proposal: dict, run_id: str, iteration: int, gaps_filed: list) -> tuple[str, tuple[str, str] | None]:
@@ -3575,15 +3870,17 @@ def _file_gap(gap_ledger: GapLedger, proposal: dict, run_id: str, iteration: int
 
 
 def file_planned_gaps(gap_ledger: GapLedger, n: Node, law_text: str, run_id: str, iteration: int,
-                      gaps_filed: list) -> tuple[list[str], list[str]]:
-    """File every gap a validated record carries, each keyed by the occurrence of its span's words in
+                      gaps_filed: list, filed: list[dict] | None = None) -> tuple[list[str], list[str]]:
+    """File every gap a validated record carries, and those the validator files for it (`filed`: a
+    `scope` gap, or an `operator` gap for a case on an exception that lifts the duty), each keyed by
+    the occurrence of its span's words in
     the law (`<law>@<law digest>:<start>-<end>`, the key a coder's unstatable span is filed under).
     Returns the ids of the gaps now pending, and one line per gap that matched a gap the operator
     already rejected or retired, with that decision (such a gap is not filed again)."""
     offs = blueprint.span_offsets(n.get("segmentation", []), law_text)
     digest = review_phase.law_digest(law_text)
     ids, routed = [], []
-    for g in n.gaps():
+    for g in list(n.gaps()) + list(filed or []):
         sid = g.get("span")
         at = offs.get(str(sid))
         gid, decided = _file_gap(gap_ledger, {"span": sid, "kind": g.get("kind"), "proposal": g.get("proposal", ""), "nearest": g.get("nearest", []),

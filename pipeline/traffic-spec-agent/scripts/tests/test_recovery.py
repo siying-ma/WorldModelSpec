@@ -65,6 +65,7 @@ class World:
         self.laws = laws
         self.plans: dict = {}            # (law, iteration) or law -> records the plan writes for it
         self.validate: dict = {}         # (id, iteration) -> (kind, reasons)
+        self.filed: dict = {}            # id -> the gaps the validator files for that record (a `scope` gap)
         self.gate: dict = {}             # (id, iteration) -> verdict, or "PANIC" (a reproduced panic)
         self.review: dict = {}           # (concept id, iteration) -> "accepted" | "returned" | ("deferred", stage) | "outage"
         self.node_repair: dict = {}      # (id, iteration) -> record raw | {"withdraw": {...}} | None
@@ -261,7 +262,7 @@ class Fixture:
                 if n.id not in seen:
                     seen.add(n.id)
                     kind, reasons = w.validate.get((n.id, run.iteration), ("accept", []))
-                    out.append(mock.Mock(node=n, kind=kind, reasons=list(reasons)))
+                    out.append(mock.Mock(node=n, kind=kind, reasons=list(reasons), filed=list(w.filed.get(n.id, []))))
             cs, cseen = [], set()
             for c in blueprint.load_concepts(plan_dir / "blueprint.jsonl") + list(extra_concepts or []):
                 if c.id not in cseen:
@@ -313,7 +314,9 @@ class Fixture:
             w.tick("admission", ident)
             return w.admission.get(ident, "OK")
 
-        def failing(v):                          # `PANIC`: a panic the gate reproduced in isolation
+        def failing(v):                          # `PANIC`: a panic the gate reproduced in isolation; (verdict, details): scripted lines
+            if isinstance(v, tuple):
+                return gate.Verdict(v[0], list(v[1]))
             return gate.Verdict(gate.GATE_TIMEOUT, ["scripted panic"], extras={"panic": ["PANIC at scripted"]}) if v == "PANIC" \
                 else gate.Verdict(v, [f"scripted {v}"])
 

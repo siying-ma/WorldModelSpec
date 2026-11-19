@@ -266,7 +266,7 @@ class QuantityDivergence(unittest.TestCase):
         return review.concept_divergence_defects(1, d, self.rec, "the distance it covers", review.body_dim(self.rec, self.body))
 
     def test_the_body_is_in_metres(self):
-        self.assertEqual(review.body_dim(self.rec, self.body), (1, 0, 0))
+        self.assertEqual(review.body_dim(self.rec, self.body), (1, 0, 0, 0))
 
     def test_an_interval_in_metres_is_admitted(self):
         self.assertEqual(self.defects(self.div()), [])
@@ -296,16 +296,18 @@ class RegionPlaces(unittest.TestCase):
     def test_a_property_without_its_kind_returns(self):
         from harness.checks import validate_a
         self.assertIn("st.crest", validate_a.region_kinds(ONTO))                   # a kind: claiming it names the place
-        errs = validate_a.check_region_places("N", {"st.curvature", "st.sight_distance", "st.region_geometry"}, ONTO)
-        self.assertTrue(errs and "kind of region" in errs[0] and "st.curvature" in errs[0])
+        errs = validate_a.check_region_places("N", {"st.sight_distance", "st.region_geometry"}, ONTO)
+        self.assertTrue(errs and "kind of region" in errs[0] and "st.sight_distance" in errs[0])
 
     def test_a_property_with_its_kind_passes_without_occupancy(self):
         from harness.checks import validate_a
-        self.assertEqual(validate_a.check_region_places("N", {"st.curvature", "st.roadway", "st.sight_distance"}, ONTO), [])
+        self.assertEqual(validate_a.check_region_places("N", {"st.roadway", "st.sight_distance"}, ONTO), [])
 
     def test_no_property_no_demand(self):
         from harness.checks import validate_a
         self.assertEqual(validate_a.check_region_places("N", {"st.crest", "st.region_geometry", "kin.speed"}, ONTO), [])
+        # the grade and the curvature are read at a road user's position: no region, so no kind
+        self.assertEqual(validate_a.check_region_places("N", {"st.grade", "st.curvature", "kin.speed"}, ONTO), [])
 
     def test_core_states_the_carriers(self):
         from harness.lean import surface
@@ -316,12 +318,35 @@ class RegionPlaces(unittest.TestCase):
         self.assertIsNone(kinds["st_lane_enters"][1][0][1])                       # the intersection it enters: any kind
         self.assertEqual(kinds["st_entrance_of"][1][0], [frozenset({"stop_line", "crosswalk"}), carriers])
         self.assertNotIn("highway", kinds["dev_governs"][1][0][0])
-        self.assertEqual(kinds["st_sight_along_way"][1][0], [frozenset({"highway"})])
+        self.assertEqual(kinds["st_sight_along_way"][1][0], [frozenset({"highway", "railway_track"})])
         # a direction carrier: the primitive reads it through `st_lane_direction`, as the atom does
         self.assertEqual(kinds["prim_region_offset_along"][1][0], [None, kinds["st_lane_direction"][1][0][0]])
         self.assertNotIn("centre_turn_lane", kinds["st_lane_direction"][1][0][0])
-        self.assertEqual(kinds["st_curvature"][1], [[None]])
+        self.assertEqual(kinds["st_sight_distance"][1], [[None]])
+        self.assertNotIn("st_curvature", kinds)                                   # read on a road user, not a region
+        self.assertNotIn("st_grade", kinds)
         self.assertEqual(kinds["st_lane"][1], [[None]])                           # a class atom reads the label: any
+
+    def test_contact_with_a_structure_admits_objects_only(self):
+        from harness.checks import validate_a
+        from harness.lean import surface
+        self.assertEqual(surface.region_argument_kinds(ONTO)["rel_contact_structure"][1], [[frozenset({"obstruction", "fire_hydrant"})]])
+        # a claim does not say which name the formula reads, and `rel_contact` reads no region
+        self.assertEqual(validate_a.check_region_places("N", {"rel.contact"}, ONTO), [])
+        self.assertEqual(validate_a.check_region_places("N", {"rel.contact", "st.lane"}, ONTO), [])
+
+    def test_the_sign_code_list_ends_before_the_legend_attribute(self):
+        codes = {v.split("=", 1)[1] for v in ONTO.values if v.startswith("dev.regulatory_sign=")}
+        self.assertTrue({"bicycles_prohibited", "bicycle_ebike_escooter_prohibited", "parking_permitted"} <= codes)
+        self.assertFalse([c for c in codes if not c.isidentifier()])
+
+    def test_a_sign_record_admits_its_own_kind_only(self):
+        from harness.lean import surface
+        kinds = surface.region_argument_kinds(ONTO)
+        self.assertEqual(kinds["dev_governs_sidewalk"][1], [[frozenset({"sidewalk"})]])
+        self.assertEqual(kinds["dev_governs_parking_space"][1], [[frozenset({"parking_space"})]])
+        self.assertEqual(kinds["st_parking_space_angle_marking"][1], [[None]])
+        self.assertEqual(kinds["st_parking_space_axis"][1], [[None]])
 
     def test_the_constraints_read_no_trace_check_text(self):
         """The constraints come from running Core, never from TraceLint's messages: with the trace
@@ -408,14 +433,14 @@ class RegionPlaces(unittest.TestCase):
         tmp, lib = self._with_table(lambda es: es)
 
         def body():
-            errs = validate_a.check_region_places("N", {"st.curvature"}, ONTO)
+            errs = validate_a.check_region_places("N", {"st.sight_distance"}, ONTO)
             self.assertTrue(errs and "any kind of region" in errs[0])
-            self.assertEqual(validate_a.check_region_places("N", {"st.curvature", "st.crest"}, ONTO), [])
+            self.assertEqual(validate_a.check_region_places("N", {"st.sight_distance", "st.crest"}, ONTO), [])
         with tmp:
             self._in_library(lib, body)
-        tmp, lib = self._without("st_curvature", 0)
+        tmp, lib = self._without("st_sight_distance", 0)
         with tmp:
-            self._faults(lib, "st.curvature", "st_curvature")
+            self._faults(lib, "st.sight_distance", "st_sight_distance")
 
     def test_the_table_is_read_as_declared(self):
         """A kind list in the table is the constraint: narrowed there, the check narrows with it."""
@@ -480,6 +505,9 @@ class RegionKindsProbe(unittest.TestCase):
     removed. The probe is no proof that the table and every evaluation path agree."""
     PROBE = paths.REPO / "scripts" / "tests" / "region_kinds_probe.lean"
     probe: dict = {}
+    #: Arguments whose list is the accessor's own restriction (it reads nothing on another kind, though
+    #: the trace check admits the field there): the probe shows it as the name reading exactly the list.
+    EVALUATED = {("rel_contact_structure", 1)}
 
     @classmethod
     def setUpClass(cls):
@@ -515,7 +543,8 @@ class RegionKindsProbe(unittest.TestCase):
                 outside |= {(*key, k) for k in read - ks}
                 rejected |= {(*key, k) for k in ks & rej}
                 unexercised |= {(*key, k) for k in ks - read - rej}
-                unshown |= {(*key, k) for k in labels - ks - rej}
+                if key not in self.EVALUATED:
+                    unshown |= {(*key, k) for k in labels - ks - rej}
         return outside, rejected, unexercised, unshown
 
     def region(self, name, position):
@@ -527,6 +556,11 @@ class RegionKindsProbe(unittest.TestCase):
         self.assertEqual(rejected, set())
         self.assertEqual(unexercised, set(), "the probe no longer exercises a listed kind")
         self.assertEqual(unshown, set(), "a kind left out of a list is not rejected by the field read there")
+
+    def test_an_accessor_restriction_reads_exactly_its_list(self):
+        t = self.table()
+        for key in self.EVALUATED:
+            self.assertEqual(set(self.region(*key)["read"]), set(t[key]), key)
 
     def test_a_narrowed_list_is_refuted(self):
         t = self.table()
@@ -989,6 +1023,58 @@ class FieldTypes(unittest.TestCase):
                 skeleton.concept_skeleton(ConceptRecord(bad)); skeleton.concept_witness_skeleton(ConceptRecord(bad))
             except (TypeError, AttributeError, KeyError) as e:
                 self.fail(f"{path}: an unchecked field stops the generator: {e!r}")
+
+class RegionKindsInTheFormula(unittest.TestCase):
+    """The gate holds every region a formula quantifies to the kinds Core admits at the argument it
+    is read at: the quantifier's kind, or a kind refining it, must be one of them."""
+    ADMITTED = {("rel_contact_structure", 1): frozenset({"obstruction", "fire_hydrant"})}
+
+    @staticmethod
+    def _contact(kind):
+        return {"exists_region": {"lit": kind}, "var": "r",
+                "body": {"atom": "rel_contact_structure", "args": [{"var": "x"}, {"var": "r"}], "params": []}}
+
+    def test_objects_pass_and_places_are_refused(self):
+        from harness.checks import gate
+        for k in ("obstruction", "fire_hydrant"):
+            self.assertEqual(gate.region_kind_defects(self._contact(k), self.ADMITTED), [], k)
+        for k in ("lane", "sidewalk", "transit_stop", "median_or_divider", "travel_region"):
+            errs = gate.region_kind_defects(self._contact(k), self.ADMITTED)
+            self.assertTrue(errs and f"quantified over `{k}`" in errs[0] and "`obstruction`" in errs[0], k)
+
+    def test_a_sign_record_reads_its_own_kind_only(self):
+        from harness.checks import gate
+        admitted = {("dev_governs_sidewalk", 1): frozenset({"sidewalk"}), ("dev_governs_parking_space", 1): frozenset({"parking_space"})}
+
+        def governs(name, kind):
+            return {"exists_region": {"lit": kind}, "var": "r",
+                    "body": {"atom": name, "args": [{"var": "d"}, {"var": "r"}], "params": []}}
+        self.assertEqual(gate.region_kind_defects(governs("dev_governs_sidewalk", "sidewalk"), admitted), [])
+        self.assertEqual(gate.region_kind_defects(governs("dev_governs_parking_space", "parking_space"), admitted), [])
+        for name, kind in (("dev_governs_sidewalk", "lane"), ("dev_governs_sidewalk", "crosswalk"),
+                           ("dev_governs_sidewalk", "parking_space"), ("dev_governs_parking_space", "sidewalk"),
+                           ("dev_governs_parking_space", "curb_zone"), ("dev_governs_parking_space", "travel_region")):
+            errs = gate.region_kind_defects(governs(name, kind), admitted)
+            self.assertTrue(errs and f"quantified over `{kind}`" in errs[0] and f"`{name}`" in errs[0], (name, kind))
+
+    def test_a_region_the_formula_does_not_quantify_is_not_held(self):
+        from harness.checks import gate
+        formal = {"atom": "rel_contact_structure", "args": [{"var": "x"}, {"var": "r"}], "params": []}
+        self.assertEqual(gate.region_kind_defects({"and": [formal, formal]}, self.ADMITTED), [])
+
+    def test_the_gate_reads_the_table_core_prints(self):
+        from harness.checks import gate
+        rows = [["rel_contact_structure", "1", "obstruction,fire_hydrant"], ["dev_governs", "1", "lane,roadway"]]
+        self.assertEqual(gate.region_kinds_of(rows)[("rel_contact_structure", 1)], self.ADMITTED[("rel_contact_structure", 1)])
+        self.assertEqual(gate.region_kind_defects(self._contact("lane"), {}), [])       # no table printed: nothing to hold
+
+    def test_the_innermost_quantifier_decides(self):
+        from harness.checks import gate
+        inner = self._contact("obstruction")
+        outer = {"exists_region": {"lit": "lane"}, "var": "r", "body": inner}
+        self.assertEqual(gate.region_kind_defects(outer, self.ADMITTED), [])
+        self.assertTrue(gate.region_kind_defects({"exists_region": {"lit": "obstruction"}, "var": "r", "body": self._contact("lane")}, self.ADMITTED))
+
 
 if __name__ == "__main__":
     unittest.main()

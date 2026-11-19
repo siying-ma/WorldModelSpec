@@ -7,13 +7,28 @@
 #     `awaiting_labels` when nothing runnable is left without a label check.
 #   STAGE=labels (the machine with the training recordings): checks every law whose plan is gated on
 #     its recordings and repairs it (--label_stage); it plans and codes nothing new.
-#   STAGE=review (and stage-enter with KIND=review) is refused before any model call or change: no reviewer is
-#     registered (the harness's refusal text). Which stage may follow which is the harness's `stage enter` rule.
+#   STAGE=review (a run with a stage record, in a review stage): writes and checks each generated law's behaviour
+#     properties with the reviewer the run fixed (--review_stage); it plans, codes and label-checks nothing. Which
+#     stage may follow which, and whether a review stage may be entered at all (the run's policy `review: required`
+#     and a reviewer: the run's first review entry fixes the registered one BEHAVIOUR_REVIEWER names, a later entry
+#     keeps it, registered as fixed), is the harness's `stage enter` rule.
+#
+# Handover. A staged run whose launch ends `awaiting_review` (generation or labels) or `awaiting_labels` (review)
+# enters that stage itself, on the same code, when `python -m harness stage handover` finds every condition
+# holds (the last iteration committed and exported, no session active, no request unsettled, no review call
+# unreconciled and no stop open, the scope fixed, the code unchanged, this machine able to run that stage: the
+# reviewer the run fixed registered as fixed, or before its first review entry the one BEHAVIOUR_REVIEWER names
+# registered, with the review budgets set; or LABEL_DATASET the run's dataset; and the switch no round
+# trip without progress): it runs `stage-enter` with NEW_BASE at this checkpoint, KIND the new stage,
+# TRANSITION auto-<stage left>-<kind>, and goes on launching in the new stage. Otherwise the run waits at its
+# checkpoint (exit 0) with the reasons logged, for a machine that can run the stage or for the operator; an
+# active stop of the run (any kind summary.json's `stops` lists) or a round trip without progress is the
+# operator's (exit 4). It never chooses a scope, raises a limit or acknowledges a stop. A run without a stage record is handed over by hand, as before.
 #
 #   RUN_ID=<id> scripts/run-generation.sh new      # a new run on a new branch runs/<id>, from the code baseline's tip
 #   RUN_ID=<id> scripts/run-generation.sh resume   # continue the run on its branch, from its persisted progress
 #   RUN_ID=<id> NEW_BASE=<commit> KIND=<kind> FROM=<stage> TRANSITION=<id> [SCOPE=<file>] [PROMPTS_APPROVED=<digest>] \
-#     scripts/run-generation.sh stage-enter        # the run enters a new stage on the code of NEW_BASE
+#     [BEHAVIOUR_REVIEWER=<name>] scripts/run-generation.sh stage-enter   # the run enters a new stage on the code of NEW_BASE
 #
 # Branches. The code baseline is the branch remote/full-train-generation (BASELINE_BRANCH). Each run has its
 # own branch runs/<id>, created by `new` from the baseline's tip; the launcher only appends checkpoint commits
@@ -33,11 +48,14 @@
 # `stage confirm` recorded; a first stage without one keeps the baseline rule above) with no merge after it,
 # and the code here equal to the stage's code baseline.
 #
-# Exit status: 0 the stage ended at a checkpoint (handed over, complete, or the launch count spent);
+# Exit status: 0 the stage ended at a checkpoint (handed over or waiting for the next stage, complete, or the
+# launch count spent);
 # 1 the loop stopped otherwise (diagnostics in .runtime/<id>/); 2 a preflight check refused before any
 # model call; 3 a checkpoint could not be pushed (the same commit is pushed first by the next launch);
-# 4 the run paused for the operator, handed to neither stage: `paused_budget` (raise the limit its
-# stop_reason names explicitly, then resume) or `awaiting_operator` (a decision is needed: see stop_reason in
+# 4 the run paused for the operator, handed to neither stage: a handover that finds a stop of the run active or
+# would be a round trip without progress, `paused_budget` (raise the limit its
+# stop_reason names explicitly, then resume), `paused_defect` (one gate failure repeated across laws: find its
+# cause before resuming, see stop_reason) or `awaiting_operator` (a decision is needed: see stop_reason in
 # results/<id>/summary.json and TO_USER.md); 5 `infrastructure_failure`, uncharged: something the iteration
 # needs did not run, and its stop_reason says what (a session the account or the API refused, the toolchain,
 # the check of accepted records before integration, the integration, or the validator itself); whether a
@@ -65,13 +83,19 @@
 #   VERIFIER_CAP (USD over the whole run for the aggregate verifier, within OPENAI_BUDGET; no per-session reservation)
 #   CLAUDE_BUDGET OPENAI_BUDGET TOTAL_BUDGET (their sum) (USD over the whole run)
 #   LABEL_REPAIR_ATTEMPTS LABEL_REPAIR_BUDGET
+#   REVIEW_COVERAGE (strict or bounded, fixed by a new run) REVIEW_BUDGET (USD over the run for the reviewer's calls; a review launch needs it; no default)
+#   REVIEW_REPAIR_ATTEMPTS REVIEW_PROPERTY_ATTEMPTS REVIEW_INFRA_ATTEMPTS (per law; a resume may raise, never lower them)
+# An option whose value is empty is not passed.
 # ACQUISITION_PROFILE (a profile of config/acquisition_profiles.json) is passed by `new` only, when set; a
 # run keeps its profile (a semantic input), so `resume` refuses it. Unset, the run may read no `heading_since`.
 # `new` passes every one, set or defaulted. `resume` passes only those set in this invocation: every
 # other option is the run's saved one (the loop keeps a run's options), so a resume never lowers or
-# raises a budget, a model or an effort by itself. Raising a budget is explicit: on `resume`, setting
-# CLAUDE_BUDGET or OPENAI_BUDGET needs TOTAL_BUDGET set too. The stage, the dataset folder and each
-# launch's iteration bound are passed on every launch.
+# raises a budget, a model or an effort by itself. Raising a budget or a repair count is explicit: on `resume`,
+# setting CLAUDE_BUDGET or OPENAI_BUDGET needs TOTAL_BUDGET set too; the loop records each change of a limit in
+# results/<id>/limit_changes.jsonl. The coverage is fixed for the run's life. BEHAVIOUR_REVIEWER (a registered reviewer)
+# is no loop option: it is passed to `stage handover --to review` and `stage enter --kind review` only, and the run's first
+# review entry fixes it for the run's life; no launch passes it. The stage, the dataset folder and each launch's iteration
+# bound are passed on every launch.
 set -euo pipefail
 
 ACTION=${1:-}
@@ -109,6 +133,11 @@ OPENAI_BUDGET|--openai_budget_usd|25
 TOTAL_BUDGET|--total_budget_usd|
 LABEL_REPAIR_ATTEMPTS|--label_repair_attempts|2
 LABEL_REPAIR_BUDGET|--label_repair_budget|10
+REVIEW_COVERAGE|--review_coverage|strict
+REVIEW_BUDGET|--behaviour_review_budget_usd|
+REVIEW_REPAIR_ATTEMPTS|--review_repair_attempts|2
+REVIEW_PROPERTY_ATTEMPTS|--review_property_attempts|2
+REVIEW_INFRA_ATTEMPTS|--review_infra_attempts|3
 '
 OPENAI_KEY_FILE=${OPENAI_KEY_FILE:-$HOME/.config/traffic-spec/openai.env}
 PYTHON=${PYTHON:-python3}
@@ -186,7 +215,7 @@ for top in sys.stdin.read().split("\0"):
 }
 stop_status() {                                        # the launcher's exit status for a loop status that ends the launches
   case "$1" in
-    paused_budget|awaiting_operator) echo 4;;
+    paused_budget|paused_defect|awaiting_operator) echo 4;;
     infrastructure_failure) echo 5;;
     *) echo 1;;
   esac
@@ -194,10 +223,6 @@ stop_status() {                                        # the launcher's exit sta
 written() { "$PYTHON" -c 'import os,sys; p=sys.argv[1]; print(os.stat(p).st_mtime_ns if os.path.exists(p) else "none")' "$1"; }   # when the loop last wrote its status
 
 # ---------------------------------------------------------------- stages
-review_refusal() {                                     # why no review stage runs or is entered: the harness's own words
-  "$PYTHON" -c 'from harness.store.stages import REVIEW_REFUSAL; print(REVIEW_REFUSAL)' 2>/dev/null \
-    || echo "no review stage: this checkout's harness has no stages"
-}
 stage_record_files() {                                 # a staged run's stage record, snapshots and last transition state, with its checkpoint
   local f
   for f in stages.jsonl stage_transition.json; do [ ! -f "$RUN_DIR/$f" ] || echo "$RUN_DIR/$f"; done
@@ -367,9 +392,10 @@ stage_enter() {
   local new kind=${KIND:-} from=${FROM:-} trn=${TRANSITION:-} plan="$PWD/$LOG_DIR/stage-enter" c sid status tid rc
   local -a extra=()
   { [ -n "${NEW_BASE:-}" ] && [ -n "$kind" ] && [ -n "$from" ] && [ -n "$trn" ]; } || die "stage-enter needs NEW_BASE, KIND, FROM and TRANSITION"
-  case "$kind" in generation|labels) ;; review) die "$(review_refusal)";; *) die "KIND must be generation, labels or review";; esac
+  case "$kind" in generation|labels|review) ;; *) die "KIND must be generation, labels or review";; esac
   if [ -n "${SCOPE:-}" ]; then [ -f "$SCOPE" ] || die "SCOPE must be a file (given '$SCOPE')"; extra+=(--scope "$SCOPE"); fi
   [ -z "${PROMPTS_APPROVED:-}" ] || extra+=(--prompts_approved "$PROMPTS_APPROVED")
+  [ "$kind" != review ] || [ -z "${BEHAVIOUR_REVIEWER:-}" ] || extra+=(--behaviour_reviewer "$BEHAVIOUR_REVIEWER")   # a review entry only
   "$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null || die "$PYTHON is not Python 3.11 or newer"
   git config user.name >/dev/null && git config user.email >/dev/null || die "set git user.name and user.email"
   CURRENT=$(git symbolic-ref --quiet --short HEAD || true)
@@ -457,10 +483,12 @@ if [ "$ACTION" = stage-enter ]; then stage_enter; exit 0; fi   # one line: parse
 
 # ---------------------------------------------------------------- preflight: nothing below spends model time
 case "$STAGE" in
-  generation|labels) ;;
-  review) die "$(review_refusal)";;
-  *) die "STAGE must be generation or labels";;
+  generation|labels|review) ;;
+  *) die "STAGE must be generation, labels or review";;
 esac
+if [ "$STAGE" = review ] && [ ! -f "$RUN_DIR/stages.jsonl" ]; then
+  die "STAGE=review runs only in a review stage of a run with a stage record ($RUN_DIR/stages.jsonl), entered with stage-enter"
+fi
 given() { [ -n "${!1+x}" ]; }                          # set in this invocation's environment
 if [ "$ACTION" = resume ] && given ACQUISITION_PROFILE; then
   die "a run keeps the acquisition profile it started with: ACQUISITION_PROFILE is given to \`new\` only"
@@ -481,14 +509,15 @@ while IFS='|' read -r name flag default; do
     esac
     printf -v "$name" '%s' "$default"
   fi
-  if given "$name"; then LOOP_OPTS+=("$flag" "${!name}"); fi
+  if given "$name" && [ -n "${!name}" ]; then LOOP_OPTS+=("$flag" "${!name}"); fi
 done <<< "$OPTION_TABLE"
-for v in WORKERS PLAN_BATCH GATE_BUDGET LAUNCHES PUSH_RETRIES PUSH_WAIT LABEL_REPAIR_ATTEMPTS LABEL_REPAIR_BUDGET; do
+for v in WORKERS PLAN_BATCH GATE_BUDGET LAUNCHES PUSH_RETRIES PUSH_WAIT LABEL_REPAIR_ATTEMPTS LABEL_REPAIR_BUDGET \
+         REVIEW_REPAIR_ATTEMPTS REVIEW_PROPERTY_ATTEMPTS REVIEW_INFRA_ATTEMPTS; do
   if given "$v"; then [[ ${!v} =~ ^[0-9]+$ ]] || die "$v must be a whole number (given '${!v}')"; fi
 done
 if given WORKERS; then [ "$WORKERS" -ge 1 ] || die "WORKERS must be at least 1"; fi
-for v in SESSION_CAP REPAIR_CAP JUDGE_CAP VERIFIER_CAP CLAUDE_BUDGET OPENAI_BUDGET TOTAL_BUDGET; do
-  if given "$v"; then
+for v in SESSION_CAP REPAIR_CAP JUDGE_CAP VERIFIER_CAP CLAUDE_BUDGET OPENAI_BUDGET TOTAL_BUDGET REVIEW_BUDGET; do
+  if given "$v" && { [ "$v" != REVIEW_BUDGET ] || [ -n "$REVIEW_BUDGET" ]; }; then
     "$PYTHON" -c 'import sys; from decimal import Decimal as D; x = D(sys.argv[1]); sys.exit(0 if x.is_finite() and x >= 0 else 1)' "${!v}" 2>/dev/null \
       || die "$v must be a non-negative amount in USD (given '${!v}')"
   fi
@@ -531,8 +560,9 @@ if [ "$ACTION" = new ]; then                            # the harness's own rule
 fi
 "$PYTHON" -c 'import nrs_tools.atoms_train' 2>/dev/null \
   || die "the doctor's split tools (nrs_tools) are missing: run from a checkout of the whole WorldModelSpec repository, which carries pipeline/ontology_provenance/ beside this directory"
-"$PYTHON" -c 'from harness.store.state import Options as O; f = O.__dataclass_fields__; raise SystemExit(0 if {"label_deferred", "label_stage"} <= set(f) else 1)' \
-  || die "this checkout's harness has no --label_deferred / --label_stage"
+"$PYTHON" -c 'import sys; from harness.store.state import Options as O; raise SystemExit(0 if set(sys.argv[1:]) <= set(O.__dataclass_fields__) else 1)' \
+    label_deferred label_stage $([ "$STAGE" != review ] || echo review_stage) \
+  || die "this checkout's harness lacks the stage options of STAGE=$STAGE (--label_deferred, --label_stage, --review_stage)"
 command -v claude >/dev/null || die "the claude CLI is not on PATH"
 command -v lake >/dev/null || die "lake (Lean) is not on PATH"
 if [ -f "$OPENAI_KEY_FILE" ]; then set +x; set -a; . "$OPENAI_KEY_FILE"; set +a; fi
@@ -569,10 +599,54 @@ if [ "$ACTION" = resume ] && { [ "$REMOTE_HAS" -eq 0 ] || [ -n "$(git rev-list "
   log "pushing the checkpoint an earlier launch left unpushed"; push_checkpoint
 fi
 
-STAGE_FLAGS=(--label_deferred)
-[ "$STAGE" = labels ] && STAGE_FLAGS=(--label_stage --label_dataset "$LABEL_DATASET")
-[ "$ACTION" = new ] && STAGE_FLAGS=(--label_repair "${STAGE_FLAGS[@]}")   # a resume keeps the run's acceptance policy
-[ "$ACTION" = new ] && [ -n "${ACQUISITION_PROFILE:-}" ] && STAGE_FLAGS+=(--acquisition_profile "$ACQUISITION_PROFILE")
+stage_flags() {                                        # the loop's stage options for STAGE, set into STAGE_FLAGS
+  case "$STAGE" in
+    labels) STAGE_FLAGS=(--label_stage --label_dataset "$LABEL_DATASET");;
+    review) STAGE_FLAGS=(--review_stage);;
+    *) STAGE_FLAGS=(--label_deferred);;
+  esac
+  if [ "$ACTION" = new ]; then                         # a resume keeps the run's acceptance policy and profile
+    STAGE_FLAGS=(--label_repair "${STAGE_FLAGS[@]}")
+    [ -z "${ACQUISITION_PROFILE:-}" ] || STAGE_FLAGS+=(--acquisition_profile "$ACQUISITION_PROFILE")
+  fi
+  return 0
+}
+stage_flags
+
+# A staged run at a checkpoint whose status hands it to another stage (`awaiting_review`, `awaiting_labels`)
+# enters that stage here when the harness's `stage handover` finds every condition holds, and the launches go
+# on in it; otherwise it waits at its checkpoint (0), or, on an active stop of the run or a round trip without
+# progress, for the operator (4).
+handover() {
+  local to rc out
+  case "$1" in awaiting_review) to=review;; *) to=labels;; esac
+  if [ ! -f "$RUN_DIR/stages.jsonl" ]; then
+    case "$to" in
+      labels) log "generation paused awaiting label checks: run STAGE=labels on the dataset machine";;
+      review) log "paused awaiting its review: run STAGE=review";;
+    esac
+    exit 0
+  fi
+  set +e
+  local -a named=()
+  [ "$to" != review ] || [ -z "${BEHAVIOUR_REVIEWER:-}" ] || named=(--behaviour_reviewer "$BEHAVIOUR_REVIEWER")
+  out=$("$PYTHON" -m harness stage handover "$RUN_ID" --to "$to" ${LABEL_DATASET:+--dataset "$LABEL_DATASET"} \
+        ${named[@]+"${named[@]}"} 2>&1)
+  rc=$?
+  set -e
+  echo "$out" >> "$LOG_DIR/handover.log"
+  case "$rc" in
+    0) ;;
+    1) log "status $1: the run waits at its checkpoint for the $to stage, not entered here: ${out//$'\n'/ }"; exit 0;;
+    4) log "status $1: operator decision needed, the run is handed to neither stage: ${out//$'\n'/ }"; exit 4;;
+    *) log "status $1: the handover check did not run (exit $rc; see $LOG_DIR/handover.log): stopped"; exit 1;;
+  esac
+  FROM=$("$PYTHON" -c 'import sys; from pathlib import Path; from harness.store import stages; print(stages.active_stage(Path(sys.argv[1]))["stage_id"])' "$RUN_DIR")
+  KIND=$to; NEW_BASE=$(git rev-parse HEAD); TRANSITION="auto-$FROM-$to"; SCOPE=; PROMPTS_APPROVED=
+  log "status $1: entering the $to stage (RUN_ID=$RUN_ID NEW_BASE=$NEW_BASE KIND=$KIND FROM=$FROM TRANSITION=$TRANSITION $0 stage-enter; run it again if this stops)"
+  stage_enter                                          # its own exit status on any stop (1, 2, 3), as `stage-enter`'s
+  STAGE=$to; ACTION=resume; stage_flags
+}
 log "options passed: ${LOOP_OPTS[*]:-none, the saved options of the run stand}"
 
 for launch in $(seq 1 "$LAUNCHES"); do
@@ -610,10 +684,11 @@ for launch in $(seq 1 "$LAUNCHES"); do
   commit_checkpoint "$status${stop:+, $stop}"
   push_checkpoint
   case "$status:$stop" in
-    awaiting_labels:*) log "generation paused awaiting label checks: run STAGE=labels on the dataset machine"; exit 0;;
+    awaiting_review:*|awaiting_labels:*) handover "$status"; continue;;
     awaiting_generation:*) log "label checks and repairs done: hand the run back to STAGE=generation"; exit 0;;
     complete:*)        log "the run is complete"; exit 0;;
     paused_budget:*)   log "paused on a budget: $(summary_field stop_reason); raise the named limit explicitly and resume"; exit 4;;
+    paused_defect:*)   log "paused on a gate failure repeated across laws; find its cause before resuming: $(summary_field stop_reason)"; exit 4;;
     awaiting_operator:*) log "operator decision needed; see stop_reason and TO_USER.md: $(summary_field stop_reason)"; exit 4;;
     *:iteration_limit) continue;;
     *) cp "$RUN_DIR/summary.json" "$LOG_DIR/diagnostics-summary.json"

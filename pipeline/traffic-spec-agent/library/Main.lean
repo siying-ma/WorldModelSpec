@@ -1,7 +1,10 @@
 /-
   monitor — decode traces at run time, evaluate the registered rules, print the report.
 
-    monitor --manifest <m.json> [--reading <r.json>] [--rules id,id,...] [--json [--segments]] <trace.json>...
+    monitor --manifest <m.json> [--reading <r.json>] [--rules id,id,...] [--incomplete set,set,...] [--json [--segments]] <trace.json>...
+
+  `--incomplete` names the rule-set ids (`#requiredBy:<conduct>`, `#lawful:…`) the run declares
+  incomplete: there a `requiredBy` is never false and a `lawful` never true, unknown instead.
 
   One report per trace. With `--segments` (JSON only), after the report's lines and before the
   subject line, one line per grounding line, in the same order:
@@ -27,12 +30,14 @@ structure Opts where
   json : Bool := false
   segments : Bool := false
   traces : List String := []
+  incomplete : List String := []
 
 partial def parseArgs : List String → Opts → Except String Opts
   | [], o => pure o
   | "--manifest" :: p :: rest, o => parseArgs rest { o with manifest := some p }
   | "--reading" :: p :: rest, o => parseArgs rest { o with reading := some p }
   | "--rules" :: ids :: rest, o => parseArgs rest { o with rules := some ((ids.splitOn ",").map (·.trimAscii.toString)) }
+  | "--incomplete" :: ids :: rest, o => parseArgs rest { o with incomplete := (ids.splitOn ",").map (·.trimAscii.toString) |>.filter (· != "") }
   | "--json" :: rest, o => parseArgs rest { o with json := true }
   | "--segments" :: rest, o => parseArgs rest { o with segments := true }
   | p :: rest, o => if p.startsWith "--" then throw s!"unknown option {p}" else parseArgs rest { o with traces := o.traces ++ [p] }
@@ -77,15 +82,15 @@ def main (args : List String) : IO UInt32 := do
       | some p => readJson Decode.reading p
       | none => pure ({} : Reading)
     -- the rules reported, and the rules registered for their evaluation: each reported rule with
-    -- every rule it composes, so a composition is evaluated as with the whole rule set
+    -- every rule it composes, and the whole library where one reads a rule-set operator
     let targets : List Rule := match opts.rules with
       | some ids => allRules.filter fun (r : Rule) => ids.contains r.id
       | none => allRules
-    let rules := (targets.flatMap (Rule.closure allRules)).foldl (fun (acc : List Rule) (r : Rule) => if acc.any (fun (x : Rule) => x.id == r.id) then acc else acc ++ [r]) []
+    let rules := RuleSet.registered allRules targets
     let reported := targets.map (fun (r : Rule) => r.id)
     for path in opts.traces do
       let τ ← readJson Decode.trace path
-      match Monitor.check rules τ ρ m allConcepts with
+      match Monitor.check rules τ ρ m allConcepts opts.incomplete with
       | .ok rep =>
         let rep := { rep with rules := rep.rules.filter (fun (l : Monitor.RuleLine) => reported.contains l.rule), rows := rep.rows.filter (fun (w : Monitor.Row) => reported.contains w.rule) }
         IO.print (if opts.json then Monitor.renderJsonLines rep else Monitor.renderText rep)

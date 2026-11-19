@@ -173,7 +173,9 @@ class Doctor:
                   "adjudicate_concept.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE_CONCEPT"),
                   "recheck_concept.md": ("harness.phases.review", "PLACEHOLDERS_RECHECK_CONCEPT"),
                   "plan_aggregates.md": ("harness.phases.aggregate", "PLACEHOLDERS_PLAN_AGGREGATES"),
-                  "verify_aggregate.md": ("harness.phases.aggregate", "PLACEHOLDERS_VERIFY_AGGREGATE")}
+                  "verify_aggregate.md": ("harness.phases.aggregate", "PLACEHOLDERS_VERIFY_AGGREGATE"),
+                  "bp_draft.md": ("harness.phases.review_schema", "PLACEHOLDERS_BP_DRAFT"),
+                  "bp_screen.md": ("harness.phases.review_schema", "PLACEHOLDERS_BP_SCREEN")}
         src = ("prompts/*.md → {placeholders}", "harness/phases/*.py → PLACEHOLDERS tables")
         bad, n = [], 0
         for tmpl, (mod, attr) in owners.items():
@@ -294,7 +296,11 @@ class Doctor:
         """Everything project-specific reaches an agent through injected context, never through
         the template: no atom, primitive or concept id, no Lean atom name, no reading parameter,
         no enumeration spelling as a literal, and no term the corpus defines (the two compounds
-        the pipeline owns, "road user" and "stand-in", excepted)."""
+        the pipeline owns, "road user" and "stand-in", excepted, also when a line break splits them).
+        The behaviour-property language (`bp_property_language.md`) is itself injected context, a
+        language contract that names the measures whose frames it states; it may name Lean measure
+        and atom names, and each one it names must be a measure or an atom of the ontology, so it
+        cannot go stale."""
         import itertools
         sys.path.insert(0, str(self.repo))
         from harness.model import ontology as onto_mod
@@ -329,13 +335,22 @@ class Doctor:
                         t = t.strip(" ,;:.").lower()
                         if len(t) > 3 and " / " not in t:
                             terms.add(t)
+        from harness.phases import review_schema
+        measures = set(review_schema.measure_table(onto.text))
         bad = []
         for path in self.prompts:
             text = path.read_text(encoding="utf-8", errors="replace")
+            language = path.name == review_schema.PROPERTY_LANGUAGE
             for label, pat in patterns.items():
+                if language and label in ("vocabulary id", "Lean atom name"):
+                    continue
                 for m in itertools.islice(re.finditer(pat, text), 3):
                     bad.append(f"{path.name}:{text[:m.start()].count(chr(10)) + 1} {label} {m.group(0)!r}")
-            low = re.sub(r"\broad users?\b|\bstand-in\b", " ", text.lower())
+            if language:
+                for m in re.finditer(r"\b(?:ru|kin|st|dev|sig|env|rel)_[a-z_]+\b", text):
+                    if m.group(0) not in measures and m.group(0) not in lean:
+                        bad.append(f"{path.name}:{text[:m.start()].count(chr(10)) + 1} a name the ontology lacks {m.group(0)!r}")
+            low = re.sub(r"\broad\s+users?\b|\bstand-in\b", " ", text.lower())
             for t in sorted(terms):
                 m = re.search(r"\b" + re.escape(t) + r"\b", low)
                 if m:
@@ -554,8 +569,10 @@ class Doctor:
     def reading_proposals_reviewed(self) -> Result:
         """A parameter a plan session proposed enters the reading marked `proposed` (run, iteration and
         node) with its convention and source, and is listed here until the operator reviews it by
-        removing the marker or changing the value. So is a declared-fact id (`asm.*`, `int.*`) with
-        its meaning; every declaration of the catalogue is listed with its meaning. Nothing evaluated
+        removing the marker or changing the value. So is a declared-fact id (`asm.*`, `int.*`,
+        `fact.*`) with its meaning, and a declared fact with its kind, subjects and what a source must
+        hold to declare it true and false; every declaration of the catalogue is listed with its
+        meaning. Nothing evaluated
         against the reading is final while a proposal stands."""
         src = ("library/TrafficSpec/Readings/*.json → params[].proposed, declarations[]",)
         rows, n, decls = [], 0, []
@@ -570,6 +587,9 @@ class Doctor:
                     rows.append(f"{path.name}: `{prm.get('name')}` = {prm.get('value')} {prm.get('unit')} proposed by {prm.get('proposed')}: {str(prm.get('convention', ''))[:90]}")
             for d in data.get("declarations", []):
                 line = f"{path.name}: `{d.get('id')}` means {str(d.get('meaning', ''))[:120]!r}"
+                if str(d.get("id", "")).startswith("fact."):
+                    line += (f" ({d.get('kind')}, {d.get('subjects')}; true when {str(d.get('true_when', ''))[:80]!r}; "
+                             f"false when {str(d.get('false_when', ''))[:80]!r})")
                 decls.append(line + (f" (proposed by {d.get('proposed')}, unreviewed)" if d.get("proposed") else ""))
                 if d.get("proposed"):
                     rows.append(line + f" proposed by {d.get('proposed')}")
@@ -645,7 +665,8 @@ class Doctor:
     def definition_resolution_report(self) -> Result:
         """Which defined terms of the training laws the operator's declared precedence leaves without
         an applicable definition, or with several: a report, read from the posted training files and
-        the configuration only."""
+        the configuration only. A nested use the operator's declared edges withhold is counted apart,
+        never as unresolved."""
         sys.path.insert(0, str(self.repo))
         from harness.model import corpus, definitions as definitions_mod
         src = ("laws/example/train/{laws,definitions}.jsonl", "config/definition_precedence.json")
@@ -664,11 +685,13 @@ class Doctor:
                        + (f" ({', '.join(d['candidates'])})" if d.get("candidates") else "")
                        + (f" — {d['why']}" if d.get("why") else "")
                        for definition, dependencies in table["dependencies"].items() for d in dependencies
-                       if d["status"] != "resolved"]
+                       if d["status"] not in ("resolved", "withheld")]
+        withheld = sum(d["status"] == "withheld" for dependencies in table["dependencies"].values() for d in dependencies)
         open_ += nested_open
         nested = sum(len(dependencies) for dependencies in table["dependencies"].values())
         summary = (f"{sum(1 for _l, r in rows if r['status'] == 'resolved')} of {len(rows)} defined-term uses resolved; "
-                   f"{nested - len(nested_open)} of {nested} nested uses resolved")
+                   f"{nested - len(nested_open) - withheld} of {nested} nested uses resolved"
+                   + (f", {withheld} withheld by the declared `withhold_nested_edges`" if withheld else ""))
         if open_:
             return Result("definition resolution", REVIEW, f"{summary}; {len(open_)} unresolved or ambiguous", tuple(open_) + src)
         return Result("definition resolution", OK, summary, src)
@@ -703,12 +726,31 @@ class Doctor:
         return Result("deferred gap declarations", OK, f"{len(rows)} declaration(s), each matching its training law; no decided live "
                       "gap is still declared", listed + src)
 
+    def review_schemas_consistent(self) -> Result:
+        """The behaviour-property review's schema files, its adoption gate and its two prompt
+        templates agree (`review_schema.startup_defects`), and every measure the gate gives a frame
+        is a measure of the ontology."""
+        sys.path.insert(0, str(self.repo))
+        from harness.phases import review_schema
+        src = ("harness/phases/review_schemas/*.json, prompts/bp_*.md", "harness/phases/review_schema.py")
+        bad = list(review_schema.startup_defects())
+        for active in ("ontology/ATOMS.md", "ontology/ATOMS_train.md"):
+            known = set(review_schema.measure_table((self.repo / active).read_text(encoding="utf-8")))
+            lost = sorted((set(review_schema.WORLD_VECTORS) | {review_schema.USER_FRAME}) - known)
+            if lost:
+                bad.append(f"{active} lacks the measures the property language gives a frame: {lost}")
+        if bad:
+            return Result("review schemas", FAIL, "; ".join(bad[:5]), src)
+        return Result("review schemas", OK, f"{len(review_schema.FILES)} schemas closed and valid; the gate, the limits and the two "
+                                            "templates agree", src)
+
     def checks(self) -> list[Callable[[], Result]]:
         return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.catalogue_covers,
                                    self.held_out_absent_from_training_tables, self.held_out_laws_out_of_gap_ledger,
                                    self.definition_resolution_report,
                                    self.placeholders_supplied, self.skeleton_tokens,
                                    self.sessions_are_isolated, self.prompts_are_law_free, self.prompts_are_vocabulary_free,
+                                   self.review_schemas_consistent,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
                                    self.rule_files_carry_only_posted_law_ids, self.code_cites_no_document,
                                    self.captures_stay_out_of_the_rule_tree, self.repo_paths_resolve,

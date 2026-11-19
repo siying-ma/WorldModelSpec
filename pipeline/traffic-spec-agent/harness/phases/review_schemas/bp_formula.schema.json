@@ -1,0 +1,461 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:traffic-spec:bp_formula",
+ "title": "a formula of the property language",
+ "description": "The constructs of the rule formula language's JSON (Rule.toJson) a behaviour property may use: connectives, quantifiers over regions, devices and road users, atoms without parameters, comparisons, and terms built from measures, literals and add, sub, mul, neg, abs. A reading parameter, a figure the law does not state, division, a conditional term, an aggregate, a temporal operator and a concept call are outside it. The adoption gate validates each binder class and antecedent against $defs/formula, then checks units, coordinates, constants, variables and observations.",
+ "$ref": "#/$defs/formula",
+ "$defs": {
+  "formula": {
+   "oneOf": [
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "and"
+     ],
+     "properties": {
+      "and": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/formula"
+       },
+       "minItems": 2
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "or"
+     ],
+     "properties": {
+      "or": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/formula"
+       },
+       "minItems": 2
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "not"
+     ],
+     "properties": {
+      "not": {
+       "$ref": "#/$defs/formula"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "implies"
+     ],
+     "properties": {
+      "implies": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/formula"
+       },
+       "minItems": 2,
+       "maxItems": 2
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "exists_region",
+      "var",
+      "body"
+     ],
+     "properties": {
+      "exists_region": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "lit"
+       ],
+       "properties": {
+        "lit": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 64
+        }
+       }
+      },
+      "var": {
+       "type": "string",
+       "pattern": "^[a-z][a-z0-9_]{0,11}$"
+      },
+      "body": {
+       "$ref": "#/$defs/formula"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "forall_region",
+      "var",
+      "body"
+     ],
+     "properties": {
+      "forall_region": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "lit"
+       ],
+       "properties": {
+        "lit": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 64
+        }
+       }
+      },
+      "var": {
+       "type": "string",
+       "pattern": "^[a-z][a-z0-9_]{0,11}$"
+      },
+      "body": {
+       "$ref": "#/$defs/formula"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "exists_device",
+      "var",
+      "body"
+     ],
+     "properties": {
+      "exists_device": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "lit"
+       ],
+       "properties": {
+        "lit": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 64
+        }
+       }
+      },
+      "var": {
+       "type": "string",
+       "pattern": "^[a-z][a-z0-9_]{0,11}$"
+      },
+      "body": {
+       "$ref": "#/$defs/formula"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "forall_device",
+      "var",
+      "body"
+     ],
+     "properties": {
+      "forall_device": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "lit"
+       ],
+       "properties": {
+        "lit": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 64
+        }
+       }
+      },
+      "var": {
+       "type": "string",
+       "pattern": "^[a-z][a-z0-9_]{0,11}$"
+      },
+      "body": {
+       "$ref": "#/$defs/formula"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "exists_user",
+      "body"
+     ],
+     "properties": {
+      "exists_user": {
+       "type": "string",
+       "pattern": "^[a-z][a-z0-9_]{0,11}$"
+      },
+      "body": {
+       "$ref": "#/$defs/formula"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "forall_user",
+      "body"
+     ],
+     "properties": {
+      "forall_user": {
+       "type": "string",
+       "pattern": "^[a-z][a-z0-9_]{0,11}$"
+      },
+      "body": {
+       "$ref": "#/$defs/formula"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "atom",
+      "args",
+      "params"
+     ],
+     "properties": {
+      "atom": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 64
+      },
+      "args": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/arg"
+       }
+      },
+      "params": {
+       "type": "array",
+       "items": {},
+       "minItems": 0,
+       "maxItems": 0
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "cmp",
+      "lhs",
+      "rhs"
+     ],
+     "properties": {
+      "cmp": {
+       "enum": [
+        "lt",
+        "le",
+        "gt",
+        "ge",
+        "eq"
+       ]
+      },
+      "lhs": {
+       "$ref": "#/$defs/term"
+      },
+      "rhs": {
+       "$ref": "#/$defs/term"
+      }
+     }
+    }
+   ]
+  },
+  "term": {
+   "oneOf": [
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "measure",
+      "args"
+     ],
+     "properties": {
+      "measure": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 64
+      },
+      "args": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/arg"
+       }
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "lit",
+      "unit"
+     ],
+     "properties": {
+      "lit": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "num",
+        "den"
+       ],
+       "properties": {
+        "num": {
+         "type": "integer"
+        },
+        "den": {
+         "type": "integer",
+         "minimum": 1
+        }
+       }
+      },
+      "unit": {
+       "enum": [
+        "metre",
+        "second",
+        "metre_per_second",
+        "metre_per_second_sq",
+        "degree",
+        "degree_per_second",
+        "per_metre",
+        "ratio",
+        "count"
+       ]
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "add"
+     ],
+     "properties": {
+      "add": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/term"
+       },
+       "minItems": 2,
+       "maxItems": 2
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "sub"
+     ],
+     "properties": {
+      "sub": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/term"
+       },
+       "minItems": 2,
+       "maxItems": 2
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "mul"
+     ],
+     "properties": {
+      "mul": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/term"
+       },
+       "minItems": 2,
+       "maxItems": 2
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "neg"
+     ],
+     "properties": {
+      "neg": {
+       "$ref": "#/$defs/term"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "abs"
+     ],
+     "properties": {
+      "abs": {
+       "$ref": "#/$defs/term"
+      }
+     }
+    }
+   ]
+  },
+  "arg": {
+   "oneOf": [
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "var"
+     ],
+     "properties": {
+      "var": {
+       "type": "string",
+       "pattern": "^[a-z][a-z0-9_]{0,11}$"
+      }
+     }
+    },
+    {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "lit"
+     ],
+     "properties": {
+      "lit": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 64
+      }
+     }
+    }
+   ]
+  }
+ }
+}

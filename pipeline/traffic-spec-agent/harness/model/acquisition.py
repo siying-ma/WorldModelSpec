@@ -1,12 +1,15 @@
 """The operator's acquisition profiles (`config/acquisition_profiles.json`): for the recordings of one
-acquisition standard, the reading parameter that bounds the integration step of `heading_since`.
+acquisition standard, the reading parameter that bounds the integration step of `heading_since` and of
+`duration_within`.
 
-`heading_since` integrates a road user's yaw rate since its onset rose, and its step bound limits every
-sampling interval it integrates over: a sampling standard of the recordings, shared by every rule a run
-checks on them, never a property of one law. A run names one profile (`Options.acquisition_profile`);
-the node gate requires every `heading_since` step bound of a rule, its concept calls expanded, to be
-that profile's parameter, and accepts it only once the operator has reviewed its value in the reading.
-No plan or repair proposes a parameter any profile names. The file names parameters, never values.
+`heading_since` integrates a road user's yaw rate since its onset rose, and `duration_within` the time
+a state held in a window behind; the step bound is the longest sampling interval either integrates as
+one sample: a sampling standard of the recordings, shared by every rule a run checks on them, never a
+property of one law, and no evidence that no observation is missing. A run names one profile
+(`Options.acquisition_profile`); the node gate requires every step bound of either operator in a rule,
+its concept calls expanded, to be that profile's parameter, and accepts it only once the operator has
+reviewed its value in the reading. No plan or repair proposes a parameter any profile names. The file
+names parameters, never values; the key `heading_since_step` names the one parameter both read.
 
 Format: {"profiles": {"<profile>": {"covers": "<which recordings>", "heading_since_step": "p.<name>"}}}."""
 from __future__ import annotations
@@ -49,11 +52,12 @@ def load(path: Path | None = None) -> dict[str, dict]:
 
 
 def step_parameter(profile: str | None, path: Path | None = None) -> str:
-    """The reading parameter that bounds `heading_since`'s step under `profile`; `ProfileError` when
+    """The reading parameter that bounds the step of `heading_since` and `duration_within` under
+    `profile`; `ProfileError` when
     no profile is named, the file is not readable whole, or the profile is not in it."""
     if not profile:
         raise ProfileError("the run names no acquisition profile (`--acquisition_profile`), so no reviewed parameter bounds "
-                           "the step of `heading_since`")
+                           "the step of `heading_since` or `duration_within`")
     profiles = load(path)
     if profile not in profiles:
         raise ProfileError(f"acquisition profile `{profile}` is not in {path or PROFILES} (profiles: {', '.join(sorted(profiles))})")
@@ -63,7 +67,7 @@ def step_parameter(profile: str | None, path: Path | None = None) -> str:
 def reserved_parameters(path: Path | None = None) -> dict[str, list[str]]:
     """Each parameter some profile names, with the profiles naming it: the operator's, never a
     session's to propose. Empty when the file is absent or unreadable (the gate refuses any use
-    of `heading_since` then)."""
+    of `heading_since` or `duration_within` then)."""
     try:
         profiles = load(path)
     except ProfileError:
@@ -95,14 +99,15 @@ def review_defects(param: str, reading_data: dict) -> list[str]:
 
 def standard_note(profile: str | None, path: Path | None = None) -> str:
     """The run's acquisition standard as its planning, repair and coding sessions are shown it: the
-    profile and the reviewed parameter every `headingSince` step bound is, or that none resolves and
-    no rule may read `headingSince`."""
+    profile and the reviewed parameter every `headingSince` and `durationWithin` step bound is, or that
+    none resolves and no rule may read either."""
     try:
         param = step_parameter(profile, path)
     except ProfileError as e:
-        return f"\nAcquisition standard: {e}; no rule of this run may read `headingSince`.\n"
-    return (f"\nAcquisition standard: profile `{profile}`. Every `headingSince` step bound in a rule is exactly "
-            f"`.param \"{param}\"`, the operator's reviewed parameter: name it as it is, never propose it or a value for it.\n")
+        return f"\nAcquisition standard: {e}; no rule of this run may read `headingSince` or `durationWithin`.\n"
+    return (f"\nAcquisition standard: profile `{profile}`. Every `headingSince` and `durationWithin` step bound in a rule is "
+            f"exactly `.param \"{param}\"`, the operator's reviewed parameter: name it as it is, never propose it or a value for "
+            "it. It is the longest interval integrated as one sample, not evidence that no observation is missing.\n")
 
 
 def standard_digest(profile: str | None, path: Path | None = None) -> str:

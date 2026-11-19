@@ -91,17 +91,7 @@ Users: {users}
    whether a plan can be carried out); the laws that used the concept go back to their planner, and
    the operator sees it as a gap. That a word has no atom of its own is never, by itself, a reason
    to withdraw.
-7. **Window-diagnosis evidence.** When supplied, this evidence authorizes diagnosis; it does not
-   establish that a rule or concept is wrong. Justify any proposed change to a window or event
-   definition from the law, applicable definitions and concept contracts. Do not choose windows from
-   recording length, fit a change to a recording identifier, or
-   replace unknown with a Boolean. Follow the existing reading proposal and operator-approval rules
-   for parameter values. A concept that is accepted, or depended on by an accepted record, keeps its
-   contract and interface under its id; a changed notion takes a new id and its callers return to
-   their planner. If the justified meaning still requires unavailable context, leave it undecided
-   and report the limitation through the existing output format. More decided cases alone do not
-   establish alignment.
-8. **Event-relative history.** When the words relate a condition or a prior act to an event, state
+7. **Event-relative history.** When the words relate a condition or a prior act to an event, state
    the event, its recognition point and the relevant history boundary in the record and any concept
    contract. Use an observed onset where it is the boundary the words or the disclosed reading
    require. Do not use a sliding recognition window as the act's beginning, or discard evidence
@@ -112,7 +102,7 @@ Users: {users}
    the dependent quantity or condition unknown; other branches may still decide the verdict. If the
    formula language cannot express the required boundary, report an operator gap rather than change
    the meaning.
-9. Decide; do not ask.
+8. Decide; do not ask.
 
 ## Output
 

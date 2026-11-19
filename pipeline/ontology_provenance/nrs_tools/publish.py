@@ -49,7 +49,11 @@ def dump(path: Path, rows: list[dict]) -> None:
 
 
 def split_record(rec: dict, meta_keys: tuple[str, ...], old_meta: dict | None) -> tuple[dict, dict]:
+    """A record in posted form keeps the analysis of its existing sidecar row; a record that carries
+    analysis (one the generator just wrote) is its own analysis, so a field it no longer has is gone."""
     posted = {k: rec[k] for k in POSTED if k in rec}
+    if set(rec) - set(POSTED):
+        old_meta = None
     meta = {"id": rec["id"]}
     for k in meta_keys:
         if k in rec:

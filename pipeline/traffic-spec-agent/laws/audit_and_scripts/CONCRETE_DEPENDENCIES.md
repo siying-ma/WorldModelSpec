@@ -8,7 +8,6 @@ road user's rules without an explicit id; they are listed separately.
 
 | concrete line | refs → view | lawfully-phrases |
 |---|---|---|
-| `NRS-484B-117-1` | `DEF-NRS-239C-065` → definition<br>`DEF-NRS-648-016` → definition | — |
 | `NRS-484B-250-1` | `NRS-484B-250-4` → concrete | — |
 | `NRS-484B-250-2` | `NRS-484B-250-4` → concrete | — |
 | `NRS-484B-250-3` | `NRS-484B-250-4` → concrete | — |
@@ -18,11 +17,13 @@ road user's rules without an explicit id; they are listed separately.
 | `NRS-484B-267-2f` | `NRS-484B-267-1a` → concrete<br>`NRS-484B-267-1b` → judgement<br>`NRS-484B-267-1c` → concrete<br>`DEF-NRS-484A-480-3` → definition | — |
 | `NRS-484B-270-3` | `NRS-484B-297-6` → judgement | — |
 | `NRS-484B-270-4` | `NRS-484B-270-3` → concrete | — |
-| `NRS-484B-283-1d1` | `NRS-484B-287-1c` → concrete<br>`NRS-484B-287-1d` → concrete<br>`NRS-484B-287-1e` → concrete<br>`LVMC-11-30-060-A` → concrete<br>`LVMC-11-30-060-B` → concrete<br>`LVMC-11-30-140-B` → judgement<br>`LVMC-11-46-030` → concrete | — |
-| `NRS-484B-283-1d2` | `NRS-484B-287-1c` → concrete<br>`NRS-484B-287-1d` → concrete<br>`NRS-484B-287-1e` → concrete<br>`LVMC-11-30-060-A` → concrete<br>`LVMC-11-30-060-B` → concrete<br>`LVMC-11-30-140-B` → judgement<br>`LVMC-11-46-030` → concrete | — |
-| `NRS-484B-287-1c` | `LVMC-11-30-140-B` → judgement | — |
-| `NRS-484B-287-1d` | `LVMC-11-30-140-B` → judgement | — |
-| `NRS-484B-287-1e` | `LVMC-11-30-140-B` → judgement | — |
+| `NRS-484B-283-1d1` | `NRS-484B-287-1a` → concrete<br>`NRS-484B-287-1b` → concrete<br>`NRS-484B-287-1c` → concrete<br>`NRS-484B-287-1d` → concrete<br>`NRS-484B-287-1e` → concrete<br>`NRS-484B-290` → judgement<br>`NRS-484B-350-1a` → concrete<br>`NRS-484B-350-1b` → concrete | — |
+| `NRS-484B-283-1d2` | `NRS-484B-287-1a` → concrete<br>`NRS-484B-287-1b` → concrete<br>`NRS-484B-287-1c` → concrete<br>`NRS-484B-287-1d` → concrete<br>`NRS-484B-287-1e` → concrete<br>`NRS-484B-290` → judgement<br>`NRS-484B-350-1a` → concrete<br>`NRS-484B-350-1b` → concrete | — |
+| `NRS-484B-287-1a` | `NRS-484B-290` → judgement | — |
+| `NRS-484B-287-1b` | `NRS-484B-290` → judgement | — |
+| `NRS-484B-287-1c` | `NRS-484B-290` → judgement | — |
+| `NRS-484B-287-1d` | `NRS-484B-290` → judgement | — |
+| `NRS-484B-287-1e` | `NRS-484B-290` → judgement | — |
 | `NRS-484B-297-2` | `NRS-484B-297-6` → judgement | — |
 | `NRS-484B-300-1` | `NRS-484B-307-2a` → concrete<br>`NRS-484B-307-2b` → concrete<br>`NRS-484B-307-3a` → concrete<br>`NRS-484B-307-4a` → concrete<br>`NRS-484B-307-4b` → concrete<br>`NRS-484B-307-5a` → concrete<br>`NRS-484B-307-6a` → concrete<br>`NRS-484B-307-7a` → concrete<br>`NRS-484B-307-8a` → concrete<br>`NRS-484B-307-8b` → concrete<br>`NRS-484B-307-8c` → concrete<br>`NRS-484B-307-8d` → concrete<br>`NRS-484B-307-8e` → concrete<br>`NRS-484B-307-9a` → concrete<br>`NRS-484B-307-9b` → concrete<br>`NRS-484B-307-9c` → concrete<br>`NRS-484B-307-12a` → concrete<br>`NRS-484B-307-12b` → concrete | — |
 | `NRS-484B-307-2a` | — | lawfully within |
@@ -43,18 +44,20 @@ road user's rules without an explicit id; they are listed separately.
 | `NRS-484B-587-2b` | — | lawfully placed |
 | `NRS-484B-769` | `DEF-NRS-484B-420` → definition | — |
 | `NRS-484B-785-1a` | `DEF-LVMC-11-40-185-A` → definition | — |
+| `NRS-484D-165-3` | `NRS-484D-100-1` → concrete<br>`DEF-NRS-484D-165-1` → definition | — |
 | `NRS-484D-215-1` | `NRS-484D-100-1` → concrete<br>`DEF-NRS-484D-210-1-2` → definition | — |
 | `NRS-484D-215-2` | `NRS-484D-100-1` → concrete<br>`DEF-NRS-484D-210-1-2` → definition | — |
 | `LVMC-11-18-030-B` | — | lawful turning, lawfully passing |
 | `LVMC-11-52-180-C` | — | lawfully parked |
 | `LVMC-11-60-030-A1` | `DEF-LVMC-11-60-010` → definition | — |
 | `LVMC-11-60-030-A5` | `DEF-LVMC-11-60-010` → definition | — |
+| `LVMC-11-38-120-B` | `DEF-LVMC-11-38-120-A` → definition | — |
 
 ## Tally of reference targets from concrete lines
 
-- concrete: 50
+- concrete: 53
 - definition: 12
-- judgement: 16
+- judgement: 18
 
 ## Concrete lines that depend on a line outside the concrete view
 
@@ -62,11 +65,13 @@ road user's rules without an explicit id; they are listed separately.
 |---|---|---|
 | `NRS-484B-267-2f` | `NRS-484B-267-1b` | judgement |
 | `NRS-484B-270-3` | `NRS-484B-297-6` | judgement |
-| `NRS-484B-283-1d1` | `LVMC-11-30-140-B` | judgement |
-| `NRS-484B-283-1d2` | `LVMC-11-30-140-B` | judgement |
-| `NRS-484B-287-1c` | `LVMC-11-30-140-B` | judgement |
-| `NRS-484B-287-1d` | `LVMC-11-30-140-B` | judgement |
-| `NRS-484B-287-1e` | `LVMC-11-30-140-B` | judgement |
+| `NRS-484B-283-1d1` | `NRS-484B-290` | judgement |
+| `NRS-484B-283-1d2` | `NRS-484B-290` | judgement |
+| `NRS-484B-287-1a` | `NRS-484B-290` | judgement |
+| `NRS-484B-287-1b` | `NRS-484B-290` | judgement |
+| `NRS-484B-287-1c` | `NRS-484B-290` | judgement |
+| `NRS-484B-287-1d` | `NRS-484B-290` | judgement |
+| `NRS-484B-287-1e` | `NRS-484B-290` | judgement |
 | `NRS-484B-297-2` | `NRS-484B-297-6` | judgement |
 | `NRS-484B-307-2b` | `NRS-484B-283-1d3` | judgement |
 | `NRS-484B-307-2b` | `NRS-484B-283-1d4` | judgement |

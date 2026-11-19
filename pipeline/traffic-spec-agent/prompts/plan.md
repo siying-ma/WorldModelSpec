@@ -25,12 +25,20 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   competing definitions), the representation the run selected for it and, for a legal aggregate,
   its admitted id; then the definitions' texts; then, whole, each other law the laws name in
   brackets, with the definitions that apply to it (what a `definition` reference quotes, rule 5).
-  Definitions are not obligations and are never a node (rule 0).
+  Definitions are not obligations and are never a node.
 - **Ontology** — every atom (id, contract, scope), every attribute value, and every primitive
   with its parameters. With the concept catalogue, this is the **closed set**.
 - **Formula language** — every operator a rule or a concept is written with: what a formula can
   express. An occasion, a window or a comparison you plan is one of these; an `operator` gap
-  proposes only what none of them writes.
+  proposes only what none of them writes. `durationWithin w step φ op bound` is the time a state
+  formula φ held in the window of length `w` behind the judged observation, as the trace's samples
+  show it: each observation stands for the interval since the one before it, counted as held where
+  φ is true there and the interval is at most `step`, as not held where φ is false there and the
+  interval is at most `step`, and as either otherwise, as is the part of the window before the
+  trace starts; it compares by `gt` only and is decided only where every such count agrees. Its
+  `step` is the run's reviewed acquisition step parameter, never one you propose. Core marks every
+  verdict that reads it, directly or through another rule, `sampled_duration`: a duration the
+  samples show, not one proved between them.
 - **Concept language** — what a concept record can declare and a concept body can say: the
   formal sorts (a road user, a literal spelling, a count), where a literal formal may appear, and how
   a call fills the formals. A concept you plan is written in it.
@@ -152,10 +160,27 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    that relate two regions, read the contracts of the relation atoms in the contracts table: where
    none of them relates the two, the span is an `atom` gap.
 
+   A concept the catalogue already carries, or one a concept repair or an earlier batch of this iteration
+   proposed (listed under the catalogue), is reused by its id and never re-proposed: a second record
+   under the same id is dropped, and only the first contract reaches the coder.
+
+   A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
+   edited (one exception: a training repair transaction may correct a body of this run under its
+   id, keeping its contract text word for word, its formals and its parameters, and the concept
+   review passes it before it is committed): a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
+   the **same contract**, `supersedes`, and a `counterexample` scenario on which the old body
+   gives the wrong verdict; a version the catalogue lists as fenced is superseded the same way
+   without a counterexample: its fence stands for it. A different contract is a new concept under
+   a new name. In a `test`
+   run nothing is superseded: report the defect under `## Concept defects` in `PLAN.md`.
+0c. **Words the law defines, the regions it singles out, and the moment of a condition.**
    A word a posted definition defines is read with that definition's inclusions and exclusions: the
    element's justification quotes, for each atom or concept it maps the word to, the definition's
    words that include it, and an exclusion that the contract of the atom or concept does not already
-   make is carried by the rule as a condition beside it. The law's own words that qualify the word
+   make is carried by the rule as a condition beside it. An exception the definition states is part
+   of the word's meaning: wherever the rule uses the word, the exception is carried with it, whole,
+   read as the ontology's section on what is not an atom reads that kind of exception, and a
+   narrower case (one lane, one duration) never stands for it. The law's own words that qualify the word
    (in place, in operation, facing the road user, controlling a place) limit which of its members the
    duty reads: the justification quotes them and names the members they leave out.
    A defined place word keeps its definition's whole extent; a qualification the law's own words state
@@ -183,10 +208,6 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    fix the order, not the moment of every later condition. An earlier occurrence of the same kind of
    event never stands for the one this duty refers to.
 
-   A concept the catalogue already carries, or one a concept repair or an earlier batch of this iteration
-   proposed (listed under the catalogue), is reused by its id and never re-proposed: a second record
-   under the same id is dropped, and only the first contract reaches the coder.
-
    A region the words single out — the junction a road user enters, the stretch a posting governs,
    the line or crossing of an entrance — is the region every condition the words place on it reads,
    however that condition is carried. A catalogued concept fits it only if the concept takes that
@@ -198,16 +219,6 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    the region the node binds, read at the observation the words fix, or carried by a new concept
    that takes that region as a `region` argument; that other laws may use the same condition is a
    reason to propose one, not a requirement.
-
-   A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
-   edited (one exception: a training repair transaction may correct a body of this run under its
-   id, keeping its contract text word for word, its formals and its parameters, and the concept
-   review passes it before it is committed): a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
-   the **same contract**, `supersedes`, and a `counterexample` scenario on which the old body
-   gives the wrong verdict; a version the catalogue lists as fenced is superseded the same way
-   without a counterexample: its fence stands for it. A different contract is a new concept under
-   a new name. In a `test`
-   run nothing is superseded: report the defect under `## Concept defects` in `PLAN.md`.
 1. **Segment first.** Cut the verbatim text into spans. Each span is a contiguous verbatim
    substring; the spans are disjoint and together cover the text (whitespace and punctuation
    excepted). Give each a role: `trigger`, `subject`, `obligation`, `exception`, `standard`,
@@ -216,9 +227,18 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    only it needs; the other node segments the same words under a role of its own), `definitional`,
    `boilerplate` (text that only connects spans or introduces a list; words that permit, require
    or forbid anything are never boilerplate, nor `sibling`).
+   Words that only grant a permission (a road user may do something, and no "only" or other word
+   confines the conduct to the permitted case) never yield a duty that forbids everything outside
+   the permission, unless the operator has approved that closed reading as a convention for the
+   whole corpus.
+   Each `exception` span states its kind in `exception_kinds`, by what the rule says where the
+   exception occurs: `meets_duty` where acting that way meets the requirement (the verdict there is
+   compliant), `lifts_duty` where the duty does not apply then (not applicable). A `permits` case
+   sits on a `meets_duty` exception; a case on a `lifts_duty` exception that another rule reads
+   cannot be coded yet and is filed for the operator.
 2. **Account for every substantive span** exactly once: an element (atoms, or concepts under `derived`),
    an operationalization (a standard), an assumption (a legal region class the ontology names as
-   an assumption), a declared intention (below), a composition (another rule, see rule 5), or a
+   an assumption), a declared intention or a declared fact (below), a composition (another rule, see rule 5), or a
    residue (words the vocabulary cannot carry). A gap is not a carrier: it annotates a span that an element or an
    operationalization maps to its nearest atoms (step 6) only to show why they do not carry the span's distinction, never
    as the way the span is coded. A node that carries a gap is not coded, and its law stays blocked until a later record,
@@ -230,12 +250,15 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    its own rule. An **assumption** (`asm.<name>`, with the meaning a trace must declare; an
    undeclared assumption leaves the verdict unknown) carries only a legal region class or a
    calendar or clock condition that the ontology's section on what is not an atom lists. A
-   declared intention or an `observable_reading` carries such a span only where its own rule below
-   allows it. A span that adds no restriction, the duty being the same whether or not its words
+   declared intention, a declared fact or an `observable_reading` carries such a span only where its
+   own rule below allows it. A span that adds no restriction, the duty being the same whether or not its words
    hold, is a residue of scope `none` as stated below, whose `why` says why the duty is the same
    either way. Any other such span is mapped to its nearest atoms with a gap. The condition of a
    road user (disabled, or unable to be moved), a role or duty a person holds, an emergency, or what
-   the law requires of the road user is never an assumption.
+   the law requires of the road user is never an assumption, nor an `observable_reading`: a
+   condition is read by the atom the ontology has for it, what the law requires by the rule it
+   names, and a role or duty, a permit or privilege, an emergency and the other kinds below by a
+   declared fact.
    Where the words state that a road user intends, or is preparing, to turn, the span is carried
    by a **declared intention** `{span, id, meaning}` in `intentions` (`int.<name>`), which the trace
    declares for that road user at a region (the formula `intent`, with the road user and the region
@@ -247,10 +270,45 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    the words of the intention and its region is the region that element binds. The act the words
    also name ("is making …") is read by its manoeuvre concept, and the two are joined as the words
    join them. Such words are never carried by an act in a window ahead, nor by a signal; a signal
-   "of intention" is the signal itself, not a declared intention. An assumption or an intention
-   reuses an id of the declared-fact catalogue (listed with the parameters) whose meaning is the
-   words' meaning, with no `meaning`; a new id gives its `meaning`, and never names again a meaning
-   the catalogue holds. A meaning states the fact or state the source supplies; it never cites a
+   "of intention" is the signal itself, not a declared intention.
+   Where the words make a trigger, subject, condition or exception turn on a fact no atom observes,
+   no class of road user decides and a scene source can confirm, about a road user, a relation
+   between two road users or between a road user and a place, or what a map record states of a region, the
+   span is carried by a **declared fact** `{span, id, meaning, kind, subjects, true_when,
+   false_when}` in `facts` (`fact.<name>`), which the trace declares of its subjects (the formula
+   `fact`, its arguments the bound road users in the order the meaning names them and the bound
+   region, if any); never by a gap, an assumption, an `observable_reading` or a residue. Its `kind`
+   is one of two families. A temporary fact about road users, true over the time the source declares
+   it: `duty` (a role or a duty the road user is performing at the time: on official duty, engaged
+   in work on the way, a service trip under way), `permit` (a permit, licence or privilege it holds
+   for the conduct the words name, including one tied to a place), `assignment` (an assignment the
+   source holds for it, such as the route it serves or a terminus of that route at a place),
+   `membership` (its membership of an organized group of road users travelling together),
+   `consent` (a consent one road user has given another) and `emergency` (an emergency its conduct
+   answers to at the time). A map record's fact about one region, the same at every scene:
+   `map_record` (what the source's map records state of the region, such as the named segment of a
+   way it lies on; never derived from a sign). `subjects` is `user` (one road user), `user_pair`
+   (two, in order), `user_region` (a road user and a region) or `region` (a region alone, and only
+   for `map_record`); a consent is of a `user_pair`. `true_when` states
+   what a source must hold to declare the fact true, `false_when` what it must hold to declare it
+   false: only a record that excludes the fact, never the absence of a record that states it; a
+   source that cannot exclude it leaves it out, and the rule is then unknown wherever the fact can
+   change its verdict. A declared fact never stands for conduct or a feature an atom observes, a
+   road user's class or legal identity (a class or an aggregate), a physical state of a road user
+   or of its equipment (its atom), a place or a time (an assumption), or an intention (a declared
+   intention); its id names the fact only, never a law, a place or a class. A declared fact is
+   carried only where the words name one: it is never added as a condition the words do not state.
+   Where the words make a duty or a privilege turn on a road user's class and what it displays (a
+   duty toward a road user of a class using its warning lamps, a privilege the words give a class
+   using them), the rule reads the class and the displayed signal and declares no fact. Where they
+   make an exception or a condition turn on the road user's own duty, task, permit or emergency (an
+   official duty it is performing, an emergency call it is answering), the declared fact carries
+   those words, and nothing the road user displays stands for it, its own warning lamps,
+   siren or hazard lamps included: a lit lamp is never read as a duty performed or an emergency.
+   An assumption, an intention or a declared fact reuses an id of the declared-fact catalogue
+   (listed with the parameters) whose meaning is the words' meaning, with no `meaning` (and a fact
+   with none of its terms); a new id gives its `meaning` (and a fact its terms), and never names
+   again a meaning the catalogue holds. A meaning states the fact or state the source supplies; it never cites a
    law, explains a defined word of the law, or presets whether the law applies or a duty is met.
    Any other word with no observable counterpart is neither: an imminent movement, a
    perception or a knowledge, a purpose, the legal status of a feature in the scene, or who or what
@@ -269,7 +327,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    observable counterpart is no such residue: it takes the declared reading above, or it is a gap. A reading you choose on a span you do carry, where the words
    leave it open and the atoms state it more narrowly, is a **narrowing** `{span, why}` on an
    obligation or standard span; the rule is held to it, and a narrowing that drops what the words
-   require is a defect.
+   require is a defect. Words of a kind the ontology's catalogue of approved abstractions lists are
+   omitted only under that abstraction and within its scope, declared on the span whose words are
+   omitted as a narrowing `{span, why, kind: "abstraction", abstraction: "<id>"}`; the rule is then
+   partial coverage. Words of any other kind are never omitted.
 3. **Map by contract, and quote it.** An element's justification quotes the clause of the atom's
    contract that denotes the span and says why each "not a stand-in for" exclusion does not
    apply. If no contract denotes the span, the span is a **gap** with a proposal and the nearest
@@ -339,11 +400,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    words decide; where they say nothing of time, a trigger or condition is read at `some_moment`,
    since reading one instant drops situations the words cover, and an exception `throughout`, so
    that it excuses only an act it covers whole. Reading a trigger or condition only
-   `at_recognition` where the words do not place it there narrows where the rule applies, and the
-   rule is held to that like any narrowed trigger or condition, whichever span the record
-   discloses it on. Where the obligation span names alternative acts, `act` lists their concepts,
-   and they share one occasion: the boundary, `under_way` and the scenarios. `boundary` is the
-   boundary the acts' records declare: `window`, where `window` names the act's window parameter;
+   `at_recognition` where the words do not place it there narrows where the rule applies, which a
+   trigger or condition never is: declare the occasion the words give, and where the formula
+   language cannot write it, the span is an `operator` gap. Where the obligation span names
+   alternative acts, `act` lists their concepts, and they share one occasion: the boundary,
+   `under_way` and the scenarios. `boundary` is the boundary the acts' records declare:
+   `window`, where `window` names the act's window parameter;
    or `event`, for an act no window of fixed length bounds, where `onset` is an element
    `{words, atoms, derived, justification}` mapping what marks
    the act's observed beginning, claimed and coded like any element, and `recognition` the words
@@ -364,8 +426,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    record's `obligation` states, from the words and from the convention the ontology's section on
    what is not an atom gives for that kind of duty, the trigger, the place of the act and the
    history bound. State the event and target bindings, the conditions that end the search and how
-   their observations are read, the parameter references, and when missing evidence prevents a
-   decision, so the coder can implement the bound without choosing a reading. Do not invent a
+   their observations are read, the parameter references, when missing evidence prevents a
+   decision, and that where the road user occupies several carriers entering the same junction the
+   duty is owed through every one of them, so the coder can implement the bound without choosing a
+   reading. Do not invent a
    history boundary from the recording's start, a subject's first observation, or a cumulative
    quantity whose origin is the recording's start. Preserve any event, time or distance window the
    words explicitly require. Words that fix their own occurrence, timing or exception are written
@@ -389,8 +453,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 5. **One node per obligation span, and nothing below it.** Two obligations in one line are two
    nodes, `…_o1` and `…_o2`, each segmenting the whole line; in each, the other's obligation span
    and the words only the other needs carry the role `sibling`. An exception or a condition that
-   names another rule is a composition: `as: exception` — the duty does not apply where that rule
-   applies (its binders' classes and applicability hold); `as: condition` — the duty applies where
+   names another rule is a composition: `as: exception` — the duty does not apply in the case that
+   rule permits or requires, and nowhere else: the exception reads that case, not every situation
+   in which the composed rule applies; `as: condition` — the duty applies where
    that rule applies; `as: compliance` — the other rule's verdict is complied with ("lawfully",
    "in the manner prescribed by"); `as: unless` — on a `reference` span, it suspends one
    exception or condition span of this node where the other rule applies ("except as otherwise
@@ -413,11 +478,68 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    span in `source_spans`. A `standard` span whose bound an accepted rule of the
    library already states as its own obligation is carried by composing that rule (`as:
    compliance`), not by an operationalization that restates it. The composed rule's every binder is mapped to one of this
-   node's binders or to a road user the coding agent will quantify over. `rule` names the **node**
+   node's binders or to a road user the coding agent will quantify over, and a road user mapped onto
+   it is of a class that binder admits. `rule` names the **node**
    (`NRS_…`, underscores; `…_o2` for the second obligation of a line), never the law id. A rule
    not in the corpus is a residue. A node never spans two law lines, and a condition, standard or exception is
    never split into a node of its own. When a span does not ground in the ontology, the answer is
    a gap or a residue, never a further decomposition.
+5a. **Words that refer to the body of the rules, not to one rule.** Words that name no rule but
+   the rules of the corpus as a whole are a rule-set operator on their span (`rule_sets`), never a
+   composition, a gap or a narrowing to the few rules you can think of; it waits on no node.
+   - `op: required_by`, with a `conduct` of Core's `Conduct` and `who`, the road user whose
+     conduct is meant: words that except or allow conduct where some rule requires it ("in
+     compliance with law" beside a prohibition of that conduct). It holds where a case of some rule
+     of the library requiring that conduct of `who` holds there, and is false where none does: a
+     rule that is not engaged excuses nothing.
+   - `op: lawful`, with a `scope` and `who`: words that require, or presuppose, that a road user
+     complies with the rules that bind it ("lawfully" naming no rule; the rules "applicable to" a
+     class of road users). `scope: every` is every rule; `subject_class` with an `aggregate` id the
+     rules whose subject is of that aggregate; `as_class` with an `aggregate` id those rules read
+     as binding `who` whatever its class, where the words apply one class's rules to a road user of
+     another. `scope: purpose` with a `purpose` of Core's `Purpose`: the rules that declare that
+     purpose (the instructions of the devices that govern a road user; the constraints on where
+     and how long a road user may remain at rest); `as_class_purpose` with an `aggregate` and a `purpose`: those of them whose subject
+     is of the aggregate, read as binding `who` whatever its class. A rule that `who` does not engage
+     counts as complied with, so a scope `who` can never engage (another class's rules) is
+     `as_class` or `as_class_purpose`, never `subject_class`. `lawful` reads compliance at the judged
+     observation: it carries words that mean complying now; words about past conduct or a continuing
+     state take the scope of the purpose that rules them, never `every`.
+   **Purposes.** A node whose words make it a rule of a `Purpose` declares it in `purposes`
+   (`purpose`, the `span` whose words make it so, `why`); the gate holds the declaration to what
+   the rule reads, and a purpose scope is never taken as complete because nodes declared it.
+   Words that name the rule they mean stay a composition (rule 5).
+   **Cases.** A node declares in `cases` each situation its own words provide for that another
+   node may read, each with a `name` (lower-case, `_`), a `kind` and the `situation` in words; a
+   case holds only where the node applies. `kind: requires`, on the obligation span, with a
+   `conduct` of Core's `Conduct`: where the duty requires its subject to show that conduct at the
+   observation (to be at rest, to remain at rest), read by another node's `required_by`.
+   `kind: permits`, on a permission, exception or condition span: a situation in which the node
+   permits an act. A node that reads a rule-set operator declares no `requires` case. The gate runs
+   control checks of every case against the node's own verdicts on its witnesses (they are checks,
+   not a proof over every trace): where a `requires` case holds and the conduct is not shown the
+   node is violated, where its applicability or an exception removes the duty the case does not
+   hold, and where a `permits` case holds and the act is shown the node is not violated; a case
+   wider than the duty is refused, and a case is never widened to pass. A case requiring a halt is
+   held to three paired witnesses in one external situation, `stop_<case>_halt`, `stop_<case>_drive`
+   and `stop_<case>_creep` (at rest, driving, and moving more slowly): the case holds alike in all
+   three and is violated in both the drive and the creep, or the words do not require coming to rest and the span
+   is a gap. A declared purpose is held to two paired witnesses: `purpose_standing_or_parking_halt`
+   and `_move` (the same situation, the subject at rest and violated, moving and not violated), or
+   `purpose_device_instruction_on` and `_off` (the same scenes with and without the devices,
+   violated and not violated). A case on a span an `unless` composition scopes is held to the witness
+   `unless_<case>` (`unless_<case>_<n>` for the n-th of several such compositions, in record order):
+   a trace on which the composed rule applies to the road users the composition maps, where the case
+   does not hold, and holds once that rule's applicability is removed from the same trace.
+   **Exceptions that read a case.** "Except as otherwise provided in <law>" composes that law's
+   node `as: exception` (or `unless`) naming in `case` the case of it that provides otherwise,
+   never its whole applicability: a node that merely applies provides nothing otherwise. The
+   composition stays a dependency on that node. A case the target does not declare is returned to
+   the target's plan; it is never read as absent.
+   **Permissions.** A line that only permits ("may …") with no duty is a permission node
+   (`permission: true`): its "may" span has role `permission`, it has no obligation span, and it
+   declares the `permits` cases other nodes cite. It is never violated and never a prohibition of
+   everything else, and never a residue. Its standard witnesses are `permit`, `idle` and `blind`.
 6. **The node id is derived, not chosen.** It is the law id with `-` replaced by `_`; a line with
    several obligation spans numbers its nodes `_o1`, `_o2`, … in text order.
 7. **Same words, same atoms, where they mean the same.** If the mapping index maps a span's
@@ -443,7 +565,8 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 9. **Four scenarios**, in atom vocabulary, with `expected` spelled exactly: `forbid` → `violated`,
    `permit` → `compliant`, `idle` → `not_applicable`, `blind` → `unknown` (with `masked`: the
    atom whose absence makes the rule unknown — one the node claims, or one its claimed concepts
-   read). Where the duty or the exception has alternatives the four do not visit, you may add
+   read). A permission node plans `permit`, `idle` and `blind` only (rule 5a). Where the duty or
+   the exception has alternatives the four do not visit, you may add
    `branch_<n>` scenarios expecting `violated` or `compliant`, or `not_applicable` for a situation
    the words exclude from the duty; the coder adds further branch witnesses itself until every leaf
    of the rule is exercised. Where a weaker fact than a referred one would change the law's
@@ -478,7 +601,7 @@ For each law in the list:
 
 1. Read the text and the definitions it cites. Segment (rule 1).
 2. For each substantive span, find the atom, primitive or concept whose contract denotes it; write the
-   justification (rule 3). Where a span's words are in the mapping index, reuse (rule 6).
+   justification (rule 3). Where a span's words are in the mapping index, reuse (rule 7).
 3. Operationalize the `standard` spans (rule 4). Decide `surrogate`.
 4. Decide the nodes (rules 5 and 6): binders (the subject first, its class from the subject/trigger
    spans), applicability (trigger and condition spans, in plain words), obligation (obligation
@@ -509,8 +632,11 @@ again, why their representation or the qualifications kept changed), and `## For
 node_id, law_refs, subject{binder, class_elements}, segmentation[{id, text, role}],
 elements[{span, atoms, derived, justification, source_spans (only on an element whose words are borrowed: the `definition` reference spans they come from, each one's quote repeated in the justification)}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{span, id, meaning}],
-compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)} | {span (a `reference` span), as: "definition", source (the id of the law or posted definition the words are borrowed from), quote (the borrowed words, verbatim from it)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
-binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
+facts[{span, id, meaning, kind: "duty" | "permit" | "assignment" | "membership" | "consent" | "emergency" | "map_record", subjects: "user" | "user_pair" | "user_region" | "region", true_when, false_when} (a reused id: span and id only)],
+compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended), case (exception, condition, unless: the target's case read instead of its applicability)} | {span (a `reference` span), as: "definition", source (the id of the law or posted definition the words are borrowed from), quote (the borrowed words, verbatim from it)}],
+rule_sets[{span, op: "required_by" | "lawful", who, conduct (required_by), scope: "every" | "subject_class" | "as_class" | "purpose" | "as_class_purpose" (lawful), aggregate (subject_class, as_class, as_class_purpose), purpose (purpose, as_class_purpose), why}], cases[{span, name, kind: "requires" | "permits", conduct (requires), situation}], permission (a permission node only: true), purposes[{purpose, span, why}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
+exception_kinds[{span (each `exception` span), kind: "meets_duty" | "lifts_duty"}],
+binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency", or "abstraction" with `abstraction`: an id of the ontology's catalogue of approved abstractions), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list), boundary (history_boundary only: the approach its trace lacks)}],
 occasion{act (a concept id, or a list of them for alternative acts), boundary: "window" | "event" (absent: "window"), window (boundary "window"), onset{words, atoms, derived, justification} (boundary "event"), recognition (boundary "event"), gap (boundary "event", only where the formula language cannot write it: the span of an `operator` gap), under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
@@ -574,7 +700,7 @@ Run the validator on the finished file and fix what it names; then confirm by re
   `aggregates.jsonl` that classifies every class of road users with the law's own words;
 - every span text is a verbatim substring of its law, spans disjoint, union complete;
 - every non-boilerplate span appears in exactly one of elements / operationalizations /
-  assumptions / intentions / compositions / residues, and a gap's span in an element or an operationalization;
+  assumptions / intentions / facts / compositions / rule_sets / residues, and a gap's span in an element or an operationalization;
 - every atom, value and concept id you wrote exists in the ontology or the catalogue, or is a
   concept record of this plan;
   every node that reads a feature claims an anchor;
@@ -590,7 +716,8 @@ Run the validator on the finished file and fix what it names; then confirm by re
   obligations the law's nodes carry, in text order;
 - every composition's `rule` is a node id, except a `definition` reference's, which has none and is
   named in the `source_spans` of the elements that carry its words; every `masked` is a list;
-- every node has the four scenarios; the `blind` one masks a claimed atom;
+- every node has the four scenarios (a permission node: `permit`, `idle` and `blind`); the
+  `blind` one masks a claimed atom;
 - a node of rule 4c states its trigger, place and history bound in full in `obligation`, and plans
   the `history_boundary` scenario with its `boundary` where the missing past decides the verdict;
 - no value or threshold appears anywhere in your output except inside `literals`, quoted from the text.

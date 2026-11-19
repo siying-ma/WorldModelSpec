@@ -293,6 +293,8 @@ def trace_place(atom: str, keys: dict[str, list[str]] | None = None) -> str:
     where the codecs put it; occupancy where it is declared; a relation measured or computed."""
     if atom == "rel_occupies" or atom == "rel_occupies_regions":
         return "`occupies` with the track in `occupancy_observed`"
+    if atom == "rel_contact_structure":
+        return "computed from the user's `users[].kin` position, heading and extent and the structure's `structures[].boundary`"
     prefix, _, rest = atom.partition("_")
     spell = surface.enumeration_spellings()
     if prefix == "ru" and rest in spell.get("RoadUserClass", set()):
@@ -980,7 +982,7 @@ CONCEPT_RULINGS = {"upheld", "dismissed"}
 CONCEPT_AGREES = " (the body agrees with the contract on this trace)"
 
 
-def _dims() -> dict[str, tuple[int, int, int]]:
+def _dims() -> dict[str, tuple[int, int, int, int]]:
     """Each Core unit's dimension, as Core states it."""
     from ..model import units
     return units.DIMS

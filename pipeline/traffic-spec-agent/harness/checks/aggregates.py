@@ -39,7 +39,7 @@ import re
 from pathlib import Path
 
 from ..model import definitions as definitions_mod
-from ..model.ontology import Ontology
+from ..model.ontology import NOT_KINDS, Ontology
 
 REPRESENTATIONS = ("aggregate", "not_aggregate", "gap")
 STATUSES = ("included", "excluded", "covered", "unresolved")
@@ -48,7 +48,8 @@ RECORD_KEYS = {"aggregate_id", "term", "definition", "classifications"}
 CLASS_KEYS = {"class", "status", "quotes", "reason", "covered_by", "basis"}
 COVER_KEYS = {"covered_by", "basis"}
 #: `ru.*` atoms that are attributes or relations of a road user, not classes.
-NOT_CLASSES = {"ru.occupant_count", "ru.rider_posture", "ru.subject", "ru.aggregate"}
+#: The road-user atoms that are attributes, not classes: never offered to an aggregate.
+NOT_CLASSES = NOT_KINDS["ru"]
 
 
 def load(path: Path) -> list[dict]:
@@ -191,8 +192,11 @@ def record_defects(rec: dict, onto: Ontology, allowed_sources: dict[str, str]) -
             errs.append(f"{where}: status is one of {list(STATUSES)}")
         if c.get("status") == "covered":
             errs += _cover_defects(c, where, cls, onto, set(want))
+        elif c.get("status") == "included" and "basis" in c and "covered_by" not in c:
+            errs += _named_kind_defects(c, where, onto)
         elif COVER_KEYS & set(c):
-            errs.append(f"{where}: only a covered class carries `covered_by` and `basis`")
+            errs.append(f"{where}: only a covered class carries `covered_by`, and `basis` only a covered class or an included "
+                        "one whose contract names its members as the defined kind")
         qs = c.get("quotes")
         if not isinstance(qs, list) or not qs:
             errs.append(f"{where}: quotes the controlling words"); continue
@@ -204,6 +208,23 @@ def record_defects(rec: dict, onto: Ontology, allowed_sources: dict[str, str]) -
                 errs.append(f"{where}: the quote \"{_ws(q.get('words'))[:80]}\" is not verbatim in `{src}`")
         if c.get("status") == "unresolved" and not _ws(c.get("reason")):
             errs.append(f"{where}: an unresolved status explains why the words decide neither inclusion nor exclusion")
+    return errs
+
+
+def _named_kind_defects(c: dict, where: str, onto: Ontology) -> list[str]:
+    """An included classification's `basis`: the words of its own contract, quoted verbatim, that
+    name its members as the kind the definition defines (the proof that the presumption of legal
+    status by identification reaches it); a non-empty list naming only the class itself."""
+    basis = c.get("basis")
+    if not isinstance(basis, list) or not basis:
+        return [f"{where}: `basis` quotes the class's own contract words that name its members as the defined kind"]
+    errs = []
+    for b in basis:
+        k = b.get("class") if isinstance(b, dict) else None
+        if k != c.get("class"):
+            errs.append(f"{where}: an included class's `basis` quotes its own contract, not `{k}`")
+        elif not _verbatim(b.get("words", ""), onto.contract(k)):
+            errs.append(f"{where}: the basis \"{_ws(b.get('words'))[:80]}\" is not verbatim in the contract of `{k}`")
     return errs
 
 

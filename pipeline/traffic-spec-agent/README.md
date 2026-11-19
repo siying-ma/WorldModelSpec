@@ -59,12 +59,12 @@ removed, not kept.
 | `library/TrafficSpec/Rules/<Body>/<NodeId>.lean`, `library/TrafficSpecWitness/<Body>/<NodeId>.lean` | one rule and its witnesses per node; `Index.lean` and `TrafficSpecWitness.lean` are generated registries | agent-written, gate-accepted |
 | `laws/full_list/`, `laws/example/{train,test,demo,carla_smoke}/` | the corpus as posted law (`id`, `title`, `text`, `source`) with its definitions; `demo/` and `carla_smoke/` are reference-closed subsets of the training set (a first run; lines with standards of judgement, scored on simulator captures), made with `python -m nrs_tools.subset`, older subsets in git history; `laws/audit_and_scripts/` holds the analysis sidecars and the split record | input |
 | `library/TrafficSpec/Readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `library/TrafficSpec/Readings/lasvegas.json` is this corpus's base reading; it starts empty and is filled by the planner's proposals, which the operator reviews (the pre-pipeline operator list is archived under `library/TrafficSpec/Readings/legacy/`). A figure a statute states is never a reading parameter: it is a literal on its law's span. The doctor's `reading figures` check lists every parameter whose value equals a figure some law states, until the entry carries a `figure_review` note | operator-written input |
-| `prompts/*.md` | ten templates: `plan`, `plan_aggregates`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_concept` and `verify_aggregate`, and the judges `adjudicate_concept` and `recheck_concept` | yes, law-free |
+| `prompts/*.md` | thirteen files: `plan`, `plan_aggregates`, `code`, `code_concept`, `concept_repair`, `node_repair`, the behaviour-property author's `bp_draft` and the property language `bp_property_language` it and `bp_screen` are shown, the second vendor's `review_concept`, `verify_aggregate` and `bp_screen`, and the judges `adjudicate_concept` and `recheck_concept` | yes, law-free |
 | `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
 | `recorded/` | recorded driving data, shared by training and evaluation: the training dataset built from one delivery (`dataset`), the label contract (`labels`), the projection onto the active split (`projection`), verdict joins and scoring (`scoring`), what a manifest lets a rule decide (`decidability`) and the report-only source check (`source_check`); see *The training dataset* | code |
 | `scripts/gen_ontology.py`, `scripts/RegionKinds.lean`, `scripts/diagnostics/`, `scripts/setup_reviewer.sh` | the ontology generator, the exporter of the region kinds Core declares at each region argument, the doctor (`prompts vocabulary-free` holds the templates to injected context only: no vocabulary id, parameter or corpus-defined term in a rule) and the reviewer's one-time key setup | code |
-| `library/TrafficSpec/Gaps/proposals.jsonl`, `decisions.jsonl` | what the frozen vocabulary cannot carry (kinds `atom` and `operator` only), proposed by plan and repair sessions, decided by the operator (`retired` when the ontology or Core now carries it, `rejected` when the span is carried as it is); one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's); ids come from `counter.txt` beside it, which only grows | operator-decided |
-| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, `recheck_answers.jsonl` (each valid concept recheck answer, under the digest of its full prompt, model and effort, taken again in any later iteration or restart of the run instead of a new session; never a ruling), the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `state.json` (the run's authoritative state: the current iteration's progress, the ledgers, the accepted and held records, the aggregate failures and the concept versions found defective), `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, `usage.jsonl` (each session's spend, a `pending` row before a reviewer request and a `settled` row after it), `validator_fault.txt` (only when the validator itself failed), `handoff/` (a split run's checkpoint manifest and file list, see *Remote generation and local label check*), and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` (a coding task's directory keeps its `baseline.json` and `toolchain.jsonl`, each lake or Lean call of its gates with the attribution) | run output |
+| `library/TrafficSpec/Gaps/proposals.jsonl`, `decisions.jsonl` | what the frozen vocabulary cannot carry (kinds `atom` and `operator`, proposed by plan and repair sessions, and `scope`, filed by the harness for a duty only laws outside the corpus give), decided by the operator (`retired` when the ontology or Core now carries it, `rejected` when the span is carried as it is); one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's); ids come from `counter.txt` beside it, which only grows | operator-decided |
+| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, `review_evidence.jsonl` and `review/` (the behaviour-property review's rows and their details: every row is evidence; only a row the run's state points at, whose key equals the key computed now, is a review credential), `recheck_answers.jsonl` (each valid concept recheck answer, under the digest of its full prompt, model and effort, taken again in any later iteration or restart of the run instead of a new session; never a ruling), the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `state.json` (the run's authoritative state: the current iteration's progress, the ledgers, the accepted and held records, the aggregate failures and the concept versions found defective), `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, `usage.jsonl` (each session's spend, a `pending` row before a reviewer request and a `settled` row after it), `validator_fault.txt` (only when the validator itself failed), `handoff/` (a split run's checkpoint manifest and file list, see *Remote generation, review and local label check*), and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` (a coding task's directory keeps its `baseline.json` and `toolchain.jsonl`, each lake or Lean call of its gates with the attribution) | run output |
 
 ## Harness structure
 
@@ -74,7 +74,7 @@ modules the stages share sit in one folder each.
 | folder | modules | what it holds |
 |---|---|---|
 | `harness/` | `__main__.py`, `loop.py` | the CLI (`python -m harness …`) and the iteration driver: ledger transitions, dependency order, deferral, stop conditions |
-| `harness/phases/` | `plan.py`, `aggregate.py`, `validate.py`, `review.py`, `code.py`, `integrate.py`, `feedback.py` | one module per stage of the loop (`plan.py` also runs the concept and node repair sessions; `validate.py` also holds the judge sessions' launcher and the contracts table every reviewer and judge is shown; `review.py` is the second vendor's review of concepts, its adjudication, the replay of earlier rulings and the dependency-defect reports) |
+| `harness/phases/` | `plan.py`, `aggregate.py`, `validate.py`, `review.py`, `behaviour_review.py`, `code.py`, `integrate.py`, `feedback.py` | one module per stage of the loop (`behaviour_review.py` is the behaviour-property review: the properties, the bounded check, the credentials and the review hook of a candidate; `plan.py` also runs the concept and node repair sessions; `validate.py` also holds the judge sessions' launcher and the contracts table every reviewer and judge is shown; `review.py` is the second vendor's review of concepts, its adjudication, the replay of earlier rulings and the dependency-defect reports) |
 | `harness/model/` | `blueprint.py`, `corpus.py`, `definitions.py`, `mapping.py`, `nodeid.py`, `ontology.py`, `reading.py`, `units.py` | the pipeline's data: blueprint records, the corpus and its mechanically resolved definition graph, the mapping index, derived ids and paths, the closed set, the reading, the units (read from Core: factors, dimensions, spellings) and the parser of the figures a law states |
 | `harness/store/` | `paths.py`, `state.py`, `ledger.py`, `gaps.py`, `budget.py`, `owner.py`, `jsonl.py` | where things live and the run's state: options and run directories, the law, concept and node ledgers, the gap ledger, the durable spend record, the owner of the library and its processes, the append-only JSON-lines files |
 | `harness/lean/` | `lean.py`, `index_sync.py`, `skeleton.py`, `surface.py`, `render_formula.py`, `relations.py` | everything that reads or writes `library/`: lake calls, the registries, the skeletons, the Core surface, the formula renderer, the check of a trace's supplied relations against Core's computation |
@@ -166,7 +166,18 @@ python -m harness gate --run_id <run> --node_id <node>   # the gate for one node
 python -m harness surface                                  # the generated Core surface a coding session is shown
 python -m harness verify --run_id <run>                    # today's gates on every record of the run and its base chain, the active library's witnesses, changed contexts; fenced records reported apart
 python -m harness label_check <run> --dataset <dataset>   # once the loop has stopped: the frozen library scored on the labelled training recordings of a dataset built from one delivery; writes results/<run>/label_check/
-python -m harness handoff export <run> [--source_baseline <commit>]   # a split run's checkpoint for the other machine (see *Remote generation and local label check*)
+python -m harness review_decide <run> - acknowledge --stop <stop-id> --record <record.json>
+python -m harness review_decide <run> <law> reconcile --record <record.json>
+```
+
+These are prototype commands. `reconcile` currently resolves the prototype's pending-call
+state; it does not yet settle an executed call's cost in the usage ledger or append its
+decision evidence. It must not be used to recover paid calls. `finding`, `redraft` and
+`limits` are not implemented and are refused.
+
+```bash
+python -m harness stage handover <run> --to <review|labels> [--dataset <dataset>] [--behaviour_reviewer <name>]   # may the launcher enter that stage itself now (exit 0), or why the run waits (1) or needs the operator (4)
+python -m harness handoff export <run> [--source_baseline <commit>]   # a split run's checkpoint for the other machine (see *Remote generation, review and local label check*)
 python -m harness handoff verify <run>                     # before continuing a handed-over run: its code baseline, semantic inputs and files
 python -m harness index                                    # regenerate the registries
 python -m harness status --run_id <run>
@@ -585,12 +596,16 @@ A training or test run needs the training split active (`python -m harness split
 the doctor's `ontology generated` check follows the active split and its `training split` check
 holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
 
-## Remote generation and local label check
+## Remote generation, review and local label check
 
-A training run can be split between two machines that never write the run at the same time. The
-**remote machine** generates: it plans, codes and gates laws, with the concept review and the
-aggregate verifier, and reads no training recording (`--label_deferred`). The **local machine**
-holds the training recordings: it checks every law whose plan is gated on them and repairs it
+A training run is generated, reviewed and label-checked, in that order, in stages that never write
+the run at the same time, and may be split between two machines. The **remote machine** generates:
+it plans, codes and gates laws, with the concept review and the aggregate verifier, and reads no
+training recording (`--label_deferred`). The review stage (`--review_stage`) runs on any machine
+that holds the reviewer's pinned dependencies and reads no training recording: it writes and
+screens each generated law's behaviour properties and checks them against the law's rules. The
+**local machine** holds the training recordings: it checks every law whose review allows it,
+repairs a label mismatch or a review finding, and accepts a law only when both hold
 (`--label_stage`). Each finished iteration is exported as a checkpoint, committed to the run's
 branch and pushed, and the other machine continues from it.
 
@@ -602,8 +617,9 @@ baseline commit or holds a merge commit after it, and the loop refuses any chang
 run is pinned to (below). To use newer code, start a new run from the baseline's new tip.
 
 **What waits.** On the remote machine a law whose nodes all pass the gate is kept, with its
-generated nodes, and recorded as not accepted (`awaiting_labels`); it is accepted only by its label
-check. Whether a node may be built on another is decided per node, never by its law's formal
+generated nodes, and recorded as not accepted (`awaiting_review`); it is accepted only by its review
+and its label check together, or, when its every node is a permission, by its permission exemption
+in the review stage. Whether a node may be built on another is decided per node, never by its law's formal
 acceptance (`Run.provider_code`): a node is usable for building once it is published (integrated),
 its law planned or accepted with the node in its current plan, not fenced, with admission evidence
 under its current key, and so is everything it composes and calls. Inside a law, its nodes are built
@@ -614,8 +630,9 @@ root's token (`decision:<root law>`, `waits_on` the root); a law closed after it
 accepted revokes their acceptance the same way. A record whose admission gate exceeded its deadline
 has no evidence (`unjudged`): neither it nor anything on it is usable or work; after two timeouts
 under one key its recheck pauses until `harness reopen <run> --laws <law> --admission`. When nothing
-runnable is left without a label check, the remote stage pauses (status `awaiting_labels`) instead
-of spending iterations, and the run goes to the local machine. After the local stage has checked and
+runnable is left without a review, the remote stage pauses (status `awaiting_review`) instead of
+spending iterations, and the run goes to the review stage; when the review stage has nothing left, it
+pauses (status `awaiting_labels`) and the run goes to the local machine. After the local stage has checked and
 repaired the waiting laws (status `awaiting_generation`), the run goes back to the remote machine,
 where the laws that waited on them continue. A large corpus may need several such handoffs. A
 stage hands the run over only when the other stage has work, judged by that stage's own work
@@ -629,6 +646,64 @@ and the stop reason names each such law with its state; a law whose plan or node
 because it composes a node of such a law stays blocked, uncharged, and keeps the stage from ending
 `complete` as well) or `complete`. A cycle
 of laws each waiting on the next is held for the operator (`TO_USER.md` names it); nothing is retried.
+
+**Status of the review stage.** This harness registers no production reviewer. A run's reviewer is
+fixed when the run first enters its review stage: that `stage enter --kind review` names a registered
+implementation (`--behaviour_reviewer`; the launcher passes `BEHAVIOUR_REVIEWER`) and records its name
+and implementation digest in the new stage's policy; every later review entry keeps it, registered as
+fixed (`stage enter` refuses otherwise). A run that requires the review generates without one and
+then waits at its generation stage's checkpoint (`awaiting_review`) until one is registered. The
+reviewer the next paragraph describes (an author and a second vendor, a bounded check confirmed by
+Core) is a design target, not an implementation of this checkout; the stage, credential, hold, limit
+and handover machinery around a reviewer is implemented and tested with a test stand-in only.
+
+**The review stage.** `RUN_ID=<run id> STAGE=review scripts/run-generation.sh resume` runs it. For each
+generated law in the stage's scope it obtains one property set (the author and the second vendor,
+two rounds, blind to every rule), checks the adopted properties against the law's own rules by a
+bounded search confirmed by Core, and records the outcome. A check passes only where Core confirms
+that the property's situations exist and none of them, within the bounds, receives another verdict
+or an unknown one. A law gets a strict review certificate (`reviewed`) when it has a passed check,
+none failed or was undecided, and every clause and category is covered by passed checks or exempt
+by the second vendor's explicit confirmation. Only under the coverage policy `bounded`, chosen at
+the run's start (the default is `strict`), a law with adopted properties, none of whose checks failed
+or was undecided, may instead get a bounded conditional credential (`review_unverified`): every hole
+is listed with the counts of adopted, executed and passed properties (executed may be zero), it is
+counted apart, never as reviewed, and inherited by the laws that compose it. A finding waits for its
+review repair in the local stage; an unknown verdict, an empty antecedent or any hole under `strict`
+waits for the operator (`review_decide`). A property set with no adopted property is drawn again
+while the law's property-set attempts last; after the last one the stage classifies the cause from
+the second vendor's stated reasons and records it: a law whose words both authors explicitly state
+decide no checkable conduct gets a no-checkable-behaviour exemption (counted apart, never as
+reviewed, still label-checked), and a cause on the reviewer's side, a disagreement on the law's
+meaning, or a mixed or unclear cause waits for the operator.
+The classification is evidence about the law's words and may be reused when only its rules
+change. Its current exemption credential still binds the current plan and dependency context;
+rule changes require a fresh validation and the applicable label check, not a new blind draft.
+Readers list this exemption among their dependencies and check its effects in their own rules;
+it is not a bounded coverage condition and is never counted as a passed property check.
+When both kinds of problem are known, review repair precedes label repair. Each has its own
+goal and attempt counter and must preserve the other check's established results.
+A law whose every node is a permission is accepted here on a permission exemption, never counted as reviewed.
+A credential is the pointer the run's state holds to one row whose key equals the key computed now;
+any change to the law's rules, the concepts they call, a rule-set's members, the reading values or
+parameters they read, the adopted properties or the check's implementation makes it stale, and an
+accepted law that loses it loses its acceptance. Every repair candidate of the local stage checks
+again every law it reaches that has adopted properties: a passed check that no longer passes, a
+finding that leaves the check through an unknown verdict or an empty antecedent, or a new hole rolls
+the candidate back. A call whose outcome is unknown is never sent again until the operator
+reconciles it, and a call with a stored answer or other evidence of execution is never reconciled as
+not executed. An answer from another model or channel stops every paid call of the run until the
+operator acknowledges that stop; reconciling one call clears no other stop. Recovering a property
+set reuses the valid answers of the same generation; an operator's redraft is a new generation. The
+attempts of property generation, review repair and infrastructure retries are counted in the run's
+state when each begins and survive restarts and stage switches. The launcher enters the next stage
+itself only when that stage has work and this machine holds its data and dependencies, the last
+iteration is committed and exported, no session is active, no paid call is pending, unreconciled or
+stopped, the scope is fixed, the code is unchanged, and the switch is not a round trip without
+progress; it never chooses a partial scope. While any stop of the run is active (any kind `stops` in
+`summary.json` lists: a defect pause, a spent limit, an unacknowledged stop of the sends, a call of
+unknown outcome, an integrity stop), or the switch would be a round trip without progress, the run is
+the operator's (the launcher exits 4) and no stage is entered.
 
 **A run never changes under later development.** A split run is pinned to the code it started on:
 the harness, `recorded/`, the monitor and Explain sources, the prompts, Core with its root module,
@@ -712,7 +787,14 @@ loop one iteration at a time (`LAUNCHES`, 20 by default), each iteration's bound
 persisted progress, so a restart resumes where the run stopped. A `new` run passes every option the
 launcher knows, set or defaulted: every role's effort (`PLAN_EFFORT`, `CODE_EFFORT`, `REVIEW_EFFORT`,
 `JUDGE_EFFORT`, `VERIFIER_EFFORT`) and cap (`SESSION_CAP`, `REPAIR_CAP`, `JUDGE_CAP`, `VERIFIER_CAP`),
-the models, the budgets and `WORKERS` (4 by default; match the machine's processors and memory).
+the models, the budgets and `WORKERS` (4 by default; match the machine's processors and memory),
+and the review configuration the run fixes in its first stage: `REVIEW_COVERAGE` (`strict` by default,
+or `bounded`) and the per-law review limits `REVIEW_REPAIR_ATTEMPTS`, `REVIEW_PROPERTY_ATTEMPTS` and
+`REVIEW_INFRA_ATTEMPTS` (2, 2, 3). `BEHAVIOUR_REVIEWER` (a registered reviewer) is passed to no loop
+launch: only to `stage handover --to review` and `stage enter --kind review`, whose first entry fixes
+it for the run's life; a launch that generates and names `--behaviour_reviewer` is refused.
+`REVIEW_BUDGET` (`--behaviour_review_budget_usd`, the reviewer's calls over the run) has no default:
+a review launch needs it. An option whose value is empty is not passed.
 `ACQUISITION_PROFILE` (a profile of `config/acquisition_profiles.json`) is passed by `new` only, and only when
 set: a run keeps the profile it started with, and a `resume` that sets it is refused. A run without one may
 read no `heading_since`.
@@ -724,14 +806,26 @@ before anything of the run is touched (a new policy is a new run). A run id is n
 `results/<run id>` is absent or empty; any other run resumes only on its own readable `options.json`
 and `state.json` (the snapshot may be missing only if the run never got past its first launch), and is
 never initialised again over what it left. A handoff whose manifest predates the policy anchor is read,
-but its policy is reported `policy anchor missing: not verified`. To raise a budget on resume, set it explicitly; `CLAUDE_BUDGET` or
-`OPENAI_BUDGET` on resume needs `TOTAL_BUDGET` set with it. After each finished iteration it runs `python -m harness
+but its policy is reported `policy anchor missing: not verified`. To raise a budget or a repair count on resume, set it explicitly; `CLAUDE_BUDGET` or
+`OPENAI_BUDGET` on resume needs `TOTAL_BUDGET` set with it. Each change of a run limit (the role,
+vendor and total budgets, the label and review repair counts) is recorded with its old and new value
+in `results/<run>/limit_changes.jsonl`, and the raised review limits take effect from that record; a
+review limit is never set below the value the run's first stage fixed, the coverage policy is fixed
+for the run's life, and the reviewer from the run's first review entry on. No limit changes what a reviewer is asked or how its
+answer is judged. After each finished iteration it runs `python -m harness
 handoff export <run>`, commits exactly the files that export lists (the run's directory, its rules,
 concepts and witnesses, the registries, the base reading and the gap ledger; no lock, owner record,
 build cache or dataset) and pushes that commit. It goes on only after an iteration that stopped at its
-iteration bound with work left; it stops with status 0 on `awaiting_labels`, `awaiting_generation` or
-`complete`; with 4 on `paused_budget` ("raise the named limit explicitly and resume": the stop reason
-names the option, its used count, its limit and the laws affected) or `awaiting_operator` ("operator
+iteration bound with work left; on `awaiting_review` or `awaiting_labels` it enters the next stage
+itself when the conditions of *The review stage* hold and this machine can run it (`python -m harness
+stage handover` decides; the launcher then runs `stage-enter` on the same code with the transition
+`auto-<stage left>-<kind>`, logging that command so that a stop midway is finished by running it
+again, and goes on launching in the new stage); otherwise it stops
+with status 0 on `awaiting_review`, `awaiting_labels`, `awaiting_generation` or
+`complete` (a run without a stage record is handed over by hand); with 4 on a handover that finds a
+stop of the run active or would be a round trip without progress, on `paused_budget` ("raise the named limit explicitly and resume": the stop reason
+names the option, its used count, its limit and the laws affected), `paused_defect` (find the cause of the
+repeated gate failure before resuming) or `awaiting_operator` ("operator
 decision needed; see stop_reason and TO_USER.md"), after pushing the checkpoint and handing the run to
 neither stage, never continued as an iteration limit; with 5 on `infrastructure_failure` (uncharged:
 something the iteration needs did not run, and the stop reason says what: a session the account or the API
@@ -760,10 +854,13 @@ RUN_ID=<run id> STAGE=labels LABEL_DATASET=<dataset folder> scripts/run-generati
 
 The first local launch binds the run to the dataset (its data version, labels and digests, in
 `results/<run>/comparison_set.json`); every later launch checks the same data again, and a different
-dataset is refused. The local stage plans and codes nothing new: it checks each waiting law, accepts
-the aligned ones, and repairs a mismatch through the candidate transaction (the label repair budget,
-`LABEL_REPAIR_ATTEMPTS` and `LABEL_REPAIR_BUDGET`, and the spend continue from the run). It ends with
-`awaiting_generation` (status 0) once no label work is left, after pushing its checkpoint.
+dataset is refused. The local stage plans and codes nothing new: it checks each law whose review
+allows it, accepts the aligned ones that hold a valid review credential, and repairs a mismatch or a
+review finding through the candidate transaction (the label repair budget, `LABEL_REPAIR_ATTEMPTS`
+and `LABEL_REPAIR_BUDGET`, the review repair attempts, and the spend continue from the run). A review
+repair is kept when the finding's property passes and nothing regresses, labels included; it need
+not improve the labels. It ends with `awaiting_generation` (status 0) once no label or review repair
+work is left, or `awaiting_review` when a law needs a property set, after pushing its checkpoint.
 
 **Handing back.** On the remote machine, `git pull` in the run's checkout, then
 `RUN_ID=<run id> scripts/run-generation.sh resume`: the laws the label check accepted are now usable,
@@ -949,11 +1046,33 @@ included. A run continues while any repairable
 work has budget left; the attempt budgets and `--max_iterations` bound it. A run ends `complete`,
 `incomplete`, `infrastructure_failure` (a session, the toolchain or the validator itself did not
 run; uncharged, resumable; a validator fault leaves `validator_fault.txt`), `paused_budget`,
+`paused_defect` (one `CHECK_FAIL` line, the node's id aside, in the gates of at least three laws of one
+iteration: no further session is submitted, the gates are charged as usual, and the pause is recorded
+with the raw lines, nodes and spend in `shared_failure_pauses.jsonl`; a cause in a shared input is
+fixed and the resume contract checked before resuming, and the same line never pauses the run again),
 `protocol_failure` (the aggregate selection stayed defective for the same pair twice),
 `stale_aggregate` (an aggregate's inputs
 changed under nodes that claim it: start a new run) or `data_integrity_failure` (an audit file —
 `rulings.jsonl`, the aggregate selection or certificates — cannot be read as written; it is named and
-left as it is); `summary.json` records it, and the command exits non-zero unless `complete`.
+left as it is); a stop of the run's sends that awaits the operator's acknowledgement ends the launch
+`awaiting_operator`, never `paused_budget`. `summary.json` records the status that ended the launch, and
+the command exits non-zero unless `complete`. Beside it, `stops` lists every stop still active, each
+with its `id`, `kind` (`paused_defect`, `budget`, `wrong_model`, `wrong_channel`, `bound_violated`,
+`response_missing`, `unknown_execution`, `integrity`), `cause` and `clears` (its own clearing
+condition), read from its own record; `TO_USER.md` opens with the same list. Each kind is cleared by
+its own condition only: a resume answers a `paused_defect` (recorded as an `answered` row in
+`shared_failure_pauses.jsonl`), raising the named limit a `budget`, `review_decide acknowledge` one
+stop row, `reconcile` a property call of unknown outcome (a reviewer request of unknown outcome only
+its settlement in `usage.jsonl`), restoring the file an `integrity` stop; none clears another. A
+reserved request reads the send gate again when its transport is about to start: a stop written
+meanwhile refuses it, settled at zero as never started; a request already started is settled by what
+is known of it.
+`summary.json` also lists the run's spend (`spend`) with money apart from the Claude API equivalent:
+`cash` (the OpenAI calls at the price table, and Claude sessions billed to `ANTHROPIC_API_KEY`),
+`claude_api_equivalent` (the cost the CLI reports for sessions of an account login),
+`claude_billing_not_recorded` (Claude rows written before a row said how it was paid) and
+`unsettled_requests` (each counted at its reservation, never as zero). Every Claude row records its
+`billing` (`api_key` or `account`).
 
 **Definitions and aggregates.** Which posted definition applies to a law's words is resolved
 mechanically (`harness/model/definitions.py`) from the run's `laws.jsonl` and the `definitions.jsonl`

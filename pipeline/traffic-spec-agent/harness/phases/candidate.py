@@ -13,6 +13,8 @@ What a transaction holds, under `iter-NNN/candidate/<id>/` of the run:
 - `mapping.json` and `admission.json`, the run's mapping index and admission cache as the
   candidate will leave them;
 - `rulings.jsonl`, the rulings a check made on the candidate, published only with it;
+- `review_evidence.jsonl`, the behaviour-review rows its review check staged, and the view's own
+  review pointers (`view.review_states`), published only with it;
 - a view of the run's records (`view`), the run's accepted nodes and concepts with the changes;
 - its own copies of the law ledger (`ledger`, bound to the view) and of the label states, so every
   check inside it reads the plans its changes make, and production's ledger is untouched until the
@@ -60,7 +62,7 @@ from ..checks import gate
 from ..lean import index_sync, lean, surface
 from ..model import nodeid
 from ..model.blueprint import ConceptRecord, Node
-from ..model.reading import Reading, same_meaning
+from ..model.reading import Reading, declared_items, same_meaning
 from ..store import jsonl, owner, paths
 from ..store.state import Run
 
@@ -272,7 +274,8 @@ def production_baseline(run: Run, tree: dict | None = None) -> dict:
     """What a commit requires unchanged since the transaction opened: every file of the pipeline tree
     a session could write (the gate's repository digest of the tree that holds the library, `tree`
     when already computed) and the run's own files the commit replaces or appends to."""
-    files = {name: _file_sha(run.dir / name) for name in ("state.json", "reading.json", "mapping.json", "admission.json", "rulings.jsonl")}
+    files = {name: _file_sha(run.dir / name) for name in ("state.json", "reading.json", "mapping.json", "admission.json", "rulings.jsonl",
+                                                          "review_evidence.jsonl")}
     files["base_reading"] = _file_sha(Path(run.opts.reading))
     return {"tree": _sha(gate.repo_digest(paths.LIBRARY.parent) if tree is None else tree), **files}
 
@@ -299,6 +302,12 @@ class _View(Run):
         """The candidate's rulings: the run's as they stood when it opened, then every ruling a review,
         a replay or an adjudication made on the candidate; published whole only with it."""
         return self._candidate_rulings
+
+    @property
+    def review_evidence_file(self) -> Path:
+        """The candidate's behaviour-review rows: the run's as they stood when the candidate opened,
+        with the rows its review check staged; published whole only with it."""
+        return self._candidate_review_evidence
 
     @property
     def admission_file(self) -> Path:
@@ -333,6 +342,8 @@ def _view(run: Run, area: Path, base_reading: Path, base: dict | None = None) ->
     v.opts = replace(run.opts, reading=base_reading)
     v._candidate_reading, v._candidate_mapping, v._candidate_iter = area / "reading.json", area / "mapping.json", area / CANDIDATE_ITER
     v._candidate_rulings = area / "rulings.jsonl"
+    v._candidate_review_evidence = area / "review_evidence.jsonl"
+    v.review_states = copy.deepcopy(run.review_states)    # its own pointers, published with its commit
     return v
 
 
@@ -486,6 +497,7 @@ class Candidate:
         self.label_checks: dict = {}               # law → the label check a hook made on the candidate, for the caller to publish
         self.ledger = None                         # the transaction's own copy of the law ledger, bound to its view
         self.label_states: dict = {}               # its own copy of the label states
+        self.review_touched: set[str] = set()      # the laws whose review pointers its review check staged (in `view.review_states`)
         self.plans: dict | None = None             # the plans given to the label hook, part of what results rest on
         self.baseline: dict = {}
         self.scope_baseline: dict = {}
@@ -540,7 +552,7 @@ class Candidate:
             if base_reading.exists():
                 shutil.copy2(base_reading, self.base_reading)
         copies = (("reading.json", run.reading_file), ("mapping.json", run.mapping_file), ("admission.json", run.dir / "admission.json"),
-                  ("rulings.jsonl", run.dir / "rulings.jsonl"))
+                  ("rulings.jsonl", run.dir / "rulings.jsonl"), ("review_evidence.jsonl", run.dir / "review_evidence.jsonl"))
         for name, src in copies:
             if src.exists():
                 shutil.copy2(src, self.area / name)
@@ -633,7 +645,7 @@ class Candidate:
                     out.append(f"`{ch.ident}`: the record carries a gap on span(s) {gapped}; a node that carries a gap is not "
                                "coded or accepted: its gaps are filed when a plan registers it and block its law until the operator "
                                "decides them, so carry the span without a gap or re-plan the law")
-                for d in ch.record.get("assumptions", []) + ch.record.get("intentions", []):
+                for d in declared_items(ch.record):
                     have = decls.get(d.get("id")) if isinstance(d, dict) else None
                     if have is not None and not same_meaning(have.get("meaning"), d.get("meaning")):
                         out.append(f"`{ch.ident}`: declares `{d.get('id')}` as {d.get('meaning')!r}, the reading means {have.get('meaning')!r}")
@@ -833,6 +845,8 @@ class Candidate:
             for ident, kind in kinds.items():
                 sel = admission_selection(r, kind, ident)
                 reach[ident] = (set(sel["nodes"]) | set(sel["concepts"])) - {ident}
+                if kind == "node" and r.all_nodes()[ident].get("rule_sets"):   # a rule-set operator reads the whole library
+                    reach[ident] |= set(r.all_nodes()) - {ident}
                 try:
                     ctx[ident] = context_version(r, kind, ident, reading, self.base)
                 except (ValueError, KeyError):
@@ -934,8 +948,10 @@ class Candidate:
         its verified label checks (`label_checks`): the target law routed by its check (`route_entry`,
         its plan `nodes`), every other law checked again routed by its own (an operator's hold kept),
         then the acceptances that no longer hold revoked and routed (`revalidate_acceptance`), on a copy.
-        The copy names what it was derived for (`routed_for`) and carries the label states revoking
-        changed (`label_changes`) and the operator's lines (`said`)."""
+        Under `review: required` an acceptance takes effect only where the review allows it on the
+        candidate (its staged review rows and pointers, `behaviour_review.gate_route`): never accepted
+        first and revoked after. The copy names what it was derived for (`routed_for`) and carries the
+        label states revoking changed (`label_changes`) and the operator's lines (`said`)."""
         from ..loop import LABEL_ROUTES, in_scope, label_scope, label_state, route_entry, revalidate_acceptance
         routed = copy.deepcopy(self.ledger)
         said: list[str] = []
@@ -954,16 +970,19 @@ class Candidate:
                 if new == "blocked":
                     e.gaps = sorted(set(e.gaps) | {f"decision:{other}"})
                     e.own_gaps = sorted(set(e.own_gaps) | {f"decision:{other}"})
-        if target is not None and target in self.label_checks:
-            chk = self.label_checks[target]
-            routed.entries[target].nodes = list(nodes)
-            route_entry(self.view, routed, target, chk, list(nodes), label_state(self.view, target, chk, list(nodes), self.area / "label", self.id), said)
         saved = (self.view.law_entries, self.view.label_states)
         self.view.law_entries, self.view.label_states = routed.entries, copy.deepcopy(self.label_states)
         self.view.gated_ids = set(self.gated)             # what its own gates passed is admitted with its commit
         try:
             with self.inside():
-                revoked = revalidate_acceptance(self.view, routed, said)
+                if target is not None and target in self.label_checks:
+                    chk = self.label_checks[target]
+                    routed.entries[target].nodes = list(nodes)
+                    route_entry(self.view, routed, target, chk, list(nodes),
+                                label_state(self.view, target, chk, list(nodes), self.area / "label", self.id), said)
+                revoked = list(revalidate_acceptance(self.view, routed, said))
+                from . import behaviour_review     # label and review decided together, on the candidate's staged rows
+                revoked += behaviour_review.gate_route(self.view, routed, said)
             changes = {law: self.view.label_states[law] for law in revoked if law in self.view.label_states}
         finally:
             self.view.law_entries, self.view.label_states = saved
@@ -1056,6 +1075,11 @@ class Candidate:
         snap.update({**{k: getattr(view, k) for k in OWNED}, "ledger": [_saved(e) for e in published.values()], **(extra_state or {})})
         if states:
             snap["label_states"] = states
+        reviews = copy.deepcopy(run.review_states)        # the review pointers its review check staged, merged as the label states are
+        for law in self.review_touched:
+            reviews[law] = copy.deepcopy(view.review_states.get(law, {}))
+        if reviews:
+            snap["review_states"] = reviews
         stage = self.area / "commit"
         if stage.exists():
             shutil.rmtree(stage)
@@ -1084,6 +1108,9 @@ class Candidate:
             put(self.base_reading.read_bytes(), Path(run.opts.reading), "run/base_reading.json")
         if _file_sha(self.view.rulings_file) != _file_sha(run.dir / "rulings.jsonl") and self.view.rulings_file.exists():
             put(self.view.rulings_file.read_bytes(), run.dir / "rulings.jsonl", "run/rulings.jsonl")   # the run's rows, then the candidate's
+        if self.review_touched and self.view.review_evidence_file.exists() \
+                and _file_sha(self.view.review_evidence_file) != _file_sha(run.dir / "review_evidence.jsonl"):
+            put(self.view.review_evidence_file.read_bytes(), run.dir / "review_evidence.jsonl", "run/review_evidence.jsonl")
         put(json.dumps(snap, ensure_ascii=False).encode(), run.state_file, "run/state.json")
         journal = {"candidate": self.id, "area": str(self.area), "status": "committed", "ops": ops, "run_id": run.opts.run_id}
         self.status = "committing"                        # from here on, only `recover` decides: never rolled back
@@ -1099,6 +1126,8 @@ class Candidate:
             setattr(run, k, copy.copy(snap[k]))
         if states:
             run.label_states = states
+        if reviews:
+            run.review_states = reviews
         _apply(journal, run.dir / JOURNAL, run)
         self.status = "committed"
         self._close()
